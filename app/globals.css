@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────
+   FONT FACES
+   ───────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: 'Apfel Grotezk';
+  src: url('/fonts/ApfelGrotezk-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Apfel Grotezk';
+  src: url('/fonts/ApfelGrotezk-Fett.woff2') format('woff2');
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('/fonts/HelveticaNeue-Medium.woff2') format('woff2');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'Helvetica Neue';
+  src: url('/fonts/HelveticaNeue-Regular.woff2') format('woff2');
+  font-weight: 400;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   CSS VARIABLES & TOKENS
+   ───────────────────────────────────────────────────────────────────── */
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Dark surface tokens */
+  --text-primary:    #ffffff;
+  --text-subsection: #EDE7FF;
+  --text-body:       #D1CBE8;
+  --text-secondary:  #A9A3C5;
+  --text-tertiary:   #8F88B3;
+  --text-label:      #8F88B3;
+
+  /* Light surface tokens */
+  --text-light-primary:   #1a1a1a;
+  --text-light-secondary: rgba(0, 0, 0, 0.70);
+  --text-light-tertiary:  rgba(0, 0, 0, 0.50);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   TEXT COLOR UTILITIES
+   ───────────────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  .text-app-primary    { @apply text-white; }
+  .text-app-subsection { color: var(--text-subsection); }
+  .text-app-body       { color: var(--text-body); }
+  .text-app-secondary  { color: var(--text-secondary); }
+  .text-app-tertiary   { color: var(--text-tertiary); }
+  .text-app-label      { color: var(--text-label); }
+
+  .text-light-primary   { color: var(--text-light-primary); }
+  .text-light-secondary { color: var(--text-light-secondary); }
+  .text-light-tertiary  { color: var(--text-light-tertiary); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY SCALE UTILITIES - using @apply for compatibility
+   ───────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  .text-display {
+    font-family: 'Apfel Grotezk', sans-serif !important;
+    font-size: 72px;
+    line-height: 1.1;
+    font-weight: 400;
+  }
+
+  .text-h1 {
+    font-family: 'Apfel Grotezk', sans-serif !important;
+    font-size: 48px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .text-h2 {
+    font-family: 'Apfel Grotezk', sans-serif !important;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .text-h3 {
+    font-family: 'Apfel Grotezk', sans-serif !important;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 400;
+  }
+
+  .text-body {
+    font-family: 'Helvetica Neue', sans-serif !important;
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .text-small {
+    font-family: 'Helvetica Neue', sans-serif !important;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
