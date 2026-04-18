@@ -23,50 +23,49 @@ export default async function DeathcareLearnPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* HERO SECTION */}
-      <div className="px-4 py-16" style={{ background: '#F29836' }}>
-        <div className="max-w-5xl mx-auto">
+      <div style={{ background: '#F29836' }}>
+        <div style={{ maxWidth: '1120px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '32px', paddingRight: '32px', paddingTop: '48px', paddingBottom: '120px' }}>
           <Link
             href="/app/learn/areas"
             className="text-white hover:text-white/80 text-sm font-semibold transition-colors"
+            style={{ display: 'block', marginBottom: '40px' }}
           >
             ← Areas of planning
           </Link>
 
-          <div className="mt-10">
-            <h1 style={{ fontSize: '64px', fontWeight: 600, lineHeight: '1.1', color: 'white', marginBottom: '20px', maxWidth: '700px' }}>
-              Deathcare & Body Disposition
-            </h1>
-            <p style={{ fontSize: '20px', color: 'white', lineHeight: '1.6', maxWidth: '640px' }}>
-              Deathcare planning involves decisions about how your body will be cared for after you die. This includes choosing a final resting place for your body, such as traditional burial, cremation, green burial, or alternative methods like aquamation. Without clear instructions, decisions may be made based on default practices, family assumptions, or costs rather than personal wishes.
-            </p>
-          </div>
+          <h1 style={{ fontSize: '88px', fontWeight: 500, lineHeight: '0.95', color: 'white', maxWidth: '720px' }}>
+            Deathcare & Body<br />Disposition
+          </h1>
+          <p style={{ fontSize: '20px', color: 'white', lineHeight: '1.6', maxWidth: '560px', marginTop: '32px' }}>
+            Deathcare planning involves decisions about how your body will be cared for after you die. This includes choosing a final resting place for your body, such as traditional burial, cremation, green burial, or alternative methods like aquamation. Without clear instructions, decisions may be made based on default practices, family assumptions, or costs rather than personal wishes.
+          </p>
         </div>
       </div>
 
       {/* MAIN CONTENT SECTION */}
-      <div className="flex-1 px-4" style={{ background: '#130426', paddingTop: '72px', paddingBottom: '72px' }}>
-        <div className="max-w-5xl mx-auto flex flex-col">
+      <div className="flex-1" style={{ background: '#130426', paddingTop: '96px', paddingBottom: '120px' }}>
+        <div className="w-full flex flex-col">
 
           {/* GROUPED CONTEXT SECTION: Why this matters + Relevant Activities */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 560px) 320px', columnGap: '96px', alignItems: 'start' }}>
+          <div className="max-w-[1120px] mx-auto px-8" style={{ display: 'grid', gridTemplateColumns: '560px 360px', columnGap: '120px', alignItems: 'start', marginBottom: '120px' }}>
 
             {/* SECTION 2 — WHY THIS MATTERS */}
-            <section>
-              <h2 style={{ fontSize: '28px', fontWeight: 500, lineHeight: '1.15', color: 'white', marginBottom: '20px' }}>Why this matters</h2>
-              <p style={{ fontSize: '16px', lineHeight: '1.6', color: 'white', marginBottom: '16px', maxWidth: '560px' }}>
+            <section className="max-w-[560px]">
+              <h2 style={{ fontSize: '28px', fontWeight: 500, lineHeight: '1.15', color: 'white', marginBottom: '16px' }}>Why this matters</h2>
+              <p style={{ fontSize: '18px', lineHeight: '1.6', color: 'white', marginBottom: '16px', maxWidth: '560px' }}>
                 Planning ahead ensures your choices reflect your values—spiritual, environmental, cultural, or personal—and reduces stress for loved ones.
               </p>
-              <p style={{ fontSize: '16px', lineHeight: '1.6', color: 'white', maxWidth: '560px' }}>
+              <p style={{ fontSize: '18px', lineHeight: '1.6', color: 'white', maxWidth: '560px' }}>
                 Your preferences for body disposition should be documented in your will to ensure they are legally recognized.
               </p>
             </section>
 
             {/* SECTION 3 — RELEVANT ACTIVITIES */}
-            <section style={{ maxWidth: '320px' }}>
-              <h2 style={{ fontSize: '28px', fontWeight: 500, lineHeight: '1.15', color: 'white', marginBottom: '24px' }}>
+            <section style={{ width: '360px', paddingTop: '8px' }}>
+              <h2 style={{ fontSize: '32px', fontWeight: 500, lineHeight: '1.15', color: 'white', marginBottom: '24px' }}>
                 Relevant Activities
               </h2>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 <li style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
                   <span style={{ color: 'white', fontWeight: 'bold', marginTop: '2px', flexShrink: 0 }}>·</span>
                   <Link href="/app/reflect" style={{ fontSize: '16px', lineHeight: '1.6', color: 'white', textDecoration: 'underline', fontWeight: 600 }} className="hover:text-white/80 transition-colors">
@@ -85,14 +84,14 @@ export default async function DeathcareLearnPage() {
           </div>
 
           {/* BALANCED TWO-COLUMN LAYOUT: Primary CTA + Secondary Resources */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', columnGap: '48px', alignItems: 'start', marginTop: '72px' }}>
+          <div className="max-w-[1120px] mx-auto px-8" style={{ display: 'grid', gridTemplateColumns: '520px 440px', columnGap: '80px', alignItems: 'start' }}>
 
             {/* SECTION 4 — CONTINUE IN YOUR PLAN (primary column) */}
-            <section className="rounded-2xl" style={{ background: '#2C3777', padding: '32px', maxWidth: '640px' }}>
+            <section style={{ background: 'rgba(38, 47, 105, 0.95)', borderRadius: '16px', padding: '32px', maxWidth: '520px', boxShadow: 'none' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 700, lineHeight: '1.25', color: 'white', marginBottom: '12px' }}>
                 Continue in your plan
               </h3>
-              <p style={{ fontSize: '16px', lineHeight: '1.6', color: 'white', marginBottom: '20px', maxWidth: '560px' }}>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: 'white', marginBottom: '20px' }}>
                 Documenting your preferences and sharing your choices with loved ones and decision makers ensures they understand your wishes and can carry them out.
               </p>
               <Link
@@ -105,11 +104,11 @@ export default async function DeathcareLearnPage() {
             </section>
 
             {/* SECTION 5 — EXPLORE PROVINCE-SPECIFIC RESOURCES (secondary column) */}
-            <section className="rounded-2xl" style={{ background: '#F8F4EB', padding: '28px', maxWidth: '420px' }}>
+            <section style={{ background: 'rgba(235, 228, 218, 0.95)', borderRadius: '16px', padding: '32px', maxWidth: '440px', boxShadow: 'none' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 700, lineHeight: '1.25', color: '#130426', marginBottom: '12px' }}>
                 Explore province-specific resources
               </h2>
-              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#130426', marginBottom: '20px', maxWidth: '560px' }}>
+              <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#130426', marginBottom: '20px' }}>
                 Options for body disposition vary across provinces. For example, green burial and aquamation may not be available everywhere, and provincial laws may regulate burial locations or ashes scattering. Understanding these specifics ensures your preferences can be carried out.
               </p>
               <a
