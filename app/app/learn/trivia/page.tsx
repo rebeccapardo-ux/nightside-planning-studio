@@ -68,10 +68,10 @@ function DeckView({
       </Link>
 
       <div className="mt-8 mb-10">
-        <h1 className="text-6xl font-bold text-[#f8f4eb] mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">
+        <h1 className="ns-title-activity text-[#f8f4eb]">
           Deathcare Trivia
         </h1>
-        <p className="text-[#f8f4eb] leading-relaxed">
+        <p className="ns-lead-activity text-[#f8f4eb]" style={{ marginTop: '12px' }}>
           Pick any card from the deck.
         </p>
         {seenIds.size > 0 && unseenCount > 0 && (

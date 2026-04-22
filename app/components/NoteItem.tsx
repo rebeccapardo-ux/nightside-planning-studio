@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { updateNote, type Note } from '@/lib/notes'
+import VoiceNotePlayback from './VoiceNotePlayback'
 
 type Props = {
   note: Note
@@ -60,13 +61,14 @@ export default function NoteItem({ note, isMarked, onMark, onUpdate }: Props) {
     if (ok) onUpdate(note.id, trimmed)
   }
 
+  const isAudio = note.note_mode === 'audio'
+
   return (
     <div className="flex group py-2">
       {/*
         Margin mark — a narrow strip on the left.
         Invisible at rest, faintly visible on hover, orange when marked.
         Click anywhere on this strip to toggle working-set membership.
-        Not a button in the traditional sense — more like a margin annotation.
       */}
       <button
         type="button"
@@ -80,25 +82,29 @@ export default function NoteItem({ note, isMarked, onMark, onUpdate }: Props) {
         }`}
       />
 
-      {editing ? (
-        <textarea
-          ref={textareaRef}
-          value={text}
-          autoFocus
-          onChange={(e) => handleChange(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          rows={1}
-          className={`${textClass} bg-transparent resize-none outline-none overflow-hidden`}
-        />
-      ) : (
-        <p
-          onClick={() => setEditing(true)}
-          className={`${textClass} cursor-text whitespace-pre-wrap`}
-        >
-          {text}
-        </p>
-      )}
+      <div className="flex-1 min-w-0">
+        {isAudio ? (
+          <VoiceNotePlayback note={note} theme="dark" />
+        ) : editing ? (
+          <textarea
+            ref={textareaRef}
+            value={text}
+            autoFocus
+            onChange={(e) => handleChange(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            rows={1}
+            className={`${textClass} bg-transparent resize-none outline-none overflow-hidden`}
+          />
+        ) : (
+          <p
+            onClick={() => setEditing(true)}
+            className={`${textClass} cursor-text whitespace-pre-wrap`}
+          >
+            {text}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

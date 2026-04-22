@@ -25,10 +25,10 @@ export default function DomainsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
-      <h1 className="text-6xl font-bold text-[#f8f4eb] mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">
+      <h1 className="ns-title-activity text-[#f8f4eb]">
         Domains
       </h1>
-      <p className="text-[#f8f4eb] mb-12 leading-relaxed">
+      <p className="ns-lead-activity text-[#f8f4eb]" style={{ marginTop: '12px', marginBottom: '48px' }}>
         Areas of planning where your materials are organized and developed.
       </p>
 

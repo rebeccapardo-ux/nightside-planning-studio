@@ -106,7 +106,7 @@ export default function GlobalNav() {
             <img
               src={style.wordmark}
               alt="The Nightside"
-              className="h-7 w-auto"
+              className="h-[31px] w-auto"
             />
           </Link>
 
@@ -115,7 +115,7 @@ export default function GlobalNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${style.link}`}
+                className={`text-[15.7px] font-medium transition-colors ${style.link}`}
               >
                 {link.label}
               </Link>
@@ -124,7 +124,7 @@ export default function GlobalNav() {
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className={`text-sm font-medium transition-colors ${style.link}`}
+                className={`text-[15.7px] font-medium transition-colors ${style.link}`}
               >
                 Sign out
               </button>

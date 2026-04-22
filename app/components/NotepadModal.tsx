@@ -6,6 +6,8 @@ import {
   fetchNotes,
   type Note,
 } from '@/lib/notes'
+import VoiceNoteButton from './VoiceNoteButton'
+import VoiceNotePlayback from './VoiceNotePlayback'
 
 // ---------------------------------------------------------------------------
 // RecentNoteItem — lightweight read-only row for the modal overlay
@@ -16,13 +18,23 @@ function RecentNoteItem({ note }: { note: Note }) {
     ? new Date(note.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
     : null
 
-  const preview = note.content.length > 120
+  const isAudio = note.note_mode === 'audio'
+  const preview = isAudio
+    ? (note.transcript || note.content || '').slice(0, 120).trimEnd() + (note.transcript && note.transcript.length > 120 ? '…' : '')
+    : note.content.length > 120
     ? note.content.slice(0, 120).trimEnd() + '…'
     : note.content
 
   return (
     <div className="py-3 border-b border-[#f8f4eb]/[0.07] last:border-0">
-      <p className="text-sm leading-relaxed text-[#f8f4eb]/70 whitespace-pre-wrap">{preview}</p>
+      {isAudio && (
+        <p className="text-xs text-app-tertiary mb-1">🎤 Voice note</p>
+      )}
+      {preview ? (
+        <p className="text-sm leading-relaxed text-[#f8f4eb]/70 whitespace-pre-wrap">{preview}</p>
+      ) : isAudio && note.transcription_status === 'pending' ? (
+        <p className="text-sm text-[#f8f4eb]/40 italic">Transcribing…</p>
+      ) : null}
       {timestamp && (
         <p className="text-xs text-app-tertiary mt-1">{timestamp}</p>
       )}
@@ -135,7 +147,7 @@ export default function NotepadModal({ variant = 'floating', buttonStyle = 'lave
           placeholder="Write whatever is coming up…"
           className="h-44 w-full rounded-lg bg-[#f8f4eb] px-4 py-3 text-[#130426] placeholder:text-[#130426]/45 text-sm leading-relaxed resize-none outline-none"
         />
-        <div className="flex items-center justify-between mt-2 mb-5">
+        <div className="flex items-center justify-between mt-2 mb-3">
           <p className="text-sm text-[#f8f4eb]/70">Notes are saved to your materials</p>
           <button
             onClick={handleSave}
@@ -144,6 +156,18 @@ export default function NotepadModal({ variant = 'floating', buttonStyle = 'lave
           >
             {saving ? 'Saving…' : 'Save note'}
           </button>
+        </div>
+
+        {/* Voice note option */}
+        <div className="mb-5">
+          <VoiceNoteButton
+            saveMode={{ kind: 'freeform' }}
+            theme="dark"
+            onSaved={(note) => {
+              setNotes((prev) => [note, ...prev])
+              setIsOpen(false)
+            }}
+          />
         </div>
 
         {showDiscardWarning && (
@@ -226,7 +250,7 @@ export default function NotepadModal({ variant = 'floating', buttonStyle = 'lave
               className="w-full rounded-lg bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/40 px-3 py-2 text-sm leading-relaxed resize-none outline-none overflow-hidden"
             />
           </div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <p className="text-xs text-app-tertiary">Notes are saved to your materials</p>
             {composerText.trim() && (
               <button
@@ -237,6 +261,15 @@ export default function NotepadModal({ variant = 'floating', buttonStyle = 'lave
                 {saving ? 'Saving…' : 'Save →'}
               </button>
             )}
+          </div>
+          <div className="mt-2 mb-4">
+            <VoiceNoteButton
+              saveMode={{ kind: 'freeform' }}
+              theme="dark"
+              onSaved={(note) => {
+                setNotes((prev) => [note, ...prev])
+              }}
+            />
           </div>
 
         </div>

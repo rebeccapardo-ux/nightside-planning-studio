@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 type CardDef = {
   href: string
@@ -17,6 +20,14 @@ const WISHES_CARDS: CardDef[] = [
     bg: 'bg-[#BBABF4]',
     text: 'text-[#130426]',
     dimText: 'text-[#130426]/75',
+  },
+  {
+    href: '/app/capture/keepsake-inventory',
+    title: 'Meaningful Keepsakes',
+    description: "Document the objects you want to pass on and what others should understand about them.",
+    bg: 'bg-[#2C3777]',
+    text: 'text-[#f8f4eb]',
+    dimText: 'text-[#f8f4eb]/75',
   },
 ]
 
@@ -69,13 +80,65 @@ function CaptureCard({ href, title, description, bg, text, dimText }: CardDef) {
 }
 
 export default function CapturePage() {
+  useEffect(() => {
+    const elements = document.querySelectorAll('.ns-title-wrap')
+    if (!elements.length) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('ns-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.1 },
+    )
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
+    <>
+      <style>{`
+        .ns-title-wrap {
+          opacity: 0;
+          transform: translateY(12px);
+          transition: opacity 350ms ease-out, transform 350ms ease-out;
+        }
+        .ns-title-wrap.ns-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .ns-title-underline {
+          position: relative;
+          display: inline;
+        }
+        .ns-title-underline::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -5px;
+          width: 100%;
+          height: 4px;
+          background: #F29836;
+          border-radius: 999px;
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 350ms ease-out 100ms;
+        }
+        .ns-title-wrap.ns-visible .ns-title-underline::after {
+          transform: scaleX(1);
+        }
+      `}</style>
     <div className="min-h-screen bg-[#DB5835]">
       <div className="max-w-5xl mx-auto px-4 py-16">
-        <h1 className="text-[40px] font-bold leading-[1.2] text-white mb-4 underline decoration-white decoration-[3px] underline-offset-[8px]">
-          Capture
-        </h1>
-        <p className="text-body text-white mb-16 leading-relaxed">
+        <div className="ns-title-wrap">
+          <h1 className="ns-title-section text-white">
+            <span className="ns-title-underline">Capture</span>
+          </h1>
+        </div>
+        <p className="ns-lead-section text-white" style={{ marginTop: '20px', marginBottom: '64px' }}>
           Turn your reflections into documents you can keep, update, and share.
         </p>
 
@@ -108,5 +171,6 @@ export default function CapturePage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

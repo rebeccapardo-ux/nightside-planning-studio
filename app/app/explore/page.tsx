@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 type ExploreActivityCardProps = {
   title: string
@@ -16,12 +19,64 @@ const CARD_STYLES = [
 ]
 
 export default function ExplorePage() {
+  useEffect(() => {
+    const elements = document.querySelectorAll('.ns-title-wrap')
+    if (!elements.length) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('ns-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.1 },
+    )
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
+    <>
+      <style>{`
+        .ns-title-wrap {
+          opacity: 0;
+          transform: translateY(12px);
+          transition: opacity 350ms ease-out, transform 350ms ease-out;
+        }
+        .ns-title-wrap.ns-visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .ns-title-underline {
+          position: relative;
+          display: inline;
+        }
+        .ns-title-underline::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -5px;
+          width: 100%;
+          height: 4px;
+          background: #F29836;
+          border-radius: 999px;
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 350ms ease-out 100ms;
+        }
+        .ns-title-wrap.ns-visible .ns-title-underline::after {
+          transform: scaleX(1);
+        }
+      `}</style>
     <div className="min-h-screen bg-[#2C3777]">
       <div className="max-w-5xl mx-auto px-4 py-16">
         <div className="mb-12">
-          <h1 className="text-[40px] font-bold leading-[1.2] text-white mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">Explore</h1>
-          <p className="text-[15px] text-white/80 max-w-2xl leading-relaxed">
+          <div className="ns-title-wrap">
+            <h1 className="ns-title-section text-white"><span className="ns-title-underline">Explore</span></h1>
+          </div>
+          <p className="ns-lead-section text-white" style={{ marginTop: '20px' }}>
             Work through guided activities that help you test ideas, clarify what
             matters, and create material you can return to later.
           </p>
@@ -45,15 +100,16 @@ export default function ExplorePage() {
           />
 
           <ExploreActivityCard
-  title="Legacy Map"
-  description="Explore what you want to pass on, document, or make visible to others after your death."
-  href="/app/explore/legacy-map"
-  status="available"
-  index={2}
-/>
+            title="Legacy Map"
+            description="Explore what you want to pass on, document, or make visible to others after your death."
+            href="/app/explore/legacy-map"
+            status="available"
+            index={2}
+          />
         </div>
       </div>
     </div>
+    </>
   )
 }
 
@@ -68,16 +124,20 @@ function ExploreActivityCard({
   const isAvailable = status === 'available' && !!href
 
   const inner = (
-    <div className={`rounded-2xl px-8 py-8 h-full ${style.bg} ${isAvailable ? 'transition hover:opacity-90' : 'opacity-50'}`}>
-      <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{title}</h2>
-      <p className={`text-base leading-relaxed mb-6 ${style.text}`}>{description}</p>
-      <span className={`inline-block text-sm font-semibold rounded-full px-5 py-2 ${style.pill}`}>
-        {isAvailable ? 'Begin →' : 'Coming soon'}
-      </span>
+    <div className={`rounded-2xl px-8 py-8 h-full min-h-[280px] flex flex-col ${style.bg} ${isAvailable ? 'transition hover:opacity-90' : 'opacity-50'}`}>
+      <div className="flex-1">
+        <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{title}</h2>
+        <p className={`text-base leading-relaxed ${style.text}`}>{description}</p>
+      </div>
+      <div className="pt-8">
+        <span className={`inline-flex items-center text-sm font-semibold rounded-full px-5 py-2 ${style.pill}`}>
+          {isAvailable ? 'Begin →' : 'Coming soon'}
+        </span>
+      </div>
     </div>
   )
 
   if (!isAvailable) return inner
 
-  return <Link href={href!}>{inner}</Link>
+  return <Link href={href!} className="h-full block">{inner}</Link>
 }

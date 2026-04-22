@@ -14,8 +14,8 @@ export default function ScenarioNavigatorSourcesPage() {
       </Link>
 
       <div className="mt-8 mb-12">
-        <h1 className="text-6xl font-bold text-[#f8f4eb] mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">Sources</h1>
-        <p className="text-[#f8f4eb] leading-relaxed">
+        <h1 className="ns-title-internal text-[#f8f4eb]">Sources</h1>
+        <p className="ns-lead-internal text-[#f8f4eb]" style={{ marginTop: '12px' }}>
           References for the factual claims and statistics cited in the Scenario
           Navigator.
         </p>

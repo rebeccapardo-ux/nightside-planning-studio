@@ -1,10 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import DomainAssigner from './DomainAssigner'
 import DeleteEntryButton from './DeleteEntryButton'
+import SharedNoteCard from './notes/NoteCard'
+import VoiceNoteCard from './notes/VoiceNoteCard'
 import { deleteNote, updateNote, type Container } from '@/lib/notes'
 
 export type UnassignedNote = {
@@ -13,6 +15,11 @@ export type UnassignedNote = {
   timestamp: string | null
   originType: string | null
   promptContext: string | null
+  noteMode?: 'text' | 'audio' | null
+  audioUrl?: string | null
+  transcript?: string | null
+  durationSeconds?: number | null
+  transcriptionStatus?: 'pending' | 'complete' | 'failed' | null
 }
 
 export type UnassignedEntry = {
@@ -28,7 +35,7 @@ const MAX_VISIBLE = 5
 const STICKY_COLORS = ['#fffde7', '#f0ecff', '#fef3e8']
 
 // ---------------------------------------------------------------------------
-// StickyNoteCard — sticky note visual for unassigned notes
+// StickyNoteCard — sticky visual variant wrapping shared NoteCard behavior
 // ---------------------------------------------------------------------------
 
 function StickyNoteCard({
@@ -44,24 +51,11 @@ function StickyNoteCard({
   onDone: (linkedIds: string[]) => void
   onDeleted: () => void
 }) {
-  const [editing, setEditing] = useState(false)
-  const [editText, setEditText] = useState(note.content)
-  const [saving, setSaving] = useState(false)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const isAudio = note.noteMode === 'audio'
 
-  async function handleSave() {
-    const trimmed = editText.trim()
-    if (!trimmed || trimmed === note.content) { setEditing(false); return }
-    setSaving(true)
-    await updateNote(note.id, trimmed)
-    setSaving(false)
-    setEditing(false)
-    note.content = trimmed
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleSave() }
-    if (e.key === 'Escape') { setEditText(note.content); setEditing(false) }
+  async function handleSave(newContent: string) {
+    await updateNote(note.id, newContent)
+    note.content = newContent
   }
 
   async function handleDelete() {
@@ -69,21 +63,64 @@ function StickyNoteCard({
     onDeleted()
   }
 
-  const stickyBg = STICKY_COLORS[idx % STICKY_COLORS.length]
+  // Voice note card
+  if (isAudio) {
+    const noteObj = {
+      id: note.id,
+      content: note.content,
+      created_at: '',
+      updated_at: '',
+      note_mode: 'audio' as const,
+      audio_url: note.audioUrl ?? null,
+      transcript: note.transcript ?? null,
+      duration_seconds: note.durationSeconds ?? null,
+      transcription_status: note.transcriptionStatus ?? null,
+    }
+    return (
+      <VoiceNoteCard
+        note={noteObj}
+        promptContext={note.originType === 'prompt' ? note.promptContext : null}
+        actions={
+          <>
+            <button
+              onClick={handleDelete}
+              style={{ fontSize: '12px', fontWeight: 400, color: 'rgba(219,88,53,0.80)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              className="hover:opacity-75 transition-opacity"
+            >
+              Delete
+            </button>
+            <DomainAssigner
+              itemId={note.id}
+              itemType="note"
+              allDomains={allDomains}
+              initialLinkedDomainIds={[]}
+              label="Add to"
+              theme="light"
+              showCount={false}
+              onDone={onDone}
+            />
+          </>
+        }
+      />
+    )
+  }
 
+  // Text note card — sticky square
+  const stickyBg = STICKY_COLORS[idx % STICKY_COLORS.length]
   return (
-    <div
-      className="relative"
-      style={{
+    <SharedNoteCard
+      content={note.content}
+      promptContext={note.originType === 'prompt' ? note.promptContext : null}
+      onContentSave={handleSave}
+      stickyStyle={{
         backgroundColor: stickyBg,
         aspectRatio: '1 / 1',
         boxShadow: '3px 3px 8px rgba(19,4,38,0.25)',
-        padding: '22px 10px 8px',
+        padding: '20px 10px 8px',
+        borderRadius: '0',
       }}
-    >
-      {/* Tape — white/frosted */}
-      <div
-        style={{
+      embellishment={
+        <div style={{
           position: 'absolute',
           top: '-10px',
           left: '50%',
@@ -91,45 +128,17 @@ function StickyNoteCard({
           width: '32px',
           height: '18px',
           backgroundColor: 'rgba(255,255,255,0.7)',
-        }}
-      />
-
-      {editing ? (
-        <div className="mb-1">
-          <textarea
-            ref={textareaRef}
-            value={editText}
-            autoFocus
-            onChange={(e) => setEditText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={3}
-            className="w-full bg-[#130426]/[0.05] text-[11px] leading-snug text-[#130426]/85 resize-none outline-none"
-          />
-          <div className="flex gap-2 mt-1">
-            <button onClick={handleSave} disabled={saving} className="text-[10px] text-[#130426]/60 hover:text-[#130426] transition-colors">
-              {saving ? 'Saving…' : '⌘↵ Save'}
-            </button>
-            <button onClick={() => { setEditText(note.content); setEditing(false) }} className="text-[10px] text-[#130426]/55 hover:text-[#130426]/80 transition-colors">
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p className="text-[#130426]/85 text-[11px] leading-snug line-clamp-4 whitespace-pre-wrap">
-          {note.content}
-        </p>
-      )}
-
-      {note.originType === 'prompt' && note.promptContext && !editing && (
-        <p className="text-[9px] text-[#130426]/50 italic leading-snug mt-1.5 line-clamp-2">{note.promptContext}</p>
-      )}
-
-      {!editing && (
-        <div className="flex items-center gap-1.5 absolute bottom-2 left-2.5 right-2.5 pt-1.5 border-t border-[#130426]/[0.10]">
-          <button onClick={() => setEditing(true)} className="text-[10px] text-[#130426]/60 hover:text-[#130426] transition-colors">Open</button>
-          <span className="text-[#130426]/25 text-[10px]">·</span>
-          <button onClick={handleDelete} className="text-[10px] text-[#DB5835]/70 hover:text-[#DB5835] transition-colors">Delete</button>
-          <span className="text-[#130426]/25 text-[10px]">·</span>
+        }} />
+      }
+      actions={
+        <>
+          <button
+            onClick={handleDelete}
+            style={{ fontSize: '12px', fontWeight: 400, color: 'rgba(219,88,53,0.80)' }}
+            className="hover:opacity-75 transition-opacity"
+          >
+            Delete
+          </button>
           <DomainAssigner
             itemId={note.id}
             itemType="note"
@@ -140,9 +149,9 @@ function StickyNoteCard({
             showCount={false}
             onDone={onDone}
           />
-        </div>
-      )}
-    </div>
+        </>
+      }
+    />
   )
 }
 
@@ -259,11 +268,13 @@ export default function UnassignedSection({
   entries,
   allDomains,
   hasDomains,
+  showAll = false,
 }: {
   notes: UnassignedNote[]
   entries: UnassignedEntry[]
   allDomains: Container[]
   hasDomains: boolean
+  showAll?: boolean
 }) {
   const router = useRouter()
   const [hiddenNoteIds, setHiddenNoteIds] = useState<Set<string>>(new Set())
@@ -301,10 +312,12 @@ export default function UnassignedSection({
     ...visibleNotes.map((n) => ({ type: 'note' as const, id: n.id })),
   ]
   const totalCount = allItems.length
-  const showingCount = Math.min(totalCount, MAX_VISIBLE)
-  const hasMore = totalCount > MAX_VISIBLE
+  const showingCount = showAll ? totalCount : Math.min(totalCount, MAX_VISIBLE)
+  const hasMore = !showAll && totalCount > MAX_VISIBLE
 
-  const cappedIds = new Set(allItems.slice(0, MAX_VISIBLE).map((i) => i.id))
+  const cappedIds = showAll
+    ? new Set(allItems.map((i) => i.id))
+    : new Set(allItems.slice(0, MAX_VISIBLE).map((i) => i.id))
 
   const cappedDocuments = visibleDocuments.filter((e) => cappedIds.has(e.id))
   const cappedWorkingOutputs = visibleWorkingOutputs.filter((e) => cappedIds.has(e.id))
@@ -353,7 +366,7 @@ export default function UnassignedSection({
       {cappedNotes.length > 0 && (
         <div className="mb-6">
           <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-[#f8f4eb]/80 mb-3">Notes</h3>
-          <div className="grid grid-cols-3 gap-3 pt-3">
+          <div className="grid grid-cols-3 gap-3 pt-3 items-start">
             {cappedNotes.map((note, idx) => (
               <StickyNoteCard
                 key={note.id}

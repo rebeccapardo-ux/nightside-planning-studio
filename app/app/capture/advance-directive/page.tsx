@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Link from 'next/link'
+import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
+import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
+import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
+import type { Note } from '@/lib/notes'
 
 const RESOURCE_HUB_URL = 'https://thenightside.net/resources'
 
@@ -53,6 +57,10 @@ type PanelNote = {
 type ListItem =
   | { kind: 'entry'; data: PanelEntry }
   | { kind: 'note'; data: PanelNote }
+
+type TieredItem =
+  | { kind: 'note'; data: PanelNote }
+  | { kind: 'entry'; data: PanelEntry; insertBehavior: 'insertable' | 'selectable_then_insert' | 'view_only' }
 
 // ---------------------------------------------------------------------------
 // Main page
@@ -329,7 +337,7 @@ export default function AdvanceDirectivePage() {
         {/* LEFT: form */}
         <div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[#130426] mb-5">
+            <h1 className="ns-title-activity text-[#130426]">
               Advance Directive Supplement
             </h1>
 
@@ -360,6 +368,7 @@ export default function AdvanceDirectivePage() {
             <Field
               label="My perfect death would involve:"
               value={form.perfectDeath}
+              isActive={focusedField === 'perfectDeath'}
               onChange={(v) => updateField('perfectDeath', v)}
               onFocus={() => setFocusedField('perfectDeath')}
               onCursorChange={(pos) => handleCursorChange('perfectDeath', pos)}
@@ -368,6 +377,7 @@ export default function AdvanceDirectivePage() {
             <Field
               label="At the end of my life, this is what matters most:"
               value={form.whatMatters}
+              isActive={focusedField === 'whatMatters'}
               onChange={(v) => updateField('whatMatters', v)}
               onFocus={() => setFocusedField('whatMatters')}
               onCursorChange={(pos) => handleCursorChange('whatMatters', pos)}
@@ -376,6 +386,7 @@ export default function AdvanceDirectivePage() {
             <Field
               label="My most important personal values:"
               value={form.values}
+              isActive={focusedField === 'values'}
               onChange={(v) => updateField('values', v)}
               onFocus={() => setFocusedField('values')}
               onCursorChange={(pos) => handleCursorChange('values', pos)}
@@ -384,6 +395,7 @@ export default function AdvanceDirectivePage() {
             <Field
               label="What would make prolonging life unacceptable for me:"
               value={form.unacceptable}
+              isActive={focusedField === 'unacceptable'}
               onChange={(v) => updateField('unacceptable', v)}
               onFocus={() => setFocusedField('unacceptable')}
               onCursorChange={(pos) => handleCursorChange('unacceptable', pos)}
@@ -392,6 +404,7 @@ export default function AdvanceDirectivePage() {
             <Field
               label="When I think about death, this is what I worry about:"
               value={form.worries}
+              isActive={focusedField === 'worries'}
               onChange={(v) => updateField('worries', v)}
               onFocus={() => setFocusedField('worries')}
               onCursorChange={(pos) => handleCursorChange('worries', pos)}
@@ -400,6 +413,7 @@ export default function AdvanceDirectivePage() {
             <Field
               label="What I want my caregiver/care team to know:"
               value={form.caregiver}
+              isActive={focusedField === 'caregiver'}
               onChange={(v) => updateField('caregiver', v)}
               onFocus={() => setFocusedField('caregiver')}
               onCursorChange={(pos) => handleCursorChange('caregiver', pos)}
@@ -444,7 +458,6 @@ export default function AdvanceDirectivePage() {
           <MaterialsPanel
             focusedField={focusedField}
             onInsert={insertIntoFocused}
-            onInsertInto={insertIntoField}
           />
         </div>
 
@@ -461,12 +474,14 @@ export default function AdvanceDirectivePage() {
 function Field({
   label,
   value,
+  isActive,
   onChange,
   onFocus,
   onCursorChange,
 }: {
   label: string
   value: string
+  isActive: boolean
   onChange: (v: string) => void
   onFocus?: () => void
   onCursorChange?: (pos: number) => void
@@ -476,8 +491,22 @@ function Field({
   }
 
   return (
-    <div>
-      <label className="block text-[#130426]/80 text-sm mb-2">{label}</label>
+    <div
+      className="rounded-xl p-2 -mx-2 transition-all duration-200"
+      style={isActive ? {
+        border: '2px solid #BBABF4',
+        background: 'rgba(255,255,255,0.28)',
+        boxShadow: '0 0 0 2px rgba(187,171,244,0.18)',
+      } : {
+        border: '2px solid transparent',
+      }}
+    >
+      <label
+        className="block text-sm mb-2 transition-colors duration-200"
+        style={{ fontWeight: isActive ? 600 : 400, color: isActive ? '#130426' : 'rgba(19,4,38,0.65)' }}
+      >
+        {label}
+      </label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -492,17 +521,94 @@ function Field({
 }
 
 // ---------------------------------------------------------------------------
+// Field → supplementary doc question mapping
+// ---------------------------------------------------------------------------
+
+const FIELD_TO_QUESTION: Record<keyof FormState, SupplementaryDocQuestion> = {
+  perfectDeath: 'q1',
+  whatMatters: 'q2',
+  values: 'q3',
+  unacceptable: 'q4',
+  worries: 'q5',
+  caregiver: 'q6',
+}
+
+// ---------------------------------------------------------------------------
+// Tier computation
+// ---------------------------------------------------------------------------
+
+function panelNoteToNote(note: PanelNote): Note {
+  return {
+    id: note.id,
+    content: note.content,
+    created_at: '',
+    updated_at: '',
+    origin_type: (note.originType as Note['origin_type']) ?? undefined,
+    prompt_context: note.promptContext,
+  }
+}
+
+function computePanelTiers(
+  question: SupplementaryDocQuestion,
+  allNotes: PanelNote[],
+  outputs: OutputCard[],
+  healthcareEntries: PanelEntry[],
+  manualEntries: PanelEntry[],
+): { tier1: TieredItem[]; tier2: TieredItem[]; tier3: TieredItem[] } {
+  const tier1: TieredItem[] = []
+  const tier2: TieredItem[] = []
+  const tier3: TieredItem[] = []
+
+  for (const note of allNotes) {
+    const tier = getNoteSupDocTier(panelNoteToNote(note), question)
+    const item: TieredItem = { kind: 'note', data: note }
+    if (tier === 1) tier1.push(item)
+    else if (tier === 2) tier2.push(item)
+    else tier3.push(item)
+  }
+
+  for (const { representative } of outputs) {
+    const activityId = representative.activity ?? ''
+    const activityMeta = ACTIVITY_META_BY_ID[activityId]
+    const behavior = getWorkingOutputBehavior(activityId)
+    const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
+    const item: TieredItem = { kind: 'entry', data: representative, insertBehavior: behavior.insertionBehavior }
+
+    if (activityId === 'fears_ranking') {
+      // Fears surface by question relevance but always use mediation UI
+      if (relevance === 'primary') tier1.push(item)
+      else if (relevance === 'secondary') tier2.push(item)
+      else tier3.push(item)
+    } else if (!behavior.canAutoSurface) {
+      tier3.push(item)
+    } else {
+      if (relevance === 'primary') tier1.push(item)
+      else if (relevance === 'secondary') tier2.push(item)
+      else tier3.push(item)
+    }
+  }
+
+  const seenEntryIds = new Set<string>(outputs.map((o) => o.representative.id))
+  for (const entry of [...healthcareEntries, ...manualEntries]) {
+    if (seenEntryIds.has(entry.id)) continue
+    if (entry.document_type === 'advance_directive_supplement') continue
+    seenEntryIds.add(entry.id)
+    tier3.push({ kind: 'entry', data: entry, insertBehavior: 'selectable_then_insert' })
+  }
+
+  return { tier1, tier2, tier3 }
+}
+
+// ---------------------------------------------------------------------------
 // MaterialsPanel
 // ---------------------------------------------------------------------------
 
 function MaterialsPanel({
   focusedField,
   onInsert,
-  onInsertInto,
 }: {
   focusedField: keyof FormState | null
   onInsert: (text: string) => void
-  onInsertInto: (field: keyof FormState, text: string) => void
 }) {
   const [healthcareItems, setHealthcareItems] = useState<PanelEntry[]>([])
   const [outputItems, setOutputItems] = useState<PanelEntry[]>([])
@@ -589,6 +695,7 @@ function MaterialsPanel({
         setOutputItems(
           (outputs || []).map((e) => ({ ...e, group: 'output' as const })),
         )
+
       } catch (err) {
         console.error('PANEL FETCH ERROR:', err)
       } finally {
@@ -637,77 +744,116 @@ function MaterialsPanel({
     [healthcareNotes, manualNotes],
   )
 
-  // Flat list: entries + notes, deduped
-  const allListItems: ListItem[] = useMemo(() => {
-    const seenEntries = new Set<string>()
-    const seenNotes = new Set<string>()
-    const combined: ListItem[] = []
+  const allNotes = useMemo(() => {
+    const seen = new Set<string>()
+    const result: PanelNote[] = []
+    for (const n of [...healthcareNotes, ...manualNotes]) {
+      if (!seen.has(n.id)) { seen.add(n.id); result.push(n) }
+    }
+    return result
+  }, [healthcareNotes, manualNotes])
 
-    for (const item of [
-      ...healthcareItems,
-      ...deduplicatedOutputs.map((d) => d.representative),
-      ...manualItems,
-    ]) {
-      if (!seenEntries.has(item.id)) {
-        seenEntries.add(item.id)
-        combined.push({ kind: 'entry', data: item })
+  const activeQuestion = focusedField ? FIELD_TO_QUESTION[focusedField] : null
+
+  const [insertedByQuestion, setInsertedByQuestion] = useState<Map<SupplementaryDocQuestion, Set<string>>>(new Map())
+
+  function markInserted(itemId: string) {
+    if (!activeQuestion) return
+    setInsertedByQuestion((prev) => {
+      const next = new Map(prev)
+      const existing = next.get(activeQuestion) ?? new Set<string>()
+      next.set(activeQuestion, new Set([...existing, itemId]))
+      return next
+    })
+  }
+
+  const insertedIds: Set<string> = useMemo(() => {
+    if (!activeQuestion) return new Set()
+    return insertedByQuestion.get(activeQuestion) ?? new Set()
+  }, [activeQuestion, insertedByQuestion])
+
+  const tieredItems = useMemo(() => {
+    if (!activeQuestion) return null
+    return computePanelTiers(activeQuestion, allNotes, deduplicatedOutputs, healthcareItems, manualItems)
+  }, [activeQuestion, allNotes, deduplicatedOutputs, healthcareItems, manualItems])
+
+  // All materials combined for the default (no-question) browsing state
+  const defaultItems = useMemo<TieredItem[]>(() => {
+    const items: TieredItem[] = []
+    const seen = new Set<string>()
+    for (const note of allNotes) {
+      if (!seen.has(note.id)) { seen.add(note.id); items.push({ kind: 'note', data: note }) }
+    }
+    for (const { representative } of deduplicatedOutputs) {
+      if (!seen.has(representative.id)) {
+        seen.add(representative.id)
+        const behavior = getWorkingOutputBehavior(representative.activity ?? '')
+        items.push({ kind: 'entry', data: representative, insertBehavior: behavior.insertionBehavior })
       }
     }
-
-    for (const note of [...healthcareNotes, ...manualNotes]) {
-      if (!seenNotes.has(note.id)) {
-        seenNotes.add(note.id)
-        combined.push({ kind: 'note', data: note })
+    for (const entry of [...healthcareItems, ...manualItems]) {
+      if (!seen.has(entry.id) && entry.document_type !== 'advance_directive_supplement') {
+        seen.add(entry.id)
+        items.push({ kind: 'entry', data: entry, insertBehavior: 'selectable_then_insert' })
       }
     }
-
-    return combined
-  }, [healthcareItems, deduplicatedOutputs, manualItems, healthcareNotes, manualNotes])
-
-  const hasAny = allListItems.length > 0
+    return items
+  }, [allNotes, deduplicatedOutputs, healthcareItems, manualItems])
 
   return (
     <div className="rounded-2xl bg-[#2C3777] p-5">
-      {/* Panel header */}
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <h2 className="text-[15px] font-semibold uppercase tracking-widest text-white">
-          Relevant materials
+      <div className="flex items-start justify-between gap-3" style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 18, lineHeight: '24px', fontWeight: 700, color: '#F4F0FF', letterSpacing: '0.02em', margin: 0 }}>
+          Relevant Materials
         </h2>
         <button
           onClick={() => setShowBrowser(true)}
-          className="shrink-0 text-[11px] hover:text-white underline underline-offset-2 transition-colors"
-          style={{ color: 'rgba(255,255,255,0.75)' }}
+          className="shrink-0 transition-all"
+          style={{ fontSize: 14, lineHeight: '20px', fontWeight: 500, color: '#EDE7FF', textDecoration: 'underline', textUnderlineOffset: '3px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           + Add from My Materials
         </button>
       </div>
+
       {loadingPanel ? (
-        <p className="text-[12px] mt-4" style={{ color: 'rgba(255,255,255,0.55)' }}>Loading...</p>
-      ) : !hasAny ? (
-        <div className="mt-4">
-          <p className="text-[13px] text-white/60 leading-relaxed mb-4">
-            No related materials yet.
+        <p className="text-[12px] mt-2" style={{ color: 'rgba(255,255,255,0.55)' }}>Loading...</p>
+      ) : !activeQuestion ? (
+        // No field focused — default browsing state
+        <div>
+          <p style={{ fontSize: 14, lineHeight: '22px', fontWeight: 500, color: '#D9D1F3', marginBottom: 16 }}>
+            Select a question to see the most relevant materials for that section.
           </p>
-          <button
-            onClick={() => setShowBrowser(true)}
-            className="text-[12px] font-semibold rounded-lg px-3 py-1.5 transition-colors hover:opacity-90"
-            style={{ background: '#F4F1EA', color: '#1A0F2E' }}
-          >
-            Add from My Materials
-          </button>
+          {defaultItems.length > 0 && (
+            <>
+              <p style={{ fontSize: 15, lineHeight: '22px', fontWeight: 600, color: '#E6E0FA', marginTop: 8, marginBottom: 12 }}>
+                Available in this document
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {defaultItems.map((item) => (
+                  <TieredPanelItem
+                    key={item.data.id}
+                    item={item}
+                    tier={3}
+                    isInserted={false}
+                    onInsert={onInsert}
+                    onInserted={() => {}}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       ) : (
-        <div className="space-y-2 mt-4">
-          {allListItems.map((item) => (
-            <UnifiedPanelItem
-              key={item.data.id}
-              item={item}
-              focusedField={focusedField}
-              onInsert={onInsert}
-              onInsertInto={onInsertInto}
-            />
-          ))}
-        </div>
+        // Field focused — all cases handled inside TieredPanelSections
+        <TieredPanelSections
+          tier1={tieredItems?.tier1 ?? []}
+          tier2={tieredItems?.tier2 ?? []}
+          tier3={tieredItems?.tier3 ?? []}
+          onInsert={onInsert}
+          onBrowse={() => setShowBrowser(true)}
+          insertedIds={insertedIds}
+          onInserted={markInserted}
+        />
       )}
 
       {showBrowser && (
@@ -726,123 +872,392 @@ function MaterialsPanel({
 }
 
 // ---------------------------------------------------------------------------
-// UnifiedPanelItem — single card style for all materials in this panel
+// Panel card style constants
 // ---------------------------------------------------------------------------
 
-const FIELD_OPTIONS: { key: keyof FormState; short: string }[] = [
-  { key: 'perfectDeath',  short: 'My perfect death would involve' },
-  { key: 'whatMatters',   short: 'What matters most' },
-  { key: 'values',        short: 'My most important values' },
-  { key: 'unacceptable',  short: 'What would make life unacceptable' },
-  { key: 'worries',       short: 'What I worry about' },
-  { key: 'caregiver',     short: 'What my care team should know' },
-]
+const CARD_BASE: Record<1 | 2 | 3, React.CSSProperties> = {
+  1: { background: '#48539A', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.10)', borderRadius: 16, padding: 14 },
+  2: { background: '#43508E', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 14 },
+  3: { background: '#3F4B86', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16, padding: 14 },
+}
+const CARD_INSERTED: React.CSSProperties = { background: '#38457A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 14 }
 
-function getItemDisplayTitle(item: ListItem): string {
-  if (item.kind === 'note') {
-    const t = item.data.content.trim()
-    return t.length > 72 ? t.slice(0, 72).trimEnd() + '…' : t
-  }
-  return getDisplayTitle(item.data)
+function getCardStyle(tier: 1 | 2 | 3, isInserted: boolean): React.CSSProperties {
+  return isInserted ? CARD_INSERTED : CARD_BASE[tier]
 }
 
-function getItemTypeLabel(item: ListItem): string | null {
-  if (item.kind === 'note') return 'Note'
-  if (STRUCTURED_ACTIVITIES.includes(item.data.activity ?? '')) return 'Output'
-  return null
+const TITLE_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '21px', fontWeight: 600, color: '#FFFFFF' }
+const TYPE_LABEL_STYLE: React.CSSProperties = { fontSize: 12, lineHeight: '18px', fontWeight: 500, color: '#B9B1D8', flexShrink: 0 }
+const PRIMARY_ACTION_STYLE: React.CSSProperties = {
+  fontSize: 13, lineHeight: '18px', fontWeight: 600, color: '#130426',
+  background: '#C6B4FF', padding: '4px 10px', borderRadius: 999, border: 'none', cursor: 'pointer',
 }
+const SECONDARY_ACTION_STYLE: React.CSSProperties = { fontSize: 13, lineHeight: '18px', fontWeight: 500, color: '#EDE7FF', marginLeft: 10 }
+const INSERTED_LABEL_STYLE: React.CSSProperties = { fontSize: 13, lineHeight: '18px', fontWeight: 500, color: '#A9A3C5' }
 
-function getItemInsertText(item: ListItem): string {
-  if (item.kind === 'note') return item.data.content
-  return formatForInsert(item.data)
-}
+// ---------------------------------------------------------------------------
+// TieredPanelSections — renders Most Relevant / Also Related / Other Added Materials
+// ---------------------------------------------------------------------------
 
-function UnifiedPanelItem({
-  item,
-  focusedField,
-  onInsert,
-  onInsertInto,
+function PanelSection({
+  label,
+  isFirst,
+  children,
 }: {
-  item: ListItem
-  focusedField: keyof FormState | null
-  onInsert: (text: string) => void
-  onInsertInto: (field: keyof FormState, text: string) => void
+  label: string
+  isFirst?: boolean
+  children: React.ReactNode
 }) {
-  const [showChooser, setShowChooser] = useState(false)
+  return (
+    <div style={{ marginTop: isFirst ? 0 : 16 }}>
+      <p style={{ fontSize: 15, lineHeight: '22px', fontWeight: 600, color: '#E6E0FA', marginBottom: 12 }}>
+        {label}
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {children}
+      </div>
+    </div>
+  )
+}
 
-  const title = getItemDisplayTitle(item)
-  const typeLabel = getItemTypeLabel(item)
-  const insertText = getItemInsertText(item)
-  const viewHref = item.kind === 'entry' ? `/app/entries/${item.data.id}` : null
+function TieredPanelSections({
+  tier1,
+  tier2,
+  tier3,
+  onInsert,
+  onBrowse,
+  insertedIds,
+  onInserted,
+}: {
+  tier1: TieredItem[]
+  tier2: TieredItem[]
+  tier3: TieredItem[]
+  onInsert: (text: string) => void
+  onBrowse: () => void
+  insertedIds: Set<string>
+  onInserted: (itemId: string) => void
+}) {
+  // Remove inserted items from contextual sections (legacy map always shows)
+  const filteredTier1 = tier1.filter(
+    (item) => (item.kind === 'entry' && item.data.activity === 'legacy_map') || !insertedIds.has(item.data.id),
+  )
+  const filteredTier2 = tier2.filter(
+    (item) => (item.kind === 'entry' && item.data.activity === 'legacy_map') || !insertedIds.has(item.data.id),
+  )
 
-  function handleInsert() {
-    if (focusedField) {
-      onInsert(insertText)
-      setShowChooser(false)
-    } else {
-      setShowChooser((prev) => !prev)
-    }
+  const hasMatches = filteredTier1.length > 0 || filteredTier2.length > 0
+
+  return (
+    <div className="mt-2">
+      {hasMatches ? (
+        <>
+          {filteredTier1.length > 0 && (
+            <PanelSection label="Most relevant" isFirst>
+              {filteredTier1.map((item) => (
+                <TieredPanelItem
+                  key={item.data.id}
+                  item={item}
+                  tier={1}
+                  isInserted={insertedIds.has(item.data.id)}
+                  onInsert={onInsert}
+                  onInserted={onInserted}
+                />
+              ))}
+            </PanelSection>
+          )}
+
+          {filteredTier2.length > 0 && (
+            <PanelSection label="Also related" isFirst={filteredTier1.length === 0}>
+              {filteredTier2.map((item) => (
+                <TieredPanelItem
+                  key={item.data.id}
+                  item={item}
+                  tier={2}
+                  isInserted={insertedIds.has(item.data.id)}
+                  onInsert={onInsert}
+                  onInserted={onInserted}
+                />
+              ))}
+            </PanelSection>
+          )}
+        </>
+      ) : (
+        <p style={{ fontSize: 15, lineHeight: '22px', fontWeight: 500, color: '#D9D1F3', marginBottom: 12 }}>
+          No strong matches for this question.
+        </p>
+      )}
+
+      {tier3.length > 0 && (
+        <PanelSection label="Other materials you've added" isFirst={!hasMatches}>
+          {tier3.map((item) => (
+            <TieredPanelItem
+              key={item.data.id}
+              item={item}
+              tier={3}
+              isInserted={insertedIds.has(item.data.id)}
+              onInsert={onInsert}
+              onInserted={onInserted}
+            />
+          ))}
+        </PanelSection>
+      )}
+
+      <button
+        onClick={onBrowse}
+        className="hover:underline transition-all"
+        style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#EDE7FF', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 16 }}
+      >
+        + Add from My Materials
+      </button>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// TieredPanelItem — routes to the right card by material type
+// ---------------------------------------------------------------------------
+
+function TieredPanelItem({
+  item,
+  tier,
+  isInserted,
+  onInsert,
+  onInserted,
+}: {
+  item: TieredItem
+  tier: 1 | 2 | 3
+  isInserted: boolean
+  onInsert: (text: string) => void
+  onInserted: (itemId: string) => void
+}) {
+  function handleInsert(text: string) {
+    onInsert(text)
+    onInserted(item.data.id)
   }
 
-  function handleChoose(field: keyof FormState) {
-    onInsertInto(field, insertText)
-    setShowChooser(false)
+  if (item.kind === 'note') {
+    return <NotePanelCard note={item.data} tier={tier} isInserted={isInserted} onInsert={handleInsert} />
+  }
+
+  const entry = item.data
+  const activityId = entry.activity ?? ''
+
+  if (activityId === 'values_ranking') {
+    return <ValuesCard entry={entry} tier={tier} isInserted={isInserted} onInsert={handleInsert} />
+  }
+  if (activityId === 'fears_ranking') {
+    return (
+      <FearsCard
+        entry={entry}
+        tier={tier}
+        isInserted={isInserted}
+        onInsert={onInsert}
+        onInserted={() => onInserted(entry.id)}
+      />
+    )
+  }
+  if (activityId === 'legacy_map') return <LegacyMapCard entry={entry} tier={tier} />
+
+  return <GenericEntryCard entry={entry} tier={tier} isInserted={isInserted} insertBehavior={item.insertBehavior} onInsert={handleInsert} />
+}
+
+// ---------------------------------------------------------------------------
+// Card components
+// ---------------------------------------------------------------------------
+
+function NotePanelCard({
+  note,
+  tier,
+  isInserted,
+  onInsert,
+}: {
+  note: PanelNote
+  tier: 1 | 2 | 3
+  isInserted: boolean
+  onInsert: (text: string) => void
+}) {
+  const raw = note.content.trim()
+  const typeLabel = note.originType === 'prompt' ? 'Prompt response' : 'Note'
+
+  return (
+    <div style={getCardStyle(tier, isInserted)}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
+        <p style={{ ...TITLE_STYLE, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
+          {raw}
+        </p>
+        <span style={TYPE_LABEL_STYLE}>{typeLabel}</span>
+      </div>
+      {isInserted ? (
+        <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+      ) : (
+        <button onClick={() => onInsert(note.content)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">
+          Insert
+        </button>
+      )}
+    </div>
+  )
+}
+
+function ValuesCard({
+  entry,
+  tier,
+  isInserted,
+  onInsert,
+}: {
+  entry: PanelEntry
+  tier: 1 | 2 | 3
+  isInserted: boolean
+  onInsert: (text: string) => void
+}) {
+  const text = formatValuesForInsert(entry)
+
+  return (
+    <div style={getCardStyle(tier, isInserted)}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
+        <p style={TITLE_STYLE}>Values Ranking</p>
+        <span style={TYPE_LABEL_STYLE}>Output</span>
+      </div>
+      <div style={{ display: 'flex', gap: 18 }}>
+        {isInserted ? (
+          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+        ) : text ? (
+          <button onClick={() => onInsert(text)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">
+            Insert
+          </button>
+        ) : null}
+        <a href={`/app/entries/${entry.id}`} target="_blank" rel="noopener noreferrer" style={SECONDARY_ACTION_STYLE} className="hover:underline transition-all">
+          View
+        </a>
+      </div>
+    </div>
+  )
+}
+
+function FearsCard({
+  entry,
+  tier,
+  isInserted,
+  onInsert,
+  onInserted,
+}: {
+  entry: PanelEntry
+  tier: 1 | 2 | 3
+  isInserted: boolean
+  onInsert: (text: string) => void
+  onInserted: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  const c = entry.content as Record<string, unknown>
+  const essential: string[] = Array.isArray(c?.essential) ? (c.essential as string[]) : []
+  const important: string[] = Array.isArray(c?.important) ? (c.important as string[]) : []
+  const allFears = [...essential, ...important]
+
+  function handleFearInsert(fear: string) {
+    onInsert(fear)
+    onInserted()
+    setExpanded(false)
   }
 
   return (
-    <div className="rounded-lg px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-      <div className="flex items-baseline justify-between gap-2 mb-2">
-        <p className="text-[13px] font-medium text-white leading-snug">{title}</p>
-        {typeLabel && (
-          <span className="shrink-0 text-[10px]" style={{ color: 'rgba(255,255,255,0.65)' }}>{typeLabel}</span>
-        )}
+    <div style={getCardStyle(tier, isInserted)}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
+        <p style={TITLE_STYLE}>Fears Ranking</p>
+        <span style={TYPE_LABEL_STYLE}>Output</span>
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handleInsert}
-          className="text-[12px] font-semibold text-white hover:opacity-75 transition-opacity"
-        >
-          Insert
-        </button>
-        {viewHref && (
-          <a
-            href={viewHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[12px] hover:text-white transition-colors"
-            style={{ color: 'rgba(255,255,255,0.70)' }}
+      <div style={{ display: 'flex', gap: 18 }}>
+        {isInserted ? (
+          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+        ) : (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            style={PRIMARY_ACTION_STYLE}
+            className="hover:opacity-75 transition-opacity"
           >
-            View
-          </a>
+            {expanded ? 'Close' : 'Select & Insert'}
+          </button>
         )}
+        <a href={`/app/entries/${entry.id}`} target="_blank" rel="noopener noreferrer" style={SECONDARY_ACTION_STYLE} className="hover:underline transition-all">
+          View
+        </a>
       </div>
 
-      {showChooser && (
-        <div className="mt-3 pt-3 border-t border-white/10">
-          <p className="text-[11px] font-semibold text-white mb-2">
-            Where would you like to add this?
-          </p>
-          <div className="space-y-0.5">
-            {FIELD_OPTIONS.map(({ key, short }) => (
-              <button
-                key={key}
-                onClick={() => handleChoose(key)}
-                className="block w-full text-left text-[11px] px-2 py-1 rounded hover:bg-white/10 transition-colors"
-                style={{ color: 'rgba(255,255,255,0.75)' }}
-              >
-                {short}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setShowChooser(false)}
-            className="mt-2 text-[10px] hover:text-white transition-colors"
-            style={{ color: 'rgba(255,255,255,0.65)' }}
-          >
-            Cancel
-          </button>
+      {expanded && !isInserted && (
+        <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.10)' }}>
+          {allFears.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {allFears.map((fear, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <p style={{ fontSize: 16, lineHeight: '22px', color: 'rgba(255,255,255,0.82)' }}>{fear}</p>
+                  <button
+                    onClick={() => handleFearInsert(fear)}
+                    style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }}
+                    className="hover:brightness-95 transition-all"
+                  >
+                    Insert
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.50)' }}>No individual fears found.</p>
+          )}
         </div>
       )}
+    </div>
+  )
+}
+
+function LegacyMapCard({ entry, tier }: { entry: PanelEntry; tier: 1 | 2 | 3 }) {
+  return (
+    <div style={getCardStyle(tier, false)}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
+        <p style={TITLE_STYLE}>Legacy Map</p>
+        <span style={TYPE_LABEL_STYLE}>Output</span>
+      </div>
+      <a href={`/app/entries/${entry.id}`} target="_blank" rel="noopener noreferrer" style={SECONDARY_ACTION_STYLE} className="hover:underline transition-all">
+        View
+      </a>
+    </div>
+  )
+}
+
+function GenericEntryCard({
+  entry,
+  tier,
+  isInserted,
+  insertBehavior,
+  onInsert,
+}: {
+  entry: PanelEntry
+  tier: 1 | 2 | 3
+  isInserted: boolean
+  insertBehavior: 'insertable' | 'selectable_then_insert' | 'view_only'
+  onInsert: (text: string) => void
+}) {
+  const title = getDisplayTitle(entry)
+  const insertText = formatForInsert(entry)
+
+  const typeLabel = entry.document_type ? 'Document' : entry.activity ? 'Output' : 'Note'
+
+  return (
+    <div style={getCardStyle(tier, isInserted)}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
+        <p style={TITLE_STYLE}>{title}</p>
+        <span style={TYPE_LABEL_STYLE}>{typeLabel}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 18 }}>
+        {isInserted ? (
+          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+        ) : insertBehavior !== 'view_only' && insertText ? (
+          <button onClick={() => onInsert(insertText)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">
+            Insert
+          </button>
+        ) : null}
+        <a href={`/app/entries/${entry.id}`} target="_blank" rel="noopener noreferrer" style={SECONDARY_ACTION_STYLE} className="hover:underline transition-all">
+          View
+        </a>
+      </div>
     </div>
   )
 }
@@ -909,7 +1324,9 @@ function MaterialsBrowser({
     fetchAll()
   }, [])
 
-  const available = allEntries.filter((e) => !existingEntryIds.has(e.id))
+  const available = allEntries.filter(
+    (e) => !existingEntryIds.has(e.id) && e.document_type !== 'advance_directive_supplement',
+  )
   const availableNotes = allNotes.filter((n) => !existingNoteIds.has(n.id))
 
   return (
@@ -1027,6 +1444,17 @@ function getTypeLabel(entry: PanelEntry): string {
 }
 
 
+function formatValuesForInsert(entry: PanelEntry): string {
+  const obj = entry.content as Record<string, unknown>
+  if (!obj) return ''
+  const parts: string[] = []
+  if (Array.isArray(obj.essential) && obj.essential.length)
+    parts.push((obj.essential as string[]).join(', '))
+  if (Array.isArray(obj.important) && obj.important.length)
+    parts.push((obj.important as string[]).join(', '))
+  return parts.join('\n\n')
+}
+
 function formatForInsert(entry: PanelEntry): string {
   const c = entry.content
   if (!c) return ''
@@ -1035,14 +1463,7 @@ function formatForInsert(entry: PanelEntry): string {
   const obj = c as Record<string, unknown>
 
   if (entry.activity === 'values_ranking') {
-    const parts: string[] = []
-    if (Array.isArray(obj.essential) && obj.essential.length)
-      parts.push(`Most central to me: ${(obj.essential as string[]).join(', ')}`)
-    if (Array.isArray(obj.important) && obj.important.length)
-      parts.push(`Also important: ${(obj.important as string[]).join(', ')}`)
-    if (typeof obj.reflection === 'string' && obj.reflection.trim())
-      parts.push(obj.reflection.trim())
-    return parts.join('\n\n')
+    return formatValuesForInsert(entry)
   }
 
   if (entry.activity === 'fears_ranking') {

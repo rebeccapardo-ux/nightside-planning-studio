@@ -111,10 +111,10 @@ function SelectionView({
       </Link>
 
       <div className="mt-8 mb-12">
-        <h1 className="text-6xl font-bold text-[#f8f4eb] mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">
+        <h1 className="ns-title-activity text-[#f8f4eb]">
           Scenario Navigator
         </h1>
-        <p className="text-[#f8f4eb] max-w-2xl leading-relaxed">
+        <p className="ns-lead-activity text-[#f8f4eb]" style={{ marginTop: '12px' }}>
           Work through realistic situations to see how your values and
           preferences might apply in practice. Explore any path — nothing locks
           you in.
@@ -169,7 +169,7 @@ function ScenarioView({
         <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-3 font-semibold">
           Scenario
         </p>
-        <h1 className="text-5xl font-bold text-[#f8f4eb] mb-6">{scenario.title}</h1>
+        <h1 className="ns-title-internal text-[#f8f4eb]" style={{ marginBottom: '24px' }}>{scenario.title}</h1>
         <p className="text-[#f8f4eb] leading-relaxed text-base">{scenario.fullOverview}</p>
       </div>
 
@@ -237,7 +237,7 @@ function OutcomeView({
         <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-3 font-semibold">
           You chose
         </p>
-        <h1 className="text-4xl font-bold text-[#f8f4eb]">{choice.label}</h1>
+        <h1 className="ns-title-internal text-[#f8f4eb]">{choice.label}</h1>
       </div>
 
       {/* Two-column layout for main content */}

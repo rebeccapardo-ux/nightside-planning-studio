@@ -118,65 +118,94 @@ export default async function ExportPage({ params }: ExportPageProps) {
             </p>
           </div>
 
-          {/* Value groups — structured list, not heavy cards */}
+          {/* Value groups — card layout matching snapshot structure */}
           <div className="space-y-10">
             {hasEssential && (
               <section>
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-4">
+                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-500 mb-5">
                   Most central to me
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {ranking.essential.map((item) => (
-                    <span
+                    <div
                       key={item}
-                      className="bg-gray-100 text-gray-700 rounded px-3 py-1.5 text-sm leading-snug"
+                      style={{
+                        width: '140px',
+                        minHeight: '88px',
+                        padding: '14px',
+                        background: '#ffffff',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        color: '#1f2937',
+                      }}
                     >
                       {item}
-                    </span>
+                    </div>
                   ))}
                 </div>
               </section>
             )}
 
             {hasImportant && (
-              <section>
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-4">
+              <section className="pt-8 border-t border-gray-100">
+                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-500 mb-5">
                   Also important
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {ranking.important.map((item) => (
-                    <span
+                    <div
                       key={item}
-                      className="bg-gray-50 text-gray-500 rounded px-3 py-1.5 text-sm leading-snug"
+                      style={{
+                        width: '140px',
+                        minHeight: '88px',
+                        padding: '14px',
+                        background: '#ffffff',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        color: '#374151',
+                      }}
                     >
                       {item}
-                    </span>
+                    </div>
                   ))}
                 </div>
               </section>
             )}
 
             {hasLessCentral && (
-              <section>
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-300 mb-4">
+              <section className="pt-8 border-t border-gray-100">
+                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-5">
                   Less central right now
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {ranking.less_central.map((item) => (
-                    <span
+                    <div
                       key={item}
-                      className="text-gray-400 rounded px-3 py-1.5 text-sm leading-snug"
-                      style={{ background: 'rgba(0,0,0,0.04)' }}
+                      style={{
+                        width: '140px',
+                        minHeight: '88px',
+                        padding: '14px',
+                        background: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        color: '#6b7280',
+                      }}
                     >
                       {item}
-                    </span>
+                    </div>
                   ))}
                 </div>
               </section>
             )}
 
             {hasReflection && (
-              <section className="border-t border-gray-100 pt-8">
+              <section className="pt-8 border-t border-gray-100">
                 <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-4">
                   A note I wrote
                 </h2>

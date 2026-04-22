@@ -22,6 +22,9 @@ import {
   type EntryRef,
 } from '@/lib/notes'
 import DomainAssigner from '@/app/components/DomainAssigner'
+import FragmentField from '@/app/components/FragmentField'
+import SharedNoteCard from '@/app/components/notes/NoteCard'
+import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -327,10 +330,17 @@ function getDomainStructure(domainTitle: string): DomainStructure | null {
 // Section palette
 // ---------------------------------------------------------------------------
 
+const CONTAINER_STYLE: React.CSSProperties = {
+  background: '#F1ECE4',
+  border: '1px solid rgba(19,4,38,0.06)',
+  borderRadius: '28px',
+  padding: '32px',
+}
+
 const SECTION_COLORS = {
-  notes:   { bgStyle: { background: 'rgba(44, 55, 119, 0.07)'  } as React.CSSProperties, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
-  docs:    { bgStyle: { background: 'rgba(242, 152, 54, 0.08)'  } as React.CSSProperties, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
-  outputs: { bgStyle: { background: 'rgba(187, 171, 244, 0.20)' } as React.CSSProperties, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
+  notes:   { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
+  docs:    { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
+  outputs: { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
 }
 
 // ---------------------------------------------------------------------------
@@ -470,6 +480,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   const workingOutputEntries = entries.filter((e) => e.activity)
   const c = SECTION_COLORS
   const domainStructure = domain ? getDomainStructure(domain.title) : null
+  const isHealthcare = !!(domain && domain.title.toLowerCase().includes('healthcare'))
 
   // Header: status counts across readiness items
   const { headerStatusLine } = (() => {
@@ -486,6 +497,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
   return (
     <div className="min-h-screen">
+      <style>{`.domain-note-input::placeholder { color: rgba(19,4,38,0.34); font-size: 18px; font-weight: 400; line-height: 1.4; }`}</style>
 
       {/* ── Header section — dark gradient ── */}
       <div style={{ background: 'radial-gradient(circle at 20% 20%, #1a0535 0%, #130426 70%)' }}>
@@ -494,11 +506,21 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             ← My Materials
           </Link>
           <div className="mt-5">
-            <h1 className="text-[40px] font-bold leading-[1.2] text-white underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">
+            <h1 className="ns-title-activity text-white">
               {domain?.title ?? '…'}
             </h1>
           </div>
         </div>
+
+        {/* ── Fragment Field — Healthcare only ── */}
+        {isHealthcare && !loading && (
+          <div style={{ marginTop: '32px', marginBottom: '40px' }}>
+            <FragmentField
+              domainId={domainId}
+              domainTitle={domain?.title ?? ''}
+            />
+          </div>
+        )}
       </div>
 
       {/* ── Planning Status section — light lavender ── */}
@@ -516,25 +538,25 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       )}
 
       {/* ── Materials section — cream ── */}
-      <div style={{ background: '#f8f4eb' }}>
-        <div className="max-w-6xl mx-auto px-6 py-12">
+      <div style={{ background: '#f8f4eb', marginTop: '64px' }}>
+        <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: '72px', paddingBottom: '88px' }}>
 
           {!loading && (
-            <div className="mb-8">
-              <h2 className="text-[22px] font-semibold tracking-[0.01em] text-[#130426]">
+            <div style={{ marginBottom: '40px' }}>
+              <h2 style={{ fontSize: '28px', fontWeight: 600, lineHeight: '1.15', color: '#130426', margin: 0 }}>
                 Materials in this area
               </h2>
-              <p className="text-[14px] text-[#130426]/55 mt-1">
-                Notes, documents, and outputs you can use and update as you work through this area.
+              <p style={{ fontSize: '18px', fontWeight: 400, lineHeight: '1.45', color: 'rgba(19,4,38,0.58)', marginTop: '12px', marginBottom: 0 }}>
+                Notes, documents, and outputs created from your work in this area.
               </p>
             </div>
           )}
 
         {/* Spatial canvas grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] items-start" style={{ columnGap: '32px', rowGap: '28px' }}>
 
           {/* ── Notes (left, wide) ── */}
-          <div className="rounded-2xl p-6" style={c.notes.bgStyle}>
+          <div style={c.notes.bgStyle}>
             <SectionHeader
               label="Notes"
               colors={c.notes}
@@ -565,10 +587,21 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               onKeyDown={handleKeyDown}
               placeholder="Write a note…"
               rows={2}
-              className="w-full rounded-lg bg-white/60 text-[#130426] placeholder:text-[#130426]/40 px-4 py-3 text-sm leading-relaxed resize-none outline-none overflow-hidden focus:bg-white/80 transition-colors"
+              className="w-full text-[#130426] resize-none outline-none overflow-hidden transition-colors domain-note-input"
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid rgba(19,4,38,0.08)',
+                borderRadius: '16px',
+                minHeight: '84px',
+                padding: '20px 24px',
+                fontSize: '18px',
+                fontWeight: 400,
+                lineHeight: '1.4',
+                color: '#130426',
+              }}
             />
             <div className="flex items-center justify-between mt-2 mb-5">
-              <p className={`text-xs ${c.notes.faint}`}>Notes are saved to your materials</p>
+              <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.35', color: 'rgba(19,4,38,0.50)' }}>Notes are saved to your materials</p>
               {composerText.trim() && (
                 <button
                   onClick={handleSave}
@@ -585,7 +618,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             ) : notes.length === 0 ? (
               <p className={`text-xs ${c.notes.faint}`}>No notes yet. Write one above.</p>
             ) : (
-              <div className="grid grid-cols-4 gap-3 mt-1">
+              <div className="grid grid-cols-4 gap-3 mt-1 items-start">
                 {notes.map((note, idx) => (
                   <NoteCard
                     key={note.id}
@@ -618,7 +651,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           <div className="flex flex-col gap-6">
 
             {/* ── Documents ── */}
-            <div className="rounded-2xl p-6" style={c.docs.bgStyle}>
+            <div style={c.docs.bgStyle}>
               <SectionHeader
                 label="Documents"
                 colors={c.docs}
@@ -646,7 +679,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               ) : documentEntries.length === 0 ? (
                 <p className={`text-xs ${c.docs.faint}`}>No documents yet.</p>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col" style={{ gap: '16px' }}>
                   {documentEntries.map((entry) => (
                     <EntryCard
                       key={entry.id}
@@ -673,7 +706,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             </div>
 
             {/* ── Working Outputs ── */}
-            <div className="rounded-2xl p-6" style={c.outputs.bgStyle}>
+            <div style={c.outputs.bgStyle}>
               <SectionHeader
                 label="Working Outputs"
                 colors={c.outputs}
@@ -704,7 +737,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
                   <p className={`text-xs ${c.outputs.faint} mt-1`}>Complete an activity to create something here.</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col" style={{ gap: '16px' }}>
                   {workingOutputEntries.map((entry) => (
                     <EntryCard
                       key={entry.id}
@@ -822,7 +855,7 @@ function PlanningStatusSection({
     <div>
       {/* Section title + status strip */}
       <div className="mb-10 pb-7" style={{ borderBottom: '1px solid rgba(19,4,38,0.10)' }}>
-        <h2 className="text-[28px] font-bold text-[#130426] mb-2.5">
+        <h2 style={{ fontSize: '32px', fontWeight: 600, lineHeight: '1.15', color: '#130426', marginBottom: '10px' }}>
           Planning Status
         </h2>
         <p className="text-[14px]" style={{ color: 'rgba(19,4,38,0.60)' }}>
@@ -1060,11 +1093,12 @@ function SectionHeader({
   onToggle: () => void
 }) {
   return (
-    <div className="flex items-center justify-between mb-5">
-      <h2 className={`text-[20px] font-semibold tracking-[0.02em] ${colors.text}`}>{label}</h2>
+    <div className="flex items-center justify-between" style={{ marginBottom: '16px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: 600, lineHeight: '1.2', color: '#130426' }}>{label}</h2>
       <button
         onClick={onToggle}
-        className={`text-xs ${colors.muted} hover:${colors.text} transition-colors`}
+        style={{ fontSize: '14px', fontWeight: 500, lineHeight: '1.2', color: '#2C3777' }}
+        className="transition-colors hover:opacity-75"
       >
         {isOpen ? 'Close' : '+ Add existing'}
       </button>
@@ -1155,7 +1189,7 @@ function AddExistingPanel({
 }
 
 // ---------------------------------------------------------------------------
-// NoteCard
+// NoteCard — sticky visual variant wrapping shared NoteCard behavior
 // ---------------------------------------------------------------------------
 
 const STICKY_COLORS = ['#f5f2e3', '#eae7f5', '#f3ede8']
@@ -1177,60 +1211,63 @@ function NoteCard({
   onToggled: (domainId: string, isNowLinked: boolean) => void
   onUpdated?: (newContent: string) => void
 }) {
-  const hasPrompt = note.origin_type === 'prompt' && note.prompt_context
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(note.content)
-  const editRef = useRef<HTMLTextAreaElement>(null)
-
-  useEffect(() => {
-    if (editing && editRef.current) {
-      const el = editRef.current
-      el.focus()
-      el.style.height = 'auto'
-      el.style.height = `${el.scrollHeight}px`
-      el.selectionStart = el.selectionEnd = el.value.length
-    }
-  }, [editing])
-
-  async function handleSaveEdit() {
-    const trimmed = draft.trim()
-    setEditing(false)
-    if (!trimmed || trimmed === note.content.trim()) return
-    await updateNote(note.id, trimmed)
-    onUpdated?.(trimmed)
-  }
-
-  function handleEditKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSaveEdit() }
-    if (e.key === 'Escape') { setDraft(note.content); setEditing(false) }
-  }
-
-  function handleEditInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setDraft(e.target.value)
-    const el = e.target
-    el.style.height = 'auto'
-    el.style.height = `${el.scrollHeight}px`
-  }
-
   async function handleRemove() {
     await removeNoteFromContainer(note.id, domainId)
     onToggled(domainId, false)
   }
 
+  async function handleSave(newContent: string) {
+    await updateNote(note.id, newContent)
+    onUpdated?.(newContent)
+  }
+
   const stickyBg = STICKY_COLORS[idx % STICKY_COLORS.length]
 
+  // Voice note card
+  if (note.note_mode === 'audio') {
+    return (
+      <VoiceNoteCard
+        note={note}
+        promptContext={note.origin_type === 'prompt' ? note.prompt_context ?? null : null}
+        actions={
+          <>
+            <button
+              onClick={handleRemove}
+              style={{ fontSize: '12px', fontWeight: 400, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              className="hover:opacity-75 transition-opacity"
+            >
+              Remove
+            </button>
+            <DomainAssigner
+              itemId={note.id}
+              itemType="note"
+              allDomains={allDomains}
+              initialLinkedDomainIds={linkedDomainIds}
+              label="Add to"
+              showCount={false}
+              theme="light"
+              onToggled={onToggled}
+            />
+          </>
+        }
+      />
+    )
+  }
+
   return (
-    <div
-      className="relative"
-      style={{
+    <SharedNoteCard
+      content={note.content}
+      promptContext={note.origin_type === 'prompt' ? note.prompt_context : null}
+      onContentSave={handleSave}
+      stickyStyle={{
         backgroundColor: stickyBg,
         aspectRatio: '1 / 1',
         boxShadow: '3px 3px 8px rgba(19,4,38,0.25)',
-        padding: '24px 12px 10px',
+        padding: '20px 12px 10px',
+        borderRadius: '0',
       }}
-    >
-      <div
-        style={{
+      embellishment={
+        <div style={{
           position: 'absolute',
           top: '-10px',
           left: '50%',
@@ -1238,61 +1275,30 @@ function NoteCard({
           width: '36px',
           height: '20px',
           backgroundColor: 'rgba(255,255,255,0.7)',
-        }}
-      />
-
-      {editing ? (
-        <textarea
-          ref={editRef}
-          value={draft}
-          onChange={handleEditInput}
-          onBlur={handleSaveEdit}
-          onKeyDown={handleEditKeyDown}
-          rows={1}
-          className="w-full bg-transparent text-[#130426]/85 leading-snug text-[11px] resize-none outline-none overflow-hidden"
-        />
-      ) : (
-        <p
-          className="text-[#130426]/85 leading-snug text-[11px] cursor-text whitespace-pre-wrap line-clamp-4"
-          onClick={() => setEditing(true)}
-        >
-          {note.content}
-        </p>
-      )}
-
-      {hasPrompt && !editing && (
-        <p className="text-[9px] text-[#130426]/50 italic leading-snug mt-1.5 line-clamp-2">
-          {note.prompt_context}
-        </p>
-      )}
-
-      <div className="flex items-center gap-2 absolute bottom-2 left-3 right-3 pt-1.5 border-t border-[#130426]/[0.10]">
-        {!editing && (
+        }} />
+      }
+      actions={
+        <>
           <button
-            onClick={() => setEditing(true)}
-            className="text-[10px] text-[#130426]/60 hover:text-[#130426] transition-colors"
+            onClick={handleRemove}
+            style={{ fontSize: '12px', fontWeight: 400, color: '#2C3777' }}
+            className="hover:opacity-75 transition-opacity"
           >
-            Open
+            Remove
           </button>
-        )}
-        <button
-          onClick={handleRemove}
-          className="text-[10px] text-[#130426]/60 hover:text-[#130426] transition-colors"
-        >
-          Remove
-        </button>
-        <DomainAssigner
-          itemId={note.id}
-          itemType="note"
-          allDomains={allDomains}
-          initialLinkedDomainIds={linkedDomainIds}
-          label="Add to"
-          showCount={false}
-          theme="light"
-          onToggled={onToggled}
-        />
-      </div>
-    </div>
+          <DomainAssigner
+            itemId={note.id}
+            itemType="note"
+            allDomains={allDomains}
+            initialLinkedDomainIds={linkedDomainIds}
+            label="Add to"
+            showCount={false}
+            theme="light"
+            onToggled={onToggled}
+          />
+        </>
+      }
+    />
   )
 }
 
@@ -1325,57 +1331,62 @@ function EntryCard({
 
   if (variant === 'output') {
     return (
-      <div className="bg-[#130426] rounded-xl px-5 py-4 border border-[#130426]/80">
-        <Link href={href} className="block mb-3">
-          <p className="text-sm font-semibold text-[#f8f4eb] leading-snug hover:text-[#BBABF4] transition-colors">
-            {label}
-          </p>
-        </Link>
-        <div className="flex items-center gap-2.5 pt-2.5 border-t border-[#f8f4eb]/[0.18]">
-          <Link href={href} className="text-[11px] text-[#f8f4eb]/75 hover:text-[#f8f4eb] transition-colors">
-            Open
-          </Link>
-          {entry.activity === 'values_ranking' && (
-            <>
-              <span className="text-[#f8f4eb]/25 text-[11px]">·</span>
-              <Link href={`/app/entries/${entry.id}/export`} className="text-[11px] text-[#f8f4eb]/75 hover:text-[#f8f4eb] transition-colors">
-                Export
+      <div style={{ background: '#F4EEFF', border: '1px solid rgba(44,55,119,0.10)', borderRadius: '18px', boxShadow: '0 4px 14px rgba(19,4,38,0.05)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: '4px', flexShrink: 0, background: '#BBABF4', borderRadius: '999px' }} />
+          <div style={{ flex: 1, padding: '24px 26px' }}>
+            <Link href={href} className="block" style={{ marginBottom: '12px' }}>
+              <p style={{ fontSize: '16px', fontWeight: 600, color: '#130426', lineHeight: '1.3' }} className="hover:opacity-70 transition-opacity">
+                {label}
+              </p>
+            </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(44,55,119,0.08)' }}>
+              <Link href={href} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">
+                Open
               </Link>
-            </>
-          )}
-          <button onClick={handleRemove} className="text-[11px] text-[#f8f4eb]/75 hover:text-[#f8f4eb] transition-colors">
-            Remove
-          </button>
-          <DomainAssigner
-            itemId={entry.id}
-            itemType="entry"
-            allDomains={allDomains}
-            initialLinkedDomainIds={linkedDomainIds}
-            label="Add to"
-            showCount={false}
-            theme="dark"
-            onToggled={onToggled}
-          />
+              {entry.activity === 'values_ranking' && (
+                <>
+                  <span style={{ color: 'rgba(19,4,38,0.25)', fontSize: '12px' }}>·</span>
+                  <Link href={`/app/entries/${entry.id}/export`} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">
+                    Export
+                  </Link>
+                </>
+              )}
+              <button onClick={handleRemove} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">
+                Remove
+              </button>
+              <DomainAssigner
+                itemId={entry.id}
+                itemType="entry"
+                allDomains={allDomains}
+                initialLinkedDomainIds={linkedDomainIds}
+                label="Add to"
+                showCount={false}
+                theme="light"
+                onToggled={onToggled}
+              />
+            </div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg border border-[#130426]/[0.12] shadow-sm overflow-hidden">
-      <div className="flex">
-        <div className="w-1 shrink-0 bg-[#2C3777]" />
-        <div className="flex-1 px-4 py-4">
-          <Link href={href} className="block mb-3">
-            <p className="text-sm font-semibold text-[#130426] leading-snug hover:text-[#130426]/70 transition-colors">
+    <div style={{ background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.08)', borderRadius: '18px', boxShadow: '0 4px 14px rgba(19,4,38,0.06)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex' }}>
+        <div style={{ width: '4px', flexShrink: 0, background: '#2C3777', borderRadius: '999px' }} />
+        <div style={{ flex: 1, padding: '24px 26px' }}>
+          <Link href={href} className="block" style={{ marginBottom: '12px' }}>
+            <p style={{ fontSize: '16px', fontWeight: 600, color: '#130426', lineHeight: '1.3' }} className="hover:opacity-70 transition-opacity">
               {label}
             </p>
           </Link>
-          <div className="flex items-center gap-2.5 pt-2.5 border-t border-[#130426]/[0.07]">
-            <Link href={href} className="text-[11px] text-light-secondary hover:text-[#130426] transition-colors">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(19,4,38,0.07)' }}>
+            <Link href={href} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">
               Open
             </Link>
-            <button onClick={handleRemove} className="text-[11px] text-light-secondary hover:text-[#130426] transition-colors">
+            <button onClick={handleRemove} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">
               Remove
             </button>
             <DomainAssigner

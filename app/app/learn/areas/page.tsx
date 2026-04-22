@@ -20,8 +20,8 @@ export default function LearnAreasPage() {
       </Link>
 
       <div className="mt-8 mb-12">
-        <h1 className="text-[40px] font-bold leading-[1.2] text-white mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">Areas of planning</h1>
-        <p className="text-[15px] text-app-body leading-relaxed">
+        <h1 className="ns-title-activity text-white">Areas of planning</h1>
+        <p className="ns-lead-activity text-white" style={{ marginTop: '12px' }}>
           Explore key areas of end-of-life planning and understand your options.
         </p>
       </div>

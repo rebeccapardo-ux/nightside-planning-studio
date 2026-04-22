@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import UnassignedSection from '@/app/components/UnassignedSection'
 import DomainStateCard from '@/app/components/DomainStateCard'
+import SectionTitleReveal from '@/app/components/SectionTitleReveal'
 import type { Container } from '@/lib/notes'
 import type { UnassignedNote, UnassignedEntry } from '@/app/components/UnassignedSection'
 
@@ -45,7 +46,7 @@ export default async function MaterialsPage() {
   // All user notes (for previews + unassigned detection)
   const { data: allNotes } = await supabase
     .from('notes')
-    .select('id, content, created_at, origin_type, prompt_context')
+    .select('id, content, created_at, origin_type, prompt_context, note_mode, audio_url, transcript, duration_seconds, transcription_status')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -123,6 +124,11 @@ export default async function MaterialsPage() {
       timestamp: formatDate(n.created_at),
       originType: n.origin_type ?? null,
       promptContext: n.prompt_context ?? null,
+      noteMode: (n.note_mode as 'text' | 'audio' | null) ?? null,
+      audioUrl: n.audio_url ?? null,
+      transcript: n.transcript ?? null,
+      durationSeconds: n.duration_seconds ?? null,
+      transcriptionStatus: (n.transcription_status as 'pending' | 'complete' | 'failed' | null) ?? null,
     }))
 
   const seenEntryIds = new Set<string>()
@@ -152,8 +158,8 @@ export default async function MaterialsPage() {
     >
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="mb-20">
-          <h1 className="text-h1 text-white mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">My Materials</h1>
-          <p className="text-body text-white max-w-xl">
+          <SectionTitleReveal title="My Materials" color="#FFFFFF" />
+          <p className="ns-lead-section text-white" style={{ marginTop: '20px', maxWidth: '560px' }}>
             All your materials in one place, for you to review, refine, and export.
           </p>
         </div>
@@ -164,7 +170,7 @@ export default async function MaterialsPage() {
           <div>
             {hasDomains && (
               <section>
-                <h2 className="text-h3 text-white mb-8 underline decoration-[#f29836] decoration-[3px] underline-offset-[6px]" style={{ fontSize: '28px', marginTop: '48px' }}>
+                <h2 className="text-h3 text-white mb-8" style={{ fontSize: '28px', marginTop: '48px' }}>
                   Organized by area
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" style={{ gridAutoRows: '1fr' }}>
@@ -221,19 +227,21 @@ function getContinueHref(entry: EntryRow): string | null {
   if (entry.activity === 'values_ranking') return `/app/entries/${entry.id}`
   if (entry.activity === 'fears_ranking') return `/app/entries/${entry.id}`
   if (entry.activity === 'legacy_map') return `/app/entries/${entry.id}`
+  if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
   return null
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.title?.trim()) return entry.title.trim()
   if (entry.document_type === 'advance_directive_supplement') return 'Advance Directive Supplement'
   if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
+  if (entry.document_type === 'keepsake_inventory') return 'Meaningful Keepsakes'
   if (entry.activity === 'values_ranking') return 'Values Ranking'
   if (entry.activity === 'fears_ranking') return 'Fears Ranking'
   if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.title?.trim()) return entry.title.trim()
 
   const preview = getPreviewText(entry)
   return preview ? truncate(preview, 72) : 'Untitled'

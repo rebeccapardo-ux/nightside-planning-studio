@@ -7,7 +7,16 @@ export type Note = {
   updated_at: string
   origin_type?: 'prompt' | 'freeform'
   prompt_context?: string | null
+  // Voice note fields — undefined/null on all text notes
+  note_mode?: 'text' | 'audio'
+  audio_url?: string | null
+  transcript?: string | null
+  duration_seconds?: number | null
+  transcription_status?: 'pending' | 'complete' | 'failed' | null
 }
+
+const NOTE_SELECT_FIELDS =
+  'id, content, created_at, updated_at, origin_type, prompt_context, note_mode, audio_url, transcript, duration_seconds, transcription_status'
 
 export type Container = {
   id: string
@@ -58,7 +67,7 @@ export async function fetchNotesByDomainId(domainId: string): Promise<Note[]> {
 
   const { data } = await supabase
     .from('notes')
-    .select('id, content, created_at, updated_at, origin_type, prompt_context')
+    .select(NOTE_SELECT_FIELDS)
     .in('id', noteIds)
     .order('created_at', { ascending: false })
 
@@ -76,7 +85,7 @@ export async function fetchNotes(): Promise<Note[]> {
 
   const { data, error } = await supabase
     .from('notes')
-    .select('id, content, created_at, updated_at, origin_type, prompt_context')
+    .select(NOTE_SELECT_FIELDS)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -114,7 +123,7 @@ export async function createPromptNote(
       origin_type: 'prompt',
       prompt_context: promptContext,
     })
-    .select('id, content, created_at, updated_at, origin_type, prompt_context')
+    .select(NOTE_SELECT_FIELDS)
     .single()
 
   if (error) {
@@ -147,7 +156,7 @@ export async function createNote(content: string): Promise<Note | null> {
       content: trimmed,
       origin_type: 'freeform',
     })
-    .select('id, content, created_at, updated_at, origin_type, prompt_context')
+    .select(NOTE_SELECT_FIELDS)
     .single()
 
   if (error) {
@@ -156,6 +165,76 @@ export async function createNote(content: string): Promise<Note | null> {
   }
 
   return data
+}
+
+export async function createVoiceNote(params: {
+  audioUrl: string
+  durationSeconds: number
+}): Promise<Note | null> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('notes')
+    .insert({
+      user_id: user.id,
+      content: '',
+      origin_type: 'freeform',
+      note_mode: 'audio',
+      audio_url: params.audioUrl || null,
+      duration_seconds: params.durationSeconds,
+      transcription_status: 'pending',
+    })
+    .select(NOTE_SELECT_FIELDS)
+    .single()
+
+  if (error) {
+    console.error('createVoiceNote error:', error.message)
+    return null
+  }
+  return data
+}
+
+export async function createVoicePromptNote(params: {
+  audioUrl: string
+  durationSeconds: number
+  promptContext: string
+  entryId: string
+}): Promise<Note | null> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('notes')
+    .insert({
+      user_id: user.id,
+      content: '',
+      origin_type: 'prompt',
+      prompt_context: params.promptContext,
+      note_mode: 'audio',
+      audio_url: params.audioUrl || null,
+      duration_seconds: params.durationSeconds,
+      transcription_status: 'pending',
+    })
+    .select(NOTE_SELECT_FIELDS)
+    .single()
+
+  if (error) {
+    console.error('createVoicePromptNote error:', error.message)
+    return null
+  }
+
+  await supabase.from('entry_notes').insert({ entry_id: params.entryId, note_id: data.id })
+  return data
+}
+
+export async function updateNoteAudioUrl(noteId: string, audioUrl: string): Promise<boolean> {
+  const supabase = createSupabaseBrowserClient()
+  const { error } = await supabase.from('notes').update({ audio_url: audioUrl }).eq('id', noteId)
+  if (error) { console.error('updateNoteAudioUrl error:', error.message); return false }
+  return true
 }
 
 export async function deleteNote(id: string): Promise<boolean> {

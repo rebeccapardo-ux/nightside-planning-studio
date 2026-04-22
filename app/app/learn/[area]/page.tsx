@@ -17,11 +17,11 @@ export default async function LearnAreaPage({ params }: LearnAreaPageProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
-      <h1 className="text-[40px] font-bold leading-[1.2] text-white mb-4 underline decoration-[#f29836] decoration-[3px] underline-offset-[8px]">
+      <h1 className="ns-title-activity text-white">
         {area.title}
       </h1>
 
-      <p className="text-[15px] text-app-body leading-relaxed mb-10">
+      <p className="ns-lead-activity text-white" style={{ marginTop: '12px', marginBottom: '40px' }}>
         {area.description}
       </p>
 
