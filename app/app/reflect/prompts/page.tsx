@@ -307,7 +307,7 @@ function ReflectPromptsInner() {
                 <>
                   Your note is saved automatically.{' '}
                   <Link href="/app/materials" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    View in My Materials
+                    View in Your Plan
                   </Link>
                 </>
               )}

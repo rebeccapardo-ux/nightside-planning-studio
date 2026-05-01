@@ -11,9 +11,14 @@ export default function FloatingNotepad() {
 
   // Lavender-background pages — use cream button so it's always visible
   const needsCreamButton =
-    pathname.startsWith('/app/reflect') ||
+    (pathname.startsWith('/app/reflect') && pathname !== '/app/reflect') ||
+    pathname.startsWith('/app/explore') ||
     pathname.startsWith('/app/capture') ||
     pathname.startsWith('/app/learn/wills')
 
-  return <NotepadModal buttonStyle={needsCreamButton ? 'cream' : 'lavender'} />
+  const buttonStyle = (pathname === '/app/reflect' || pathname === '/app/learn')
+    ? 'orange'
+    : needsCreamButton ? 'cream' : 'lavender'
+
+  return <NotepadModal buttonStyle={buttonStyle} />
 }

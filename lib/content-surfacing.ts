@@ -17,6 +17,7 @@
 //   Notepad notes        → no reliable context, NEVER auto-surfaced
 // ---------------------------------------------------------------------------
 
+import { createSupabaseBrowserClient } from './supabase-browser'
 import type { Note } from './notes'
 import {
   type Domain,
@@ -77,10 +78,20 @@ export function getNoteSupDocTier(
 // Tier resolution for domain pages
 // ---------------------------------------------------------------------------
 
-export function getNotedomainTier(note: Note, domain: Domain): Tier {
+// linkedNoteIds: optional pre-fetched set of note IDs known to be linked to
+// the target domain container via container_notes. When provided, freeform
+// notes in the set return Tier 1 instead of falling through to Tier 3.
+export function getNotedomainTier(
+  note: Note,
+  domain: Domain,
+  linkedNoteIds?: Set<string>
+): Tier {
   const kind = classifyNoteSource(note)
 
-  if (kind === 'notepad') return 3
+  if (kind === 'notepad') {
+    // Freeform notes surface as Tier 1 if they're confirmed linked to this domain
+    return linkedNoteIds?.has(note.id) ? 1 : 3
+  }
 
   if (kind === 'reflect_prompt' && note.prompt_context) {
     const meta = PROMPT_META_BY_LABEL[note.prompt_context]
@@ -165,14 +176,42 @@ export function tieredNotesBySupDocQuestion(
   return result
 }
 
-export function tieredNotesByDomain(notes: Note[], domain: Domain): TieredNotes {
+export async function tieredNotesByDomain(notes: Note[], domain: Domain): Promise<TieredNotes> {
   const result: TieredNotes = { tier1: [], tier2: [], tier3: [] }
+
+  // Batch-fetch container links for all freeform notes in one query
+  const freeformIds = notes
+    .filter((n) => classifyNoteSource(n) === 'notepad')
+    .map((n) => n.id)
+
+  const linkedNoteIds = new Set<string>()
+
+  if (freeformIds.length > 0) {
+    const supabase = createSupabaseBrowserClient()
+    const { data } = await supabase
+      .from('container_notes')
+      .select('note_id, containers(title, type)')
+      .in('note_id', freeformIds)
+
+    for (const row of data ?? []) {
+      const container = Array.isArray(row.containers) ? row.containers[0] : row.containers
+      if (
+        container &&
+        (container as { type: string; title: string }).type === 'domain' &&
+        domainFromTitle((container as { type: string; title: string }).title) === domain
+      ) {
+        linkedNoteIds.add(row.note_id)
+      }
+    }
+  }
+
   for (const note of notes) {
-    const tier = getNotedomainTier(note, domain)
+    const tier = getNotedomainTier(note, domain, linkedNoteIds)
     if (tier === 1) result.tier1.push(note)
     else if (tier === 2) result.tier2.push(note)
     else result.tier3.push(note)
   }
+
   return result
 }
 

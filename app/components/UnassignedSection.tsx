@@ -326,7 +326,7 @@ export default function UnassignedSection({
   return (
     <section>
       <div className="mb-8">
-        <h2 className="text-h3 text-white underline decoration-[#f29836] decoration-[3px] underline-offset-[6px]" style={{ fontSize: '28px', marginTop: '48px' }}>
+        <h2 className="text-h3 text-white" style={{ fontSize: '28px', marginTop: '48px' }}>
           {hasDomains ? 'Unassigned' : 'All materials'}
         </h2>
       </div>

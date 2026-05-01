@@ -358,7 +358,7 @@ export default function ValuesRankingPage() {
         return
       }
 
-      setSaveMessage('Saved to My Materials.')
+      setSaveMessage('Saved to Your Plan.')
       setIsDirty(false)
       return
     }
@@ -378,7 +378,7 @@ export default function ValuesRankingPage() {
     }
 
     setSavedEntryId(data.id)
-    setSaveMessage('Saved to My Materials.')
+    setSaveMessage('Saved to Your Plan.')
     setIsDirty(false)
   }
 
@@ -573,9 +573,9 @@ export default function ValuesRankingPage() {
                 if (isDirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
                 window.location.href = '/app/materials'
               }}
-              className="text-[14px] text-[#170327]/78 transition hover:text-[#170327]"
+              className="text-[14px] text-[#170327]/78 underline underline-offset-2 transition hover:text-[#170327]"
             >
-              Go to My Materials
+              Go to Your Plan
             </button>
 
             <Link

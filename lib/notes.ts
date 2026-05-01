@@ -474,3 +474,115 @@ export async function removeNoteFromContainer(
 
   return true
 }
+
+// ---------------------------------------------------------------------------
+// domain_topic_notes — manual row-level note attachments
+// ---------------------------------------------------------------------------
+
+export type TopicNoteRow = { note_id: string; topic_id: string }
+
+export async function fetchAllDomainTopicNotes(domainId: string): Promise<TopicNoteRow[]> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('domain_topic_notes')
+    .select('note_id, topic_id')
+    .eq('user_id', user.id)
+    .eq('domain_id', domainId)
+
+  if (error) {
+    console.error('fetchAllDomainTopicNotes error:', error.message)
+    return []
+  }
+  return data ?? []
+}
+
+export async function addDomainTopicNote(
+  noteId: string,
+  domainId: string,
+  topicId: string
+): Promise<boolean> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+
+  const { error } = await supabase
+    .from('domain_topic_notes')
+    .insert({ user_id: user.id, note_id: noteId, domain_id: domainId, topic_id: topicId })
+
+  if (error) {
+    if (error.code === '23505') return true
+    console.error('addDomainTopicNote error:', error.message)
+    return false
+  }
+  return true
+}
+
+export async function removeDomainTopicNote(
+  noteId: string,
+  domainId: string,
+  topicId: string
+): Promise<boolean> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+
+  const { error } = await supabase
+    .from('domain_topic_notes')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('note_id', noteId)
+    .eq('domain_id', domainId)
+    .eq('topic_id', topicId)
+
+  if (error) {
+    console.error('removeDomainTopicNote error:', error.message)
+    return false
+  }
+  return true
+}
+
+// ---------------------------------------------------------------------------
+// hidden_row_notes — auto-surfaced notes suppressed from a row
+// ---------------------------------------------------------------------------
+
+export async function fetchHiddenRowNotes(domainId: string): Promise<TopicNoteRow[]> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await supabase
+    .from('hidden_row_notes')
+    .select('note_id, topic_id')
+    .eq('user_id', user.id)
+    .eq('domain_id', domainId)
+
+  if (error) {
+    console.error('fetchHiddenRowNotes error:', error.message)
+    return []
+  }
+  return data ?? []
+}
+
+export async function hideRowNote(
+  noteId: string,
+  domainId: string,
+  topicId: string
+): Promise<boolean> {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+
+  const { error } = await supabase
+    .from('hidden_row_notes')
+    .insert({ user_id: user.id, note_id: noteId, domain_id: domainId, topic_id: topicId })
+
+  if (error) {
+    if (error.code === '23505') return true
+    console.error('hideRowNote error:', error.message)
+    return false
+  }
+  return true
+}

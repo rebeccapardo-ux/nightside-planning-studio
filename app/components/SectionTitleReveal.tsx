@@ -6,10 +6,12 @@ export default function SectionTitleReveal({
   children,
   title,
   color,
+  size = 64,
 }: {
   children?: React.ReactNode
   title: string
   color: string
+  size?: number
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
 
@@ -66,7 +68,7 @@ export default function SectionTitleReveal({
       `}</style>
 
       <div ref={wrapRef} className="ns-title-wrap">
-        <h1 className="ns-title-section" style={{ color }}>
+        <h1 className="ns-title-section" style={{ color, fontSize: size, fontWeight: 500, lineHeight: 1.08, margin: 0 }}>
           <span className="ns-title-underline">{title}</span>
         </h1>
       </div>

@@ -23,13 +23,11 @@ export default async function HealthcareLearnPage() {
   const inter = "'Inter', system-ui, -apple-system, sans-serif"
   const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const, paddingLeft: '64px', paddingRight: '64px' }
 
-  // Underline accent — background-image approach, softer than pseudo-element
   const accentUnderline: React.CSSProperties = {
-    backgroundImage: 'linear-gradient(rgba(242,140,56,0.18), rgba(242,140,56,0.18))',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '100% 5px',
-    backgroundPosition: '0 92%',
-    display: 'inline',
+    textDecoration: 'underline',
+    textDecorationColor: '#F29836',
+    textDecorationThickness: '3px',
+    textUnderlineOffset: '3px',
   }
 
   const em = (text: string, color = '#FFFFFF') => (
@@ -93,6 +91,15 @@ export default async function HealthcareLearnPage() {
           color: #F28C38;
           font-weight: 500;
         }
+        .hc-why-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 72px;
+          align-items: start;
+        }
+        @media (max-width: 768px) {
+          .hc-why-grid { grid-template-columns: 1fr; gap: 40px; }
+        }
       `}</style>
       <HealthcareAnimations />
 
@@ -110,7 +117,7 @@ export default async function HealthcareLearnPage() {
             </Link>
             <div style={{ marginBottom: '16px' }}>
               <h1 className="ns-title-activity" style={{ color: '#FFFFFF', margin: 0 }}>
-                <span className="hc-underline">Healthcare</span>
+                <span className="hc-underline">Healthcare Wishes</span>
               </h1>
             </div>
             <p className="ns-lead-activity"
@@ -121,136 +128,104 @@ export default async function HealthcareLearnPage() {
           </div>
         </section>
 
-        {/* ── 2a. WHY THIS MATTERS — light ── */}
-        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '96px', paddingBottom: '96px' }}>
-          <div style={inner}>
-            {/* scroll-reveal on full content wrapper */}
-            <div className="hc-animate" style={{ maxWidth: '560px' }}>
-              <h2
-                style={{ fontFamily: inter, fontSize: '32px', fontWeight: 600, lineHeight: '1.35', color: '#1F1B2E', marginTop: 0, marginBottom: '32px' }}
-              >
-                Why this matters
-              </h2>
-              <p style={{ fontFamily: inter, fontSize: '18px', lineHeight: '1.75', color: '#4C4763', marginTop: 0, marginBottom: '20px' }}>
-                Without clear communication, your loved ones and care providers may face{' '}
-                {em('painful choices, uncertainty, and conflict', '#1F1B2E')}.
-              </p>
-              <p style={{ fontFamily: inter, fontSize: '18px', lineHeight: '1.75', color: '#4C4763', marginTop: 0, marginBottom: 0 }}>
-                A good plan can ease their burden and help ensure{' '}
-                {em('your wishes are respected', '#1F1B2E')}.
-              </p>
+        {/* ── 2. WHY THIS MATTERS — heading above, equal columns below ── */}
+        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+
+            {/* Heading spans full width above both columns */}
+            <h2 className="hc-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
+              Why this matters
+            </h2>
+
+            {/* Equal columns */}
+            <div className="hc-why-grid">
+
+              {/* Left column */}
+              <div className="hc-animate">
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  Without clear communication, your loved ones and care providers may face painful choices, uncertainty, and conflict.
+                </p>
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  Many people approach advance care planning as a checklist—listing treatments they would or wouldn&apos;t want. While that can be helpful, {em('it has limits', '#130426')}.
+                </p>
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                  That&apos;s why this platform goes beyond checklists, with activities designed to help you reflect on the values behind those choices.
+                </p>
+              </div>
+
+              {/* Right column */}
+              <div className="hc-animate">
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: '30px' }}>
+                  It&apos;s hard to predict how you&apos;d feel in a situation you&apos;ve never been in, and <strong style={{ fontWeight: 600 }}>ableist assumptions about what life with illness or disability might be like can distort decisions.</strong>
+                </p>
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  For example, someone might say &ldquo;no machines&rdquo; without knowing the range of options or experiences, or assume they wouldn&apos;t want to live without being able to speak—without realizing what assistive tools exist.
+                </p>
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                  By reflecting on what matters most to you, you can give your Substitute Decision Maker the context they need to make thoughtful decisions on your behalf—even in unexpected situations.
+                </p>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* ── 2b. BEYOND CHECKLISTS — dark ── */}
-        <section style={{ width: '100%', background: '#24104A', paddingTop: '120px', paddingBottom: '120px' }}>
-          <div style={inner}>
-            {/* scroll-reveal on full content wrapper */}
-            <div className="hc-animate" style={{ maxWidth: '480px' }}>
-              <h2
-                style={{ fontFamily: inter, fontSize: '32px', fontWeight: 600, lineHeight: '1.35', color: '#FFFFFF', marginTop: 0, marginBottom: '40px' }}
-              >
-                Beyond Checklists
-              </h2>
-
-              {/* Paragraph 1 */}
-              <p style={{ fontFamily: inter, fontSize: '18px', lineHeight: '1.75', color: 'rgba(255,255,255,0.72)', marginTop: 0, marginBottom: '24px' }}>
-                Most people think of advance care planning as listing treatments they would or
-                wouldn&apos;t want—ventilators, feeding tubes, resuscitation, etc. That approach
-                can be helpful, but {em('it has limits')}. It&apos;s hard to predict how
-                you&apos;d feel in a situation you&apos;ve never been in, and ableist assumptions
-                about what life with illness or disability might be like can distort decisions.
-                For example, someone might say &ldquo;no machines&rdquo; without knowing the range
-                of options or experiences, or assume they wouldn&apos;t want to live without being
-                able to speak, without realizing what assistive tools exist.
-              </p>
-
-              {/* Pivot line — the turning point */}
-              <p style={{
-                fontFamily: inter,
-                fontSize: '20px',
-                lineHeight: '1.6',
-                fontWeight: 500,
-                color: '#FFFFFF',
-                maxWidth: '480px',
-                marginTop: '32px',
-                marginBottom: '28px',
+        {/* ── 3. CHOOSING SDM — soft inset panel ── */}
+        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '64px', paddingBottom: '112px' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+            <div className="hc-animate">
+              <div style={{
+                background: 'rgba(187,171,244,0.12)',
+                border: '1px solid rgba(19,4,38,0.1)',
+                borderRadius: '16px',
+                padding: '32px',
               }}>
-                That&apos;s why this platform goes beyond checklists, with activities designed
-                to help you reflect on{' '}
-                <span style={accentUnderline}>
-                  {em('the values behind those choices')}
-                </span>.
-              </p>
-
-              {/* Paragraph 2 — continuation */}
-              <p style={{ fontFamily: inter, fontSize: '18px', lineHeight: '1.75', color: 'rgba(255,255,255,0.72)', marginTop: 0, marginBottom: 0 }}>
-                The reflection exercises are designed to help you give your SDM{' '}
-                {em('the context they need')} to make thoughtful decisions on your
-                behalf—even in unexpected scenarios. You can choose what to share—like including
-                the Values and Fears Rankings from the Reflect section, or the supplementary form
-                in the Capture section alongside your Advance Directive. Doing this work with
-                others, especially your SDM, can be a powerful way to start the conversation.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 3. CHOOSING SDM — light ── */}
-        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '112px', paddingBottom: '96px' }}>
-          <div style={inner}>
-            {/* scroll-reveal on full content wrapper */}
-            <div className="hc-animate" style={{ maxWidth: '520px' }}>
-              <h2
-                style={{ fontFamily: inter, fontSize: '32px', fontWeight: 600, lineHeight: '1.35', color: '#1F1B2E', marginBottom: '24px' }}
-              >
-                Choosing your Substitute Decision Maker
-              </h2>
-              <p
-                style={{ fontFamily: inter, fontSize: '18px', lineHeight: '1.65', color: '#4C4763', marginBottom: '28px' }}
-              >
-                If someone had to speak on your behalf, what would you want them to understand?
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {[
-                  'Do they understand my values?',
-                  'Can I trust them to speak up for me?',
-                  'Are they able to handle tough conversations under pressure?',
-                ].map((q) => (
-                  <li
-                    key={q}
-                    className="sdm-question"
-                    style={{
-                      fontFamily: inter,
-                      fontSize: '18px',
-                      lineHeight: '1.65',
-                      color: '#1F1B2E',
-                      marginBottom: '16px',
-                      paddingLeft: '20px',
-                      position: 'relative',
-                    }}
-                  >
-                    {q}
-                  </li>
-                ))}
-              </ul>
+                <h2 style={{ fontFamily: apfel, fontSize: '26px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginTop: 0, marginBottom: '16px' }}>
+                  Choosing your Substitute Decision Maker
+                </h2>
+                <p style={{ fontFamily: inter, fontSize: '16px', lineHeight: '1.65', color: '#130426', marginTop: 0, marginBottom: '20px' }}>
+                  If someone had to speak on your behalf, what would you want them to understand?
+                </p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {[
+                    'Do they understand my values?',
+                    'Can I trust them to speak up for me?',
+                    'Are they able to handle tough conversations under pressure?',
+                  ].map((q) => (
+                    <li
+                      key={q}
+                      className="sdm-question"
+                      style={{
+                        fontFamily: inter,
+                        fontSize: '16px',
+                        lineHeight: '1.65',
+                        color: '#130426',
+                        marginBottom: '12px',
+                        paddingLeft: '20px',
+                        position: 'relative',
+                      }}
+                    >
+                      {q}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ── 4. NEXT STEPS — action surface, no motion ── */}
-        <section style={{ width: '100%', background: '#2A1450', paddingTop: '96px', paddingBottom: '120px' }}>
+        <section style={{ width: '100%', background: '#2A1450', paddingTop: '112px', paddingBottom: '120px' }}>
           <div style={inner}>
             <h2
-              style={{ fontFamily: apfel, fontSize: '44px', fontWeight: 600, lineHeight: '1.2', letterSpacing: '-0.01em', color: '#FFFFFF', marginBottom: '12px' }}
+              style={{ fontFamily: apfel, fontSize: '44px', fontWeight: 600, lineHeight: '1.2', letterSpacing: '0.01em', color: '#FFFFFF', marginBottom: '12px' }}
             >
               Next steps
             </h2>
             <p
-              style={{ fontFamily: inter, fontSize: '14px', fontWeight: 400, lineHeight: '1.5', color: 'rgba(255,255,255,0.70)', maxWidth: '620px', marginBottom: '40px' }}
+              style={{ fontFamily: inter, fontSize: '16px', fontWeight: 400, lineHeight: '1.5', color: 'rgba(255,255,255,0.90)', maxWidth: '620px', marginBottom: '40px' }}
             >
-              Use these activities and resources to keep moving.
+              Use these activities and resources to keep moving in your healthcare planning.
             </p>
 
             {/* Row 1: Relevant Activities + Resources */}
@@ -262,8 +237,8 @@ export default async function HealthcareLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect/values', label: 'Values and Fears Ranking' },
-                    { href: '/app/learn/areas',    label: 'Reflect Prompts' },
+                    { href: '/app/explore/values-and-fears', label: 'Values and Fears Ranking' },
+                    { href: '/app/learn/areas',    label: 'Reflection Prompts' },
                     { href: '/app/learn/areas',    label: 'Scenario Navigator' },
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="hc-activity-row" style={{ display: 'flex', width: '100%' }}>
@@ -300,11 +275,11 @@ export default async function HealthcareLearnPage() {
             <div style={{ marginTop: '24px', maxWidth: '760px' }}>
               <div style={{ background: '#DBD2F6', borderRadius: '24px', padding: '36px' }}>
                 <div style={{ maxWidth: '480px' }}>
-                  <h3 style={{ fontFamily: apfel, fontSize: '32px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}>
+                  <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}>
                     Continue in your plan
                   </h3>
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0' }}>
-                    {['Identify a decision maker', 'Document your healthcare wishes'].map((item) => (
+                    {['Identify a decision maker', 'Document your healthcare preferences'].map((item) => (
                       <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' }}>
                         <span style={{ color: '#130426', fontWeight: 700, flexShrink: 0, lineHeight: '1.75' }}>·</span>
                         <span style={{ fontFamily: inter, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426' }}>{item}</span>
@@ -316,7 +291,7 @@ export default async function HealthcareLearnPage() {
                     className="inline-block hover:opacity-90 transition-opacity"
                     style={{ fontFamily: inter, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF' }}
                   >
-                    Go to Healthcare Materials →
+                    Go to Healthcare Planning →
                   </Link>
                 </div>
               </div>

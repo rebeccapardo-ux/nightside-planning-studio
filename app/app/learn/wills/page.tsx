@@ -79,6 +79,15 @@ export default async function WillsLearnPage() {
           transition: transform 150ms ease;
           flex-shrink: 0;
         }
+        .wl-why-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 72px;
+          align-items: start;
+        }
+        @media (max-width: 768px) {
+          .wl-why-grid { grid-template-columns: 1fr; gap: 40px; }
+        }
       `}</style>
       <WillsAnimations />
 
@@ -96,9 +105,9 @@ export default async function WillsLearnPage() {
               ← Areas of planning
             </Link>
 
-            <div className="wl-animate" style={{ marginBottom: '40px' }}>
+            <div style={{ marginBottom: '16px' }}>
               <h1 className="ns-title-activity" style={{ color: '#FFFFFF', margin: 0 }}>
-                <span className="wl-underline">Wills &amp; Estates</span>
+                Wills &amp; Estates
               </h1>
             </div>
 
@@ -111,87 +120,59 @@ export default async function WillsLearnPage() {
           </div>
         </section>
 
-        {/* ── 2. WHY THIS MATTERS ── cream */}
-        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '96px', paddingBottom: '96px' }}>
-          <div style={inner}>
-            <div style={{ maxWidth: '620px' }}>
+        {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
+        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+
+            <h2 className="wl-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
+              Why this matters
+            </h2>
+
+            <div className="wl-why-grid">
+
+              {/* Left column */}
               <div className="wl-animate">
-                <h2
-                  style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#1F1A44', marginTop: 0, marginBottom: '28px' }}
-                >
-                  Why this matters
-                </h2>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  <strong style={{ fontWeight: 600 }}>If you die without a will, the law determines how your estate is distributed</strong>, regardless of your personal relationships, priorities, or intentions. This can lead to delays, conflict, and outcomes that don&apos;t reflect what you would have wanted.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                  A will allows you to name beneficiaries, appoint an executor, and make decisions about guardianship, assets, and distribution, ensuring your wishes are clearly documented and legally recognized.
+                </p>
               </div>
-              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: '#1F1A44', marginBottom: '24px' }}>
-                If you die intestate (without a will), the law decides who inherits and manages your estate, potentially causing delays, conflicts, and decisions that don't reflect your wishes.
-              </p>
-              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: '#1F1A44', marginBottom: '24px' }}>
-                For First Nations individuals living on reserves, the Indian Act determines asset distribution, not personal wishes, meaning only family can inherit—excluding friends or charities.
-              </p>
-              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: '#1F1A44', marginBottom: 0 }}>
-                Anyone of legal age should have a will. It's especially important for those with dependents, significant assets, or specific wishes. Regular updates ensure it reflects life changes, like marriage, divorce, or new family members.
-              </p>
+
+              {/* Right column */}
+              <div className="wl-animate">
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  A will is just one part of estate planning. A complete plan considers how your finances, assets, and responsibilities are managed both during your lifetime and after your death.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  Life changes, such as marriage, divorce, or new family members, can affect your plan. Reviewing and updating your documents over time helps ensure they continue to reflect your wishes.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                  Without clear planning, loved ones may be left to navigate legal and financial decisions under pressure, often with limited guidance.
+                </p>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* ── 3. WRITING A LEGAL WILL ── deep purple */}
-        <section style={{ width: '100%', background: '#130426', paddingTop: '96px', paddingBottom: '96px' }}>
+        {/* ── 3. ESTATE PLANNING OVERVIEW ── cream */}
+        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
           <div style={inner}>
             <div style={{ maxWidth: '620px' }}>
-              <div className="wl-animate">
-                <h2
-                  style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#FFFFFF', marginTop: 0, marginBottom: '28px' }}
-                >
-                  Writing a legal will
-                </h2>
-              </div>
-              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: 'rgba(255,255,255,0.85)', marginBottom: '28px' }}>
-                While requirements vary across provinces, here are general guidelines to create a valid will in Canada:
-              </p>
+              <h2 className="wl-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '40px' }}>
+                An estate plan may also include
+              </h2>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {[
-                  { term: 'Age and Mental Capacity', detail: 'You must be of sound mind and the age of majority (usually 18). Exceptions may apply for minors in certain cases, like marriage or military service.' },
-                  { term: 'Written and Signed', detail: 'A will must be written (typically typed and printed) and signed by you at the end. British Columbia also allows electronic wills.' },
-                  { term: 'Witnesses', detail: 'Two witnesses (not beneficiaries or their spouses) must watch you sign and sign the document themselves.' },
-                  { term: 'Handwritten Wills', detail: 'Holographic (handwritten) wills are valid in some provinces, like Ontario, but not everywhere.' },
-                  { term: 'Safe Storage', detail: 'Store the original signed copy in a secure place.' },
-                ].map(({ term, detail }) => (
-                  <li key={term} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '20px' }}>
-                    <span style={{ color: '#F29836', flexShrink: 0, lineHeight: '1.8', fontWeight: 700 }}>·</span>
-                    <span style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: 'rgba(255,255,255,0.85)' }}>
-                      <strong style={{ color: '#FFFFFF', fontWeight: 600 }}>{term}:</strong>{' '}{detail}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 4. ESTATE PLANNING OVERVIEW ── cream */}
-        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '88px', paddingBottom: '88px' }}>
-          <div style={inner}>
-            <div style={{ maxWidth: '760px' }}>
-              <div className="wl-animate">
-                <h2
-                  style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#130426', marginBottom: '24px' }}
-                >
-                  An estate plan may also include
-                </h2>
-              </div>
-              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.75', color: '#130426', maxWidth: '620px', marginBottom: '32px' }}>
-                Beyond a will, a complete estate plan addresses how your finances, assets, and people are cared for during your lifetime and after.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, maxWidth: '620px' }}>
-                {[
-                  { term: 'Powers of Attorney', detail: 'Appointing someone to manage your finances or legal matters if you\'re unable to.' },
+                  { term: 'Powers of Attorney', detail: 'Managing financial or legal decisions if you\'re unable to.' },
                   { term: 'Trusts', detail: 'Managing assets for specific purposes or beneficiaries.' },
-                  { term: 'Life Insurance Policies', detail: 'Providing financial security for loved ones.' },
-                  { term: 'Asset and Liability Documentation', detail: 'Listing property, debts, and digital accounts.' },
-                  { term: 'Tax Strategies', detail: 'Reducing taxes and ensuring efficient distribution of your estate.' },
+                  { term: 'Life Insurance', detail: 'Providing financial support for loved ones.' },
+                  { term: 'Asset and Liability Documentation', detail: 'Listing property, debts, and accounts.' },
+                  { term: 'Tax Strategies', detail: 'Supporting efficient distribution of your estate.' },
                 ].map(({ term, detail }) => (
-                  <li key={term} style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: '#130426', marginBottom: '18px' }}>
+                  <li key={term} style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginBottom: '16px' }}>
                     <strong style={{ fontWeight: 600 }}>{term}:</strong>{' '}{detail}
                   </li>
                 ))}
@@ -212,9 +193,9 @@ export default async function WillsLearnPage() {
               </h2>
             </div>
             <p
-              style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.6', color: 'rgba(255,255,255,0.75)', maxWidth: '620px', marginBottom: '40px' }}
+              style={{ fontFamily: hv, fontSize: '16px', fontWeight: 400, lineHeight: '1.5', color: 'rgba(255,255,255,0.90)', maxWidth: '620px', marginBottom: '40px' }}
             >
-              Use these activities and resources to keep moving.
+              Use these activities and resources to keep moving in your will and estate planning.
             </p>
 
             {/* Row 1: Relevant Activities + Resources */}
@@ -288,7 +269,7 @@ export default async function WillsLearnPage() {
                     className="inline-block hover:opacity-90 transition-opacity"
                     style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF' }}
                   >
-                    Go to Wills &amp; Estates Materials →
+                    Go to Wills &amp; Estates Planning →
                   </Link>
                 </div>
               </div>

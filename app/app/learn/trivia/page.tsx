@@ -228,19 +228,19 @@ function CardView({
 
                 {/* Notepad — subtle, non-intrusive */}
                 {noteState === 'saved' ? (
-                  <p className="text-xs text-[#BBABF4] text-center">Saved to your Materials.</p>
+                  <p className="text-xs text-[#BBABF4] text-center">Saved to Your Plan.</p>
                 ) : noteState === 'open' || noteState === 'saving' ? (
                   <div className="space-y-1">
                     <textarea
                       autoFocus
                       value={noteText}
                       onChange={(e) => setNoteText(e.target.value)}
-                      placeholder="Write a note — saved to your materials"
+                      placeholder="Write a note — saved to Your Plan"
                       rows={2}
                       className="w-full rounded-lg bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/40 px-3 py-2 text-sm leading-relaxed resize-none outline-none overflow-hidden"
                     />
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-app-tertiary">Saved to your materials</p>
+                      <p className="text-xs text-app-tertiary">Saved to Your Plan</p>
                       <div className="flex gap-3 items-center">
                         <button
                           onClick={handleSaveNote}

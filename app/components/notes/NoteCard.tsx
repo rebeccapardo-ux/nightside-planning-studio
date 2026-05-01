@@ -13,7 +13,8 @@ type NoteCardProps = {
   content: string
   promptContext?: string | null
   onContentSave?: (newContent: string) => void
-  actions: NoteCardActions
+  actions?: NoteCardActions
+  actionsContent?: (onEdit: () => void) => React.ReactNode
   stickyStyle?: React.CSSProperties
   embellishment?: React.ReactNode
 }
@@ -23,6 +24,7 @@ export default function NoteCard({
   promptContext,
   onContentSave,
   actions,
+  actionsContent,
   stickyStyle,
   embellishment,
 }: NoteCardProps) {
@@ -70,7 +72,7 @@ export default function NoteCard({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    overflow: 'hidden',
+    overflow: 'visible',
     position: 'relative',
     ...stickyStyle,
   }
@@ -137,18 +139,22 @@ export default function NoteCard({
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: '12px',
       }}>
-        {onContentSave && !editing && (
-          <button
-            onClick={() => setEditing(true)}
-            style={{ fontSize: '12px', fontWeight: 400, color: '#2C3777', lineHeight: '1.2' }}
-            className="hover:opacity-75 transition-opacity"
-          >
-            Edit
-          </button>
+        {actionsContent ? actionsContent(() => setEditing(true)) : (
+          <>
+            {onContentSave && !editing && (
+              <button
+                onClick={() => setEditing(true)}
+                style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(0,0,0,0.7)', lineHeight: '1.2', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                className="hover:opacity-75 transition-opacity"
+              >
+                Edit
+              </button>
+            )}
+            {actions}
+          </>
         )}
-        {actions}
       </div>
     </div>
   )

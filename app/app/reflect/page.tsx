@@ -51,7 +51,6 @@ const PROMPTS = [
 
 const fontHelvetica = "'HelveticaNeue-Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 const fontHelveticaMedium = "'HelveticaNeue-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif"
-const fontApfelFett = "'ApfelGrotezk-Fett', 'ApfelGrotezk', sans-serif"
 
 export default function ReflectPage() {
   useEffect(() => {
@@ -73,7 +72,7 @@ export default function ReflectPage() {
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#130426' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#BBABF4' }}>
       <style>{`
         .ns-title-wrap {
           opacity: 0;
@@ -105,28 +104,41 @@ export default function ReflectPage() {
           transform: scaleX(1);
         }
         .reflect-card {
-          transition: transform 0.15s ease, filter 0.15s ease;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+          transition: transform 140ms ease, box-shadow 140ms ease;
         }
         .reflect-card:hover {
-          transform: translateY(-4px);
-          filter: brightness(1.08);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
       `}</style>
 
-      {/* Header zone */}
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '64px 24px 0' }}>
+      {/* Header */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '72px 24px 0' }}>
         <div className="ns-title-wrap">
-          <h1 className="ns-title-section" style={{ color: '#FFFFFF' }}>
+          <h1
+            className="ns-title-section"
+            style={{ fontSize: 64, fontWeight: 500, lineHeight: 1.08, color: '#130426', margin: 0 }}
+          >
             <span className="ns-title-underline">Reflect</span>
           </h1>
         </div>
-        <p className="ns-lead-section" style={{ color: '#FFFFFF', maxWidth: '520px', marginTop: '20px' }}>
+        <p style={{
+          fontFamily: fontHelvetica,
+          fontSize: 20,
+          fontWeight: 400,
+          lineHeight: 1.55,
+          color: 'rgba(19,4,38,0.78)',
+          maxWidth: 760,
+          marginTop: 20,
+          marginBottom: 0,
+        }}>
           These prompts are here to help you think, talk, or reflect. You can start anywhere and come back anytime.
         </p>
       </div>
 
       {/* Card grid */}
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '64px 24px 96px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '56px 24px 96px' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
@@ -142,17 +154,18 @@ export default function ReflectPage() {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 background: '#F8F4EB',
+                border: '1px solid rgba(26,26,26,0.12)',
                 borderRadius: '16px',
-                padding: '24px',
-                height: '100%',
+                padding: '32px 28px',
+                minHeight: '236px',
                 boxSizing: 'border-box',
                 textDecoration: 'none',
               }}
             >
               <p style={{
                 fontFamily: fontHelveticaMedium,
-                fontSize: '16px',
-                lineHeight: '24px',
+                fontSize: '18px',
+                lineHeight: 1.45,
                 fontWeight: 500,
                 color: '#1A1A1A',
                 margin: '0 0 24px 0',

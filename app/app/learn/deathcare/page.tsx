@@ -79,6 +79,15 @@ export default async function DeathcareLearnPage() {
           transition: transform 150ms ease;
           flex-shrink: 0;
         }
+        .dc-why-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 72px;
+          align-items: start;
+        }
+        @media (max-width: 768px) {
+          .dc-why-grid { grid-template-columns: 1fr; gap: 40px; }
+        }
       `}</style>
       <DeathcareAnimations />
 
@@ -96,9 +105,9 @@ export default async function DeathcareLearnPage() {
               ← Areas of planning
             </Link>
 
-            <div className="dc-animate" style={{ marginBottom: '40px' }}>
+            <div style={{ marginBottom: '16px' }}>
               <h1 className="ns-title-activity" style={{ color: '#FFFFFF', margin: 0 }}>
-                <span className="dc-underline">Deathcare &amp; Body Disposition</span>
+                Deathcare
               </h1>
             </div>
 
@@ -111,27 +120,42 @@ export default async function DeathcareLearnPage() {
           </div>
         </section>
 
-        {/* ── 2. WHY THIS MATTERS ── cream */}
-        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '96px', paddingBottom: '96px' }}>
-          <div style={inner}>
-            <div style={{ maxWidth: '620px' }}>
+        {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
+        <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+
+            <h2 className="dc-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
+              Why this matters
+            </h2>
+
+            <div className="dc-why-grid">
+
+              {/* Left column */}
               <div className="dc-animate">
-                <h2
-                  style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#1F1A44', marginTop: 0, marginBottom: '28px' }}
-                >
-                  Why this matters
-                </h2>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  Many people don&apos;t realize how many options exist for body disposition, or assume decisions will be straightforward. In reality, choices are often shaped by default practices, family expectations, or logistical constraints—especially when preferences haven&apos;t been clearly expressed.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  Planning ahead ensures your choices reflect your values—spiritual, environmental, cultural, or personal—and reduces stress for loved ones.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                  You may also want to consider whether there are elements you&apos;d like included in your final resting place, such as meaningful personal items, where possible.
+                </p>
               </div>
-              <p
-                style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: '#1F1A44', marginBottom: '24px' }}
-              >
-                Planning ahead ensures your choices reflect your values—spiritual, environmental, cultural, or personal—and reduces stress for loved ones.
-              </p>
-              <p
-                style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: '#1F1A44', marginBottom: 0 }}
-              >
-                Your preferences for body disposition should be documented in your will to ensure they are legally recognized.
-              </p>
+
+              {/* Right column */}
+              <div className="dc-animate">
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  <strong style={{ fontWeight: 600 }}>Options for body disposition vary across provinces.</strong> For example, green burial and aquamation may not be available everywhere, and provincial laws may regulate burial locations or ashes scattering.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                  Without clear documentation, your preferences may not be carried out as intended. Your wishes should be documented in your will to ensure they are legally recognized.
+                </p>
+                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                  Understanding what&apos;s possible and documenting your choices clearly helps ensure your preferences will be respected.
+                </p>
+              </div>
+
             </div>
           </div>
         </section>
@@ -148,7 +172,7 @@ export default async function DeathcareLearnPage() {
               </h2>
             </div>
             <p
-              style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.6', color: 'rgba(255,255,255,0.75)', maxWidth: '620px', marginBottom: '40px' }}
+              style={{ fontFamily: hv, fontSize: '16px', fontWeight: 400, lineHeight: '1.5', color: 'rgba(255,255,255,0.90)', maxWidth: '620px', marginBottom: '40px' }}
             >
               Use these activities and resources to keep moving.
             </p>
@@ -190,7 +214,7 @@ export default async function DeathcareLearnPage() {
                 <p
                   style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}
                 >
-                  Options for body disposition vary across provinces. For example, green burial and aquamation may not be available everywhere, and provincial laws may regulate burial locations or ashes scattering. Understanding these specifics ensures your preferences can be carried out.
+                  Legal requirements and available options vary by province. Review guidance, templates, and legal information for your province to help you document and finalize your plans.
                 </p>
                 <a
                   href="https://thenightside.net/resources"
@@ -210,7 +234,7 @@ export default async function DeathcareLearnPage() {
               <div style={{ background: '#BBABF4', borderRadius: '24px', padding: '36px', height: 'auto' }}>
                 <div style={{ maxWidth: '480px' }}>
                   <h3
-                    style={{ fontFamily: apfel, fontSize: '32px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}
+                    style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}
                   >
                     Continue in your plan
                   </h3>
@@ -224,7 +248,7 @@ export default async function DeathcareLearnPage() {
                     className="inline-block hover:opacity-90 transition-opacity"
                     style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF' }}
                   >
-                    Go to Deathcare Materials →
+                    Go to Deathcare Planning →
                   </Link>
                 </div>
               </div>

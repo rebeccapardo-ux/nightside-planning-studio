@@ -3,139 +3,280 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-type DomainStyle = {
-  bg: string
-  text: string
-  meta: string
-  helper: string
-  stateBadge: string
-}
+// ---------------------------------------------------------------------------
+// Domain segment configs — topic keys in page order (orientation then readiness)
+// ---------------------------------------------------------------------------
 
-const DOMAIN_STYLES: DomainStyle[] = [
-  { bg: 'bg-[#BBABF4]', text: 'text-[#130426]',    meta: 'text-[#130426]/65', helper: 'text-[#130426]/50', stateBadge: 'bg-[#130426]/[0.09]  text-[#130426]' },
-  { bg: 'bg-[#2C3777]', text: 'text-[#f8f4eb]',    meta: 'text-[#f8f4eb]/65', helper: 'text-[#f8f4eb]/50', stateBadge: 'bg-[#f8f4eb]/[0.12]  text-[#f8f4eb]' },
-  { bg: 'bg-[#f8f4eb]', text: 'text-[#130426]',    meta: 'text-[#130426]/65', helper: 'text-[#130426]/50', stateBadge: 'bg-[#130426]/[0.07]  text-[#130426]' },
-  { bg: 'bg-[#f29836]', text: 'text-[#130426]',    meta: 'text-[#130426]/65', helper: 'text-[#130426]/50', stateBadge: 'bg-[#130426]/[0.09]  text-[#130426]' },
-  { bg: 'bg-[#DB5835]', text: 'text-[#f8f4eb]',    meta: 'text-[#f8f4eb]/65', helper: 'text-[#f8f4eb]/50', stateBadge: 'bg-[#f8f4eb]/[0.12]  text-[#f8f4eb]' },
+type SegmentDef = { key: string; type: 'orient' | 'ready' }
+
+const DOMAIN_SEGMENT_CONFIGS: { match: string; segments: SegmentDef[] }[] = [
+  {
+    match: 'healthcare',
+    segments: [
+      { key: 'values_care_priorities',   type: 'orient' },
+      { key: 'decision_making_framework', type: 'orient' },
+      { key: 'who_would_speak',          type: 'orient' },
+      { key: 'who_will_decide',          type: 'ready'  },
+      { key: 'wishes_clear_shared',      type: 'ready'  },
+    ],
+  },
+  {
+    match: 'deathcare',
+    segments: [
+      { key: 'final_resting_place_wishes', type: 'orient' },
+      { key: 'legal_options_province',     type: 'orient' },
+      { key: 'final_resting_place_wishes', type: 'ready'  },
+    ],
+  },
+  {
+    match: 'will',
+    segments: [
+      { key: 'legal_will_requirements',     type: 'orient' },
+      { key: 'executor_choice',             type: 'orient' },
+      { key: 'asset_wishes',               type: 'orient' },
+      { key: 'care_children_pets',         type: 'orient' },
+      { key: 'additional_estate_planning', type: 'orient' },
+      { key: 'legal_will_in_place',        type: 'ready'  },
+      { key: 'other_estate_planning',      type: 'ready'  },
+      { key: 'professional_support',       type: 'ready'  },
+      { key: 'meaningful_objects',         type: 'ready'  },
+    ],
+  },
+  {
+    match: 'ritual',
+    segments: [
+      { key: 'meaningful_rituals',           type: 'orient' },
+      { key: 'mark_or_remember',             type: 'orient' },
+      { key: 'ritual_ceremony_preferences',  type: 'ready'  },
+    ],
+  },
+  {
+    match: 'legacy',
+    segments: [
+      { key: 'life_story_shaped',    type: 'orient' },
+      { key: 'how_remembered',       type: 'orient' },
+      { key: 'relationships_impact', type: 'orient' },
+      { key: 'sharing_what_matters', type: 'ready'  },
+    ],
+  },
+  {
+    match: 'personal',
+    segments: [
+      { key: 'understand_personal_admin',    type: 'orient' },
+      { key: 'personal_information',         type: 'ready'  },
+      { key: 'important_contacts',           type: 'ready'  },
+      { key: 'financial_information',        type: 'ready'  },
+      { key: 'devices_and_accounts',         type: 'ready'  },
+      { key: 'social_media_digital_assets',  type: 'ready'  },
+    ],
+  },
 ]
 
-type StateSignal = {
-  label: string
-  secondary: string
-  isAttention: boolean
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+type Status = 'not_started' | 'in_progress' | 'complete'
+
+function getSegmentStatus(domainId: string, seg: SegmentDef): Status {
+  const key = seg.type === 'orient'
+    ? `orient_${domainId}_${seg.key}`
+    : `ready_${domainId}_${seg.key}`
+  const val = localStorage.getItem(key)
+  if (val === 'complete')    return 'complete'
+  if (val === 'in_progress') return 'in_progress'
+  return 'not_started'
 }
 
-function computeState(
-  domainId: string,
-  totalCount: number,
-  docsCount: number,
-  outputsCount: number,
-): StateSignal {
-  // Read planning statuses from localStorage
-  let activePlanning = 0
-
-  if (typeof window !== 'undefined') {
-    const allKeys = Object.keys(localStorage)
-
-    const orientKeys = allKeys.filter(
-      (k) => k.startsWith(`orient_${domainId}_`) && !k.endsWith('_updated'),
-    )
-    const readyKeys = allKeys.filter(
-      (k) => k.startsWith(`ready_${domainId}_`) && !k.endsWith('_updated'),
-    )
-
-    for (const k of orientKeys) {
-      const v = localStorage.getItem(k)
-      // Normalize to 3-status: in_progress/complete count as active planning
-      const normalized =
-        v === 'in_progress' || v === 'complete' ? v :
-        ['in_motion', 'drafted', 'revisited', 'needs_attention', 'started', 'needs_review'].includes(v ?? '') ? 'in_progress' :
-        v === 'in_place' ? 'complete' :
-        'not_started'
-      if (normalized !== 'not_started') activePlanning++
-    }
-    for (const k of readyKeys) {
-      const v = localStorage.getItem(k)
-      // In the new system there is no "needs attention" state — skip attention counting
-      void v
-    }
-  }
-
-  const hasStructuredWork = docsCount > 0 || outputsCount > 0
-
-  let label: string
-  if (totalCount >= 3 && hasStructuredWork) {
-    label = 'Taking shape'
-  } else if (activePlanning >= 2 || totalCount >= 3) {
-    label = 'In motion'
-  } else if (activePlanning >= 1 || totalCount >= 1) {
-    label = 'Started'
-  } else {
-    label = 'Not started'
-  }
-
-  let secondary: string
-  if (activePlanning > 0 && totalCount === 0) {
-    secondary = 'Planning in motion'
-  } else if (totalCount > 0) {
-    secondary = `${totalCount} material${totalCount === 1 ? '' : 's'} contributing`
-  } else {
-    secondary = 'Nothing added yet'
-  }
-
-  return { label, secondary, isAttention: false }
+function qualitativeLabel(exploredCount: number): string {
+  if (exploredCount === 0) return 'Not yet started'
+  if (exploredCount <= 2)  return 'Just beginning'
+  if (exploredCount <= 4)  return 'Taking shape'
+  if (exploredCount <= 6)  return 'Well underway'
+  return 'Deeply explored'
 }
+
+function getDomainSegments(title: string): SegmentDef[] {
+  const lower = title.toLowerCase()
+  for (const config of DOMAIN_SEGMENT_CONFIGS) {
+    if (lower.includes(config.match)) return config.segments
+  }
+  return []
+}
+
+// ---------------------------------------------------------------------------
+// MiniSegmentBar — always 5 segments, proportional fill
+// ---------------------------------------------------------------------------
+
+function MiniSegmentBar({
+  domainId,
+  segments,
+  labelColor,
+}: {
+  domainId: string
+  segments: SegmentDef[]
+  labelColor: string
+}) {
+  const [statuses, setStatuses] = useState<Status[]>(() =>
+    segments.map(() => 'not_started')
+  )
+
+  useEffect(() => {
+    setStatuses(segments.map((seg) => getSegmentStatus(domainId, seg)))
+  }, [domainId, segments])
+
+  const totalCount    = segments.length
+  const completedCount = statuses.filter((s) => s === 'complete').length
+  const exploredCount  = statuses.filter((s) => s !== 'not_started').length
+  const inProgress     = statuses.some((s) => s === 'in_progress')
+
+  // Fixed 5 segments — fill count proportional to completed topics; in_progress shown as lighter partial
+  const filledCount = totalCount > 0
+    ? Math.min(5, Math.max(0, Math.round((completedCount / totalCount) * 5)))
+    : 0
+  const hasPartial = inProgress && filledCount < 5
+
+  const segStyle = (i: number): React.CSSProperties => {
+    if (i < filledCount)
+      return { background: '#D85A30' }
+    if (i === filledCount && hasPartial)
+      return { background: '#F0997B' }
+    return { background: '#FAECE7', border: '1px solid #7A4A2E' }
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 3, width: '100%', marginBottom: 8 }}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            style={{ flex: '1 1 0', height: 10, borderRadius: 4, ...segStyle(i) }}
+          />
+        ))}
+      </div>
+      <p style={{ fontSize: 13, fontWeight: 500, color: labelColor, margin: 0 }}>
+        {qualitativeLabel(exploredCount)}
+      </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// DomainStateCard
+// ---------------------------------------------------------------------------
+
+const DOMAIN_STYLES = [
+  { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.6)'   },
+  { bg: 'bg-[#2C3777]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.7)' },
+  { bg: 'bg-[#f29836]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.6)'   },
+  { bg: 'bg-[#130426]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.7)' },
+  { bg: 'bg-[#DB5835]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.7)' },
+]
 
 export default function DomainStateCard({
   domain,
   colorIndex,
-  totalCount,
-  docsCount,
-  outputsCount,
+  docCount = 0,
+  noteCount = 0,
+  outputCount = 0,
 }: {
   domain: { id: string; title: string }
   colorIndex: number
-  totalCount: number
-  docsCount: number
-  outputsCount: number
+  docCount?: number
+  noteCount?: number
+  outputCount?: number
 }) {
-  const style = DOMAIN_STYLES[colorIndex % DOMAIN_STYLES.length]
-
-  // Hydrate state from localStorage on client
-  const [signal, setSignal] = useState<StateSignal>(() =>
-    computeState(domain.id, totalCount, docsCount, outputsCount),
-  )
-
-  useEffect(() => {
-    setSignal(computeState(domain.id, totalCount, docsCount, outputsCount))
-  }, [domain.id, totalCount, docsCount, outputsCount])
+  const style    = DOMAIN_STYLES[colorIndex % DOMAIN_STYLES.length]
+  const segments = getDomainSegments(domain.title)
+  const isDark   = style.text === 'text-[#f8f4eb]'
+  const iconColor = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
+  const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   return (
     <Link
       href={`/app/domains/${domain.id}`}
-      className={`flex flex-col h-full rounded-2xl px-6 py-6 transition hover:opacity-90 ${style.bg}`}
+      className={`flex flex-col h-full transition-transform duration-150 ease-out hover:scale-[1.02] ${style.bg}`}
+      style={{ borderRadius: 20, minHeight: 190, padding: 28, overflow: 'hidden' }}
     >
-      {/* Title */}
       <div className={`text-[18px] font-semibold leading-snug mb-4 ${style.text}`}>
         {domain.title}
       </div>
 
-      {/* State signal — primary */}
-      <div className="flex-1">
-        <div
-          className={`inline-block text-[12px] font-semibold rounded-full px-2.5 py-0.5 mb-2 ${style.stateBadge} ${signal.isAttention ? 'ring-1 ring-current/20' : ''}`}
-        >
-          {signal.label}
-        </div>
-        <p className={`text-[13px] leading-snug ${signal.isAttention ? style.text : style.meta}`}>
-          {signal.secondary}
-        </p>
+      <div className="flex-1 mb-4">
+        {segments.length > 0 ? (
+          <MiniSegmentBar
+            domainId={domain.id}
+            segments={segments}
+            labelColor={style.labelColor}
+          />
+        ) : (
+          <p style={{ fontSize: 12, color: style.labelColor, margin: 0 }}>
+            No topics yet
+          </p>
+        )}
       </div>
 
-      {/* Entry affordance */}
-      <div className={`text-[14px] font-semibold ${style.meta} mt-5`}>
-        Open →
+      {/* Material counts */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 10,
+        rowGap: 6,
+        marginBottom: 20,
+        borderTop: isDark ? '1px solid rgba(255,255,255,0.35)' : '1px solid rgba(0,0,0,0.18)',
+        paddingTop: 12,
+      }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: hv, fontSize: 13, fontWeight: 500, color: iconColor, whiteSpace: 'nowrap' }}>
+          <CardDocIcon color={iconColor} />
+          {docCount} {docCount === 1 ? 'document' : 'documents'}
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: hv, fontSize: 13, fontWeight: 500, color: iconColor, whiteSpace: 'nowrap' }}>
+          <CardNoteIcon color={iconColor} />
+          {noteCount} {noteCount === 1 ? 'note' : 'notes'}
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: hv, fontSize: 13, fontWeight: 500, color: iconColor, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 13, lineHeight: 1 }}>▣</span>
+          {outputCount} {outputCount === 1 ? 'activity output' : 'activity outputs'}
+        </span>
+      </div>
+
+      {/* CTA */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '8px 14px',
+          borderRadius: 999,
+          fontSize: 14,
+          fontWeight: 500,
+          background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
+          color: isDark ? '#FFFFFF' : '#1A1A1A',
+          border: isDark ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.15)',
+        }}>
+          Continue planning →
+        </span>
       </div>
     </Link>
+  )
+}
+
+function CardDocIcon({ color }: { color: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke={color} strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
+      <path d="M10 1v3h3" stroke={color} strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
+      <path d="M5.5 7.5h5M5.5 10h5" stroke={color} strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function CardNoteIcon({ color }: { color: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <rect x="2" y="4" width="12" height="11" rx="1" stroke={color} strokeWidth="1.25" fill="none"/>
+      <circle cx="8" cy="4" r="2.5" fill={color}/>
+    </svg>
   )
 }

@@ -61,9 +61,10 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // Entries / snapshot pages — same navy as materials for continuity
   { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
 
-  // Explore landing: cream nav over navy page — exact match only,
-  // so sub-pages (/app/explore/*) fall through to default dark nav.
+  // Reflect/Explore landing: cream nav over navy page — exact match only,
+  // so sub-pages fall through to default nav.
   { prefix: '/app/explore', exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/reflect',  exact: true, theme: 'dark',  navBg: 'bg-[#200840]' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
@@ -85,11 +86,9 @@ function getNavEntry(pathname: string): RouteThemeEntry {
 // ---------------------------------------------------------------------------
 
 const NAV_LINKS = [
-  { href: '/app/reflect',   label: 'Reflect' },
+  { href: '/app/explore',   label: 'Reflect' },
   { href: '/app/learn',     label: 'Learn' },
-  { href: '/app/explore',   label: 'Explore' },
-  { href: '/app/capture',   label: 'Capture' },
-  { href: '/app/materials', label: 'My Materials' },
+  { href: '/app/materials', label: 'Plan' },
 ]
 
 export default function GlobalNav() {

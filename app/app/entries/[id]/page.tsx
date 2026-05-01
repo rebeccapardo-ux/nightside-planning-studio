@@ -735,8 +735,8 @@ function getContinueHref(entry: EntryRow): string | null {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
+  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
   if (entry.title?.trim()) return entry.title.trim()
-  if (entry.document_type === 'advance_directive_supplement') return 'Advance Directive Supplement'
   if (entry.activity === 'values_ranking') return 'Values Ranking'
   if (entry.activity === 'fears_ranking') return 'Fears Ranking'
   if (entry.activity === 'legacy_map') return 'Legacy Map'

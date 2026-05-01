@@ -62,7 +62,7 @@ export default function DomainAssigner({
         onClick={(e) => { e.stopPropagation(); setOpen((o) => !o) }}
         className={`text-xs transition-colors ${
           theme === 'light'
-            ? 'text-[#130426]/40 hover:text-[#130426]/70'
+            ? 'text-[#130426]/70 hover:text-[#130426]'
             : 'text-[#f8f4eb]/60 hover:text-[#f8f4eb]/90'
         }`}
       >

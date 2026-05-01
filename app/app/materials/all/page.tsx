@@ -158,7 +158,7 @@ function getContinueHref(entry: EntryRow): string | null {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Advance Directive Supplement'
+  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
   if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'

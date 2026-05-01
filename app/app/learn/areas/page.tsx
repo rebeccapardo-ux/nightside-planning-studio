@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { LEARN_AREAS } from '@/lib/learn-areas'
 
 export default function LearnAreasPage() {
-  const areas = LEARN_AREAS.filter((a) => a.id !== 'admin')
+  const areas = LEARN_AREAS
 
   const CARD_STYLES = [
     { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },

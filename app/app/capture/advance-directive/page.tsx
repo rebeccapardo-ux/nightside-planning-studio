@@ -237,7 +237,7 @@ export default function AdvanceDirectivePage() {
       if (!entryId) {
         const payload = {
           user_id: user.id,
-          title: 'Advance Directive Supplement',
+          title: 'Your Wishes',
           section: 'capture',
           activity: 'advance_directive',
           document_type: 'advance_directive_supplement',
@@ -338,7 +338,7 @@ export default function AdvanceDirectivePage() {
         <div>
           <div className="mb-8">
             <h1 className="ns-title-activity text-[#130426]">
-              Advance Directive Supplement
+              Your Wishes
             </h1>
 
             {/* Explanatory block — always visible */}
@@ -351,7 +351,7 @@ export default function AdvanceDirectivePage() {
               </p>
               <p className="text-[#130426]/85 text-sm leading-relaxed mb-3">
                 You can revisit, edit, or export it in{' '}
-                <Link href="/app/materials" className="underline underline-offset-2 hover:text-[#130426]/70 transition-colors">My Materials</Link>.
+                <Link href="/app/materials" className="underline underline-offset-2 hover:text-[#130426]/70 transition-colors">Your Plan</Link>.
               </p>
               <a
                 href={RESOURCE_HUB_URL}
@@ -442,7 +442,7 @@ export default function AdvanceDirectivePage() {
                     <p className="text-sm text-[#130426]/60">
                       You can return to this anytime in{' '}
                       <Link href="/app/materials" className="underline">
-                        My Materials
+                        Your Plan
                       </Link>
                       .
                     </p>
@@ -811,7 +811,7 @@ function MaterialsPanel({
           className="shrink-0 transition-all"
           style={{ fontSize: 14, lineHeight: '20px', fontWeight: 500, color: '#EDE7FF', textDecoration: 'underline', textUnderlineOffset: '3px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
-          + Add from My Materials
+          + Add Materials
         </button>
       </div>
 
@@ -1423,11 +1423,11 @@ function MaterialsBrowser({
 // ---------------------------------------------------------------------------
 
 function getDisplayTitle(entry: PanelEntry): string {
+  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
   if (entry.title?.trim()) return entry.title.trim()
   if (entry.activity === 'values_ranking') return 'Values Ranking'
   if (entry.activity === 'fears_ranking') return 'Fears Ranking'
   if (entry.activity === 'legacy_map') return 'Legacy Map'
-  if (entry.document_type === 'advance_directive_supplement') return 'Advance Directive Supplement'
   if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'

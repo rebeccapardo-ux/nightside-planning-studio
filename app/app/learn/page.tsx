@@ -60,19 +60,17 @@ export default function LearnPage() {
         }
       `}</style>
 
-      <div className="min-h-screen" style={{ background: '#F29836' }}>
+      <div className="min-h-screen" style={{ background: '#BBABF4' }}>
 
         {/* ── HERO ── */}
-        <div style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px', paddingTop: '88px', paddingBottom: '32px' }}>
+        <div style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px', paddingTop: '80px', paddingBottom: '32px' }}>
           <div style={inner}>
             <div className="ln-animate">
-              <h1 className="ns-title-section" style={{ color: '#FFFFFF' }}>
+              <h1 className="ns-title-section" style={{ fontSize: 64, fontWeight: 500, lineHeight: 1.08, color: '#130426', margin: 0 }}>
                 <span className="ln-underline">Learn</span>
               </h1>
             </div>
-            <p className="ns-lead-section"
-              style={{ color: '#FFFFFF', marginTop: '20px', maxWidth: '620px' }}
-            >
+            <p style={{ fontSize: 20, fontWeight: 400, lineHeight: 1.55, color: 'rgba(19,4,38,0.78)', marginTop: 20, marginBottom: 0, maxWidth: 760 }}>
               Build the knowledge you need to make informed, practical decisions.
             </p>
           </div>
@@ -83,38 +81,25 @@ export default function LearnPage() {
           <div style={inner}>
 
             <div className="ln-animate">
-              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#FFFFFF', marginTop: 0, marginBottom: '20px', maxWidth: '760px' }}>
-                Planning for the end of life can feel overwhelming, especially when navigating complex healthcare systems, legal requirements, and unfamiliar terminology. Learning about your options helps ensure your plans are practical, legally sound, and aligned with your values.
+              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '20px', maxWidth: '760px' }}>
+                Planning for the end of life can feel overwhelming, especially when navigating complex healthcare systems, legal requirements, and unfamiliar terminology.
               </p>
-              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#FFFFFF', marginTop: 0, marginBottom: '20px', maxWidth: '760px' }}>
-                Some of the most important details in end-of-life planning depend on where you live. What makes a will valid? What are the rules for organ donation? What burial or cremation options are available in your province? This section helps make those questions more manageable by combining a general overview with tools that point you to province-specific guidance.
+              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '8px', maxWidth: '760px' }}>
+                You might have questions like:
               </p>
-              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#FFFFFF', marginTop: 0, marginBottom: '20px', maxWidth: '760px' }}>
-                The resources linked throughout this section are designed to complement the platform by helping you find relevant templates, forms, and explanations for decisions about advance directives, decision-makers, wills, powers of attorney, and more.
+              <div style={{ paddingLeft: 20, marginBottom: '20px' }}>
+                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '2px', maxWidth: '760px' }}>What makes a will valid?</p>
+                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '2px', maxWidth: '760px' }}>What are the rules for organ donation?</p>
+                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: 0, maxWidth: '760px' }}>What burial or cremation options are available in my province?</p>
+              </div>
+              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '20px', maxWidth: '760px' }}>
+                Some of the most important details in end-of-life planning depend on where you live, and learning about your options helps ensure your plans are practical, legally sound, and aligned with your values. This section helps make those questions more manageable by combining a general overview with tools that point you to province-specific guidance. The resources linked throughout this section are designed to complement the platform by helping you find relevant templates, forms, and explanations for decisions about advance directives, decision-makers, wills, powers of attorney, and more.
               </p>
-              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#FFFFFF', marginTop: 0, marginBottom: 0, maxWidth: '760px' }}>
+              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: 0, maxWidth: '760px' }}>
                 Learning about your options can also help reduce barriers to equitable care. It can support you in understanding your rights, preparing practical documents, and identifying approaches that reflect your cultural, personal, or community needs.
               </p>
             </div>
 
-            {/* What you'll do */}
-            <div className="ln-animate" style={{ marginTop: '28px' }}>
-              <p style={{ fontFamily: hv, fontSize: '16px', fontWeight: 600, lineHeight: '1.4', color: '#FFFFFF', marginTop: 0, marginBottom: '12px' }}>
-                What you&apos;ll do in this section
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  'Get an overview of key areas of end-of-life planning.',
-                  'Test your knowledge with Deathcare Trivia.',
-                  'Explore province-specific resources, templates, and guidance for tools like advance directives, decision-makers, wills, and powers of attorney.',
-                  'Use what you learn here to support later reflection, exploration, and documentation.',
-                ].map((line) => (
-                  <p key={line} style={{ fontFamily: hv, fontSize: '16px', fontWeight: 400, lineHeight: '1.6', color: '#FFFFFF', margin: 0 }}>
-                    {line}
-                  </p>
-                ))}
-              </div>
-            </div>
 
 
           </div>

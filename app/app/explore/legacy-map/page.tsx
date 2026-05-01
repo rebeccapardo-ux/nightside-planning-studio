@@ -523,7 +523,7 @@ export default function LegacyMapPage() {
               <ul className="mt-3 max-w-2xl space-y-1 text-sm" style={{ color: "rgba(255,255,255,0.68)" }}>
                 <li>Click any circle to add a moment and optional notes</li>
                 <li>Drag moments along the path to reorder them</li>
-                <li>Save your progress and find your map in <Link href="/app/materials" style={{ color: "rgba(255,255,255,0.88)", textDecoration: "underline" }}>My Materials</Link> to review and revise</li>
+                <li>Save your progress and find your map in <Link href="/app/materials" style={{ color: "rgba(255,255,255,0.88)", textDecoration: "underline" }}>Your Plan</Link> to review and revise</li>
               </ul>
             </div>
 

@@ -24,7 +24,7 @@ type Props = {
   saveMode: VoiceNoteSaveMode
   onSaved: (note: Note) => void
   // Visual context
-  buttonLabel?: string
+  buttonLabel?: React.ReactNode
   theme?: 'light' | 'dark'
   // Skip the idle button and go straight to recording
   autoStart?: boolean
@@ -134,7 +134,7 @@ export default function VoiceNoteButton({
           gap: 5,
           fontSize: 12,
           fontWeight: 500,
-          color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.45)',
+          color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.60)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',

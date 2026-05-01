@@ -15,7 +15,7 @@ export type LearnArea = {
 export const LEARN_AREAS: LearnArea[] = [
   {
     id: 'healthcare',
-    title: 'Healthcare',
+    title: 'Healthcare Wishes',
     description:
       'Plan for a time when you may not be able to make decisions about your care.',
     color: '#6B8E8D',
@@ -31,7 +31,7 @@ export const LEARN_AREAS: LearnArea[] = [
   },
   {
     id: 'deathcare',
-    title: 'Deathcare & Body Disposition',
+    title: 'Deathcare',
     description:
       'Consider burial, cremation, and other options for care of the body after death.',
     color: '#8E6B8D',
@@ -75,7 +75,7 @@ export const LEARN_AREAS: LearnArea[] = [
     },
   },
   {
-    id: 'admin',
+    id: 'personal-admin',
     title: 'Personal Admin',
     description:
       'Organize practical information your loved ones will need to manage your affairs.',

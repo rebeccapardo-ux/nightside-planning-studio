@@ -28,6 +28,44 @@ function getDomainAllowedTypes(domainTitle: string): FragmentType[] {
 }
 
 // ---------------------------------------------------------------------------
+// Source D — reflect prompt notes, domain-specific allowed lists
+// Exact prompt_context strings must match REFLECT_PROMPT_META labels exactly.
+// ---------------------------------------------------------------------------
+
+const DOMAIN_FRAGMENT_PROMPTS: Record<string, string[]> = {
+  legacy: [
+    'What matters most to you right now?',
+    'What are a few of your favorite rituals or special traditions?',
+    'If you could leave behind a time capsule for future generations of your family, what 3 items would you include and why?',
+    'If you could write your own obituary, what key elements would you include?',
+    'What are three things that bring you the most joy in life?',
+    "Think of a mentor or role model who has passed. What's the most valuable lesson they left you with?",
+    'If you could relive one moment in your life, not to change it but to experience it again, what moment would you choose?',
+    "If you had the chance to write a letter to your younger self about life's most important lessons, what would you include?",
+    "What's one thing you hope people will always remember about you, no matter how much time has passed?",
+    'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
+    'If you could be remembered for one specific contribution to your community, family, or loved ones, what would it be?',
+    "You have the opportunity to donate to one cause in your will. What's the focus of your legacy gift?",
+  ],
+  deathcare: [
+    'What matters most to you right now?',
+    'If you could choose the setting for your final moments, where would you be and who would be with you?',
+    'What are a few of your favorite rituals or special traditions?',
+    'Have you ever witnessed someone have a "good death"? What made it good?',
+    "What's one thing you hope people will always remember about you, no matter how much time has passed?",
+    'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
+    'If you could choose one personal item to be included in your final resting place, what would it be?',
+  ],
+}
+
+function getDomainKeyForFragments(domainTitle: string): string | null {
+  const lower = domainTitle.toLowerCase()
+  if (lower.includes('legacy')) return 'legacy'
+  if (lower.includes('deathcare') || lower.includes('death care')) return 'deathcare'
+  return null
+}
+
+// ---------------------------------------------------------------------------
 // Suitability filter
 // ---------------------------------------------------------------------------
 
@@ -149,8 +187,12 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
     results.push({ text, type })
   }
 
-  // Fetch all three source types in parallel
-  const [valuesRes, reflectRes, adRes] = await Promise.all([
+  // Source D — reflect prompt notes for this domain
+  const domainKey = getDomainKeyForFragments(domainTitle)
+  const allowedPrompts = domainKey ? (DOMAIN_FRAGMENT_PROMPTS[domainKey] ?? []) : []
+
+  // Fetch all sources in parallel (Source D only runs when domain has allowed prompts)
+  const [valuesRes, reflectRes, adRes, promptNotesRes] = await Promise.all([
     supabase
       .from('entries')
       .select('id, title, content, activity, document_type')
@@ -166,6 +208,14 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
       .select('id, title, content, activity, document_type')
       .eq('user_id', user.id)
       .eq('document_type', 'advance_directive_supplement'),
+    allowedPrompts.length > 0
+      ? supabase
+          .from('notes')
+          .select('id, content, prompt_context')
+          .eq('user_id', user.id)
+          .eq('origin_type', 'prompt')
+          .in('prompt_context', allowedPrompts)
+      : Promise.resolve({ data: null, error: null }),
   ])
 
   // SOURCE A — Values Ranking: top row only (essential)
@@ -205,6 +255,14 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
       const words = phrase.split(/\s+/)
       if (words.length > 10) phrase = words.slice(0, 10).join(' ')
       if (phrase) addCandidate(phrase, 'C')
+    }
+  }
+
+  // SOURCE D — Reflect prompt notes: exact prompt_context match, domain-specific list
+  for (const note of ((promptNotesRes.data ?? []) as { id: string; content: string; prompt_context: string | null }[])) {
+    if (typeof note.content === 'string' && note.content.trim()) {
+      const phrase = extractReflectPhrase(note.content)
+      if (phrase) addCandidate(phrase, 'B')
     }
   }
 
@@ -448,9 +506,13 @@ function State3({ fragments }: { fragments: Fragment[] }) {
 export default function FragmentField({
   domainId,
   domainTitle,
+  backgroundMode = false,
+  minFragments = 1,
 }: {
   domainId: string
   domainTitle: string
+  backgroundMode?: boolean
+  minFragments?: number
 }) {
   const [fragments, setFragments] = useState<Fragment[] | null>(null)
 
@@ -458,8 +520,68 @@ export default function FragmentField({
     buildFragments(domainTitle).then(setFragments)
   }, [domainId, domainTitle])  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Don't render until resolved; render nothing on 0 fragments
   if (fragments === null || fragments.length === 0) return null
+
+  // Background mode — single gently curved SVG textPath behind the header title
+  if (backgroundMode) {
+    // Respect minimum fragment threshold — render nothing if not enough content
+    if (fragments.length < minFragments) return null
+
+    // Wide separator so each phrase reads as distinct (≥24px space each side at 18px)
+    const separator = '      ·      '
+    const unit = fragments.map(f => f.text).join(separator) + separator
+    const longContent = unit.repeat(20)
+
+    return (
+      <svg
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          overflow: 'hidden',
+          zIndex: 0,
+        }}
+        // No viewBox — coordinates are CSS pixels, so font renders at natural proportions
+      >
+        <defs>
+          {/*
+            Path in actual CSS pixels (no viewBox = no scale distortion).
+            Header is ~252px tall (56px top + ~100px content + 96px bottom padding).
+            Title occupies top ~155px. Path sits in y=170–200 — clearly below the title.
+            Bottom clearance: 252-200 = 52px > 40px minimum.
+            x range covers -600 to 1800 (beyond any typical viewport width).
+          */}
+          <path
+            id="hc-path1"
+            d="M -600,110 S -200,140 0,140 S 400,110 600,110 S 1000,140 1200,140 S 1600,110 1800,110"
+          />
+        </defs>
+
+        <text
+          fill="#F29836"
+          fillOpacity="1"
+          fontSize="18"
+          fontFamily="'Helvetica Neue', Helvetica, Arial, sans-serif"
+          fontWeight="400"
+        >
+          <textPath href="#hc-path1">
+            {longContent}
+            <animate
+              attributeName="startOffset"
+              from="0"
+              to="-1800"
+              dur="30s"
+              repeatCount="indefinite"
+            />
+          </textPath>
+        </text>
+      </svg>
+    )
+  }
 
   const count = fragments.length
 

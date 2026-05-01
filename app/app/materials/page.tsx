@@ -1,9 +1,8 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import UnassignedSection from '@/app/components/UnassignedSection'
 import DomainStateCard from '@/app/components/DomainStateCard'
+import PlanNotesGrid from '@/app/components/PlanNotesGrid'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
-import type { Container } from '@/lib/notes'
-import type { UnassignedNote, UnassignedEntry } from '@/app/components/UnassignedSection'
+import Link from 'next/link'
 
 type EntryRow = {
   id: string
@@ -15,198 +14,324 @@ type EntryRow = {
   document_type: string | null
 }
 
-export default async function MaterialsPage() {
+// ---------------------------------------------------------------------------
+// Known document types — always shown, split into in-progress / not-started
+// ---------------------------------------------------------------------------
+
+const KNOWN_DOCUMENTS = [
+  { type: 'advance_directive_supplement', label: 'Your Wishes',         href: '/app/capture/advance-directive'     },
+  { type: 'personal_admin_info',          label: 'Personal Admin Info',  href: '/app/capture/personal-admin'        },
+  { type: 'important_contacts',           label: 'Important Contacts',   href: '/app/capture/important-contacts'    },
+  { type: 'financial_information',        label: 'Financial Information', href: '/app/capture/financial-information' },
+  { type: 'devices_and_accounts',         label: 'Devices & Accounts',   href: '/app/capture/devices-and-accounts'  },
+  { type: 'keepsake_inventory',           label: 'Keepsake Inventory',   href: '/app/capture/keepsake-inventory'    },
+]
+
+const STRUCTURED_ACTIVITIES = ['values_ranking', 'fears_ranking', 'legacy_map']
+
+// ---------------------------------------------------------------------------
+
+export default async function PlanPage() {
   const supabase = await createSupabaseServerClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return <div>Not authenticated</div>
 
-  if (!user) {
-    return <div>Not authenticated</div>
-  }
-
-  // All user entries
-  const { data: entries, error } = await supabase
-    .from('entries')
-    .select('id, title, content, created_at, section, activity, document_type')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error(error)
-    return <div>Error loading materials</div>
-  }
-
-  // Working Outputs: structured exercise outputs only.
-  const STRUCTURED_ACTIVITIES = ['values_ranking', 'fears_ranking', 'legacy_map']
-  const documents = entries?.filter((e) => e.document_type || e.section === 'capture') || []
-  const activityEntries = entries?.filter((e) => STRUCTURED_ACTIVITIES.includes(e.activity ?? '')) || []
-
-  // All user notes (for previews + unassigned detection)
-  const { data: allNotes } = await supabase
-    .from('notes')
-    .select('id, content, created_at, origin_type, prompt_context, note_mode, audio_url, transcript, duration_seconds, transcription_status')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  // Domain containers
-  const { data: domainContainers } = await supabase
+  // Ensure Personal Admin domain exists
+  const { data: existingPA } = await supabase
     .from('containers')
-    .select('id, title')
+    .select('id')
     .eq('type', 'domain')
-    .order('title')
+    .ilike('title', '%personal%')
+    .limit(1)
 
-  const domainIds = domainContainers?.map((d) => d.id) ?? []
-
-  // All note-domain and entry-domain links
-  let allNoteDomainLinks: { note_id: string; container_id: string }[] = []
-  let allEntryDomainLinks: { entry_id: string; container_id: string }[] = []
-
-  if (domainIds.length > 0) {
-    const [noteLinkResult, entryLinkResult] = await Promise.all([
-      supabase.from('container_notes').select('note_id, container_id').in('container_id', domainIds),
-      supabase.from('container_entries').select('entry_id, container_id').in('container_id', domainIds),
-    ])
-    allNoteDomainLinks = noteLinkResult.data ?? []
-    allEntryDomainLinks = entryLinkResult.data ?? []
+  if (!existingPA || existingPA.length === 0) {
+    await supabase
+      .from('containers')
+      .insert({ user_id: user.id, type: 'domain', title: 'Personal Admin' })
   }
 
-  // Build bidirectional maps
-  const noteDomainMap: Record<string, string[]> = {}
-  const domainNoteCount: Record<string, number> = {}
-  for (const link of allNoteDomainLinks) {
-    if (!noteDomainMap[link.note_id]) noteDomainMap[link.note_id] = []
-    noteDomainMap[link.note_id].push(link.container_id)
-    domainNoteCount[link.container_id] = (domainNoteCount[link.container_id] ?? 0) + 1
-  }
+  const [
+    { data: entries },
+    { data: allNotesRaw },
+    { data: domainContainers },
+    { data: noteLinks },
+    { data: entryLinks },
+  ] = await Promise.all([
+    supabase
+      .from('entries')
+      .select('id, title, content, created_at, section, activity, document_type')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('notes')
+      .select('id, content, created_at, origin_type, prompt_context, note_mode, transcript')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('containers')
+      .select('id, title')
+      .eq('type', 'domain')
+      .order('title'),
+    supabase
+      .from('container_notes')
+      .select('note_id, container_id'),
+    supabase
+      .from('container_entries')
+      .select('entry_id, container_id'),
+  ])
 
-  const entryDomainMap: Record<string, string[]> = {}
-  const domainEntryCount: Record<string, number> = {}
-  for (const link of allEntryDomainLinks) {
-    if (!entryDomainMap[link.entry_id]) entryDomainMap[link.entry_id] = []
-    entryDomainMap[link.entry_id].push(link.container_id)
-    domainEntryCount[link.container_id] = (domainEntryCount[link.container_id] ?? 0) + 1
-  }
+  const allNotes = allNotesRaw ?? []
+  const allDomains = domainContainers ?? []
 
-  // Combined item count per domain
-  const domainTotalCounts: Record<string, number> = {}
-  for (const [dId, c] of Object.entries(domainNoteCount)) {
-    domainTotalCounts[dId] = (domainTotalCounts[dId] ?? 0) + c
-  }
-  for (const [dId, c] of Object.entries(domainEntryCount)) {
-    domainTotalCounts[dId] = (domainTotalCounts[dId] ?? 0) + c
-  }
-
-  // Per-domain doc and output counts (for state signal)
-  const domainDocCount: Record<string, number> = {}
-  const domainOutputCount: Record<string, number> = {}
-  for (const link of allEntryDomainLinks) {
-    const entry = entries?.find((e) => e.id === link.entry_id)
-    if (!entry) continue
-    if (entry.document_type) {
-      domainDocCount[link.container_id] = (domainDocCount[link.container_id] ?? 0) + 1
+  // --- Per-domain material counts ---
+  const domainCounts: Record<string, { docs: number; notes: number; outputs: number }> = {}
+  for (const domain of allDomains) {
+    const linkedNoteIds = new Set(
+      (noteLinks ?? []).filter(l => l.container_id === domain.id).map(l => l.note_id)
+    )
+    const linkedEntryIds = new Set(
+      (entryLinks ?? []).filter(l => l.container_id === domain.id).map(l => l.entry_id)
+    )
+    let docs = 0, outputs = 0
+    for (const entryId of linkedEntryIds) {
+      const entry = (entries ?? []).find(e => e.id === entryId)
+      if (!entry) continue
+      if (entry.document_type) docs++
+      else if (entry.activity && STRUCTURED_ACTIVITIES.includes(entry.activity)) outputs++
     }
-    if (entry.activity) {
-      domainOutputCount[link.container_id] = (domainOutputCount[link.container_id] ?? 0) + 1
-    }
+    domainCounts[domain.id] = { docs, notes: linkedNoteIds.size, outputs }
   }
 
-  // Unassigned: notes/entries not linked to any domain
-  const assignedNoteIds = new Set(allNoteDomainLinks.map((l) => l.note_id))
-  const assignedEntryIds = new Set(allEntryDomainLinks.map((l) => l.entry_id))
-
-  const unassignedNoteData: UnassignedNote[] = (allNotes ?? [])
-    .filter((n) => !assignedNoteIds.has(n.id))
-    .map((n) => ({
-      id: n.id,
-      content: n.content,
-      timestamp: formatDate(n.created_at),
-      originType: n.origin_type ?? null,
-      promptContext: n.prompt_context ?? null,
-      noteMode: (n.note_mode as 'text' | 'audio' | null) ?? null,
-      audioUrl: n.audio_url ?? null,
-      transcript: n.transcript ?? null,
-      durationSeconds: n.duration_seconds ?? null,
-      transcriptionStatus: (n.transcription_status as 'pending' | 'complete' | 'failed' | null) ?? null,
-    }))
-
-  const seenEntryIds = new Set<string>()
-  const unassignedEntryData: UnassignedEntry[] = []
-  for (const e of [...documents, ...activityEntries]) {
-    if (!seenEntryIds.has(e.id) && !assignedEntryIds.has(e.id)) {
-      seenEntryIds.add(e.id)
-      unassignedEntryData.push({
-        id: e.id,
-        title: getDisplayTitle(e),
-        kind: e.document_type ? 'Document' : e.activity ? 'Working output' : null,
-        timestamp: formatDate(e.created_at),
-        continueHref: getContinueHref(e),
-        activity: e.activity ?? null,
-      })
+  // --- Documents: split into in-progress / not-started ---
+  const inProgressDocs: typeof KNOWN_DOCUMENTS = []
+  const notStartedDocs: typeof KNOWN_DOCUMENTS = []
+  for (const doc of KNOWN_DOCUMENTS) {
+    const entry = entries?.find((e) => e.document_type === doc.type)
+    if (entry && hasContent(entry)) {
+      inProgressDocs.push(doc)
+    } else {
+      notStartedDocs.push(doc)
     }
   }
 
-  const allDomains: Container[] = domainContainers ?? []
-  const hasUnassigned = unassignedNoteData.length > 0 || unassignedEntryData.length > 0
-  const hasDomains = allDomains.length > 0
+  // --- Working outputs: dedup by activity, most recent only ---
+  const seenActivities = new Set<string>()
+  const workingOutputs = (entries ?? []).filter((e) => {
+    if (!e.activity || !STRUCTURED_ACTIVITIES.includes(e.activity)) return false
+    if (seenActivities.has(e.activity)) return false
+    seenActivities.add(e.activity)
+    return true
+  })
+
+  // ---------------------------------------------------------------------------
+  // Styles
+  // ---------------------------------------------------------------------------
+
+  const apfel = "'Apfel Grotezk', sans-serif"
+  const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+  const sectionHeader: React.CSSProperties = {
+    fontFamily: apfel,
+    fontSize: 28,
+    fontWeight: 500,
+    color: '#FFFFFF',
+    marginBottom: 24,
+    marginTop: 0,
+  }
+
+  const groupPanel: React.CSSProperties = {
+    background: 'rgba(19,4,38,0.45)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+  }
+
+  const groupHeader: React.CSSProperties = {
+    fontFamily: apfel,
+    fontSize: 22,
+    fontWeight: 500,
+    color: '#FFFFFF',
+    marginBottom: 16,
+    marginTop: 0,
+  }
+
+  const columnHeader: React.CSSProperties = {
+    fontFamily: inter,
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#F29836',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    marginBottom: 10,
+    marginTop: 0,
+  }
+
+  const docButton: React.CSSProperties = {
+    width: 260,
+    minHeight: 36,
+    background: '#F8F4EB',
+    borderRadius: 999,
+    padding: '8px 14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    transition: 'background 150ms ease',
+  }
+
+  const outputButton: React.CSSProperties = {
+    width: 220,
+    minHeight: 36,
+    background: '#FFFFFF',
+    borderRadius: 999,
+    padding: '8px 14px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    transition: 'background 150ms ease',
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
 
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'radial-gradient(circle at 20% 20%, #2C3777 0%, #130426 60%)' }}
+      style={{ background: '#F8F4EB' }}
     >
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="mb-20">
-          <SectionTitleReveal title="My Materials" color="#FFFFFF" />
-          <p className="ns-lead-section text-white" style={{ marginTop: '20px', maxWidth: '560px' }}>
-            All your materials in one place, for you to review, refine, and export.
-          </p>
+      <style>{`
+        .plan-pill-doc:hover  { background: #EDE7D9 !important; }
+        .plan-pill-doc:hover .plan-pill-title  { text-decoration: underline; }
+        .plan-pill-out:hover  { background: #EDEDED !important; }
+        .plan-pill-out:hover .plan-pill-title  { text-decoration: underline; }
+      `}</style>
+
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px 80px' }}>
+
+        {/* Page header */}
+        <div style={{ marginBottom: 48 }}>
+          <SectionTitleReveal title="Your Plan" color="#130426" size={64} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-16 items-start">
-
-          {/* Left: organized by area */}
-          <div>
-            {hasDomains && (
-              <section>
-                <h2 className="text-h3 text-white mb-8" style={{ fontSize: '28px', marginTop: '48px' }}>
-                  Organized by area
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" style={{ gridAutoRows: '1fr' }}>
-                  {allDomains.map((domain, i) => (
-                    <DomainStateCard
-                      key={domain.id}
-                      domain={domain}
-                      colorIndex={i}
-                      totalCount={domainTotalCounts[domain.id] ?? 0}
-                      docsCount={domainDocCount[domain.id] ?? 0}
-                      outputsCount={domainOutputCount[domain.id] ?? 0}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {!hasDomains && !hasUnassigned && (
-              <p className="text-body text-white">
-                Nothing here yet. Start by completing an activity or saving a note.
+        {/* ── Areas of planning ── */}
+        <section style={{ marginBottom: 56 }}>
+          <h2 style={{ ...sectionHeader, color: '#130426' }}>Areas of planning</h2>
+          <p style={{ fontFamily: inter, fontSize: 17, color: 'rgba(19,4,38,0.85)', maxWidth: 600, marginBottom: 24, marginTop: 0, lineHeight: 1.6 }}>
+            Each area is where you build and organize your plan.<br/>Below you can find all the materials you've created across areas.
+          </p>
+          <div style={{ background: 'rgba(19,4,38,0.04)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 24, padding: 24 }}>
+            {allDomains.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 20 }}>
+                {allDomains.map((domain, i) => (
+                  <DomainStateCard
+                    key={domain.id}
+                    domain={domain}
+                    colorIndex={i}
+                    docCount={domainCounts[domain.id]?.docs ?? 0}
+                    noteCount={domainCounts[domain.id]?.notes ?? 0}
+                    outputCount={domainCounts[domain.id]?.outputs ?? 0}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontFamily: inter, fontSize: 16, color: 'rgba(19,4,38,0.45)', margin: 0 }}>
+                No areas yet.
               </p>
             )}
           </div>
+        </section>
 
-          {/* Right: unassigned materials */}
-          <div className="lg:sticky lg:top-6">
-            {hasUnassigned && (
-              <UnassignedSection
-                notes={unassignedNoteData}
-                entries={unassignedEntryData}
-                allDomains={allDomains}
-                hasDomains={hasDomains}
-              />
-            )}
+        {/* ── Your materials ── */}
+        <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: 48, paddingTop: 32 }}>
+        <div style={{ background: 'rgba(44,55,119,0.85)', borderRadius: 20, padding: 28 }}>
+          <h2 style={sectionHeader}>Your materials</h2>
+
+          {/* Documents group */}
+          <div style={groupPanel}>
+            <h3 style={groupHeader}>Documents</h3>
+            <p style={{ fontFamily: inter, fontSize: 14, color: 'rgba(255,255,255,0.7)', maxWidth: 480, marginBottom: 16, marginTop: 0, lineHeight: 1.55 }}>
+              Templates to help you document what matters and stay organized.<br />
+              For legal requirements, see guidance in the <Link href="/app/learn" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'underline' }}>Learn</Link> section.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+              {/* In progress */}
+              <div>
+                <p style={columnHeader}>In progress</p>
+                {inProgressDocs.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {inProgressDocs.map((doc) => (
+                      <Link key={doc.type} href={doc.href} style={{ textDecoration: 'none' }}>
+                        <div className="plan-pill-doc" style={docButton}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                            <DocIcon />
+                            <span className="plan-pill-title" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#1A1A1A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.label}</span>
+                          </div>
+                          <span style={{ fontFamily: inter, fontSize: 13, color: 'rgba(26,26,26,0.6)', flexShrink: 0 }}>→</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontFamily: inter, fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>None yet</p>
+                )}
+              </div>
+
+              {/* Not started */}
+              <div>
+                <p style={columnHeader}>Not started</p>
+                {notStartedDocs.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {notStartedDocs.map((doc) => (
+                      <Link key={doc.type} href={doc.href} style={{ textDecoration: 'none' }}>
+                        <div className="plan-pill-doc" style={docButton}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                            <DocIcon />
+                            <span className="plan-pill-title" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#1A1A1A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.label}</span>
+                          </div>
+                          <span style={{ fontFamily: inter, fontSize: 13, color: 'rgba(26,26,26,0.6)', flexShrink: 0 }}>→</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontFamily: inter, fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>All started</p>
+                )}
+              </div>
+
+            </div>
           </div>
 
+          {/* Activity outputs group */}
+          {workingOutputs.length > 0 && (
+            <div style={groupPanel}>
+              <h3 style={groupHeader}>Activity outputs</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {workingOutputs.map((entry) => (
+                  <Link key={entry.id} href={`/app/entries/${entry.id}`} style={{ textDecoration: 'none' }}>
+                    <div className="plan-pill-out" style={outputButton}>
+                      <span className="plan-pill-title" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#1A1A1A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{getDisplayTitle(entry)}</span>
+                      <span style={{ fontFamily: inter, fontSize: 13, color: 'rgba(26,26,26,0.6)', flexShrink: 0 }}>→</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes group */}
+          {allNotes.length > 0 && (
+            <div style={{ ...groupPanel, marginBottom: 0 }}>
+              <h3 style={groupHeader}>Notes</h3>
+              <PlanNotesGrid notes={allNotes} allDomains={allDomains} />
+            </div>
+          )}
+
+        </div>
         </div>
       </div>
     </div>
@@ -217,59 +342,37 @@ export default async function MaterialsPage() {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getContinueHref(entry: EntryRow): string | null {
-  if (entry.document_type === 'advance_directive_supplement') return '/app/capture/advance-directive'
-  if (entry.document_type === 'personal_admin_info') return '/app/capture/personal-admin'
-  if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
-  if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
-  if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
-  // Working outputs: open snapshot view, not the exercise directly
-  if (entry.activity === 'values_ranking') return `/app/entries/${entry.id}`
-  if (entry.activity === 'fears_ranking') return `/app/entries/${entry.id}`
-  if (entry.activity === 'legacy_map') return `/app/entries/${entry.id}`
-  if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
-  return null
+function DocIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke="#2C3777" strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
+      <path d="M10 1v3h3" stroke="#2C3777" strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
+      <path d="M5.5 7.5h5M5.5 10h5" stroke="#2C3777" strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function hasContent(entry: EntryRow): boolean {
+  const c = entry.content
+  if (typeof c === 'string') return c.trim().length > 0
+  if (c && typeof c === 'object') {
+    return Object.values(c as Record<string, unknown>).some(
+      (v) => typeof v === 'string' && (v as string).trim().length > 0
+    )
+  }
+  return false
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Advance Directive Supplement'
+  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
   if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
-  if (entry.document_type === 'keepsake_inventory') return 'Meaningful Keepsakes'
+  if (entry.document_type === 'keepsake_inventory') return 'Keepsake Inventory'
   if (entry.activity === 'values_ranking') return 'Values Ranking'
   if (entry.activity === 'fears_ranking') return 'Fears Ranking'
   if (entry.activity === 'legacy_map') return 'Legacy Map'
   if (entry.title?.trim()) return entry.title.trim()
-
-  const preview = getPreviewText(entry)
-  return preview ? truncate(preview, 72) : 'Untitled'
-}
-
-function getPreviewText(entry: EntryRow): string | null {
-  const content = entry.content
-  if (typeof content === 'string' && content.trim().length > 0) {
-    return truncate(content.trim(), 180)
-  }
-  if (!content || typeof content !== 'object') return null
-
-  const values = Object.values(content as Record<string, unknown>)
-    .filter((v) => typeof v === 'string')
-    .map((v) => (v as string).trim())
-    .filter(Boolean)
-
-  return values.length > 0 ? truncate(values[0], 180) : null
-}
-
-function formatDate(dateString: string | null): string | null {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  if (Number.isNaN(date.getTime())) return null
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
-  return `${text.slice(0, maxLength).trim()}…`
+  return 'Untitled'
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 type ExploreActivityCardProps = {
   title: string
@@ -9,13 +9,51 @@ type ExploreActivityCardProps = {
   href?: string
   status?: 'available' | 'coming_soon'
   index: number
+  cta?: string
 }
 
-const CARD_STYLES = [
-  { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },
-  { bg: 'bg-[#f8f4eb]', text: 'text-[#130426]', pill: 'bg-[#2C3777] text-[#f8f4eb]' },
-  // Coral instead of navy — navy cards blend into the navy page background
-  { bg: 'bg-[#DB5835]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },
+type CardConfig = {
+  bg: string
+  border: string
+  titleColor: string
+  bodyColor: string
+  ctaBg: string
+  ctaColor: string
+}
+
+const CARD_CONFIGS: CardConfig[] = [
+  {
+    bg: '#BBABF4',
+    border: 'none',
+    titleColor: '#130426',
+    bodyColor: 'rgba(19,4,38,0.78)',
+    ctaBg: '#130426',
+    ctaColor: '#FFFFFF',
+  },
+  {
+    bg: '#1B1744',
+    border: 'none',
+    titleColor: '#FFFFFF',
+    bodyColor: 'rgba(255,255,255,0.82)',
+    ctaBg: '#F8F4EB',
+    ctaColor: '#130426',
+  },
+  {
+    bg: '#DB5835',
+    border: 'none',
+    titleColor: '#FFFFFF',
+    bodyColor: 'rgba(255,255,255,0.82)',
+    ctaBg: '#F8F4EB',
+    ctaColor: '#130426',
+  },
+  {
+    bg: '#F8F4EB',
+    border: 'none',
+    titleColor: '#130426',
+    bodyColor: 'rgba(19,4,38,0.78)',
+    ctaBg: '#130426',
+    ctaColor: '#FFFFFF',
+  },
 ]
 
 export default function ExplorePage() {
@@ -69,46 +107,101 @@ export default function ExplorePage() {
         .ns-title-wrap.ns-visible .ns-title-underline::after {
           transform: scaleX(1);
         }
+        .explore-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+          margin-top: 56px;
+        }
+        @media (max-width: 640px) {
+          .explore-grid { grid-template-columns: 1fr; }
+        }
       `}</style>
-    <div className="min-h-screen bg-[#2C3777]">
-      <div className="max-w-5xl mx-auto px-4 py-16">
-        <div className="mb-12">
+
+      <div style={{ minHeight: '100vh', background: '#2C3777' }}>
+        <div style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+          paddingLeft: 24,
+          paddingRight: 24,
+          paddingTop: 80,
+          paddingBottom: 72,
+        }}>
+
           <div className="ns-title-wrap">
-            <h1 className="ns-title-section text-white"><span className="ns-title-underline">Explore</span></h1>
+            <h1 className="ns-title-section" style={{
+              fontSize: 64,
+              fontWeight: 500,
+              lineHeight: 1.08,
+              color: '#FFFFFF',
+              margin: 0,
+            }}>
+              <span className="ns-title-underline">Reflect</span>
+            </h1>
           </div>
-          <p className="ns-lead-section text-white" style={{ marginTop: '20px' }}>
-            Work through guided activities that help you test ideas, clarify what
-            matters, and create material you can return to later.
+
+          <p style={{
+            fontSize: 20,
+            fontWeight: 400,
+            lineHeight: 1.55,
+            color: 'rgba(255,255,255,0.94)',
+            maxWidth: 760,
+            marginTop: 20,
+            marginBottom: 0,
+          }}>
+            Work through guided activities that help you test ideas, clarify your
+            priorities, and create material you can return to later.
           </p>
-        </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <ExploreActivityCard
-            title="Values & Fears Ranking"
-            description="Sort and prioritize what matters most to you — and what you most want to avoid — using a guided card-based activity."
-            href="/app/explore/values-and-fears"
-            status="available"
-            index={0}
-          />
+          <div style={{ maxWidth: 760, marginTop: 32, marginBottom: 0 }}>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
+              Before rushing into tasks like completing an advance directive, it's helpful to pause. Taking the time to think deeply about your values, feelings, and relationship to death will help ensure your plans are grounded in what matters most to you.
+            </p>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
+              Activities in this section are designed to help you imagine what a "good death" looks like for you, clarify how your values translate into real choices, and consider what you want to leave behind.
+            </p>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
+              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you're working in your Plan.</span>
+            </p>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 0 }}>
+              Start anywhere, and move at your own pace.
+            </p>
+          </div>
 
-          <ExploreActivityCard
-            title="Scenario Navigator"
-            description="Work through realistic situations to see how your values and preferences might apply in practice."
-            href="/app/explore/scenario-navigator"
-            status="available"
-            index={1}
-          />
+          <div className="explore-grid">
+            <ExploreActivityCard
+              title="Reflection Prompts"
+              description="Use guided prompts to reflect on your values, wishes, relationships, and what matters most."
+              href="/app/reflect"
+              status="available"
+              index={0}
+              cta="Open →"
+            />
+            <ExploreActivityCard
+              title="Values & Fears Ranking"
+              description="Prioritize what matters most to you, using a guided card sort activity."
+              href="/app/explore/values-and-fears"
+              status="available"
+              index={1}
+            />
+            <ExploreActivityCard
+              title="Scenario Navigator"
+              description="Work through realistic situations to see how your values and preferences might apply in practice."
+              href="/app/explore/scenario-navigator"
+              status="available"
+              index={2}
+            />
+            <ExploreActivityCard
+              title="Legacy Map"
+              description="Explore what you want to pass on, document, or make visible to others after your death."
+              href="/app/explore/legacy-map"
+              status="available"
+              index={3}
+            />
+          </div>
 
-          <ExploreActivityCard
-            title="Legacy Map"
-            description="Explore what you want to pass on, document, or make visible to others after your death."
-            href="/app/explore/legacy-map"
-            status="available"
-            index={2}
-          />
         </div>
       </div>
-    </div>
     </>
   )
 }
@@ -119,19 +212,65 @@ function ExploreActivityCard({
   href,
   status = 'available',
   index,
+  cta,
 }: ExploreActivityCardProps) {
-  const style = CARD_STYLES[index % CARD_STYLES.length]
+  const config = CARD_CONFIGS[index % CARD_CONFIGS.length]
   const isAvailable = status === 'available' && !!href
+  const [hovered, setHovered] = useState(false)
+  const [pressed, setPressed] = useState(false)
+
+  const cardStyle: React.CSSProperties = {
+    minHeight: 280,
+    padding: 32,
+    borderRadius: 20,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    backgroundColor: config.bg,
+    border: config.border,
+    boxShadow: hovered && !pressed
+      ? '0 8px 24px rgba(0,0,0,0.08)'
+      : '0 1px 2px rgba(0,0,0,0.02)',
+    transform: hovered && !pressed ? 'translateY(-2px)' : 'translateY(0)',
+    transition: 'transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease',
+    opacity: isAvailable ? 1 : 0.5,
+    boxSizing: 'border-box',
+    cursor: isAvailable ? 'pointer' : 'default',
+  }
 
   const inner = (
-    <div className={`rounded-2xl px-8 py-8 h-full min-h-[280px] flex flex-col ${style.bg} ${isAvailable ? 'transition hover:opacity-90' : 'opacity-50'}`}>
-      <div className="flex-1">
-        <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{title}</h2>
-        <p className={`text-base leading-relaxed ${style.text}`}>{description}</p>
+    <div
+      style={cardStyle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setPressed(false) }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+    >
+      <div>
+        <h2 style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.25, color: config.titleColor, margin: 0 }}>
+          {title}
+        </h2>
+        <p style={{ fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: config.bodyColor, marginTop: 12, marginBottom: 0 }}>
+          {description}
+        </p>
       </div>
-      <div className="pt-8">
-        <span className={`inline-flex items-center text-sm font-semibold rounded-full px-5 py-2 ${style.pill}`}>
-          {isAvailable ? 'Begin →' : 'Coming soon'}
+      <div>
+        <span style={{
+          height: 48,
+          paddingLeft: 24,
+          paddingRight: 24,
+          borderRadius: 999,
+          fontSize: 14,
+          fontWeight: 500,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: config.ctaBg,
+          color: config.ctaColor,
+          border: 'none',
+          textDecoration: 'none',
+        }}>
+          {isAvailable ? (cta ?? 'Begin →') : 'Coming soon'}
         </span>
       </div>
     </div>
@@ -139,5 +278,9 @@ function ExploreActivityCard({
 
   if (!isAvailable) return inner
 
-  return <Link href={href!} className="h-full block">{inner}</Link>
+  return (
+    <Link href={href!} style={{ display: 'block', textDecoration: 'none' }}>
+      {inner}
+    </Link>
+  )
 }

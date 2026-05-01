@@ -8,7 +8,7 @@
 //   - All activities (same relevance model)
 //
 // Used by lib/content-surfacing.ts to determine tier placement when resurfacing
-// content in the Advance Directive Supplementary Document, domain pages, and
+// content in the Your Wishes document, domain pages, and
 // the fragment field.
 // ---------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ export type Domain =
   | 'wills_estates'
   | 'personal_admin'
 
-// The six fields in the Advance Directive Supplementary Document:
+// The six fields in the Your Wishes document:
 //   q1 = "My perfect death would involve:"           (field: perfectDeath)
 //   q2 = "At the end of my life, this is what matters most:" (field: whatMatters)
 //   q3 = "My most important personal values:"        (field: values)
