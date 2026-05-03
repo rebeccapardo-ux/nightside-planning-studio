@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Link from 'next/link'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
@@ -332,6 +333,16 @@ export default function AdvanceDirectivePage() {
   return (
     <div className="min-h-screen bg-[#BBABF4]">
     <div className="max-w-6xl mx-auto px-4 py-16">
+      <div style={{ marginBottom: 24 }}>
+        <Breadcrumbs
+          theme="light"
+          items={[
+            { label: 'Capture', href: '/app/capture' },
+            { label: 'Your Wishes' },
+          ]}
+        />
+      </div>
+
       <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-12 items-start">
 
         {/* LEFT: form */}

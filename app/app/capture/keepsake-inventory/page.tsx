@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import {
   fetchKeepsakeInventory,
   createKeepsakeInventory,
@@ -178,14 +179,15 @@ export default function KeepsakeDocumentPage() {
     <div className="min-h-screen bg-[#BBABF4]">
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>
 
-        {/* Back link */}
-        <Link
-          href="/app/capture"
-          style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.4, fontWeight: 400, color: '#2C3777', display: 'block', marginBottom: 32, textDecoration: 'none' }}
-          className="hover:opacity-70 transition-opacity"
-        >
-          ← Capture
-        </Link>
+        <div style={{ marginBottom: 32 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Capture', href: '/app/capture' },
+              { label: 'Meaningful Keepsakes' },
+            ]}
+          />
+        </div>
 
         {/* Title */}
         <h1 style={{

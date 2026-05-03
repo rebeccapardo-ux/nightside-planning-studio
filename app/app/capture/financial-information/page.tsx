@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Link from 'next/link'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 const DOCUMENT_TYPE = 'financial_information'
 const DOCUMENT_TITLE = 'Financial Information'
@@ -174,6 +175,15 @@ export default function FinancialInformationPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
+      <div style={{ marginBottom: 24 }}>
+        <Breadcrumbs
+          theme="navy"
+          items={[
+            { label: 'Capture', href: '/app/capture' },
+            { label: 'Financial Information' },
+          ]}
+        />
+      </div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[#f8f4eb] mb-3">Financial Information</h1>
         <p className="text-[#f8f4eb]/70 leading-relaxed">

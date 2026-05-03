@@ -1,5 +1,6 @@
-import Link from 'next/link'
 import { LEARN_AREAS } from '@/lib/learn-areas'
+import Link from 'next/link'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 export default function LearnAreasPage() {
   const areas = LEARN_AREAS
@@ -15,11 +16,17 @@ export default function LearnAreasPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
-      <Link href="/app/learn" className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors text-sm">
-        ← Back to Learn
-      </Link>
+      <div style={{ marginBottom: 24 }}>
+        <Breadcrumbs
+          theme="navy"
+          items={[
+            { label: 'Learn', href: '/app/learn' },
+            { label: 'Areas of Planning' },
+          ]}
+        />
+      </div>
 
-      <div className="mt-8 mb-12">
+      <div className="mb-12">
         <h1 className="ns-title-activity text-white">Areas of planning</h1>
         <p className="ns-lead-activity text-white" style={{ marginTop: '12px' }}>
           Explore key areas of end-of-life planning and understand your options.
