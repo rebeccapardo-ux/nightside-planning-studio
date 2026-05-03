@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 const DOCUMENT_TYPE = 'important_contacts'
 const DOCUMENT_TITLE = 'Important Contacts'
@@ -201,6 +202,15 @@ export default function ImportantContactsPage() {
   return (
     <div className="min-h-screen bg-[#F8F4EB]">
       <div className="max-w-3xl mx-auto px-4 py-16">
+        <div style={{ marginBottom: 24 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Capture', href: '/app/capture' },
+              { label: 'Important Contacts' },
+            ]}
+          />
+        </div>
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-[#130426] mb-3">Important Contacts</h1>

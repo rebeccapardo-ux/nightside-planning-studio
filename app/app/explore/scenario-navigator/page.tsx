@@ -10,6 +10,7 @@ import {
 } from '@/lib/scenario-navigator-data'
 import { createNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -155,10 +156,16 @@ export default function ScenarioNavigatorPage() {
 function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) => void }) {
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
-      <Link href="/app/reflect" className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors text-sm">
-        ← Back to Reflect
-      </Link>
-      <div className="mt-8 mb-12">
+      <div style={{ marginBottom: 32 }}>
+        <Breadcrumbs
+          theme="navy"
+          items={[
+            { label: 'Explore', href: '/app/explore' },
+            { label: 'Scenario Navigator' },
+          ]}
+        />
+      </div>
+      <div className="mb-12">
         <h1 className="ns-title-activity text-[#f8f4eb]">Scenario Navigator</h1>
         <p className="ns-lead-activity text-[#f8f4eb]" style={{ marginTop: '12px' }}>
           Work through realistic situations to see how your values and preferences might apply in practice. Explore any path — nothing locks you in.
@@ -209,9 +216,16 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
-      <button onClick={onBack} className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors text-sm">
-        ← All scenarios
-      </button>
+      <div style={{ marginBottom: 32 }}>
+        <Breadcrumbs
+          theme="navy"
+          items={[
+            { label: 'Explore', href: '/app/explore' },
+            { label: 'Scenario Navigator', onClick: onBack },
+            { label: scenario.title },
+          ]}
+        />
+      </div>
       <div className="mt-8 mb-10">
         <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-3 font-semibold">Scenario</p>
         <h1 className="ns-title-internal text-[#f8f4eb]" style={{ marginBottom: '24px' }}>{scenario.title}</h1>
@@ -276,9 +290,16 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
       {/* Hero band */}
       <div style={{ background: '#130426', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <button onClick={onBack} style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 28, padding: 0, display: 'block' }}>
-            ← All scenarios
-          </button>
+          <div style={{ marginBottom: 28 }}>
+            <Breadcrumbs
+              theme="navy"
+              items={[
+                { label: 'Explore', href: '/app/explore' },
+                { label: 'Scenario Navigator', onClick: onBack },
+                { label: scenario.title },
+              ]}
+            />
+          </div>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
             Scenario
           </p>
@@ -373,18 +394,16 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
 
-        {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, fontSize: 14, fontFamily: hv, flexWrap: 'wrap' }}>
-          <button onClick={onBackToAll} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            All scenarios
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <button onClick={onBackToScenario} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: hv, fontSize: 14 }}
-            className="hover:text-[#1A1A1A] transition-colors">
-            {scenario.title}
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <span style={{ color: '#1A1A1A', fontWeight: 500 }}>{choice.outcomeTitle}</span>
+        <div style={{ marginBottom: 40 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Scenario Navigator', onClick: onBackToAll },
+              { label: scenario.title, onClick: onBackToScenario },
+              { label: choice.outcomeTitle ?? choice.label },
+            ]}
+          />
         </div>
 
         {/* "You chose" + title */}
@@ -621,9 +640,16 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
       {/* Hero band */}
       <div style={{ background: '#F29836', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <button onClick={onBack} style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 28, padding: 0, display: 'block' }}>
-            ← All scenarios
-          </button>
+          <div style={{ marginBottom: 28 }}>
+            <Breadcrumbs
+              theme="light"
+              items={[
+                { label: 'Explore', href: '/app/explore' },
+                { label: 'Scenario Navigator', onClick: onBack },
+                { label: scenario.title },
+              ]}
+            />
+          </div>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.72)', marginBottom: 16 }}>
             Scenario
           </p>
@@ -718,18 +744,16 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
 
-        {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, fontSize: 14, fontFamily: hv, flexWrap: 'wrap' }}>
-          <button onClick={onBackToAll} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            All scenarios
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <button onClick={onBackToScenario} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: hv, fontSize: 14 }}
-            className="hover:text-[#1A1A1A] transition-colors">
-            {scenario.title}
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <span style={{ color: '#1A1A1A', fontWeight: 500 }}>{choice.outcomeTitle}</span>
+        <div style={{ marginBottom: 40 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Scenario Navigator', onClick: onBackToAll },
+              { label: scenario.title, onClick: onBackToScenario },
+              { label: choice.outcomeTitle ?? choice.label },
+            ]}
+          />
         </div>
 
         {/* "You chose" + title */}
@@ -944,9 +968,16 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
       {/* Hero band */}
       <div style={{ background: '#DB5835', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <button onClick={onBack} style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 28, padding: 0, display: 'block' }}>
-            ← All scenarios
-          </button>
+          <div style={{ marginBottom: 28 }}>
+            <Breadcrumbs
+              theme="navy"
+              items={[
+                { label: 'Explore', href: '/app/explore' },
+                { label: 'Scenario Navigator', onClick: onBack },
+                { label: scenario.title },
+              ]}
+            />
+          </div>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
             Scenario
           </p>
@@ -1041,18 +1072,16 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
 
-        {/* Breadcrumb */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, fontSize: 14, fontFamily: hv, flexWrap: 'wrap' }}>
-          <button onClick={onBackToAll} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            All scenarios
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <button onClick={onBackToScenario} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: hv, fontSize: 14 }}
-            className="hover:text-[#1A1A1A] transition-colors">
-            {scenario.title}
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <span style={{ color: '#1A1A1A', fontWeight: 500 }}>{choice.outcomeTitle}</span>
+        <div style={{ marginBottom: 40 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Scenario Navigator', onClick: onBackToAll },
+              { label: scenario.title, onClick: onBackToScenario },
+              { label: choice.outcomeTitle ?? choice.label },
+            ]}
+          />
         </div>
 
         {/* "You chose" + title */}
@@ -1267,9 +1296,16 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
       {/* Hero band */}
       <div style={{ background: '#2C3777', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <button onClick={onBack} style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 28, padding: 0, display: 'block' }}>
-            ← All scenarios
-          </button>
+          <div style={{ marginBottom: 28 }}>
+            <Breadcrumbs
+              theme="navy"
+              items={[
+                { label: 'Explore', href: '/app/explore' },
+                { label: 'Scenario Navigator', onClick: onBack },
+                { label: scenario.title },
+              ]}
+            />
+          </div>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
             Scenario
           </p>
@@ -1473,12 +1509,16 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
   // ── Default outcome view ──────────────────────────────────────────────────
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
-      <div className="flex items-center gap-3 mb-10 text-sm flex-wrap">
-        <button onClick={onBackToAll} className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors">All scenarios</button>
-        <span className="text-[#f8f4eb]">/</span>
-        <button onClick={onBackToScenario} className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors">{scenario.title}</button>
-        <span className="text-[#f8f4eb]">/</span>
-        <span className="text-[#BBABF4]">{choice.outcomeTitle}</span>
+      <div style={{ marginBottom: 40 }}>
+        <Breadcrumbs
+          theme="navy"
+          items={[
+            { label: 'Explore', href: '/app/explore' },
+            { label: 'Scenario Navigator', onClick: onBackToAll },
+            { label: scenario.title, onClick: onBackToScenario },
+            { label: choice.outcomeTitle ?? choice.label },
+          ]}
+        />
       </div>
       <div className="mb-10">
         <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-3 font-semibold">You chose</p>
@@ -1603,18 +1643,16 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
 
-        {/* Breadcrumb — full width above columns */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, fontSize: 14, fontFamily: hv, flexWrap: 'wrap' }}>
-          <button onClick={onBackToAll} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            All scenarios
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <button onClick={onBackToScenario} style={{ color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: hv, fontSize: 14 }}
-            className="hover:text-[#1A1A1A] transition-colors">
-            {scenario.title}
-          </button>
-          <span style={{ color: 'rgba(26,26,26,0.35)' }}>/</span>
-          <span style={{ color: '#1A1A1A', fontWeight: 500 }}>{choice.outcomeTitle}</span>
+        <div style={{ marginBottom: 40 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Scenario Navigator', onClick: onBackToAll },
+              { label: scenario.title, onClick: onBackToScenario },
+              { label: choice.outcomeTitle ?? choice.label },
+            ]}
+          />
         </div>
 
         {/* "You chose" + title — full width above columns */}

@@ -1,19 +1,23 @@
 'use client'
 
 import Link from 'next/link'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 export default function ValuesAndFearsPage() {
   return (
     <div className="min-h-screen bg-[#140028] text-white">
       <div className="mx-auto w-full max-w-[1200px] px-6 pb-24 pt-16 md:px-10">
-        <Link
-          href="/app/reflect"
-          className="inline-flex items-center text-sm text-white/70 transition hover:text-white"
-        >
-          ← Back to Reflect
-        </Link>
+        <div style={{ marginBottom: 32 }}>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Values & Fears Ranking' },
+            ]}
+          />
+        </div>
 
-        <section className="mt-8 max-w-3xl">
+        <section className="max-w-3xl">
           <h1 className="text-[36px] leading-tight font-semibold tracking-[-0.02em] md:text-[42px]">
             Values &amp; Fears Ranking
           </h1>

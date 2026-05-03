@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { LEARN_AREAS } from '@/lib/learn-areas'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 type LearnAreaPageProps = {
   params: Promise<{
@@ -17,6 +18,17 @@ export default async function LearnAreaPage({ params }: LearnAreaPageProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
+      <div style={{ marginBottom: 24 }}>
+        <Breadcrumbs
+          theme="navy"
+          items={[
+            { label: 'Learn', href: '/app/learn' },
+            { label: 'Areas of Planning', href: '/app/learn/areas' },
+            { label: area.title },
+          ]}
+        />
+      </div>
+
       <h1 className="ns-title-activity text-white">
         {area.title}
       </h1>

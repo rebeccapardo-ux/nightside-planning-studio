@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 const DOCUMENT_TYPE = 'personal_admin_info'
 const DOCUMENT_TITLE = 'Personal Admin Info'
@@ -188,6 +189,15 @@ export default function PersonalAdminPage() {
   return (
     <div className="min-h-screen bg-[#F8F4EB]">
       <div className="max-w-3xl mx-auto px-4 py-16">
+        <div style={{ marginBottom: 24 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Capture', href: '/app/capture' },
+              { label: 'Personal Admin Info' },
+            ]}
+          />
+        </div>
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-[#130426] mb-3">Personal Admin Info</h1>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import Breadcrumbs from "@/app/components/navigation/Breadcrumbs";
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
@@ -606,9 +607,15 @@ export default function LegacyMapPage() {
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
 
-        <Link href="/app/reflect" className="text-sm text-white/70 hover:text-white transition-colors">
-          ← Back to Reflect
-        </Link>
+        <div style={{ marginBottom: 8 }}>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Legacy Map' },
+            ]}
+          />
+        </div>
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <section

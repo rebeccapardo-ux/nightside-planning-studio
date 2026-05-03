@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { createPromptNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import type { VoiceNoteSaveMode } from '@/app/components/VoiceNoteButton'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 const DEFAULT_CONTAINER_ID = '98bbddf4-bc0c-495f-b3cf-99c65cf7ebc8'
 const REVIEWED_PROMPTS_STORAGE_KEY = 'reflect-reviewed-prompts'
@@ -267,14 +268,15 @@ function ReflectPromptsInner() {
         #reflect-note-input::placeholder { color: rgba(0,0,0,0.38); font-size: 15px; line-height: 24px; }
       `}</style>
 
-      {/* Back link */}
+      {/* Breadcrumb */}
       <div style={{ maxWidth: '448px', margin: '0 auto', padding: '40px 24px 0' }}>
-        <button
-          onClick={() => router.push('/app/reflect')}
-          style={{ fontFamily: fontHelvetica, fontSize: '14px', color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
-          ← Back to Reflection Prompts
-        </button>
+        <Breadcrumbs
+          theme="light"
+          items={[
+            { label: 'Reflect', href: '/app/reflect' },
+            { label: currentPrompt.label.length > 52 ? currentPrompt.label.slice(0, 52) + '…' : currentPrompt.label },
+          ]}
+        />
       </div>
 
       {/* Card */}

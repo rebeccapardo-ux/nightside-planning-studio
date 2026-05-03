@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 
@@ -444,6 +445,16 @@ export default function ValuesRankingPage() {
     <div className="min-h-screen bg-[#2f3f8f] text-white">
       <div className="mx-auto max-w-[1320px] px-6 pb-14 pt-5 md:px-10">
 
+        <div style={{ marginBottom: 24 }}>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Explore', href: '/app/explore' },
+              { label: 'Values & Fears Ranking', href: '/app/explore/values-and-fears' },
+              { label: 'Values Ranking' },
+            ]}
+          />
+        </div>
         {/* Header with save status */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
           <section className="max-w-4xl">

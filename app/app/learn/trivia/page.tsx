@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { TRIVIA_CARDS, type TriviaCard } from '@/lib/trivia-data'
 import { createNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 type View =
   | { kind: 'deck' }
@@ -64,12 +65,18 @@ function DeckView({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <Link href="/app/learn" className="text-[#130426] hover:opacity-60 transition-opacity text-sm">
-        ← Back to Learn
-      </Link>
+      <div style={{ marginBottom: 24 }}>
+        <Breadcrumbs
+          theme="light"
+          items={[
+            { label: 'Learn', href: '/app/learn' },
+            { label: 'Deathcare Trivia' },
+          ]}
+        />
+      </div>
 
-      <div className="mt-8 mb-10">
-        <h1 className="ns-title-activity" style={{ color: '#1A1A1A' }}>
+      <div className="mb-10">
+        <h1 className="ns-title-activity text-[#f8f4eb]">
           Deathcare Trivia
         </h1>
         <p className="ns-lead-activity" style={{ marginTop: '12px', color: '#1A1A1A' }}>
@@ -168,12 +175,16 @@ function CardView({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-16">
-      <button
-        onClick={onBack}
-        className="text-[#130426] hover:opacity-60 transition-opacity text-sm mb-10"
-      >
-        ← Back to deck
-      </button>
+      <div style={{ marginBottom: 40 }}>
+        <Breadcrumbs
+          theme="light"
+          items={[
+            { label: 'Learn', href: '/app/learn' },
+            { label: 'Deathcare Trivia', onClick: onBack },
+            { label: card.question.length > 48 ? card.question.slice(0, 48) + '…' : card.question },
+          ]}
+        />
+      </div>
 
       {/* Card wrapper — 3D perspective */}
       <div className="flex flex-col items-center">
