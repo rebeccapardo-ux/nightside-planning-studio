@@ -40,7 +40,7 @@ export async function uploadAudioBlob(
 
   const { error } = await supabase.storage
     .from(VOICE_NOTES_BUCKET)
-    .upload(path, blob, { contentType: blob.type, upsert: false })
+    .upload(path, blob, { contentType: blob.type, upsert: true })
 
   if (error) {
     console.error('Audio upload error:', error.message)

@@ -312,11 +312,12 @@ export default function AdvanceDirectivePage() {
     const diffHours = Math.floor(diffMinutes / 60)
     const diffDays = Math.floor(diffHours / 24)
 
-    if (diffSeconds < 10) return 'Saved just now'
-    if (diffSeconds < 60) return `Saved ${diffSeconds}s ago`
-    if (diffMinutes < 60) return `Last updated ${diffMinutes}m ago`
-    if (diffHours < 24) return `Last updated ${diffHours}h ago`
-    return `Last updated ${diffDays}d ago`
+    const diffWeeks = Math.floor(diffDays / 7)
+    if (diffSeconds < 60) return 'Last saved just now'
+    if (diffMinutes < 60) return `Last saved ${diffMinutes} min ago`
+    if (diffHours < 24) return diffHours === 1 ? 'Last saved 1 hour ago' : `Last saved ${diffHours} hours ago`
+    if (diffDays < 7) return diffDays === 1 ? 'Last saved 1 day ago' : `Last saved ${diffDays} days ago`
+    return diffWeeks === 1 ? 'Last saved 1 week ago' : `Last saved ${diffWeeks} weeks ago`
   }, [lastSavedAt, statusNow])
 
   if (loading) {

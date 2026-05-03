@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import Link from 'next/link'
 
 const DOCUMENT_TYPE = 'important_contacts'
 const DOCUMENT_TITLE = 'Important Contacts'
@@ -19,27 +18,22 @@ function emptyContact(): ContactFields {
 }
 
 type FormState = {
-  // Doctors
   doctor1: ContactFields
   doctor2: ContactFields
   doctor3: ContactFields
   doctor4: ContactFields
-  // Attorneys
   attorney1: ContactFields
   attorney2: ContactFields
   attorney3: ContactFields
   attorney4: ContactFields
-  // Relatives
   relative1: ContactFields
   relative2: ContactFields
   relative3: ContactFields
   relative4: ContactFields
-  // Friends
   friend1: ContactFields
   friend2: ContactFields
   friend3: ContactFields
   friend4: ContactFields
-  // Others
   other1: ContactFields
   other2: ContactFields
   other3: ContactFields
@@ -54,15 +48,15 @@ const EMPTY_FORM: FormState = {
   other1: emptyContact(), other2: emptyContact(), other3: emptyContact(), other4: emptyContact(),
 }
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'error'
-
 type ContactGroup = 'doctor' | 'attorney' | 'relative' | 'friend' | 'other'
 
 export default function ImportantContactsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
-  const [entryId, setEntryId] = useState<string | null>(null)
+  const formRef = useRef<FormState>(EMPTY_FORM)
+  const entryIdRef = useRef<string | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [loading, setLoading] = useState(true)
-  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [statusNow, setStatusNow] = useState(Date.now())
 
@@ -85,8 +79,10 @@ export default function ImportantContactsPage() {
 
         const existing = rows?.[0]
         if (existing) {
-          setEntryId(existing.id)
-          setForm(mergeContent(existing.content))
+          entryIdRef.current = existing.id
+          const merged = mergeContent(existing.content)
+          formRef.current = merged
+          setForm(merged)
           if (existing.created_at) setLastSavedAt(new Date(existing.created_at))
         }
       } finally {
@@ -131,45 +127,55 @@ export default function ImportantContactsPage() {
 
   function updateContactField(group: ContactGroup, n: 1 | 2 | 3 | 4, field: keyof ContactFields, value: string) {
     const key = `${group}${n}` as keyof FormState
-    setForm((prev) => ({
-      ...prev,
-      [key]: { ...(prev[key] as ContactFields), [field]: value },
-    }))
+    const newForm = {
+      ...formRef.current,
+      [key]: { ...(formRef.current[key] as ContactFields), [field]: value },
+    }
+    formRef.current = newForm
+    setForm(newForm)
+    scheduleAutosave()
   }
 
-  async function handleSave() {
-    const supabase = createSupabaseBrowserClient()
-    try {
-      setSaveState('saving')
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) { setSaveState('error'); return }
+  function scheduleAutosave() {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => performAutosave(), 1500)
+  }
 
-      if (!entryId) {
-        const { data: created, error } = await supabase
-          .from('entries')
-          .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: form })
-          .select('id')
-          .single()
-        if (error) { console.error('SAVE ERROR:', error); setSaveState('error'); return }
-        if (created) { setEntryId(created.id); setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveState('saved') }
-      } else {
-        const { error } = await supabase.from('entries').update({ content: form }).eq('id', entryId)
-        if (error) { console.error('SAVE ERROR:', error); setSaveState('error'); return }
-        setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveState('saved')
-      }
-      window.setTimeout(() => setSaveState((c) => (c === 'saved' ? 'idle' : c)), 2000)
-    } catch (err) {
-      console.error('UNEXPECTED SAVE ERROR:', err)
-      setSaveState('error')
+  function handleBlur() {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+      performAutosave()
     }
   }
 
-  const saveButtonLabel = useMemo(() => {
-    if (saveState === 'saving') return 'Saving...'
-    if (saveState === 'saved') return 'Saved'
-    if (saveState === 'error') return 'Try saving again'
-    return 'Save progress'
-  }, [saveState])
+  async function performAutosave() {
+    const currentForm = formRef.current
+    setSaveStatus('saving')
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) { setSaveStatus('error'); return }
+
+      if (!entryIdRef.current) {
+        const { data: created, error } = await supabase
+          .from('entries')
+          .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: currentForm })
+          .select('id')
+          .single()
+        if (error) { setSaveStatus('error'); return }
+        if (created) entryIdRef.current = created.id
+      } else {
+        const { error } = await supabase.from('entries').update({ content: currentForm }).eq('id', entryIdRef.current)
+        if (error) { setSaveStatus('error'); return }
+      }
+      setLastSavedAt(new Date())
+      setStatusNow(Date.now())
+      setSaveStatus('saved')
+    } catch {
+      setSaveStatus('error')
+    }
+  }
 
   const saveStatusText = useMemo(() => {
     if (!lastSavedAt) return null
@@ -178,72 +184,57 @@ export default function ImportantContactsPage() {
     const diffMinutes = Math.floor(diffSeconds / 60)
     const diffHours = Math.floor(diffMinutes / 60)
     const diffDays = Math.floor(diffHours / 24)
-    if (diffSeconds < 10) return 'Saved just now'
-    if (diffSeconds < 60) return `Saved ${diffSeconds}s ago`
-    if (diffMinutes < 60) return `Last updated ${diffMinutes}m ago`
-    if (diffHours < 24) return `Last updated ${diffHours}h ago`
-    return `Last updated ${diffDays}d ago`
+    const diffWeeks = Math.floor(diffDays / 7)
+    if (diffSeconds < 60) return 'Last saved just now'
+    if (diffMinutes < 60) return `Last saved ${diffMinutes} min ago`
+    if (diffHours < 24) return diffHours === 1 ? 'Last saved 1 hour ago' : `Last saved ${diffHours} hours ago`
+    if (diffDays < 7) return diffDays === 1 ? 'Last saved 1 day ago' : `Last saved ${diffDays} days ago`
+    return diffWeeks === 1 ? 'Last saved 1 week ago' : `Last saved ${diffWeeks} weeks ago`
   }, [lastSavedAt, statusNow])
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-16 text-[#f8f4eb]/60">Loading...</div>
+  if (loading) return (
+    <div className="min-h-screen bg-[#F8F4EB]">
+      <div className="max-w-3xl mx-auto px-4 py-16 text-[#130426]/60">Loading...</div>
+    </div>
+  )
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#f8f4eb] mb-3">Important Contacts</h1>
-        <p className="text-[#f8f4eb]/70 leading-relaxed">
-          You can revisit, edit, or export it in My Materials.
-        </p>
-      </div>
+    <div className="min-h-screen bg-[#F8F4EB]">
+      <div className="max-w-3xl mx-auto px-4 py-16">
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#130426] mb-3">Important Contacts</h1>
+            <p className="text-[#130426]/70 leading-relaxed">
+              You can revisit, edit, or export it in My Materials.
+            </p>
+          </div>
+          <div style={{ fontSize: 13, color: 'rgba(19,4,38,0.55)', minWidth: 120, textAlign: 'right', paddingTop: 4, flexShrink: 0 }}>
+            {saveStatus === 'saving' && 'Saving…'}
+            {saveStatus === 'saved' && saveStatusText}
+            {saveStatus === 'error' && "Couldn't save — check your connection"}
+          </div>
+        </div>
 
-      <div className="space-y-6">
-        <ContactSection
-          title="IMPORTANT CONTACTS: DOCTOR/S"
-          group="doctor"
-          form={form}
-          onUpdate={updateContactField}
-        />
-        <ContactSection
-          title="IMPORTANT CONTACTS: ATTORNEY/S"
-          group="attorney"
-          form={form}
-          onUpdate={updateContactField}
-        />
-        <ContactSection
-          title="IMPORTANT CONTACTS: RELATIVES"
-          group="relative"
-          form={form}
-          onUpdate={updateContactField}
-        />
-        <ContactSection
-          title="IMPORTANT CONTACTS: FRIENDS"
-          group="friend"
-          form={form}
-          onUpdate={updateContactField}
-        />
-        <ContactSection
-          title="IMPORTANT CONTACTS: OTHERS"
-          group="other"
-          form={form}
-          onUpdate={updateContactField}
-        />
-
-        <SaveBar saveState={saveState} saveButtonLabel={saveButtonLabel} saveStatusText={saveStatusText} onSave={handleSave} />
+        <div className="space-y-6">
+          <ContactSection title="IMPORTANT CONTACTS: DOCTOR/S" group="doctor" form={form} onUpdate={updateContactField} onBlur={handleBlur} />
+          <ContactSection title="IMPORTANT CONTACTS: ATTORNEY/S" group="attorney" form={form} onUpdate={updateContactField} onBlur={handleBlur} />
+          <ContactSection title="IMPORTANT CONTACTS: RELATIVES" group="relative" form={form} onUpdate={updateContactField} onBlur={handleBlur} />
+          <ContactSection title="IMPORTANT CONTACTS: FRIENDS" group="friend" form={form} onUpdate={updateContactField} onBlur={handleBlur} />
+          <ContactSection title="IMPORTANT CONTACTS: OTHERS" group="other" form={form} onUpdate={updateContactField} onBlur={handleBlur} />
+        </div>
       </div>
     </div>
   )
 }
 
 function ContactSection({
-  title,
-  group,
-  form,
-  onUpdate,
+  title, group, form, onUpdate, onBlur,
 }: {
   title: string
   group: ContactGroup
   form: FormState
   onUpdate: (group: ContactGroup, n: 1 | 2 | 3 | 4, field: keyof ContactFields, value: string) => void
+  onBlur: () => void
 }) {
   return (
     <div className="space-y-6">
@@ -252,11 +243,11 @@ function ContactSection({
         const key = `${group}${n}` as keyof FormState
         const contact = form[key] as ContactFields
         return (
-          <div key={n} className="space-y-3 pb-4 border-b border-[#f8f4eb]/10 last:border-0">
-            <Field label="Name:" value={contact.name} onChange={(v) => onUpdate(group, n, 'name', v)} rows={1} />
-            <Field label="Phone:" value={contact.phone} onChange={(v) => onUpdate(group, n, 'phone', v)} rows={1} />
-            <Field label="Email:" value={contact.email} onChange={(v) => onUpdate(group, n, 'email', v)} rows={1} />
-            <Field label="Address:" value={contact.address} onChange={(v) => onUpdate(group, n, 'address', v)} rows={2} />
+          <div key={n} className="space-y-3 pb-4 border-b border-[#130426]/10 last:border-0">
+            <Field label="Name:" value={contact.name} onChange={(v) => onUpdate(group, n, 'name', v)} onBlur={onBlur} rows={1} />
+            <Field label="Phone:" value={contact.phone} onChange={(v) => onUpdate(group, n, 'phone', v)} onBlur={onBlur} rows={1} />
+            <Field label="Email:" value={contact.email} onChange={(v) => onUpdate(group, n, 'email', v)} onBlur={onBlur} rows={1} />
+            <Field label="Address:" value={contact.address} onChange={(v) => onUpdate(group, n, 'address', v)} onBlur={onBlur} rows={2} />
           </div>
         )
       })}
@@ -265,48 +256,20 @@ function ContactSection({
 }
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-xl font-semibold text-[#f8f4eb] pt-4 pb-1 border-b border-[#f8f4eb]/10">{children}</h2>
+  return <h2 className="text-xl font-semibold text-[#130426] pt-4 pb-1 border-b border-[#130426]/10">{children}</h2>
 }
 
-function Field({ label, value, onChange, rows = 4 }: { label: string; value: string; onChange: (v: string) => void; rows?: number }) {
+function Field({ label, value, onChange, onBlur, rows = 4 }: { label: string; value: string; onChange: (v: string) => void; onBlur?: () => void; rows?: number }) {
   return (
     <div>
-      <label className="block text-[#f8f4eb]/80 text-sm mb-2">{label}</label>
+      <label className="block text-[#130426]/80 text-sm mb-2">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         rows={rows}
-        className="w-full bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/40 px-4 py-3 rounded-lg focus:outline-none"
+        className="w-full bg-white text-[#130426] placeholder:text-[#130426]/40 px-4 py-3 rounded-lg focus:outline-none"
       />
-    </div>
-  )
-}
-
-function SaveBar({ saveState, saveButtonLabel, saveStatusText, onSave }: {
-  saveState: SaveState; saveButtonLabel: string; saveStatusText: string | null; onSave: () => void
-}) {
-  return (
-    <div className="pt-2 space-y-2">
-      <button
-        onClick={onSave}
-        disabled={saveState === 'saving'}
-        className="px-6 py-3 bg-[#f29836] text-[#130426] rounded font-semibold hover:bg-[#f29836]/90 transition disabled:opacity-50"
-      >
-        {saveButtonLabel}
-      </button>
-      {(saveStatusText || saveState === 'error') && (
-        <div className="space-y-1">
-          {saveStatusText && <p className="text-sm text-[#f8f4eb]/85">{saveStatusText}</p>}
-          {saveState === 'error' ? (
-            <p className="text-sm text-[#f29836]">Your changes did not save. Please try again.</p>
-          ) : (
-            <p className="text-sm text-[#f8f4eb]/60">
-              You can return to this anytime in{' '}
-              <Link href="/app/materials" className="underline">My Materials</Link>.
-            </p>
-          )}
-        </div>
-      )}
     </div>
   )
 }

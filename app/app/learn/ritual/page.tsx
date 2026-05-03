@@ -64,11 +64,11 @@ export default async function RitualLearnPage() {
           <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
 
             <Link
-              href="/app/learn/areas"
+              href="/app/learn"
               className="hover:opacity-75 transition-opacity"
               style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, lineHeight: '1.4', color: 'rgba(255,255,255,0.75)', display: 'block', marginBottom: '24px' }}
             >
-              ← Areas of planning
+              ← Back to Learn
             </Link>
 
             <div style={{ marginBottom: '16px' }}>

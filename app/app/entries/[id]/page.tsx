@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import FadeIn from '@/app/components/FadeIn'
 
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+const apfel = "'Apfel Grotezk', sans-serif"
+
 type EntryPageProps = {
   params: Promise<{ id: string }>
   searchParams: Promise<{ returnTo?: string }>
@@ -28,12 +31,7 @@ type RankingContent = {
   total_count?: number
 }
 
-type LegacyMoment = {
-  id: string
-  title: string
-  note: string
-  xPercent: number
-}
+type LegacyMoment = { id: string; title: string; note: string; xPercent: number }
 
 type LegacyMapContent = {
   moments: LegacyMoment[]
@@ -44,18 +42,40 @@ type LegacyMapContent = {
   updatedAt: string | null
 }
 
+// ---------------------------------------------------------------------------
+// Legacy Map path geometry (mirrors legacy-map/page.tsx)
+// ---------------------------------------------------------------------------
+
+const LM_VB_W = 1000
+const LM_VB_H = 200
+const LM_MID_Y = 100
+const LM_AMP_Y = 50
+
+function lmPathPoint(xPct: number): { x: number; y: number } {
+  const t = (Math.min(Math.max(xPct, 5), 95) - 5) / 90
+  return { x: 50 + t * 900, y: LM_MID_Y + LM_AMP_Y * Math.sin(t * 2 * Math.PI) }
+}
+
+const LM_PATH_D = (() => {
+  const pts: string[] = []
+  for (let i = 0; i <= 300; i++) {
+    const t = i / 300
+    pts.push(`${(50 + t * 900).toFixed(1)},${(LM_MID_Y + LM_AMP_Y * Math.sin(t * 2 * Math.PI)).toFixed(1)}`)
+  }
+  return `M ${pts.join(' L ')}`
+})()
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 export default async function EntryDetailPage({ params, searchParams }: EntryPageProps) {
   const { id } = await params
   const { returnTo } = await searchParams
   const supabase = await createSupabaseServerClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    notFound()
-  }
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) notFound()
 
   const { data: entry, error } = await supabase
     .from('entries')
@@ -64,204 +84,121 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
     .eq('user_id', user.id)
     .single<EntryRow>()
 
-  if (error || !entry) {
-    notFound()
-  }
+  if (error || !entry) notFound()
 
   const ranking = getRankingContent(entry)
   const legacyMap = getLegacyMapContent(entry)
-  const reflection = getStructuredReflection(entry)
   const editHref = getContinueHref(entry)
   const displayTitle = getDisplayTitle(entry)
   const formattedDate = formatDate(entry.created_at)
+  const isDocument = !!entry.document_type
+
   const backHref = returnTo ?? '/app/materials'
-  const backLabel = returnTo?.startsWith('/app/domains/') ? '← Back to area' : '← Back to My Materials'
-  const isWorkingOutput = entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map'
+  const backLabel = returnTo?.startsWith('/app/domains/') ? '← Back to area' : '← Back to Your Plan'
 
-  // Fetch area colors for this entry
-  // Colors cycle through the same palette as the materials page domain tiles,
-  // keyed by the domain's alphabetical index so they stay consistent across views.
-  type AreaInfo = { name: string; color: string }
-  let areas: AreaInfo[] = []
-  let primaryAreaColor = '#BBABF4' // fallback: brand lavender
-
-  if (isWorkingOutput) {
-    const [{ data: links }, { data: allDomains }] = await Promise.all([
-      supabase.from('container_entries').select('container_id').eq('entry_id', entry.id),
-      supabase.from('containers').select('id, title').eq('type', 'domain').order('title'),
-    ])
-
-    // Muted on-dark palette — matches the domain tile hues but desaturated for reflection mode
-    const AREA_COLORS = ['#BBABF4', '#7b90d4', '#d4cdb5', '#e89a42', '#d96040']
-
-    const containerIds = links?.map((l: { container_id: string }) => l.container_id) ?? []
-    for (const cId of containerIds) {
-      const idx = (allDomains ?? []).findIndex((d: { id: string }) => d.id === cId)
-      if (idx >= 0) {
-        areas.push({
-          name: (allDomains![idx] as { id: string; title: string }).title,
-          color: AREA_COLORS[idx % AREA_COLORS.length],
-        })
-      }
-    }
-    if (areas.length > 0) primaryAreaColor = areas[0].color
+  // Date line
+  let dateLine = formattedDate ?? ''
+  if (entry.activity === 'legacy_map' && legacyMap && legacyMap.moments.length > 0) {
+    const n = legacyMap.moments.length
+    const momentStr = `${n} moment${n === 1 ? '' : 's'}`
+    dateLine = formattedDate ? `${formattedDate} · ${momentStr}` : momentStr
+  }
+  if (isDocument && formattedDate) {
+    dateLine = `Last saved ${formattedDate}`
   }
 
-  // Legacy Map working output
-  if (isWorkingOutput && legacyMap) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-14">
-        <div className="mb-8">
-          <Link href={backHref} className="text-[#f8f4eb]/75 hover:text-[#f8f4eb] text-sm transition-colors">
-            {backLabel}
-          </Link>
-        </div>
+  const showExport = entry.activity === 'values_ranking' || entry.activity === 'legacy_map' || isDocument
+  const editLabel = isDocument
+    ? 'Continue editing →'
+    : entry.activity === 'legacy_map'
+      ? 'Keep working →'
+      : 'Revisit exercise →'
+
+  const maxWidth = isDocument ? 680 : 800
+
+  return (
+    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
+      <div style={{ maxWidth, margin: '0 auto', padding: '48px 24px 80px' }}>
+
+        {/* Back link */}
+        <Link
+          href={backHref}
+          style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', display: 'block', marginBottom: 32, textDecoration: 'none' }}
+          className="hover:text-[#1A1A1A] transition-colors"
+        >
+          {backLabel}
+        </Link>
 
         <FadeIn>
+          {/* Card */}
           <div
-            className="rounded-3xl px-10 py-12"
-            style={{ backgroundColor: 'rgba(44, 20, 80, 0.55)', border: '1px solid rgba(248,244,235,0.15)' }}
+            style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
+            className="p-6 md:py-10 md:px-12"
           >
-            <div className="mb-6 pb-10 border-b border-[#f8f4eb]/[0.15]">
-              <h1 className="text-4xl font-bold text-[#f8f4eb] mb-5 underline decoration-[3px] underline-offset-[8px]"
-                style={{ textDecorationColor: 'rgba(187,171,244,0.7)' }}>
-                Legacy Map
-              </h1>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                {formattedDate && <p className="text-sm text-[#f8f4eb]/70">{formattedDate}</p>}
-                {legacyMap.moments.length > 0 && (
-                  <>
-                    {formattedDate && <span className="text-[#f8f4eb]/50 text-sm">·</span>}
-                    <p className="text-sm text-[#f8f4eb]/70">{legacyMap.moments.length} moment{legacyMap.moments.length === 1 ? '' : 's'}</p>
-                  </>
-                )}
-              </div>
-            </div>
+            {/* Title */}
+            <h1 style={{
+              fontFamily: apfel,
+              fontSize: isDocument ? 32 : 36,
+              fontWeight: 400,
+              color: '#1A1A1A',
+              lineHeight: 1.1,
+              marginBottom: 8,
+            }}>
+              {displayTitle}
+            </h1>
 
-            <div className="flex items-center gap-5 mb-8">
-              {editHref && (
-                <Link href={editHref} className="text-sm text-[#f8f4eb] hover:text-[#BBABF4] transition-colors font-medium">
-                  Keep working →
-                </Link>
-              )}
-              <Link href={`/app/entries/${entry.id}/export`} className="text-sm text-[#f8f4eb]/70 hover:text-[#f8f4eb] transition-colors">
-                Export →
-              </Link>
-            </div>
+            {/* Date line */}
+            {dateLine && (
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: isDocument ? 16 : 24 }}>
+                {dateLine}
+              </p>
+            )}
 
-            <LegacyMapSnapshot content={legacyMap} />
-          </div>
-        </FadeIn>
-      </div>
-    )
-  }
+            {/* Disclaimer — documents only */}
+            {isDocument && (
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                This is a record of your responses at the time of your last save. It is not a legal document.
+              </p>
+            )}
 
-  // Values/Fears ranking working output: contained surface layout
-  if (isWorkingOutput && ranking) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-14">
-        {/* Back nav — outside fade, immediately visible */}
-        <div className="mb-8">
-          <Link href={backHref} className="text-[#f8f4eb]/75 hover:text-[#f8f4eb] text-sm transition-colors">
-            {backLabel}
-          </Link>
-        </div>
+            {/* Divider */}
+            <div style={{ height: 1, background: 'rgba(26,26,26,0.1)', margin: '24px 0' }} />
 
-        <FadeIn>
-          {/* Single surface container */}
-          <div
-            className="rounded-3xl px-10 py-12"
-            style={{ backgroundColor: 'rgba(44, 20, 80, 0.55)', border: '1px solid rgba(248,244,235,0.15)' }}
-          >
-            {/* Header */}
-            <div className="mb-6 pb-10 border-b border-[#f8f4eb]/[0.15]">
-              <h1
-                className="text-4xl font-bold text-[#f8f4eb] mb-5 underline decoration-[3px] underline-offset-[8px]"
-                style={{ textDecorationColor: primaryAreaColor + '70' }}
-              >
-                {displayTitle}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                {formattedDate && (
-                  <p className="text-sm text-[#f8f4eb]/70">{formattedDate}</p>
-                )}
-                {areas.length > 0 && (
-                  <>
-                    {formattedDate && <span className="text-[#f8f4eb]/50 text-sm">·</span>}
-                    <p className="text-sm text-[#f8f4eb]/70">
-                      {'In: '}
-                      {areas.map((area, i) => (
-                        <span key={area.name}>
-                          {i > 0 && <span className="text-[#f8f4eb]/70">, </span>}
-                          <span style={{ color: area.color + 'ff' }}>{area.name}</span>
-                        </span>
-                      ))}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Actions — top, before content */}
-            <div className="flex items-center gap-5 mb-8">
+            {/* Action links */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
               {editHref && (
                 <Link
                   href={editHref}
-                  className="text-sm text-[#f8f4eb] hover:text-[#BBABF4] transition-colors font-medium"
+                  style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
+                  className="hover:underline"
                 >
-                  Revisit exercise →
+                  {editLabel}
                 </Link>
               )}
-              {entry.activity === 'values_ranking' && (
+              {showExport && (
                 <Link
                   href={`/app/entries/${entry.id}/export`}
-                  className="text-sm text-[#f8f4eb]/70 hover:text-[#f8f4eb] transition-colors"
+                  style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
+                  className="hover:underline"
                 >
                   Export →
                 </Link>
               )}
             </div>
 
-            {/* Ranking content */}
-            <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} />
+            {/* Content */}
+            {legacyMap ? (
+              <LegacyMapSnapshot content={legacyMap} />
+            ) : ranking ? (
+              <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} />
+            ) : isDocument ? (
+              <DocumentSnapshot entry={entry} />
+            ) : (
+              <GenericEntryView entry={entry} />
+            )}
           </div>
         </FadeIn>
       </div>
-    )
-  }
-
-  // Non-ranking entries: standard layout
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <div className="mb-10">
-        <Link href={backHref} className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] text-sm">
-          {backLabel}
-        </Link>
-      </div>
-
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold text-[#f8f4eb] mb-3">{displayTitle}</h1>
-        {formattedDate && (
-          <p className="text-sm text-app-secondary">{formattedDate}</p>
-        )}
-      </div>
-
-      {reflection ? (
-        <ReflectionEntryView prompt={reflection.prompt} response={reflection.response} />
-      ) : entry.document_type === 'advance_directive_supplement' ? (
-        <AdvanceDirectiveView entry={entry} />
-      ) : (
-        <GenericEntryView entry={entry} />
-      )}
-
-      {editHref && (
-        <div className="mt-10">
-          <Link href={editHref} className="text-[#f8f4eb]/75 underline hover:text-[#f8f4eb] text-sm">
-            Continue working
-          </Link>
-        </div>
-      )}
     </div>
   )
 }
@@ -270,81 +207,73 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 // LegacyMapSnapshot
 // ---------------------------------------------------------------------------
 
-// Shared path geometry (mirrors legacy-map/page.tsx)
-const LM_VB_W = 1000; const LM_VB_H = 200; const LM_MID_Y = 100; const LM_AMP_Y = 50;
-
-function lmPathPoint(xPct: number): { x: number; y: number } {
-  const t = (Math.min(Math.max(xPct, 5), 95) - 5) / 90;
-  return { x: 50 + t * 900, y: LM_MID_Y + LM_AMP_Y * Math.sin(t * 2 * Math.PI) };
-}
-
-const LM_PATH_D = (() => {
-  const pts: string[] = [];
-  for (let i = 0; i <= 300; i++) {
-    const t = i / 300;
-    pts.push(`${(50 + t * 900).toFixed(1)},${(LM_MID_Y + LM_AMP_Y * Math.sin(t * 2 * Math.PI)).toFixed(1)}`);
-  }
-  return `M ${pts.join(' L ')}`;
-})();
-
 function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
-  const sorted = [...content.moments].sort((a, b) => a.xPercent - b.xPercent);
-  const hasReflection = content.themes || content.surprises || content.valuesToPassOn || content.legacyProjects;
+  const sorted = [...content.moments].sort((a, b) => a.xPercent - b.xPercent)
+  const hasReflection = content.themes || content.surprises || content.valuesToPassOn || content.legacyProjects
 
   return (
     <div>
-      {/* Mini path SVG */}
+      {/* Map visual */}
       {sorted.length > 0 && (
-        <div className="mb-8 rounded-2xl overflow-hidden" style={{ backgroundColor: 'rgba(248,244,235,0.07)', border: '1px solid rgba(248,244,235,0.10)' }}>
+        <div style={{ background: '#2C3777', borderRadius: 10, height: 180, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
           <svg
             viewBox={`0 0 ${LM_VB_W} ${LM_VB_H}`}
             preserveAspectRatio="none"
-            style={{ width: '100%', height: '80px', display: 'block' }}
+            style={{ width: '100%', height: '100%', display: 'block' }}
             aria-hidden="true"
           >
-            <defs>
-              <linearGradient id="snap-path-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stopColor="#BBABF4" stopOpacity="0.5" />
-                <stop offset="50%"  stopColor="#F29836" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#DB5835" stopOpacity="0.7" />
-              </linearGradient>
-            </defs>
-            <path d={LM_PATH_D} fill="none" stroke="url(#snap-path-grad)" strokeWidth="4" strokeLinecap="round" />
+            <path d={LM_PATH_D} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" strokeLinecap="round" />
             {sorted.map((m) => {
-              const pt = lmPathPoint(m.xPercent);
+              const pt = lmPathPoint(m.xPercent)
               return (
-                <circle
-                  key={m.id}
-                  cx={pt.x}
-                  cy={pt.y}
-                  r="14"
-                  fill="rgba(248,244,235,0.92)"
-                  stroke="rgba(44,55,119,0.55)"
-                  strokeWidth="3"
-                />
-              );
+                <circle key={m.id} cx={pt.x} cy={pt.y} r="12" fill="#FFFFFF" opacity="0.92" />
+              )
             })}
           </svg>
+          <span style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: hv, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Birth</span>
+          <span style={{ position: 'absolute', bottom: 10, right: 14, fontFamily: hv, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Now</span>
         </div>
       )}
 
-      {/* Moments list in path order */}
+      {/* Moment list */}
       {sorted.length === 0 ? (
-        <p className="text-[#f8f4eb]/55 text-sm">No moments added yet.</p>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No moments added yet.</p>
       ) : (
-        <div className="space-y-5 mb-8">
+        <div>
           {sorted.map((m, i) => (
-            <div key={m.id} className="flex gap-4 items-start">
-              <div
-                className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
-                style={{ backgroundColor: 'rgba(187,171,244,0.22)', color: '#BBABF4', border: '1px solid rgba(187,171,244,0.3)' }}
-              >
+            <div
+              key={m.id}
+              style={{
+                display: 'flex',
+                gap: 12,
+                alignItems: 'flex-start',
+                padding: '14px 0',
+                borderBottom: i < sorted.length - 1 ? '1px solid rgba(26,26,26,0.08)' : 'none',
+              }}
+            >
+              <div style={{
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                background: '#2C3777',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: hv,
+                fontSize: 11,
+                fontWeight: 500,
+                flexShrink: 0,
+                marginTop: 2,
+              }}>
                 {i + 1}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[#f8f4eb] font-semibold text-sm leading-snug">{m.title}</p>
+              <div>
+                <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.4 }}>{m.title}</p>
                 {m.note && (
-                  <p className="text-[#f8f4eb]/65 text-sm leading-relaxed mt-1 whitespace-pre-wrap">{m.note}</p>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 2, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                    {m.note}
+                  </p>
                 )}
               </div>
             </div>
@@ -354,36 +283,32 @@ function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
 
       {/* Reflection fields */}
       {hasReflection && (
-        <div className="pt-8 border-t border-[#f8f4eb]/[0.12] space-y-6">
-          {content.themes && (
-            <ReflectionField label="Themes that stood out" text={content.themes} />
-          )}
-          {content.surprises && (
-            <ReflectionField label="Surprises or realizations" text={content.surprises} />
-          )}
-          {content.valuesToPassOn && (
-            <ReflectionField label="Values to pass on" text={content.valuesToPassOn} />
-          )}
-          {content.legacyProjects && (
-            <ReflectionField label="Legacy project ideas" text={content.legacyProjects} />
+        <div style={{ marginTop: 32 }}>
+          {[
+            { field: content.themes, label: 'THEMES THAT STOOD OUT' },
+            { field: content.surprises, label: 'SURPRISES OR REALIZATIONS' },
+            { field: content.valuesToPassOn, label: 'VALUES TO PASS ON' },
+            { field: content.legacyProjects, label: 'LEGACY PROJECT IDEAS' },
+          ].map(({ field, label }) =>
+            field ? (
+              <div key={label} style={{ marginBottom: 28 }}>
+                <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 6, textTransform: 'uppercase' as const }}>
+                  {label}
+                </p>
+                <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                  {field}
+                </p>
+              </div>
+            ) : null
           )}
         </div>
       )}
     </div>
-  );
-}
-
-function ReflectionField({ label, text }: { label: string; text: string }) {
-  return (
-    <div>
-      <p className="text-xs uppercase tracking-[0.12em] text-[#f8f4eb]/55 mb-2">{label}</p>
-      <p className="text-[#f8f4eb]/80 text-sm leading-relaxed whitespace-pre-wrap">{text}</p>
-    </div>
-  );
+  )
 }
 
 // ---------------------------------------------------------------------------
-// RankingSnapshot — dispatches by activity type
+// RankingSnapshot
 // ---------------------------------------------------------------------------
 
 function RankingSnapshot({ ranking, activity }: { ranking: RankingContent; activity: string }) {
@@ -394,110 +319,111 @@ function RankingSnapshot({ ranking, activity }: { ranking: RankingContent; activ
 }
 
 // ---------------------------------------------------------------------------
-// ValuesCardSnapshot — tonal lavender hierarchy, cards as primary element
+// ValuesCardSnapshot
 // ---------------------------------------------------------------------------
 
-// Three levels within one tonal family:
-// rich lavender → deeper → muted/desaturated.
-// Hierarchy comes from tone and card visibility, not from different hues.
-const VALUE_GROUPS = {
-  essential: {
-    sectionBg: '#BBABF4',           // richest lavender — most present
-    headingColor: 'rgba(19,4,38,0.85)',
-    cardText: 'rgba(19,4,38,0.92)',
+const VALUE_GROUPS = [
+  {
+    key: 'essential' as const,
+    label: 'ESSENTIAL',
+    containerBg: '#BBABF4',
+    containerBorder: undefined as string | undefined,
+    cardBg: 'rgba(255,255,255,0.55)',
+    cardBorder: 'none',
+    cardText: '#2C3777',
   },
-  important: {
-    sectionBg: '#9A90D4',           // deeper, slightly more saturated purple
-    headingColor: 'rgba(19,4,38,0.80)',
-    cardText: 'rgba(19,4,38,0.85)',
+  {
+    key: 'important' as const,
+    label: 'IMPORTANT',
+    containerBg: '#F8F4EB',
+    containerBorder: '1px solid rgba(26,26,26,0.08)',
+    cardBg: '#FFFFFF',
+    cardBorder: '1px solid rgba(26,26,26,0.12)',
+    cardText: '#1A1A1A',
   },
-  less_central: {
-    sectionBg: '#7A72B8',           // darkest, most muted — lowest emphasis
-    headingColor: 'rgba(19,4,38,0.70)',
-    cardText: 'rgba(19,4,38,0.75)',
+  {
+    key: 'less_central' as const,
+    label: 'LESS IMPORTANT',
+    containerBg: '#2C3777',
+    containerBorder: undefined,
+    cardBg: 'rgba(255,255,255,0.1)',
+    cardBorder: '1px solid rgba(255,255,255,0.15)',
+    cardText: 'rgba(255,255,255,0.9)',
   },
-}
-
-// Card is the dominant visual — consistent across all sections.
-// White-tinted surface so cards pop against any lavender section bg.
-function ValueCard({ value, textColor }: { value: string; textColor: string }) {
-  return (
-    <div
-      className="rounded-xl p-4 flex items-start flex-shrink-0"
-      style={{
-        width: '134px',
-        height: '180px',
-        background: 'rgba(255,255,255,0.52)',
-        border: '1px solid rgba(255,255,255,0.72)',
-      }}
-    >
-      <span className="text-[0.9rem] leading-relaxed" style={{ color: textColor }}>
-        {value}
-      </span>
-    </div>
-  )
-}
+]
 
 function ValuesCardSnapshot({ ranking }: { ranking: RankingContent }) {
-  const hasEssential = ranking.essential.length > 0
-  const hasImportant = ranking.important.length > 0
-  const hasLessCentral = ranking.less_central.length > 0
   const hasReflection = !!(ranking.reflection?.trim())
 
   return (
-    <div className="space-y-3">
-      {hasEssential && (
-        <section className="rounded-2xl p-6" style={{ backgroundColor: VALUE_GROUPS.essential.sectionBg }}>
-          <p className="text-sm font-semibold uppercase tracking-[0.10em] mb-5"
-            style={{ color: VALUE_GROUPS.essential.headingColor }}>
-            Most central to me
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {ranking.essential.map((item) => (
-              <ValueCard key={item} value={item} textColor={VALUE_GROUPS.essential.cardText} />
-            ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {VALUE_GROUPS.map(({ key, label, containerBg, containerBorder, cardBg, cardBorder, cardText }) => {
+        const items = ranking[key]
+        if (!items || items.length === 0) return null
+        return (
+          <div
+            key={key}
+            style={{
+              background: containerBg,
+              border: containerBorder,
+              borderRadius: 10,
+              padding: 20,
+            }}
+          >
+            <p style={{
+              fontFamily: hv,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: '0.08em',
+              color: 'rgba(26,26,26,0.56)',
+              marginBottom: 12,
+              textTransform: 'uppercase' as const,
+            }}>
+              {label}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+              {items.map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    background: cardBg,
+                    border: cardBorder,
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    minHeight: 80,
+                    fontFamily: hv,
+                    fontSize: 14,
+                    color: cardText,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
-        </section>
-      )}
+        )
+      })}
 
-      {hasImportant && (
-        <section className="rounded-2xl p-6" style={{ backgroundColor: VALUE_GROUPS.important.sectionBg }}>
-          <p className="text-sm font-semibold uppercase tracking-[0.10em] mb-5"
-            style={{ color: VALUE_GROUPS.important.headingColor }}>
-            Also important
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {ranking.important.map((item) => (
-              <ValueCard key={item} value={item} textColor={VALUE_GROUPS.important.cardText} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {hasLessCentral && (
-        <section className="rounded-2xl p-6" style={{ backgroundColor: VALUE_GROUPS.less_central.sectionBg }}>
-          <p className="text-sm font-semibold uppercase tracking-[0.10em] mb-4"
-            style={{ color: VALUE_GROUPS.less_central.headingColor }}>
-            Less central right now
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {ranking.less_central.map((item) => (
-              <ValueCard key={item} value={item} textColor={VALUE_GROUPS.less_central.cardText} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!hasEssential && !hasImportant && !hasLessCentral && (
-        <p className="text-[#f8f4eb]/65 text-sm">Nothing has been placed yet.</p>
+      {!VALUE_GROUPS.some(({ key }) => (ranking[key]?.length ?? 0) > 0) && (
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>Nothing has been placed yet.</p>
       )}
 
       {hasReflection && (
-        <div className="pt-8 mt-4 border-t border-[#f8f4eb]/[0.15]">
-          <p className="text-xs uppercase tracking-[0.14em] text-[#f8f4eb]/65 mb-5">
-            A note I wrote
+        <div style={{ marginTop: 16, paddingTop: 8 }}>
+          <p style={{
+            fontFamily: hv,
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: '0.08em',
+            color: 'rgba(26,26,26,0.56)',
+            marginTop: 24,
+            marginBottom: 8,
+            textTransform: 'uppercase' as const,
+          }}>
+            REFLECTION NOTE
           </p>
-          <p className="text-[#f8f4eb]/80 leading-relaxed text-base italic whitespace-pre-wrap">
+          <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
             {ranking.reflection!.trim()}
           </p>
         </div>
@@ -507,7 +433,7 @@ function ValuesCardSnapshot({ ranking }: { ranking: RankingContent }) {
 }
 
 // ---------------------------------------------------------------------------
-// FearsTextSnapshot — typographic list, breathable
+// FearsTextSnapshot
 // ---------------------------------------------------------------------------
 
 function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
@@ -519,21 +445,19 @@ function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
   return (
     <div>
       {hasEssential && (
-        <section className="mb-16">
-          <p className="text-xs uppercase tracking-[0.14em] text-[#f8f4eb]/65 mb-4">
+        <section style={{ marginBottom: 32 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 16, textTransform: 'uppercase' as const }}>
             Most present for me
           </p>
-          <div className="space-y-5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {ranking.essential.map((item, i) => (
-              <p
-                key={item}
-                className="leading-snug"
-                style={{
-                  fontSize: i < 2 ? '1.25rem' : '1.05rem',
-                  fontWeight: i < 2 ? 600 : 500,
-                  color: i < 2 ? 'rgba(248,244,235,1)' : 'rgba(248,244,235,0.88)',
-                }}
-              >
+              <p key={item} style={{
+                fontFamily: hv,
+                fontSize: i < 2 ? 18 : 16,
+                fontWeight: i < 2 ? 500 : 400,
+                color: i < 2 ? '#1A1A1A' : 'rgba(26,26,26,0.85)',
+                lineHeight: 1.4,
+              }}>
                 {item}
               </p>
             ))}
@@ -542,21 +466,19 @@ function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
       )}
 
       {hasImportant && (
-        <section className="mb-16">
-          <p className="text-xs uppercase tracking-[0.14em] text-[#f8f4eb]/65 mb-4">
+        <section style={{ marginBottom: 32 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 16, textTransform: 'uppercase' as const }}>
             Also present
           </p>
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {ranking.important.map((item, i) => (
-              <p
-                key={item}
-                className="leading-snug"
-                style={{
-                  fontSize: i < 2 ? '1.05rem' : '1rem',
-                  fontWeight: i < 2 ? 500 : 400,
-                  color: i < 2 ? 'rgba(248,244,235,0.82)' : 'rgba(248,244,235,0.70)',
-                }}
-              >
+              <p key={item} style={{
+                fontFamily: hv,
+                fontSize: i < 2 ? 16 : 15,
+                fontWeight: 400,
+                color: i < 2 ? 'rgba(26,26,26,0.85)' : 'rgba(26,26,26,0.72)',
+                lineHeight: 1.4,
+              }}>
                 {item}
               </p>
             ))}
@@ -565,13 +487,13 @@ function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
       )}
 
       {hasLessCentral && (
-        <section className="mb-16">
-          <p className="text-xs uppercase tracking-[0.14em] text-[#f8f4eb]/65 mb-4">
+        <section style={{ marginBottom: 32 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 16, textTransform: 'uppercase' as const }}>
             Less present right now
           </p>
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {ranking.less_central.map((item) => (
-              <p key={item} className="text-sm text-[#f8f4eb]/60 leading-snug">
+              <p key={item} style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', lineHeight: 1.4 }}>
                 {item}
               </p>
             ))}
@@ -580,93 +502,192 @@ function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
       )}
 
       {!hasEssential && !hasImportant && !hasLessCentral && (
-        <p className="text-app-tertiary text-sm">Nothing has been placed yet.</p>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>Nothing has been placed yet.</p>
       )}
 
       {hasReflection && (
-        <div className="mt-4 pt-12 border-t border-[#f8f4eb]/[0.07]">
-          <p className="text-xs uppercase tracking-[0.14em] text-[#f8f4eb]/65 mb-5">
-            A note I wrote
+        <div style={{ marginTop: 8, paddingTop: 24, borderTop: '1px solid rgba(26,26,26,0.08)' }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 8, textTransform: 'uppercase' as const }}>
+            Reflection note
           </p>
-          <p className="text-[#f8f4eb]/70 leading-relaxed text-base italic whitespace-pre-wrap">
+          <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(26,26,26,0.8)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
             {ranking.reflection!.trim()}
           </p>
         </div>
       )}
-
-      <div className="mt-14">
-        <details>
-          <summary className="text-xs text-[#f8f4eb]/60 cursor-pointer hover:text-[#f8f4eb] transition-colors list-none select-none">
-            About this exercise
-          </summary>
-          <p className="text-xs text-[#f8f4eb]/60 mt-3 leading-relaxed max-w-sm">
-            You sorted a set of fears by how much they resonate with you, placing the ones that feel most present at the top.
-          </p>
-        </details>
-      </div>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Other entry views (unchanged)
+// DocumentSnapshot
 // ---------------------------------------------------------------------------
 
-function ReflectionEntryView({ prompt, response }: { prompt: string; response: string }) {
-  return (
-    <div className="rounded-2xl border border-[#f8f4eb]/10 bg-[#f8f4eb]/[0.03] p-6">
-      <div className="mb-5">
-        <div className="text-xs uppercase tracking-[0.12em] text-app-tertiary mb-2">Prompt</div>
-        <p className="text-[#f8f4eb]/70 leading-relaxed">{prompt}</p>
-      </div>
-      <div>
-        <div className="text-xs uppercase tracking-[0.12em] text-app-tertiary mb-2">Response</div>
-        <p className="text-[#f8f4eb] leading-relaxed whitespace-pre-wrap">{response}</p>
-      </div>
-    </div>
-  )
+type ContactFields = { name: string; phone: string; email: string; address: string }
+type KeepsakeItem = { id: string; object: string; recipient: string; meaning: string }
+
+function DocumentSnapshot({ entry }: { entry: EntryRow }) {
+  if (entry.document_type === 'important_contacts') {
+    return <ImportantContactsSnapshot entry={entry} />
+  }
+  if (entry.document_type === 'keepsake_inventory') {
+    return <KeepsakeInventorySnapshot entry={entry} />
+  }
+  return <GenericDocumentSnapshot entry={entry} />
 }
 
-function AdvanceDirectiveView({ entry }: { entry: EntryRow }) {
+function GenericDocumentSnapshot({ entry }: { entry: EntryRow }) {
   const content = entry.content
   if (!content || typeof content !== 'object') {
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+  }
+  const fields = (Object.entries(content as Record<string, unknown>)
+    .filter(([, v]) => typeof v === 'string' && (v as string).trim().length > 0)) as [string, string][]
+  if (fields.length === 0) {
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+  }
+  return (
+    <div>
+      {fields.map(([key, value], i) => (
+        <div key={key} style={{ marginBottom: i < fields.length - 1 ? 28 : 0 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', color: 'rgba(26,26,26,0.56)', textTransform: 'uppercase' as const, marginBottom: 6 }}>
+            {camelCaseToLabel(key)}
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 16, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
+            {value}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
+  const content = entry.content as Record<string, ContactFields> | null
+  if (!content) return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No contacts saved yet.</p>
+
+  const groups = [
+    { key: 'doctor',   label: 'DOCTORS',                      keys: ['doctor1', 'doctor2', 'doctor3', 'doctor4'] },
+    { key: 'attorney', label: 'ATTORNEYS / ACCOUNTANTS',       keys: ['attorney1', 'attorney2', 'attorney3', 'attorney4'] },
+    { key: 'relative', label: 'FAMILY & EMERGENCY CONTACTS',   keys: ['relative1', 'relative2', 'relative3', 'relative4'] },
+    { key: 'friend',   label: 'FRIENDS',                       keys: ['friend1', 'friend2', 'friend3', 'friend4'] },
+    { key: 'other',    label: 'OTHERS',                        keys: ['other1', 'other2', 'other3', 'other4'] },
+  ]
+
+  let renderedGroups = 0
+
+  return (
+    <div>
+      {groups.map((group) => {
+        const filled = group.keys
+          .map((k) => content[k])
+          .filter((c): c is ContactFields => !!(c && c.name?.trim()))
+        if (filled.length === 0) return null
+        const isFirst = renderedGroups === 0
+        renderedGroups++
+        return (
+          <div key={group.key}>
+            <p style={{
+              fontFamily: hv,
+              fontSize: 13,
+              fontWeight: 500,
+              letterSpacing: '0.04em',
+              color: 'rgba(26,26,26,0.56)',
+              textTransform: 'uppercase' as const,
+              borderBottom: '1px solid rgba(26,26,26,0.1)',
+              paddingBottom: 8,
+              marginBottom: 16,
+              marginTop: isFirst ? 0 : 32,
+            }}>
+              {group.label}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {filled.map((contact, ci) => (
+                <div key={ci}>
+                  <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 500, color: '#1A1A1A' }}>{contact.name}</p>
+                  {contact.phone && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{contact.phone}</p>}
+                  {contact.email && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{contact.email}</p>}
+                  {contact.address && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{contact.address}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function KeepsakeInventorySnapshot({ entry }: { entry: EntryRow }) {
+  const content = entry.content as { entries?: KeepsakeItem[] } | null
+  const items = content?.entries?.filter((e) => e.object?.trim()) ?? []
+  if (items.length === 0) {
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No keepsakes saved yet.</p>
+  }
+  return (
+    <div>
+      {items.map((item, i) => (
+        <div
+          key={item.id}
+          style={{
+            padding: '20px 0',
+            borderBottom: i < items.length - 1 ? '1px solid rgba(26,26,26,0.08)' : 'none',
+            display: 'flex',
+            gap: 12,
+            alignItems: 'flex-start',
+          }}
+        >
+          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(26,26,26,0.4)', minWidth: 20, flexShrink: 0, paddingTop: 1 }}>
+            {i + 1}
+          </span>
+          <div>
+            <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 500, color: '#1A1A1A' }}>{item.object}</p>
+            {item.recipient?.trim() && (
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 2 }}>For: {item.recipient}</p>
+            )}
+            {item.meaning?.trim() && (
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 4, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                {item.meaning}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// GenericEntryView — reflection prompts and other entries
+// ---------------------------------------------------------------------------
+
+function GenericEntryView({ entry }: { entry: EntryRow }) {
+  const reflection = getStructuredReflection(entry)
+  if (reflection) {
     return (
-      <div className="rounded-2xl border border-[#f8f4eb]/10 bg-[#f8f4eb]/[0.03] p-6">
-        <p className="text-[#f8f4eb]/60">No saved content found.</p>
+      <div>
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: 'rgba(26,26,26,0.56)', marginBottom: 8 }}>
+            Prompt
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(26,26,26,0.8)', lineHeight: 1.6 }}>{reflection.prompt}</p>
+        </div>
+        <div>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: 'rgba(26,26,26,0.56)', marginBottom: 8 }}>
+            Response
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{reflection.response}</p>
+        </div>
       </div>
     )
   }
-  const fields = Object.entries(content as Record<string, unknown>).filter(
-    ([, value]) => typeof value === 'string' && (value as string).trim().length > 0
-  ) as Array<[string, string]>
+  const text = getGenericEntryText(entry)
   return (
-    <div className="space-y-4">
-      {fields.length === 0 ? (
-        <div className="rounded-2xl border border-[#f8f4eb]/10 bg-[#f8f4eb]/[0.03] p-6">
-          <p className="text-[#f8f4eb]/60">No saved content found.</p>
-        </div>
+    <div>
+      {text ? (
+        <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{text}</p>
       ) : (
-        fields.map(([key, value]) => (
-          <div key={key} className="rounded-2xl border border-[#f8f4eb]/10 bg-[#f8f4eb]/[0.03] p-6">
-            <div className="text-xs uppercase tracking-[0.12em] text-app-tertiary mb-2">
-              {formatFieldLabel(key)}
-            </div>
-            <p className="text-[#f8f4eb] leading-relaxed whitespace-pre-wrap">{value}</p>
-          </div>
-        ))
-      )}
-    </div>
-  )
-}
-
-function GenericEntryView({ entry }: { entry: EntryRow }) {
-  const textContent = getGenericEntryText(entry)
-  return (
-    <div className="rounded-2xl border border-[#f8f4eb]/10 bg-[#f8f4eb]/[0.03] p-6">
-      {textContent ? (
-        <p className="text-[#f8f4eb] leading-relaxed whitespace-pre-wrap">{textContent}</p>
-      ) : (
-        <p className="text-[#f8f4eb]/60">No saved content found.</p>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No saved content found.</p>
       )}
     </div>
   )
@@ -713,12 +734,9 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
   if (!entry.content || typeof entry.content !== 'object') return null
   const content = entry.content as Record<string, unknown>
   return {
-    essential: Array.isArray(content.essential)
-      ? content.essential.filter((i): i is string => typeof i === 'string') : [],
-    important: Array.isArray(content.important)
-      ? content.important.filter((i): i is string => typeof i === 'string') : [],
-    less_central: Array.isArray(content.less_central)
-      ? content.less_central.filter((i): i is string => typeof i === 'string') : [],
+    essential: Array.isArray(content.essential) ? content.essential.filter((i): i is string => typeof i === 'string') : [],
+    important: Array.isArray(content.important) ? content.important.filter((i): i is string => typeof i === 'string') : [],
+    less_central: Array.isArray(content.less_central) ? content.less_central.filter((i): i is string => typeof i === 'string') : [],
     reflection: typeof content.reflection === 'string' ? content.reflection : undefined,
     is_complete: typeof content.is_complete === 'boolean' ? content.is_complete : undefined,
     sorted_count: typeof content.sorted_count === 'number' ? content.sorted_count : undefined,
@@ -728,6 +746,11 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
 
 function getContinueHref(entry: EntryRow): string | null {
   if (entry.document_type === 'advance_directive_supplement') return '/app/capture/advance-directive'
+  if (entry.document_type === 'personal_admin_info') return '/app/capture/personal-admin'
+  if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
+  if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
+  if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
+  if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
   if (entry.activity === 'values_ranking') return `/app/explore/values-ranking?entry=${entry.id}`
   if (entry.activity === 'fears_ranking') return `/app/explore/fears-ranking?entry=${entry.id}`
   if (entry.activity === 'legacy_map') return '/app/explore/legacy-map'
@@ -736,6 +759,11 @@ function getContinueHref(entry: EntryRow): string | null {
 
 function getDisplayTitle(entry: EntryRow): string {
   if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'important_contacts') return 'Important Contacts'
+  if (entry.document_type === 'financial_information') return 'Financial Information'
+  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
+  if (entry.document_type === 'keepsake_inventory') return 'Keepsake Inventory'
   if (entry.title?.trim()) return entry.title.trim()
   if (entry.activity === 'values_ranking') return 'Values Ranking'
   if (entry.activity === 'fears_ranking') return 'Fears Ranking'
@@ -754,13 +782,17 @@ function getGenericEntryText(entry: EntryRow): string | null {
   return values.length > 0 ? values.join('\n\n') : null
 }
 
+function camelCaseToLabel(key: string): string {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (s) => s.toUpperCase())
+    .replace(/_/g, ' ')
+    .trim()
+}
+
 function formatDate(dateString: string | null): string | null {
   if (!dateString) return null
   const date = new Date(dateString)
   if (Number.isNaN(date.getTime())) return null
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-function formatFieldLabel(key: string): string {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }

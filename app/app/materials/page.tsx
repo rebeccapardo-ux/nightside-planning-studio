@@ -104,12 +104,13 @@ export default async function PlanPage() {
   }
 
   // --- Documents: split into in-progress / not-started ---
-  const inProgressDocs: typeof KNOWN_DOCUMENTS = []
+  type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId: string }
+  const inProgressDocs: InProgressDoc[] = []
   const notStartedDocs: typeof KNOWN_DOCUMENTS = []
   for (const doc of KNOWN_DOCUMENTS) {
     const entry = entries?.find((e) => e.document_type === doc.type)
     if (entry && hasContent(entry)) {
-      inProgressDocs.push(doc)
+      inProgressDocs.push({ ...doc, entryId: entry.id })
     } else {
       notStartedDocs.push(doc)
     }
@@ -133,7 +134,7 @@ export default async function PlanPage() {
 
   const sectionHeader: React.CSSProperties = {
     fontFamily: apfel,
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 500,
     color: '#FFFFFF',
     marginBottom: 24,
@@ -265,7 +266,7 @@ export default async function PlanPage() {
                 {inProgressDocs.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {inProgressDocs.map((doc) => (
-                      <Link key={doc.type} href={doc.href} style={{ textDecoration: 'none' }}>
+                      <Link key={doc.type} href={`/app/entries/${doc.entryId}`} style={{ textDecoration: 'none' }}>
                         <div className="plan-pill-doc" style={docButton}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                             <DocIcon />

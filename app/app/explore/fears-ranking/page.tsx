@@ -1,19 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-
-type SavedRankingContent = {
-  essential?: string[]
-  important?: string[]
-  less_central?: string[]
-  reflection?: string
-  is_complete?: boolean
-  sorted_count?: number
-  total_count?: number
-}
+import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 
 type Bucket = 'essential' | 'important' | 'less_central'
 
@@ -77,6 +68,20 @@ type MoveMode =
   | { type: 'moving_existing'; value: string; from: Bucket }
   | { type: 'making_room_for_incoming'; selected?: string }
 
+type SavedRankingContent = {
+  essential?: string[]
+  important?: string[]
+  less_central?: string[]
+  reflection?: string
+  is_complete?: boolean
+  sorted_count?: number
+  total_count?: number
+}
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
 export default function FearsRankingPage() {
   const searchParams = useSearchParams()
   const entryIdFromUrl = searchParams.get('entry')
@@ -86,52 +91,20 @@ export default function FearsRankingPage() {
   const [moveMode, setMoveMode] = useState<MoveMode>({ type: 'none' })
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [reflection, setReflection] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
   const [loadingSavedEntry, setLoadingSavedEntry] = useState(true)
   const [isDirty, setIsDirty] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const [statusNow, setStatusNow] = useState(Date.now())
+  const [reflectionSaveStatus, setReflectionSaveStatus] = useState<SaveStatus>('idle')
+  const [resetConfirm, setResetConfirm] = useState(false)
+  const [voiceActive, setVoiceActive] = useState(false)
 
-  useEffect(() => {
-    async function loadSavedEntry() {
-      if (!entryIdFromUrl) {
-        setLoadingSavedEntry(false)
-        return
-      }
-
-      const supabase = createSupabaseBrowserClient()
-
-      const { data, error } = await supabase
-        .from('entries')
-        .select('id, content, activity')
-        .eq('id', entryIdFromUrl)
-        .single()
-
-      if (error || !data || data.activity !== 'fears_ranking') {
-        setLoadingSavedEntry(false)
-        return
-      }
-
-      const content = (data.content ?? {}) as SavedRankingContent
-      const essential = Array.isArray(content.essential) ? content.essential : []
-      const important = Array.isArray(content.important) ? content.important : []
-      const less_central = Array.isArray(content.less_central) ? content.less_central : []
-
-      setAssignments({ essential, important, less_central })
-      setReflection(typeof content.reflection === 'string' ? content.reflection : '')
-      setSavedEntryId(data.id)
-
-      const restoredCount =
-        typeof content.sorted_count === 'number'
-          ? content.sorted_count
-          : essential.length + important.length + less_central.length
-
-      setIndex(restoredCount)
-      setLoadingSavedEntry(false)
-    }
-
-    loadSavedEntry()
-  }, [entryIdFromUrl])
+  const cardSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Ref so autosave closures always see the latest savedEntryId
+  const savedEntryIdRef = useRef<string | null>(null)
 
   const current = FEARS[index] ?? null
   const sortedCount =
@@ -150,23 +123,206 @@ export default function FearsRankingPage() {
 
   const currentCardIsActive = moveMode.type === 'none' && !!current
 
+  // Load saved entry on mount — always fetch the most recent, not just by URL param
+  useEffect(() => {
+    async function loadSavedEntry() {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { setLoadingSavedEntry(false); return }
+
+      let data: { id: string; content: unknown; activity: string | null } | null = null
+
+      if (entryIdFromUrl) {
+        const result = await supabase
+          .from('entries')
+          .select('id, content, activity')
+          .eq('id', entryIdFromUrl)
+          .single()
+        if (!result.error && result.data?.activity === 'fears_ranking') data = result.data
+      } else {
+        const result = await supabase
+          .from('entries')
+          .select('id, content, activity')
+          .eq('user_id', user.id)
+          .eq('activity', 'fears_ranking')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (!result.error && result.data) data = result.data
+      }
+
+      if (data) {
+        const content = (data.content ?? {}) as SavedRankingContent
+        const essential = Array.isArray(content.essential) ? content.essential : []
+        const important = Array.isArray(content.important) ? content.important : []
+        const less_central = Array.isArray(content.less_central) ? content.less_central : []
+        setAssignments({ essential, important, less_central })
+        setReflection(typeof content.reflection === 'string' ? content.reflection : '')
+        setSavedEntryId(data.id)
+        savedEntryIdRef.current = data.id
+        const restoredCount = typeof content.sorted_count === 'number'
+          ? content.sorted_count
+          : essential.length + important.length + less_central.length
+        setIndex(restoredCount)
+      }
+      setLoadingSavedEntry(false)
+    }
+    loadSavedEntry()
+  }, [entryIdFromUrl])
+
+  // Autosave card state 1500ms after assignments change
+  useEffect(() => {
+    if (!isDirty) return
+    if (cardSaveTimerRef.current) clearTimeout(cardSaveTimerRef.current)
+    cardSaveTimerRef.current = setTimeout(() => { autoSaveCardState() }, 1500)
+    return () => { if (cardSaveTimerRef.current) clearTimeout(cardSaveTimerRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignments, isDirty])
+
+  // Refresh timestamp display every 60s
+  useEffect(() => {
+    if (!lastSavedAt) return
+    const interval = setInterval(() => setStatusNow(Date.now()), 60000)
+    return () => clearInterval(interval)
+  }, [lastSavedAt])
+
+  async function autoSaveCardState() {
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    setSaveStatus('saving')
+    const currentEntryId = savedEntryIdRef.current
+    const payload = {
+      title: 'Fears Ranking',
+      user_id: user.id,
+      section: 'explore',
+      activity: 'fears_ranking',
+      content: {
+        essential: assignments.essential,
+        important: assignments.important,
+        less_central: assignments.less_central,
+        reflection: reflection.trim(),
+        is_complete: isDone,
+        sorted_count: sortedCount,
+        total_count: FEARS.length,
+      },
+    }
+
+    try {
+      if (currentEntryId) {
+        const { error } = await supabase.from('entries').update(payload).eq('id', currentEntryId)
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase.from('entries').insert(payload).select('id').single()
+        if (error) throw error
+        setSavedEntryId(data.id)
+        savedEntryIdRef.current = data.id
+      }
+      setIsDirty(false)
+      setSaveStatus('saved')
+      const now = new Date()
+      setLastSavedAt(now)
+      setStatusNow(now.getTime())
+    } catch {
+      setSaveStatus('error')
+    }
+  }
+
+  function handleReflectionChange(value: string) {
+    setReflection(value)
+    setReflectionSaveStatus('idle')
+    if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current)
+    if (value.trim()) {
+      reflectionDebounceRef.current = setTimeout(() => autoSaveReflection(value), 1500)
+    }
+  }
+
+  async function autoSaveReflection(value: string) {
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const currentEntryId = savedEntryIdRef.current
+    setReflectionSaveStatus('saving')
+
+    try {
+      if (currentEntryId) {
+        const { error } = await supabase
+          .from('entries')
+          .update({
+            content: {
+              essential: assignments.essential,
+              important: assignments.important,
+              less_central: assignments.less_central,
+              reflection: value.trim(),
+              is_complete: isDone,
+              sorted_count: sortedCount,
+              total_count: FEARS.length,
+            },
+          })
+          .eq('id', currentEntryId)
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase
+          .from('entries')
+          .insert({
+            title: 'Fears Ranking',
+            user_id: user.id,
+            section: 'explore',
+            activity: 'fears_ranking',
+            content: {
+              essential: assignments.essential,
+              important: assignments.important,
+              less_central: assignments.less_central,
+              reflection: value.trim(),
+              is_complete: isDone,
+              sorted_count: sortedCount,
+              total_count: FEARS.length,
+            },
+          })
+          .select('id')
+          .single()
+        if (error) throw error
+        setSavedEntryId(data.id)
+        savedEntryIdRef.current = data.id
+      }
+      setReflectionSaveStatus('saved')
+    } catch {
+      setReflectionSaveStatus('error')
+    }
+  }
+
+  async function handleReset() {
+    setResetConfirm(false)
+    const entryToDelete = savedEntryIdRef.current
+    setAssignments(EMPTY)
+    setIndex(0)
+    setReflection('')
+    setIsDirty(false)
+    setSavedEntryId(null)
+    savedEntryIdRef.current = null
+    setSaveStatus('idle')
+    setLastSavedAt(null)
+    if (entryToDelete) {
+      const supabase = createSupabaseBrowserClient()
+      await supabase.from('entries').delete().eq('id', entryToDelete)
+    }
+  }
+
   const liveInstruction = useMemo(() => {
     if (!current && moveMode.type === 'none') {
       return 'All fears have been placed.'
     }
-
     if (moveMode.type === 'moving_existing') {
       return 'Place this card in a new slot.'
     }
-
     if (moveMode.type === 'making_room_for_incoming') {
       if (!moveMode.selected) {
         return 'Choose a card in Essential to move out.'
       }
-
       return 'Choose a new slot for this card.'
     }
-
     return 'Select a slot below to place this card.'
   }, [moveMode, current])
 
@@ -185,30 +341,22 @@ export default function FearsRankingPage() {
 
   function handleCurrentCardClick() {
     if (moveMode.type === 'none') return
-
     setMoveMode({ type: 'none' })
     setErrorMessage(null)
-    setSaveMessage(null)
   }
 
   function handleEmptySlotClick(bucket: Bucket) {
     setErrorMessage(null)
-    setSaveMessage(null)
 
     if (moveMode.type === 'moving_existing') {
       if (bucket === moveMode.from) {
         setErrorMessage('Choose an empty slot in a different row.')
         return
       }
-
       setAssignments((prev) => {
         const cleaned = removeFromBucket(moveMode.from, moveMode.value, prev)
-        return {
-          ...cleaned,
-          [bucket]: [...cleaned[bucket], moveMode.value],
-        }
+        return { ...cleaned, [bucket]: [...cleaned[bucket], moveMode.value] }
       })
-
       setMoveMode({ type: 'none' })
       return
     }
@@ -218,62 +366,45 @@ export default function FearsRankingPage() {
         setErrorMessage('First choose a card in Essential to move out.')
         return
       }
-
       if (bucket === 'essential') {
         setErrorMessage('Choose an empty slot in Important or Less important.')
         return
       }
-
       if (!current) {
         setErrorMessage('No incoming card to place.')
         return
       }
-
       setAssignments((prev) => ({
-        essential: [
-          ...prev.essential.filter((v) => v !== moveMode.selected),
-          current,
-        ],
-        important:
-          bucket === 'important'
-            ? [...prev.important, moveMode.selected]
-            : prev.important.filter((v) => v !== moveMode.selected),
-        less_central:
-          bucket === 'less_central'
-            ? [...prev.less_central, moveMode.selected]
-            : prev.less_central.filter((v) => v !== moveMode.selected),
+        essential: [...prev.essential.filter((v) => v !== moveMode.selected), current],
+        important: bucket === 'important'
+          ? [...prev.important, moveMode.selected]
+          : prev.important.filter((v) => v !== moveMode.selected),
+        less_central: bucket === 'less_central'
+          ? [...prev.less_central, moveMode.selected]
+          : prev.less_central.filter((v) => v !== moveMode.selected),
       }))
-
       setMoveMode({ type: 'none' })
       advance()
       return
     }
 
     if (!current) return
-
     if (bucket === 'essential' && assignments.essential.length >= ESSENTIAL_SLOTS) {
       setMoveMode({ type: 'making_room_for_incoming' })
       return
     }
-
-    setAssignments((prev) => ({
-      ...prev,
-      [bucket]: [...prev[bucket], current],
-    }))
-
+    setAssignments((prev) => ({ ...prev, [bucket]: [...prev[bucket], current] }))
     advance()
   }
 
   function handleFilledCardClick(bucket: Bucket, value: string) {
     setErrorMessage(null)
-    setSaveMessage(null)
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (bucket !== 'essential') {
         setErrorMessage('Choose a card in Essential to move out.')
         return
       }
-
       setMoveMode({
         type: 'making_room_for_incoming',
         selected: moveMode.selected === value ? undefined : value,
@@ -286,7 +417,6 @@ export default function FearsRankingPage() {
         setMoveMode({ type: 'none' })
         return
       }
-
       setMoveMode({ type: 'moving_existing', value, from: bucket })
       return
     }
@@ -294,87 +424,14 @@ export default function FearsRankingPage() {
     setMoveMode({ type: 'moving_existing', value, from: bucket })
   }
 
-  async function handleSave() {
-    setErrorMessage(null)
-    setSaveMessage(null)
-
-    if (moveMode.type !== 'none') {
-      setErrorMessage('Finish the current move before saving.')
-      return
-    }
-
-    if (sortedCount === 0 && reflection.trim() === '') {
-      setErrorMessage('Place at least one card or write a note before saving.')
-      return
-    }
-
-    setSaving(true)
-
-    const supabase = createSupabaseBrowserClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      setSaving(false)
-      setErrorMessage('You are not logged in.')
-      return
-    }
-
-    const payload = {
-      title: 'Fears Ranking',
-      user_id: user.id,
-      section: 'explore',
-      activity: 'fears_ranking',
-      content: {
-        essential: assignments.essential,
-        important: assignments.important,
-        less_central: assignments.less_central,
-        reflection: reflection.trim(),
-        is_complete: isDone,
-        sorted_count: sortedCount,
-        total_count: FEARS.length,
-      },
-    }
-
-    if (savedEntryId) {
-      const { error } = await supabase
-        .from('entries')
-        .update(payload)
-        .eq('id', savedEntryId)
-
-      setSaving(false)
-
-      if (error) {
-        console.error('FEARS RANKING UPDATE ERROR:', JSON.stringify(error, null, 2))
-        setErrorMessage('There was a problem updating your ranking.')
-        return
-      }
-
-      setSaveMessage('Saved to Your Plan.')
-      setIsDirty(false)
-      return
-    }
-
-    const { data, error } = await supabase
-      .from('entries')
-      .insert(payload)
-      .select('id')
-      .single()
-
-    setSaving(false)
-
-    if (error) {
-      console.error('FEARS RANKING SAVE ERROR:', JSON.stringify(error, null, 2))
-      setErrorMessage('There was a problem saving your ranking.')
-      return
-    }
-
-    setSavedEntryId(data.id)
-    setSaveMessage('Saved to Your Plan.')
-    setIsDirty(false)
-  }
+  const saveStatusText = saveStatus === 'saving' ? 'Saving…'
+    : saveStatus === 'saved' && lastSavedAt
+      ? (() => {
+          const diff = Math.floor((statusNow - lastSavedAt.getTime()) / 1000)
+          return diff < 60 ? 'Last saved just now' : `Last saved ${Math.floor(diff / 60)} min ago`
+        })()
+      : saveStatus === 'error' ? "Couldn't save — check your connection"
+      : ''
 
   if (loadingSavedEntry) {
     return (
@@ -387,35 +444,37 @@ export default function FearsRankingPage() {
   return (
     <div className="min-h-screen bg-[#2f3f8f] text-white">
       <div className="mx-auto max-w-[1320px] px-6 pb-14 pt-5 md:px-10">
-        <section className="max-w-4xl">
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]">
-            Fears Ranking
-          </h1>
-          <p className="mt-2 max-w-[520px] text-[16px] leading-[1.4] text-white/86 md:text-[17px]">
-            Clarify what you most want to avoid, so your wishes are easier to communicate.
-          </p>
-        </section>
+
+        {/* Header with save status */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <section className="max-w-4xl">
+            <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]">
+              Fears Ranking
+            </h1>
+            <p className="mt-2 max-w-[520px] text-[16px] leading-[1.4] text-white/86 md:text-[17px]">
+              Clarify what you most want to avoid, so your wishes are easier to communicate.
+            </p>
+          </section>
+          {saveStatusText ? (
+            <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.78)', paddingTop: 6 }}>
+              {saveStatusText}
+            </p>
+          ) : null}
+        </div>
 
         <section className="mt-5 grid items-start gap-x-16 gap-y-0 lg:grid-cols-[500px_560px]">
           <div className="flex flex-col items-center pt-6 lg:items-center">
             <div className="flex items-start justify-center gap-4">
               <div className="flex flex-col items-center">
                 <div className={`relative ${CARD_SIZE}`}>
-                  <div
-                    className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${CARD_SIZE}`}
-                  />
-                  <div
-                    className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${CARD_SIZE}`}
-                  />
-                  <div
-                    className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${CARD_SIZE}`}
-                  >
+                  <div className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${CARD_SIZE}`} />
+                  <div className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${CARD_SIZE}`} />
+                  <div className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${CARD_SIZE}`}>
                     <span className="text-[11px] uppercase tracking-[0.14em] text-[#170327]/62">
                       Deck
                     </span>
                   </div>
                 </div>
-
                 <p className="mt-2 text-[13px] text-[#f8f4eb]/72">
                   {Math.max(remainingCount, 0)} left
                 </p>
@@ -437,32 +496,16 @@ export default function FearsRankingPage() {
                     </span>
                   </div>
                 </button>
-
                 <p className="mt-2 text-[13px] text-[#f8f4eb]/72">
                   {sortedCount} sorted
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 flex min-h-[72px] flex-wrap items-center justify-center gap-3">
+            <div className="mt-6 flex min-h-[48px] flex-wrap items-center justify-center gap-3">
               <p className="text-[16px] font-medium leading-[1.3] text-[#f8f4eb] md:text-[17px]">
                 {liveInstruction}
               </p>
-
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="rounded-full bg-[#f29836] px-4 py-2 text-[14px] font-medium text-[#170327] transition hover:bg-[#f0a347] disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {saving ? 'Saving…' : 'Save progress'}
-              </button>
-
-              {saveMessage && (
-                <p className="text-[14px] text-[#f8f4eb]/88">
-                  {saveMessage}
-                </p>
-              )}
             </div>
 
             {errorMessage && (
@@ -477,21 +520,46 @@ export default function FearsRankingPage() {
               <h2 className="text-[20px] font-semibold leading-none tracking-[-0.02em] text-[#f8f4eb] md:text-[22px]">
                 How it works
               </h2>
-
               <div className="mt-3 space-y-2 text-[14px] leading-[1.34] text-[#f8f4eb]/92 md:text-[15px]">
-                <p>
-                  You'll sort cards into three groups: Essential, Important, and Less important.
-                </p>
-                <p>
-                  Only 5 cards can be placed in Essential. If Essential is full, you'll choose one to move out before adding a new one.
-                </p>
-                <p>
-                  You can move cards at any time — nothing is locked in. To move a card from its slot, select the card you want to move, then select the new slot you want to move it to.
-                </p>
+                <p>You'll sort cards into three groups: Essential, Important, and Less important.</p>
+                <p>Only 5 cards can be placed in Essential. If Essential is full, you'll choose one to move out before adding a new one.</p>
+                <p>You can move cards at any time — nothing is locked in. To move a card from its slot, select the card you want to move, then select the new slot you want to move it to.</p>
               </div>
             </div>
           </div>
         </section>
+
+        {/* Reset ranking affordance */}
+        {sortedCount > 0 && (
+          <div style={{ textAlign: 'right', marginTop: 12, marginBottom: 4 }}>
+            {resetConfirm ? (
+              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.78)' }}>
+                This will clear your saved ranking.{' '}
+                <button
+                  onClick={handleReset}
+                  style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.88)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                >
+                  Reset
+                </button>
+                {' '}
+                <button
+                  onClick={() => setResetConfirm(false)}
+                  style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.56)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  Cancel
+                </button>
+              </span>
+            ) : (
+              <button
+                onClick={() => setResetConfirm(true)}
+                style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.56)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                className="hover:opacity-80 transition-opacity"
+              >
+                Reset ranking
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-3 space-y-2.5">
           <BucketSection
@@ -508,7 +576,6 @@ export default function FearsRankingPage() {
             cardEmpty="bg-[#efe8ff] border-[#170327]/18"
             cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.18)]"
           />
-
           <BucketSection
             title="Important"
             bucket="important"
@@ -523,7 +590,6 @@ export default function FearsRankingPage() {
             cardEmpty="bg-white border-[#170327]/16"
             cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.12)]"
           />
-
           <BucketSection
             title="Less important"
             bucket="less_central"
@@ -540,38 +606,71 @@ export default function FearsRankingPage() {
           />
         </div>
 
+        {/* Reflection textarea */}
         <section className="mt-4 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#170327] md:px-8 md:py-6">
           <label className="block text-[11px] uppercase tracking-[0.16em] text-[#170327]/62">
             Optional note
           </label>
-
           <textarea
             value={reflection}
-            onChange={(e) => setReflection(e.target.value)}
-            placeholder="What stands out to you about these choices? Press Enter to save. Use Shift+Enter for a new line."
+            onChange={(e) => handleReflectionChange(e.target.value)}
+            onBlur={() => {
+              if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current)
+              if (reflection.trim()) autoSaveReflection(reflection)
+            }}
+            placeholder="What stands out to you about these choices?"
             className="mt-3 min-h-[140px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2f3f8f]/35 focus:outline-none"
           />
-
-          <div className="mt-4 flex flex-wrap items-center gap-4">
-            <button
-              type="button"
-              onClick={() => {
-                if (isDirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
-                window.location.href = '/app/materials'
-              }}
-              className="text-[14px] text-[#170327]/78 underline underline-offset-2 transition hover:text-[#170327]"
-            >
-              Go to Your Plan
-            </button>
-
-            <Link
-              href="/app/explore/values-ranking"
-              className="text-[14px] text-[#170327]/78 transition hover:text-[#170327]"
-            >
-              Go to Values Ranking
-            </Link>
+          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
+            {reflectionSaveStatus === 'saving' ? 'Saving…'
+              : reflectionSaveStatus === 'saved' ? 'Saved'
+              : reflectionSaveStatus === 'error' ? "Couldn't save — check your connection"
+              : ''}
+          </p>
+          <div style={{ marginTop: 8 }}>
+            {voiceActive ? (
+              <VoiceNoteButton
+                saveMode={{ kind: 'freeform' }}
+                theme="light"
+                autoStart
+                onSaved={() => {}}
+                onDelete={() => setVoiceActive(false)}
+                buttonLabel="Record a voice note"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setVoiceActive(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontFamily: hv, color: 'rgba(26,26,26,0.72)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
+                  <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
+                  <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                  <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                Record a voice note
+              </button>
+            )}
           </div>
         </section>
+
+        {/* Navigation links — outside the reflection box */}
+        <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
+          <a
+            href="/app/materials"
+            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+          >
+            Go to Your Plan
+          </a>
+          <Link
+            href="/app/explore/values-ranking"
+            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+          >
+            Go to Values Ranking
+          </Link>
+        </div>
+
       </div>
     </div>
   )
@@ -635,9 +734,7 @@ function BucketSection({
                 type="button"
                 onClick={() => onFilledCardClick(bucket, value)}
                 className={`rounded-[18px] border-2 p-2 text-left transition ${CARD_SIZE} ${
-                  isSelectedForMove || isSelectedForEssentialSwap
-                    ? cardHighlight
-                    : cardFilled
+                  isSelectedForMove || isSelectedForEssentialSwap ? cardHighlight : cardFilled
                 }`}
               >
                 <div className="flex h-full items-center justify-center px-1.5">

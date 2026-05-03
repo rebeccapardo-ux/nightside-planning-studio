@@ -18,9 +18,19 @@ type Props = {
   onReRecord?: () => void
   // Called when user deletes the saved note
   onDelete?: () => void
+  theme?: 'light' | 'dark'
 }
 
-export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRecord, onDelete }: Props) {
+export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRecord, onDelete, theme = 'light' }: Props) {
+  const isDark = theme === 'dark'
+  const c = {
+    primary:   isDark ? '#f8f4eb'               : '#130426',
+    secondary: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)',
+    muted:     isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.40)',
+    status:    isDark ? 'rgba(255,255,255,0.60)' : '#6B7280',
+    border:    isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.18)',
+    error:     '#DB5835',
+  }
   const [phase, setPhase] = useState<RecorderPhase>('recording')
   const [elapsed, setElapsed] = useState(0)
   const [limitReached, setLimitReached] = useState(false)
@@ -169,8 +179,8 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
   if (micError) {
     return (
       <div style={{ padding: '12px 0' }}>
-        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>{micError}</p>
-        <button onClick={onCancel} style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+        <p style={{ fontSize: 13, color: c.secondary, marginBottom: 8 }}>{micError}</p>
+        <button onClick={onCancel} style={{ fontSize: 12, color: c.secondary, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           Cancel
         </button>
       </div>
@@ -195,10 +205,10 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
             }}
           />
           <style>{`@keyframes voice-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#130426', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: c.primary, fontVariantNumeric: 'tabular-nums' }}>
             {formatDuration(elapsed)}
           </span>
-          <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginLeft: 4 }}>
+          <span style={{ fontSize: 12, color: c.muted, marginLeft: 4 }}>
             / {formatDuration(MAX_RECORDING_SECONDS)}
           </span>
         </div>
@@ -210,7 +220,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
         )}
 
         {remaining <= 30 && !limitReached && (
-          <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)', margin: 0 }}>
+          <p style={{ fontSize: 12, color: c.secondary, margin: 0 }}>
             {remaining}s remaining
           </p>
         )}
@@ -221,9 +231,9 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
             style={{
               fontSize: 13,
               fontWeight: 600,
-              color: '#130426',
+              color: c.primary,
               background: 'none',
-              border: '1px solid rgba(0,0,0,0.18)',
+              border: `1px solid ${c.border}`,
               borderRadius: 8,
               padding: '5px 12px',
               cursor: 'pointer',
@@ -233,7 +243,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
           </button>
           <button
             onClick={onCancel}
-            style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            style={{ fontSize: 12, color: c.secondary, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             Cancel
           </button>
@@ -249,8 +259,8 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
     : saveStatus === 'transcribing'
     ? 'Saved · Transcribing…'
     : saveStatus === 'saved'
-    ? 'Saved to your materials'
-    : 'Transcript unavailable'
+    ? 'Saved'
+    : "Couldn't save — try again"
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0' }}>
@@ -263,7 +273,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
             style={{ flex: 1, height: 32, minWidth: 0 }}
           />
         )}
-        <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', flexShrink: 0 }}>
+        <span style={{ fontSize: 12, color: c.muted, flexShrink: 0 }}>
           {formatDuration(reviewDuration)}
         </span>
       </div>
@@ -275,7 +285,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
       )}
 
       {/* Save status */}
-      <p style={{ fontSize: 13, fontWeight: 500, color: '#6B7280', margin: 0 }}>
+      <p style={{ fontSize: 13, fontWeight: 500, color: c.status, margin: 0 }}>
         {statusText}
       </p>
 
@@ -283,7 +293,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <button
           onClick={handleReRecord}
-          style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          style={{ fontSize: 13, fontWeight: 500, color: c.secondary, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           Re-record
         </button>

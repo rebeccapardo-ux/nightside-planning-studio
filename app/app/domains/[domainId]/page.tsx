@@ -1569,7 +1569,7 @@ function PlanningStatusSection({
                     <div className="p-4">
                       <p className="text-[14px] font-semibold text-[#130426] leading-snug mb-4">{item.title}</p>
                       <Link
-                        href={item.learnHref ?? '/app/learn/areas'}
+                        href={item.learnHref ?? '/app/learn'}
                         className="inline-block text-[12px] font-semibold bg-[#2C3777] text-white px-3 py-1.5 rounded hover:bg-[#1a1e4d] transition-colors"
                       >
                         Learn more
@@ -1797,7 +1797,7 @@ function OrientationCard({
           <StatusDropdown status={status} onSelect={onSetStatus} />
         </div>
         <Link
-          href={item.learnHref ?? '/app/learn/areas'}
+          href={item.learnHref ?? '/app/learn'}
           className="inline-block text-[12px] font-semibold bg-[#2C3777] text-white px-3 py-1.5 rounded hover:bg-[#1a1e4d] transition-colors"
         >
           Learn more

@@ -7,10 +7,10 @@ export default function ValuesAndFearsPage() {
     <div className="min-h-screen bg-[#140028] text-white">
       <div className="mx-auto w-full max-w-[1200px] px-6 pb-24 pt-16 md:px-10">
         <Link
-          href="/app/explore"
+          href="/app/reflect"
           className="inline-flex items-center text-sm text-white/70 transition hover:text-white"
         >
-          ← Back to Explore
+          ← Back to Reflect
         </Link>
 
         <section className="mt-8 max-w-3xl">

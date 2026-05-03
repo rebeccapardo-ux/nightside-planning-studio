@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
   fetchKeepsakeInventory,
@@ -9,7 +9,7 @@ import {
   type KeepsakeEntry,
 } from '@/lib/keepsakes'
 
-const AUTOSAVE_DELAY = 1200
+const AUTOSAVE_DELAY = 1500
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'ApfelGrotezk', sans-serif"
 
@@ -128,7 +128,8 @@ const inputBase: React.CSSProperties = {
 export default function KeepsakeDocumentPage() {
   const [entries, setEntries] = useState<KeepsakeEntry[]>(() => Array.from({ length: 4 }, makeEntry))
   const [loading, setLoading] = useState(true)
-  const [saved, setSaved] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const [statusNow, setStatusNow] = useState(Date.now())
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const docIdRef = useRef<string | null>(null)
 
@@ -142,8 +143,28 @@ export default function KeepsakeDocumentPage() {
     })
   }, [])
 
+  useEffect(() => {
+    if (!lastSavedAt) return
+    const interval = window.setInterval(() => setStatusNow(Date.now()), 30000)
+    return () => window.clearInterval(interval)
+  }, [lastSavedAt])
+
+  const saveStatusText = useMemo(() => {
+    if (!lastSavedAt) return null
+    const diffMs = Math.max(statusNow - lastSavedAt.getTime(), 0)
+    const diffSeconds = Math.floor(diffMs / 1000)
+    const diffMinutes = Math.floor(diffSeconds / 60)
+    const diffHours = Math.floor(diffMinutes / 60)
+    const diffDays = Math.floor(diffHours / 24)
+    const diffWeeks = Math.floor(diffDays / 7)
+    if (diffSeconds < 60) return 'Last saved just now'
+    if (diffMinutes < 60) return `Last saved ${diffMinutes} min ago`
+    if (diffHours < 24) return diffHours === 1 ? 'Last saved 1 hour ago' : `Last saved ${diffHours} hours ago`
+    if (diffDays < 7) return diffDays === 1 ? 'Last saved 1 day ago' : `Last saved ${diffDays} days ago`
+    return diffWeeks === 1 ? 'Last saved 1 week ago' : `Last saved ${diffWeeks} weeks ago`
+  }, [lastSavedAt, statusNow])
+
   const scheduleSave = useCallback((nextEntries: KeepsakeEntry[]) => {
-    setSaved(false)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
       if (docIdRef.current) {
@@ -152,7 +173,8 @@ export default function KeepsakeDocumentPage() {
         const inv = await createKeepsakeInventory(nextEntries)
         if (inv) { docIdRef.current = inv.id }
       }
-      setSaved(true)
+      setLastSavedAt(new Date())
+      setStatusNow(Date.now())
     }, AUTOSAVE_DELAY)
   }, [])
 
@@ -324,7 +346,7 @@ export default function KeepsakeDocumentPage() {
 
         {/* Save status */}
         <p style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', marginTop: 32 }}>
-          {saved ? 'Saved.' : 'Changes save automatically.'}
+          {saveStatusText ?? 'Changes save automatically.'}
         </p>
 
       </div>

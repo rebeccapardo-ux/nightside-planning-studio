@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+const apfel = "'ApfelGrotezk', sans-serif"
 
 // Piece paths in local coordinates (origin = piece center)
 const P1 = "M -23,-26 H 15 V -4 H 23 V 4 H 15 V 26 H -4 V 18 H -12 V 26 H -23 Z"
@@ -59,8 +60,8 @@ export default function AppHomePage() {
             href="/app/explore"
             style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#BBABF4', borderRadius: 16, padding: '28px 24px 24px' }}
           >
-            <p style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#26215C', margin: '0 0 20px' }}>Reflect</p>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <p style={{ fontFamily: apfel, fontSize: 28, fontWeight: 500, color: '#000000', margin: '0 0 16px' }}>Reflect</p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
               <svg width="160" height="148" viewBox="0 0 140 130" style={{ overflow: 'visible' }}>
                 <g transform="translate(52,42)">
                   <path d={P1} {...p1Props}/>
@@ -73,9 +74,14 @@ export default function AppHomePage() {
                 </g>
               </svg>
             </div>
-            <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.6, color: '#26215C', margin: '0 0 20px', flex: 1 }}>
-              Surface your values, fears, explore scenarios, and reflect on what matters most
-            </p>
+            <div style={{ flex: 1, margin: '0 0 15px' }}>
+              <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, lineHeight: 1.3, color: '#000000', margin: '0 0 13px' }}>
+                Surface your values
+              </p>
+              <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: '#000000', margin: 0 }}>
+                Explore scenarios and clarify what matters most
+              </p>
+            </div>
             <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: '#26215C', color: '#F8F4EB', borderRadius: 24, padding: '9px 18px', fontSize: 13, fontWeight: 500, fontFamily: hv }}>
               Open →
             </span>
@@ -86,8 +92,8 @@ export default function AppHomePage() {
             href="/app/learn"
             style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#2C3777', borderRadius: 16, padding: '28px 24px 24px' }}
           >
-            <p style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#F8F4EB', margin: '0 0 20px' }}>Learn</p>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <p style={{ fontFamily: apfel, fontSize: 28, fontWeight: 500, color: '#F8F4EB', margin: '0 0 16px' }}>Learn</p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
               <svg width="160" height="148" viewBox="0 0 140 130" style={{ overflow: 'visible' }}>
                 <g transform="translate(61,51)">
                   <path d={P1} {...p1Props}/>
@@ -100,9 +106,14 @@ export default function AppHomePage() {
                 </g>
               </svg>
             </div>
-            <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.6, color: '#F8F4EB', margin: '0 0 20px', flex: 1 }}>
-              Understand your options, rights, and planning areas
-            </p>
+            <div style={{ flex: 1, margin: '0 0 15px' }}>
+              <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, lineHeight: 1.3, color: '#FFFFFF', margin: '0 0 13px' }}>
+                Understand your options
+              </p>
+              <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: '#F8F4EB', margin: 0 }}>
+                Review key areas of planning and test your knowledge
+              </p>
+            </div>
             <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: '#F8F4EB', color: '#26215C', borderRadius: 24, padding: '9px 18px', fontSize: 13, fontWeight: 500, fontFamily: hv }}>
               Open →
             </span>
@@ -113,8 +124,8 @@ export default function AppHomePage() {
             href="/app/materials"
             style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#F29836', borderRadius: 16, padding: '28px 24px 24px' }}
           >
-            <p style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#412402', margin: '0 0 20px' }}>Plan</p>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <p style={{ fontFamily: apfel, fontSize: 28, fontWeight: 500, color: '#412402', margin: '0 0 16px' }}>Plan</p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
               <svg width="160" height="148" viewBox="0 0 140 130" style={{ overflow: 'visible' }}>
                 <g transform="translate(41,51)">
                   <path d={P1} {...p1Props}/>
@@ -133,9 +144,14 @@ export default function AppHomePage() {
                 <circle cx="101" cy="74" r="3" fill="#130426"/>
               </svg>
             </div>
-            <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.6, color: '#633806', margin: '0 0 20px', flex: 1 }}>
-              Organize your wishes and documents, track your progress, and create structured outputs to share with others
-            </p>
+            <div style={{ flex: 1, margin: '0 0 15px' }}>
+              <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, lineHeight: 1.3, color: '#1A1A1A', margin: '0 0 13px' }}>
+                Organize your plan
+              </p>
+              <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: '#1A1A1A', margin: 0 }}>
+                Track your progress and create outputs to share
+              </p>
+            </div>
             <span style={{ display: 'inline-block', alignSelf: 'flex-start', background: '#412402', color: '#F8F4EB', borderRadius: 24, padding: '9px 18px', fontSize: 13, fontWeight: 500, fontFamily: hv }}>
               Open →
             </span>

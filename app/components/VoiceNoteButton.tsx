@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { createVoiceNote, createVoicePromptNote, updateNoteAudioUrl, deleteNote } from '@/lib/notes'
+import { createVoiceNote, createVoicePromptNote, updateNoteAudioUrl, deleteNote, resetVoiceNote } from '@/lib/notes'
 import { uploadAudioBlob } from '@/lib/voice-notes'
 import VoiceNoteRecorder from './VoiceNoteRecorder'
 import type { Note } from '@/lib/notes'
@@ -49,6 +49,7 @@ export default function VoiceNoteButton({
   const [phase, setPhase] = useState<Phase>(autoStart ? 'recording' : 'idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [savedNote, setSavedNote] = useState<Note | null>(null)
+  const prevNoteRef = useRef<Note | null>(null)
 
   const isDark = theme === 'dark'
 
@@ -60,19 +61,26 @@ export default function VoiceNoteButton({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // 1. Create note record
-      let note: Note | null
-      if (saveMode.kind === 'prompt') {
-        note = await createVoicePromptNote({
+      // 1. Create note record — or reuse existing on re-record
+      let note: Note
+      const existing = prevNoteRef.current
+      if (existing) {
+        await resetVoiceNote(existing.id, durationSeconds)
+        note = { ...existing, audio_url: null, duration_seconds: durationSeconds, content: '', transcript: null, transcription_status: 'pending' }
+      } else if (saveMode.kind === 'prompt') {
+        const created = await createVoicePromptNote({
           audioUrl: '',
           durationSeconds,
           promptContext: saveMode.promptContext,
           entryId: saveMode.entryId,
         })
+        if (!created) throw new Error('Failed to create note record')
+        note = created
       } else {
-        note = await createVoiceNote({ audioUrl: '', durationSeconds })
+        const created = await createVoiceNote({ audioUrl: '', durationSeconds })
+        if (!created) throw new Error('Failed to create note record')
+        note = created
       }
-      if (!note) throw new Error('Failed to create note record')
 
       // 2. Upload audio
       const storagePath = await uploadAudioBlob(blob, user.id, note.id)
@@ -99,6 +107,7 @@ export default function VoiceNoteButton({
         finalNote = { ...note, transcription_status: 'failed' }
       }
 
+      prevNoteRef.current = finalNote
       setSavedNote(finalNote)
       setPhase('saved')
       onSaved(finalNote)
@@ -111,6 +120,7 @@ export default function VoiceNoteButton({
 
   async function handleDelete() {
     if (savedNote) await deleteNote(savedNote.id)
+    prevNoteRef.current = null
     setSavedNote(null)
     setPhase('idle')
     onDelete?.()
@@ -156,6 +166,7 @@ export default function VoiceNoteButton({
         saveStatus={deriveSaveStatus()}
         onReRecord={() => { setSavedNote(null); setPhase('recording') }}
         onDelete={phase === 'saved' ? handleDelete : undefined}
+        theme={theme}
       />
     )
   }

@@ -2,13 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { createNote, updateNote } from '@/lib/notes'
+import { createNote } from '@/lib/notes'
 import VoiceNoteButton from './VoiceNoteButton'
 import type { Note } from '@/lib/notes'
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
 
 export default function NotepadModal({
   variant = 'floating',
@@ -21,11 +17,10 @@ export default function NotepadModal({
   const [saving, setSaving] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [confirmVisible, setConfirmVisible] = useState(false)
+  const [voiceConfirmVisible, setVoiceConfirmVisible] = useState(false)
 
   const composerRef = useRef<HTMLTextAreaElement>(null)
-  const savedNoteIdRef = useRef<string | null>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pathname = usePathname()
 
   // Pages with dark backgrounds — ghost panel should be cream with dark text
@@ -58,7 +53,7 @@ export default function NotepadModal({
         labelColor: '#F8F4EB',
       }
 
-  // Auto-resize composer textarea
+  // Auto-resize panel composer textarea
   useEffect(() => {
     if (composerRef.current) {
       const el = composerRef.current
@@ -67,30 +62,21 @@ export default function NotepadModal({
     }
   }, [composerText])
 
-  // Autosave debounce — fires 1.5s after the user stops typing
-  useEffect(() => {
-    const text = composerText.trim()
-    if (!text) return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => { autoSave(text) }, 1500)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [composerText])
+  // ── Modal save (Pattern 1 — explicit, creates new note, clears input) ─────────
 
-  async function autoSave(text: string) {
-    if (!text) return
-    setSaveStatus('saving')
-    if (savedNoteIdRef.current) {
-      await updateNote(savedNoteIdRef.current, text)
-    } else {
-      const note = await createNote(text)
-      if (note) savedNoteIdRef.current = note.id
-    }
-    setSaveStatus('saved')
-    setTimeout(() => setSaveStatus((s) => s === 'saved' ? 'idle' : s), 2000)
+  async function handleModalSave() {
+    const trimmed = composerText.trim()
+    if (!trimmed || saving) return
+    setSaving(true)
+    await createNote(trimmed)
+    setSaving(false)
+    setComposerText('')
+    setConfirmVisible(true)
+    setTimeout(() => setConfirmVisible(false), 2000)
   }
 
-  // Panel variant: manual save still used (inline on domain pages)
+  // ── Panel save ────────────────────────────────────────────────────────────────
+
   async function handleSave() {
     const trimmed = composerText.trim()
     if (!trimmed || saving) return
@@ -107,37 +93,23 @@ export default function NotepadModal({
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault()
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      autoSave(composerText.trim())
-    }
-  }
-
   function handleClose() {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    const text = composerText.trim()
-    // Close immediately; fire any unsaved content in the background
-    if (text && saveStatus !== 'saved') {
-      savedNoteIdRef.current
-        ? updateNote(savedNoteIdRef.current, text)
-        : createNote(text)
-    }
     setIsOpen(false)
     setComposerText('')
-    savedNoteIdRef.current = null
-    setSaveStatus('idle')
+    setConfirmVisible(false)
+    setVoiceConfirmVisible(false)
   }
 
   function openModal() {
     setIsOpen(true)
     setComposerText('')
-    savedNoteIdRef.current = null
-    setSaveStatus('idle')
+    setConfirmVisible(false)
+    setVoiceConfirmVisible(false)
   }
 
   // ─── Modal overlay ────────────────────────────────────────────────────────────
+
+  const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   const modalOverlay = isOpen && (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
@@ -158,20 +130,40 @@ export default function NotepadModal({
         <textarea
           value={composerText}
           onChange={(e) => setComposerText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Capture a thought, question, or anything on your mind..."
+          placeholder="Capture a thought, question, or anything on your mind…"
           className="h-44 w-full rounded-lg bg-[#f8f4eb] px-4 py-3 text-[#130426] placeholder:text-[#130426]/45 text-sm leading-relaxed resize-none outline-none"
         />
 
-        {/* Autosave status */}
-        <div className="h-6 flex items-center mt-2 mb-4">
-          {saveStatus === 'saving' && (
-            <p className="text-xs text-[#f8f4eb]/50">Saving…</p>
-          )}
-          {saveStatus === 'saved' && (
-            <p className="text-xs text-[#f8f4eb]/70">Saved to Your Plan ✓</p>
+        {/* Inline confirmation */}
+        <div style={{ minHeight: 20, marginTop: 6, marginBottom: 16 }}>
+          {confirmVisible && (
+            <p style={{ fontSize: 13, fontFamily: hv, color: 'rgba(248,244,235,0.72)', margin: 0 }}>
+              Added to your Plan
+            </p>
           )}
         </div>
+
+        {/* Add note button */}
+        <button
+          onClick={handleModalSave}
+          disabled={!composerText.trim() || saving}
+          style={{
+            display: 'block',
+            fontSize: 14,
+            fontWeight: 500,
+            fontFamily: hv,
+            color: '#f8f4eb',
+            background: 'transparent',
+            border: '1px solid rgba(248,244,235,0.4)',
+            borderRadius: 4,
+            padding: '8px 16px',
+            cursor: composerText.trim() && !saving ? 'pointer' : 'default',
+            opacity: composerText.trim() && !saving ? 1 : 0.4,
+            marginBottom: 20,
+          }}
+        >
+          {saving ? 'Saving…' : 'Add note'}
+        </button>
 
         {/* Voice note */}
         <div className="mb-4">
@@ -189,19 +181,19 @@ export default function NotepadModal({
                 Record a voice note
               </span>
             }
-            onSaved={(_note: Note) => { setIsOpen(false) }}
+            onSaved={(_note: Note) => {
+              setVoiceConfirmVisible(true)
+              setTimeout(() => {
+                setVoiceConfirmVisible(false)
+                setIsOpen(false)
+              }, 2000)
+            }}
           />
-        </div>
-
-        {/* Footer */}
-        <div className="mt-4 pt-4 border-t border-[#f8f4eb]/[0.07] flex items-center justify-between">
-          <p className="text-xs text-[#f8f4eb]/80">Notes are saved to Your Plan.</p>
-          <button
-            onClick={handleClose}
-            className="text-xs text-[#f8f4eb]/80 hover:text-[#f8f4eb] transition-colors"
-          >
-            Close
-          </button>
+          {voiceConfirmVisible && (
+            <p style={{ fontSize: 13, fontFamily: hv, color: 'rgba(248,244,235,0.72)', marginTop: 8 }}>
+              Saved to your Plan
+            </p>
+          )}
         </div>
 
       </div>
@@ -234,15 +226,25 @@ export default function NotepadModal({
               className="w-full rounded-lg bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/40 px-3 py-2 text-sm leading-relaxed resize-none outline-none overflow-hidden"
             />
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-app-tertiary">Notes are saved to Your Plan</p>
+          <div className="flex items-center justify-end" style={{ minHeight: 36 }}>
             {composerText.trim() && (
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="text-xs text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors"
+                style={{
+                  fontSize: 14,
+                  fontWeight: 500,
+                  fontFamily: hv,
+                  color: '#f8f4eb',
+                  background: 'transparent',
+                  border: '1px solid rgba(248,244,235,0.4)',
+                  borderRadius: 4,
+                  padding: '8px 16px',
+                  cursor: !saving ? 'pointer' : 'default',
+                  opacity: !saving ? 1 : 0.4,
+                }}
               >
-                {saving ? 'Saving…' : 'Save →'}
+                {saving ? 'Saving…' : 'Add note'}
               </button>
             )}
           </div>

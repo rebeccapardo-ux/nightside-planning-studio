@@ -2,15 +2,14 @@
 
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { createPromptNote } from '@/lib/notes'
+import { createPromptNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import type { VoiceNoteSaveMode } from '@/app/components/VoiceNoteButton'
 
 const DEFAULT_CONTAINER_ID = '98bbddf4-bc0c-495f-b3cf-99c65cf7ebc8'
 const REVIEWED_PROMPTS_STORAGE_KEY = 'reflect-reviewed-prompts'
-const AUTOSAVE_DELAY_MS = 1200
+const AUTOSAVE_DELAY_MS = 1500
 
 const PROMPTS = [
   { id: 'prompt_1',  label: 'What matters most to you right now?' },
@@ -55,15 +54,13 @@ const PROMPTS = [
   { id: 'prompt_40', label: 'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?' },
   { id: 'prompt_41', label: 'If you could choose one personal item to be included in your final resting place, what would it be?' },
   { id: 'prompt_42', label: 'If you could be remembered for one specific contribution to your community, family, or loved ones, what would it be?' },
-  { id: 'prompt_43', label: 'You have the opportunity to donate to one cause in your will. What\'s the focus of your legacy gift?' },
+  { id: 'prompt_43', label: "You have the opportunity to donate to one cause in your will. What's the focus of your legacy gift?" },
 ]
 
 const fontHelvetica = "'HelveticaNeue-Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 const fontHelveticaMedium = "'HelveticaNeue-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif"
-const fontApfelFett = "'ApfelGrotezk-Fett', 'ApfelGrotezk', sans-serif"
-const fontApfelRegular = "'ApfelGrotezk-Regular', 'ApfelGrotezk', sans-serif"
 
-type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved'
+type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error'
 
 function ReflectPromptsInner() {
   const searchParams = useSearchParams()
@@ -84,7 +81,8 @@ function ReflectPromptsInner() {
   const [preparingVoice, setPreparingVoice] = useState(false)
   const [hasVoiceNote, setHasVoiceNote] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const savedTextRef = useRef<Record<string, string>>({})
+  const savedEntryIdRef = useRef<string | null>(null)
+  const savedNoteIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (initialIndex < 0) {
@@ -95,6 +93,7 @@ function ReflectPromptsInner() {
     setSaveStatus('idle')
   }, [initialIndex, router])
 
+  // Mark prompt as reviewed in localStorage
   useEffect(() => {
     if (currentIndex < 0) return
     const currentPrompt = PROMPTS[currentIndex]
@@ -105,6 +104,56 @@ function ReflectPromptsInner() {
     if (!reviewedPromptIds.includes(currentPrompt.id)) {
       window.localStorage.setItem(REVIEWED_PROMPTS_STORAGE_KEY, JSON.stringify([...reviewedPromptIds, currentPrompt.id]))
     }
+  }, [currentIndex])
+
+  // Load existing entry/note for current prompt — enables upsert on save
+  useEffect(() => {
+    if (currentIndex < 0) return
+    const currentPrompt = PROMPTS[currentIndex]
+    if (!currentPrompt) return
+
+    savedEntryIdRef.current = null
+    savedNoteIdRef.current = null
+
+    async function loadExisting() {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: existingEntry } = await supabase
+        .from('entries')
+        .select('id, content')
+        .eq('user_id', user.id)
+        .eq('activity', 'reflection_prompts')
+        .eq('title', currentPrompt.label)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existingEntry) {
+        savedEntryIdRef.current = existingEntry.id
+        const existingText = typeof existingEntry.content === 'string' ? existingEntry.content : ''
+        if (existingText) {
+          setTexts(prev => ({ ...prev, [currentPrompt.id]: existingText }))
+        }
+      }
+
+      const { data: existingNote } = await supabase
+        .from('notes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('origin_type', 'prompt')
+        .eq('prompt_context', currentPrompt.label)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existingNote) {
+        savedNoteIdRef.current = existingNote.id
+      }
+    }
+
+    loadExisting()
   }, [currentIndex])
 
   if (currentIndex < 0) return null
@@ -126,23 +175,46 @@ function ReflectPromptsInner() {
 
   async function saveText(promptId: string, text: string, promptLabel: string) {
     if (!text.trim()) return
-    if (savedTextRef.current[promptId] === text) return
+
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
     setSaveStatus('saving')
-    const entry = await createReflectEntry(promptLabel, text)
-    if (entry) {
-      await createPromptNote(text, promptLabel, entry.id)
-      savedTextRef.current[promptId] = text
+
+    try {
+      if (savedEntryIdRef.current) {
+        const { error } = await supabase
+          .from('entries')
+          .update({ content: text })
+          .eq('id', savedEntryIdRef.current)
+        if (error) throw error
+
+        if (savedNoteIdRef.current) {
+          await updateNote(savedNoteIdRef.current, text)
+        }
+      } else {
+        const entry = await createReflectEntry(promptLabel, text)
+        if (!entry) throw new Error('Failed to create entry')
+        savedEntryIdRef.current = entry.id
+
+        const note = await createPromptNote(text, promptLabel, entry.id)
+        if (note) savedNoteIdRef.current = note.id
+      }
+
       setSaveStatus('saved')
-    } else {
-      setSaveStatus('idle')
+    } catch {
+      setSaveStatus('error')
     }
   }
 
-  // Returns a VoiceNoteSaveMode for the current prompt.
-  // Creates the entry record first so the voice note has the right provenance.
   async function buildVoicePromptSaveMode(): Promise<VoiceNoteSaveMode | null> {
+    if (savedEntryIdRef.current) {
+      return { kind: 'prompt', promptContext: currentPrompt.label, entryId: savedEntryIdRef.current }
+    }
     const entry = await createReflectEntry(currentPrompt.label, '')
     if (!entry) return null
+    savedEntryIdRef.current = entry.id
     return { kind: 'prompt', promptContext: currentPrompt.label, entryId: entry.id }
   }
 
@@ -169,7 +241,6 @@ function ReflectPromptsInner() {
 
   function goToNext() {
     if (currentIndex < PROMPTS.length - 1) {
-      setTexts((prev) => ({ ...prev, [currentPrompt.id]: '' }))
       goToPrompt(currentIndex + 1)
     } else {
       router.push('/app/reflect')
@@ -178,7 +249,6 @@ function ReflectPromptsInner() {
 
   function goToPrevious() {
     if (currentIndex > 0) {
-      setTexts((prev) => ({ ...prev, [currentPrompt.id]: '' }))
       goToPrompt(currentIndex - 1)
     } else {
       router.push('/app/reflect')
@@ -188,146 +258,90 @@ function ReflectPromptsInner() {
   const saveLabel =
     saveStatus === 'pending' || saveStatus === 'saving' ? 'Saving…' :
     saveStatus === 'saved' ? 'Saved' :
+    saveStatus === 'error' ? "Couldn't save — check your connection" :
     null
 
-  useEffect(() => {
-    const elements = document.querySelectorAll('.ns-title-wrap')
-    if (!elements.length) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('ns-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.1 },
-    )
-    elements.forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [])
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #BBABF4 0%, #F8F4EB 100%)' }}>
       <style>{`
-        #reflect-note-input::placeholder { color: rgba(0,0,0,0.4); font-size: 16px; line-height: 24px; }
-        .ns-title-wrap {
-          opacity: 0;
-          transform: translateY(12px);
-          transition: opacity 350ms ease-out, transform 350ms ease-out;
-        }
-        .ns-title-wrap.ns-visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .ns-title-underline {
-          position: relative;
-          display: inline;
-        }
-        .ns-title-underline::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          bottom: -5px;
-          width: 100%;
-          height: 4px;
-          background: #F29836;
-          border-radius: 999px;
-          transform: scaleX(0);
-          transform-origin: left;
-          transition: transform 350ms ease-out 100ms;
-        }
-        .ns-title-wrap.ns-visible .ns-title-underline::after {
-          transform: scaleX(1);
-        }
+        #reflect-note-input::placeholder { color: rgba(0,0,0,0.38); font-size: 15px; line-height: 24px; }
       `}</style>
 
-      {/* SECTION 1 — Dark header */}
-      <div style={{ backgroundColor: '#130426', padding: '48px 24px 64px' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <button
-            onClick={() => router.push('/app/reflect')}
-            style={{ display: 'block', marginBottom: '32px', fontFamily: fontHelvetica, fontSize: '14px', lineHeight: '20px', color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          >
-            ← Back to Reflect
-          </button>
-          <div className="ns-title-wrap">
-            <h1 className="ns-title-section" style={{ color: '#FFFFFF' }}>
-              <span className="ns-title-underline">Reflect</span>
-            </h1>
-          </div>
-          <p className="ns-lead-section" style={{ color: '#FFFFFF', marginTop: '20px' }}>
-            Move through these one at a time. You might write something down, or just think or talk it through. There&apos;s no need to capture something for every prompt.
-          </p>
-        </div>
+      {/* Back link */}
+      <div style={{ maxWidth: '448px', margin: '0 auto', padding: '40px 24px 0' }}>
+        <button
+          onClick={() => router.push('/app/reflect')}
+          style={{ fontFamily: fontHelvetica, fontSize: '14px', color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          ← Back to Reflection Prompts
+        </button>
       </div>
 
-      {/* SECTION 2 — Cream content section */}
-      <div style={{ flex: 1, backgroundColor: '#F8F4EB', padding: '64px 24px 120px' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+      {/* Card */}
+      <div style={{ maxWidth: '448px', margin: '20px auto 96px', padding: '0 24px' }}>
+        <div style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.14)' }}>
 
-          {/* Prompt — reading content, dominant */}
-          <p style={{ fontFamily: fontHelvetica, fontSize: '18px', lineHeight: '28px', fontWeight: 400, color: '#1A1A1A', margin: 0, maxWidth: '640px' }}>
-            {currentPrompt.label}
-          </p>
+          {/* Card top — cream, prompt text */}
+          <div style={{ background: '#F8F4EB', padding: '36px 28px 32px' }}>
+            <p style={{
+              fontFamily: fontHelveticaMedium,
+              fontSize: '20px',
+              lineHeight: 1.45,
+              fontWeight: 500,
+              color: '#130426',
+              margin: 0,
+            }}>
+              {currentPrompt.label}
+            </p>
+          </div>
 
-          {/* Input — interface content */}
-          <div style={{ marginTop: '32px' }}>
+          {/* Card bottom — navy, note UI */}
+          <div style={{ background: '#2C3777', padding: '28px' }}>
+
             <textarea
               id="reflect-note-input"
               value={currentText}
               onChange={(e) => handleTextChange(e.target.value)}
               onFocus={() => setInputFocused(true)}
-              onBlur={() => setInputFocused(false)}
-              placeholder="Write here if you want to capture something…"
+              onBlur={() => {
+                setInputFocused(false)
+                if (debounceRef.current) clearTimeout(debounceRef.current)
+                const text = texts[currentPrompt.id] || ''
+                if (text.trim()) saveText(currentPrompt.id, text, currentPrompt.label)
+              }}
+              placeholder="Write something down if you want…"
               style={{
                 display: 'block',
                 width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: inputFocused ? '1px solid #BBABF4' : '1px solid rgba(0,0,0,0.1)',
-                background: 'rgba(255,255,255,0.6)',
-                color: '#1A1A1A',
+                padding: '14px 16px',
+                borderRadius: '10px',
+                border: inputFocused ? '1px solid rgba(187,171,244,0.7)' : '1px solid rgba(255,255,255,0.1)',
+                background: '#F8F4EB',
+                color: '#130426',
                 fontFamily: fontHelvetica,
-                fontSize: '16px',
+                fontSize: '15px',
                 lineHeight: '24px',
-                fontWeight: 400,
                 resize: 'none',
                 outline: 'none',
-                minHeight: '120px',
+                minHeight: '108px',
                 boxSizing: 'border-box',
               }}
             />
-            {/* Helper text + save status */}
-            <p style={{ fontFamily: fontHelvetica, fontSize: '14px', lineHeight: '20px', color: 'rgba(0,0,0,0.7)', margin: '10px 0 0 0' }}>
-              {saveLabel ? (
-                <span>{saveLabel}</span>
-              ) : (
-                <>
-                  Your note is saved automatically.{' '}
-                  <Link href="/app/materials" style={{ color: '#1A1A1A', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    View in Your Plan
-                  </Link>
-                </>
-              )}
+
+            {/* Save status */}
+            <p style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: '6px 0 0 0', minHeight: '18px' }}>
+              {saveLabel ?? ''}
             </p>
 
-            {/* Voice note option */}
-            <div style={{ marginTop: '20px' }}>
+            {/* Voice note */}
+            <div style={{ marginTop: '16px' }}>
               {voiceSaveMode ? (
                 <VoiceNoteButton
                   saveMode={voiceSaveMode}
-                  theme="light"
+                  theme="dark"
                   autoStart
-                  onSaved={() => {
-                    setSaveStatus('saved')
-                    setHasVoiceNote(true)
-                  }}
-                  onDelete={() => {
-                    setVoiceSaveMode(null)
-                    setHasVoiceNote(false)
-                  }}
+                  onSaved={() => { setSaveStatus('saved'); setHasVoiceNote(true) }}
+                  onDelete={() => { setVoiceSaveMode(null); setHasVoiceNote(false) }}
                 />
               ) : (
                 <button
@@ -341,7 +355,7 @@ function ReflectPromptsInner() {
                   style={{
                     fontFamily: fontHelvetica,
                     fontSize: '13px',
-                    color: preparingVoice ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.72)',
+                    color: preparingVoice ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.7)',
                     background: 'none',
                     border: 'none',
                     cursor: preparingVoice ? 'default' : 'pointer',
@@ -365,29 +379,24 @@ function ReflectPromptsInner() {
                 </button>
               )}
             </div>
-          </div>
 
-          {/* Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '48px' }}>
-
-            {/* Primary: Continue */}
-            <button
-              onClick={goToNext}
-              style={{ background: '#F29836', color: '#130426', padding: '12px 24px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '15px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
-            >
-              Next
-            </button>
-
-            {/* Tertiary: Back */}
-            <button
-              onClick={goToPrevious}
-              style={{ background: 'none', border: 'none', fontFamily: fontHelveticaMedium, fontSize: '15px', lineHeight: '20px', fontWeight: 500, color: '#1A1A1A', cursor: 'pointer', padding: 0 }}
-            >
-              Back
-            </button>
+            {/* Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '28px' }}>
+              <button
+                onClick={goToNext}
+                style={{ background: '#F29836', color: '#130426', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
+              >
+                Next →
+              </button>
+              <button
+                onClick={goToPrevious}
+                style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
+              >
+                Back
+              </button>
+            </div>
 
           </div>
-
         </div>
       </div>
 
@@ -399,7 +408,7 @@ import { Suspense } from 'react'
 
 export default function ReflectPromptsPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', backgroundColor: '#130426' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #BBABF4 0%, #F8F4EB 100%)' }} />}>
       <ReflectPromptsInner />
     </Suspense>
   )

@@ -586,3 +586,13 @@ export async function hideRowNote(
   }
   return true
 }
+
+export async function resetVoiceNote(noteId: string, durationSeconds: number): Promise<boolean> {
+  const supabase = createSupabaseBrowserClient()
+  const { error } = await supabase
+    .from('notes')
+    .update({ audio_url: null, duration_seconds: durationSeconds, content: '', transcript: null, transcription_status: 'pending' })
+    .eq('id', noteId)
+  if (error) { console.error('resetVoiceNote error:', error.message); return false }
+  return true
+}

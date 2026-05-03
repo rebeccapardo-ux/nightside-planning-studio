@@ -6,8 +6,8 @@ import NotepadModal from './NotepadModal'
 export default function FloatingNotepad() {
   const pathname = usePathname()
 
-  // Domain pages have an inline composer
-  if (pathname.startsWith('/app/domains/')) return null
+  // PDF export pages are print views — no interactive controls
+  if (pathname.endsWith('/export')) return null
 
   // Lavender-background pages — use cream button so it's always visible
   const needsCreamButton =

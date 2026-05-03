@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import ExportButton from './PrintButton'
+import PrintButton from './PrintButton'
+
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+const apfel = "'Apfel Grotezk', sans-serif"
 
 type ExportPageProps = {
   params: Promise<{ id: string }>
@@ -12,6 +15,7 @@ type EntryRow = {
   content: unknown
   created_at: string | null
   activity: string | null
+  document_type: string | null
 }
 
 type RankingContent = {
@@ -30,6 +34,36 @@ type LegacyMapContent = {
   legacyProjects: string
 }
 
+type ContactFields = { name: string; phone: string; email: string; address: string }
+type KeepsakeItem = { id: string; object: string; recipient: string; meaning: string }
+
+// ---------------------------------------------------------------------------
+// Legacy Map path geometry
+// ---------------------------------------------------------------------------
+
+const LM_VB_W = 1000
+const LM_VB_H = 200
+const LM_MID_Y = 100
+const LM_AMP_Y = 50
+
+function lmPathPoint(xPct: number): { x: number; y: number } {
+  const t = (Math.min(Math.max(xPct, 5), 95) - 5) / 90
+  return { x: 50 + t * 900, y: LM_MID_Y + LM_AMP_Y * Math.sin(t * 2 * Math.PI) }
+}
+
+const LM_PATH_D = (() => {
+  const pts: string[] = []
+  for (let i = 0; i <= 300; i++) {
+    const t = i / 300
+    pts.push(`${(50 + t * 900).toFixed(1)},${(LM_MID_Y + LM_AMP_Y * Math.sin(t * 2 * Math.PI)).toFixed(1)}`)
+  }
+  return `M ${pts.join(' L ')}`
+})()
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 export default async function ExportPage({ params }: ExportPageProps) {
   const { id } = await params
   const supabase = await createSupabaseServerClient()
@@ -39,195 +73,538 @@ export default async function ExportPage({ params }: ExportPageProps) {
 
   const { data: entry, error } = await supabase
     .from('entries')
-    .select('id, title, content, created_at, activity')
+    .select('id, title, content, created_at, activity, document_type')
     .eq('id', id)
     .eq('user_id', user.id)
     .single<EntryRow>()
 
   if (error || !entry) notFound()
-  if (entry.activity !== 'values_ranking' && entry.activity !== 'legacy_map') notFound()
+
+  const isActivity = entry.activity === 'values_ranking' || entry.activity === 'legacy_map'
+  const isDocument = !!entry.document_type
+  if (!isActivity && !isDocument) notFound()
 
   const createdDate = formatDate(entry.created_at)
-  const exportedDate = formatDate(new Date().toISOString())
+  const displayTitle = getDisplayTitle(entry)
+  const filename = getExportFilename(entry)
 
-  // Legacy Map export
   if (entry.activity === 'legacy_map') {
     const mapContent = getLegacyMapContent(entry)
     if (!mapContent) notFound()
-    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} exportedDate={exportedDate} />
+    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
   }
 
-  const ranking = getRankingContent(entry)
-  if (!ranking) notFound()
+  if (entry.activity === 'values_ranking') {
+    const ranking = getRankingContent(entry)
+    if (!ranking) notFound()
+    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} filename={filename} />
+  }
 
-  const hasEssential = ranking.essential.length > 0
-  const hasImportant = ranking.important.length > 0
-  const hasLessCentral = ranking.less_central.length > 0
-  const hasReflection = !!(ranking.reflection?.trim())
+  // Document export
+  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+}
+
+// ---------------------------------------------------------------------------
+// Shared print styles & header
+// ---------------------------------------------------------------------------
+
+const PRINT_STYLES = `
+  @media print {
+    nav, .no-print { display: none !important; }
+    body { background: white !important; }
+    @page { size: A4; margin: 40px; }
+  }
+`
+
+function ExportHeader({ title }: { title: string }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 18 }} />
+        <p style={{ fontFamily: hv, fontSize: 12, color: '#1A1A1A' }}>{title}</p>
+      </div>
+      <div style={{ height: 1, background: '#CCCCCC', marginBottom: 24 }} />
+    </div>
+  )
+}
+
+function ExportFooter() {
+  return (
+    <div style={{ marginTop: 56, paddingTop: 20, borderTop: '1px solid #EEEEEE', textAlign: 'center' as const }}>
+      <p style={{ fontFamily: hv, fontSize: 10, color: '#AAAAAA', lineHeight: 1.5 }}>
+        This document was generated from your materials in Nightside Planning Studio.
+      </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Values Ranking export
+// ---------------------------------------------------------------------------
+
+function ValuesRankingExportPage({ id, ranking, createdDate, filename }: {
+  id: string
+  ranking: RankingContent
+  createdDate: string | null
+  filename: string
+}) {
+  const groups = [
+    { key: 'essential' as const, label: 'ESSENTIAL',      items: ranking.essential },
+    { key: 'important' as const, label: 'IMPORTANT',      items: ranking.important },
+    { key: 'less',               label: 'LESS IMPORTANT', items: ranking.less_central },
+  ].filter(g => g.items.length > 0)
 
   return (
     <>
-      <style>{`
-        @media print {
-          nav, .no-print { display: none !important; }
-          body { background: white !important; }
-          @page { margin: 1.8cm; }
-        }
-      `}</style>
-
+      <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
-        <div className="max-w-2xl mx-auto px-10 py-14">
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
 
-          {/* Screen-only controls */}
-          <div className="no-print flex items-center justify-between mb-12">
-            <a
-              href={`/app/entries/${id}`}
-              className="text-sm text-gray-400 hover:text-gray-700 transition-colors"
-            >
+          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
               ← Back to snapshot
             </a>
-            <ExportButton />
+            <PrintButton filename={filename} />
           </div>
 
-          {/* Context header — communicates this is a generated view, not a primary document */}
-          <div className="mb-10 pb-8 border-b border-gray-100">
-            <p className="text-xs uppercase tracking-widest text-gray-400 mb-4">Snapshot export</p>
-            <h1 className="text-2xl font-semibold text-gray-800 mb-6">Values Ranking</h1>
+          <ExportHeader title="Values Ranking" />
 
-            <div className="space-y-1.5 text-sm text-gray-500">
-              <div className="flex gap-3">
-                <span className="w-24 shrink-0 text-gray-400">Generated from</span>
-                <span>Values Ranking exercise</span>
-              </div>
-              {createdDate && (
-                <div className="flex gap-3">
-                  <span className="w-24 shrink-0 text-gray-400">Created</span>
-                  <span>{createdDate}</span>
-                </div>
-              )}
-              {exportedDate && (
-                <div className="flex gap-3">
-                  <span className="w-24 shrink-0 text-gray-400">Exported</span>
-                  <span>{exportedDate}</span>
-                </div>
-              )}
-            </div>
-
-            <p className="mt-5 text-xs text-gray-400 leading-relaxed">
-              This is a generated view of your responses at the time of export. It is not a final or authoritative document.
+          {/* Metadata */}
+          <div style={{ marginBottom: 28 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Values Ranking</h1>
+            {createdDate && (
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>{createdDate}</p>
+            )}
+            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+              This is a generated record of your responses. It is not a legal document.
             </p>
           </div>
+          <div style={{ height: 1, background: '#CCCCCC', marginBottom: 24 }} />
 
-          {/* Value groups — card layout matching snapshot structure */}
-          <div className="space-y-10">
-            {hasEssential && (
-              <section>
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-500 mb-5">
-                  Most central to me
-                </h2>
-                <div className="flex flex-wrap gap-3">
-                  {ranking.essential.map((item) => (
-                    <div
-                      key={item}
-                      style={{
-                        width: '140px',
-                        minHeight: '88px',
-                        padding: '14px',
-                        background: '#ffffff',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '10px',
-                        fontSize: '14px',
-                        lineHeight: '1.5',
-                        color: '#1f2937',
-                      }}
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {hasImportant && (
-              <section className="pt-8 border-t border-gray-100">
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-500 mb-5">
-                  Also important
-                </h2>
-                <div className="flex flex-wrap gap-3">
-                  {ranking.important.map((item) => (
-                    <div
-                      key={item}
-                      style={{
-                        width: '140px',
-                        minHeight: '88px',
-                        padding: '14px',
-                        background: '#ffffff',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '10px',
-                        fontSize: '14px',
-                        lineHeight: '1.5',
-                        color: '#374151',
-                      }}
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {hasLessCentral && (
-              <section className="pt-8 border-t border-gray-100">
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-5">
-                  Less central right now
-                </h2>
-                <div className="flex flex-wrap gap-3">
-                  {ranking.less_central.map((item) => (
-                    <div
-                      key={item}
-                      style={{
-                        width: '140px',
-                        minHeight: '88px',
-                        padding: '14px',
-                        background: '#ffffff',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        fontSize: '14px',
-                        lineHeight: '1.5',
-                        color: '#6b7280',
-                      }}
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {hasReflection && (
-              <section className="pt-8 border-t border-gray-100">
-                <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-4">
-                  A note I wrote
-                </h2>
-                <p className="text-sm text-gray-600 leading-relaxed italic whitespace-pre-wrap">
-                  {ranking.reflection!.trim()}
+          {/* Value groups */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {groups.map(({ key, label, items }) => (
+              <div key={key} style={{ background: '#F5F5F5', borderRadius: 6, padding: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', color: '#444444', textTransform: 'uppercase' as const, marginBottom: 10 }}>
+                  {label}
                 </p>
-              </section>
-            )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {items.map((item) => (
+                    <div
+                      key={item}
+                      style={{
+                        background: '#FFFFFF',
+                        border: '1px solid #CCCCCC',
+                        borderRadius: 4,
+                        padding: '10px 12px',
+                        minHeight: 60,
+                        fontFamily: hv,
+                        fontSize: 13,
+                        color: '#1A1A1A',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Footer — printed and on-screen */}
-          <div className="mt-16 pt-6 border-t border-gray-100">
-            <p className="text-xs text-gray-300 leading-relaxed">
-              This document was generated from your materials in Nightside Planning Studio.
-            </p>
-          </div>
+          {ranking.reflection?.trim() && (
+            <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid #EEEEEE' }}>
+              <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', color: '#888888', textTransform: 'uppercase' as const, marginBottom: 8 }}>
+                Reflection note
+              </p>
+              <p style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                {ranking.reflection.trim()}
+              </p>
+            </div>
+          )}
 
+          <ExportFooter />
         </div>
       </div>
     </>
   )
 }
+
+// ---------------------------------------------------------------------------
+// Legacy Map export
+// ---------------------------------------------------------------------------
+
+function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, filename }: {
+  id: string
+  mapContent: LegacyMapContent
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+}) {
+  const hasReflection = mapContent.themes || mapContent.surprises || mapContent.valuesToPassOn || mapContent.legacyProjects
+  const sorted = [...mapContent.moments].sort((a, b) => a.xPercent - b.xPercent)
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
+
+          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
+              ← Back to snapshot
+            </a>
+            <PrintButton filename={filename} />
+          </div>
+
+          <ExportHeader title="Legacy Map" />
+
+          {/* Metadata */}
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Legacy Map</h1>
+            {createdDate && (
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>{createdDate}</p>
+            )}
+            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+              This is a generated record of your responses. It is not a legal document.
+            </p>
+          </div>
+          <div style={{ height: 1, background: '#CCCCCC', marginBottom: 20 }} />
+
+          {/* Map SVG */}
+          {sorted.length > 0 && (
+            <div style={{
+              border: '1px solid #CCCCCC',
+              borderRadius: 4,
+              padding: 12,
+              marginBottom: 20,
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <svg
+                viewBox={`0 0 ${LM_VB_W} ${LM_VB_H}`}
+                preserveAspectRatio="none"
+                style={{ width: '100%', height: 120, display: 'block' }}
+                aria-hidden="true"
+              >
+                <path d={LM_PATH_D} fill="none" stroke="#333333" strokeWidth="2" strokeLinecap="round" />
+                {sorted.map((m) => {
+                  const pt = lmPathPoint(m.xPercent)
+                  return (
+                    <circle key={m.id} cx={pt.x} cy={pt.y} r="11" fill="#FFFFFF" stroke="#666666" strokeWidth="2" />
+                  )
+                })}
+              </svg>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                <span style={{ fontFamily: hv, fontSize: 10, color: '#999' }}>Birth</span>
+                <span style={{ fontFamily: hv, fontSize: 10, color: '#999' }}>Now</span>
+              </div>
+            </div>
+          )}
+
+          {/* Moment list */}
+          {sorted.length === 0 ? (
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#999' }}>No moments added yet.</p>
+          ) : (
+            <div>
+              {sorted.map((m, i) => (
+                <div
+                  key={m.id}
+                  style={{
+                    display: 'flex',
+                    gap: 12,
+                    alignItems: 'flex-start',
+                    padding: '10px 0',
+                    borderBottom: i < sorted.length - 1 ? '1px solid #EEEEEE' : 'none',
+                  }}
+                >
+                  <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, color: '#444444', minWidth: 20, flexShrink: 0, paddingTop: 1 }}>
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.4 }}>{m.title}</p>
+                    {m.note && (
+                      <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', lineHeight: 1.5, marginTop: 2, whiteSpace: 'pre-wrap' }}>{m.note}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Reflection fields */}
+          {hasReflection && (
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #EEEEEE' }}>
+              {[
+                { field: mapContent.themes, label: 'THEMES THAT STOOD OUT' },
+                { field: mapContent.surprises, label: 'SURPRISES OR REALIZATIONS' },
+                { field: mapContent.valuesToPassOn, label: 'VALUES TO PASS ON' },
+                { field: mapContent.legacyProjects, label: 'LEGACY PROJECT IDEAS' },
+              ].map(({ field, label }) =>
+                field ? (
+                  <div key={label} style={{ marginBottom: 20 }}>
+                    <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#888888', textTransform: 'uppercase' as const, marginBottom: 4 }}>
+                      {label}
+                    </p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{field}</p>
+                  </div>
+                ) : null
+              )}
+            </div>
+          )}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Document export
+// ---------------------------------------------------------------------------
+
+function DocumentExportPage({ id, entry, createdDate, displayTitle, filename }: {
+  id: string
+  entry: EntryRow
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+}) {
+  if (entry.document_type === 'important_contacts') {
+    return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  }
+  if (entry.document_type === 'keepsake_inventory') {
+    return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  }
+  return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+}
+
+function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filename }: {
+  id: string
+  entry: EntryRow
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+}) {
+  const content = entry.content
+  const fields = (content && typeof content === 'object'
+    ? Object.entries(content as Record<string, unknown>)
+        .filter(([, v]) => typeof v === 'string' && (v as string).trim().length > 0) as [string, string][]
+    : [])
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
+
+          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
+              ← Back to snapshot
+            </a>
+            <PrintButton filename={filename} />
+          </div>
+
+          <ExportHeader title={displayTitle} />
+
+          {/* Metadata */}
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
+            {createdDate && (
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>Last saved {createdDate}</p>
+            )}
+            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+              This is a record of your responses at the time of your last save. It is not a legal document.
+            </p>
+          </div>
+          <div style={{ height: 1, background: '#DDDDDD', marginBottom: 28 }} />
+
+          {fields.length === 0 ? (
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#999' }}>No content saved yet.</p>
+          ) : (
+            <div>
+              {fields.map(([key, value], i) => (
+                <div key={key} style={{ marginBottom: i < fields.length - 1 ? 24 : 0 }}>
+                  <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#888888', textTransform: 'uppercase' as const, marginBottom: 5 }}>
+                    {camelCaseToLabel(key)}
+                  </p>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, filename }: {
+  id: string
+  entry: EntryRow
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+}) {
+  const content = entry.content as Record<string, ContactFields> | null
+  const groups = [
+    { key: 'doctor',   label: 'DOCTORS',                    keys: ['doctor1', 'doctor2', 'doctor3', 'doctor4'] },
+    { key: 'attorney', label: 'ATTORNEYS / ACCOUNTANTS',     keys: ['attorney1', 'attorney2', 'attorney3', 'attorney4'] },
+    { key: 'relative', label: 'FAMILY & EMERGENCY CONTACTS', keys: ['relative1', 'relative2', 'relative3', 'relative4'] },
+    { key: 'friend',   label: 'FRIENDS',                     keys: ['friend1', 'friend2', 'friend3', 'friend4'] },
+    { key: 'other',    label: 'OTHERS',                      keys: ['other1', 'other2', 'other3', 'other4'] },
+  ]
+
+  let renderedGroups = 0
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
+
+          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
+              ← Back to snapshot
+            </a>
+            <PrintButton filename={filename} />
+          </div>
+
+          <ExportHeader title={displayTitle} />
+
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+              This is a record of your responses at the time of your last save. It is not a legal document.
+            </p>
+          </div>
+          <div style={{ height: 1, background: '#DDDDDD', marginBottom: 28 }} />
+
+          {content && groups.map((group) => {
+            const filled = group.keys
+              .map((k) => content[k])
+              .filter((c): c is ContactFields => !!(c && c.name?.trim()))
+            if (filled.length === 0) return null
+            const isFirst = renderedGroups === 0
+            renderedGroups++
+            return (
+              <div key={group.key}>
+                <p style={{
+                  fontFamily: hv,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                  color: '#444444',
+                  textTransform: 'uppercase' as const,
+                  borderBottom: '0.5px solid #DDDDDD',
+                  paddingBottom: 6,
+                  marginBottom: 12,
+                  marginTop: isFirst ? 0 : 24,
+                }}>
+                  {group.label}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 8 }}>
+                  {filled.map((contact, ci) => (
+                    <div key={ci}>
+                      <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A' }}>{contact.name}</p>
+                      {contact.phone && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666' }}>{contact.phone}</p>}
+                      {contact.email && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666' }}>{contact.email}</p>}
+                      {contact.address && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666' }}>{contact.address}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, filename }: {
+  id: string
+  entry: EntryRow
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+}) {
+  const content = entry.content as { entries?: KeepsakeItem[] } | null
+  const items = content?.entries?.filter((e) => e.object?.trim()) ?? []
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
+
+          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
+              ← Back to snapshot
+            </a>
+            <PrintButton filename={filename} />
+          </div>
+
+          <ExportHeader title={displayTitle} />
+
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+              This is a record of your responses at the time of your last save. It is not a legal document.
+            </p>
+          </div>
+          <div style={{ height: 1, background: '#DDDDDD', marginBottom: 28 }} />
+
+          {items.length === 0 ? (
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#999' }}>No keepsakes saved yet.</p>
+          ) : (
+            <div>
+              {items.map((item, i) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    gap: 10,
+                    alignItems: 'flex-start',
+                    padding: '16px 0',
+                    borderBottom: i < items.length - 1 ? '0.5px solid #EEEEEE' : 'none',
+                  }}
+                >
+                  <span style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', minWidth: 18, flexShrink: 0, paddingTop: 1 }}>{i + 1}</span>
+                  <div>
+                    <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A' }}>{item.object}</p>
+                    {item.recipient?.trim() && (
+                      <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', marginTop: 2 }}>For: {item.recipient}</p>
+                    )}
+                    {item.meaning?.trim() && (
+                      <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', marginTop: 4, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                        {item.meaning}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Data helpers
+// ---------------------------------------------------------------------------
 
 function getLegacyMapContent(entry: EntryRow): LegacyMapContent | null {
   if (!entry.content || typeof entry.content !== 'object') return null
@@ -251,121 +628,6 @@ function getLegacyMapContent(entry: EntryRow): LegacyMapContent | null {
   }
 }
 
-function LegacyMapExportPage({ id, mapContent, createdDate, exportedDate }: {
-  id: string
-  mapContent: LegacyMapContent
-  createdDate: string | null
-  exportedDate: string | null
-}) {
-  const hasReflection = mapContent.themes || mapContent.surprises || mapContent.valuesToPassOn || mapContent.legacyProjects
-  return (
-    <>
-      <style>{`
-        @media print {
-          nav, .no-print { display: none !important; }
-          body { background: white !important; }
-          @page { margin: 1.8cm; }
-        }
-      `}</style>
-      <div className="bg-white min-h-screen">
-        <div className="max-w-2xl mx-auto px-10 py-14">
-          <div className="no-print flex items-center justify-between mb-12">
-            <a href={`/app/entries/${id}`} className="text-sm text-gray-400 hover:text-gray-700 transition-colors">← Back to snapshot</a>
-            <ExportButton />
-          </div>
-
-          <div className="mb-10 pb-8 border-b border-gray-100">
-            <p className="text-xs uppercase tracking-widest text-gray-400 mb-4">Snapshot export</p>
-            <h1 className="text-2xl font-semibold text-gray-800 mb-6">Legacy Map</h1>
-            <div className="space-y-1.5 text-sm text-gray-500">
-              <div className="flex gap-3">
-                <span className="w-24 shrink-0 text-gray-400">Generated from</span>
-                <span>Legacy Map activity</span>
-              </div>
-              {createdDate && (
-                <div className="flex gap-3">
-                  <span className="w-24 shrink-0 text-gray-400">Last saved</span>
-                  <span>{createdDate}</span>
-                </div>
-              )}
-              {exportedDate && (
-                <div className="flex gap-3">
-                  <span className="w-24 shrink-0 text-gray-400">Exported</span>
-                  <span>{exportedDate}</span>
-                </div>
-              )}
-              {mapContent.moments.length > 0 && (
-                <div className="flex gap-3">
-                  <span className="w-24 shrink-0 text-gray-400">Moments</span>
-                  <span>{mapContent.moments.length}</span>
-                </div>
-              )}
-            </div>
-            <p className="mt-5 text-xs text-gray-400 leading-relaxed">
-              This is a generated view of your legacy map at the time of export. It is not a final or authoritative document.
-            </p>
-          </div>
-
-          {mapContent.moments.length === 0 ? (
-            <p className="text-gray-400 text-sm">No moments added yet.</p>
-          ) : (
-            <div className="space-y-8 mb-12">
-              {mapContent.moments.map((m, i) => (
-                <div key={m.id} className="flex gap-4 items-start">
-                  <div className="shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[11px] font-semibold text-gray-500 mt-0.5">
-                    {i + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800 leading-snug">{m.title}</p>
-                    {m.note && (
-                      <p className="text-sm text-gray-500 leading-relaxed mt-1.5 whitespace-pre-wrap">{m.note}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {hasReflection && (
-            <div className="space-y-8 pt-8 border-t border-gray-100">
-              {mapContent.themes && (
-                <div>
-                  <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-3">Themes that stood out</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{mapContent.themes}</p>
-                </div>
-              )}
-              {mapContent.surprises && (
-                <div>
-                  <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-3">Surprises or realizations</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{mapContent.surprises}</p>
-                </div>
-              )}
-              {mapContent.valuesToPassOn && (
-                <div>
-                  <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-3">Values to pass on</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{mapContent.valuesToPassOn}</p>
-                </div>
-              )}
-              {mapContent.legacyProjects && (
-                <div>
-                  <h2 className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-3">Legacy project ideas</h2>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{mapContent.legacyProjects}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="mt-16 pt-6 border-t border-gray-100">
-            <p className="text-xs text-gray-300 leading-relaxed">
-              This document was generated from your materials in Nightside Planning Studio.
-            </p>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
 function getRankingContent(entry: EntryRow): RankingContent | null {
   if (!entry.content || typeof entry.content !== 'object') return null
   const c = entry.content as Record<string, unknown>
@@ -375,6 +637,42 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
     less_central: Array.isArray(c.less_central) ? c.less_central.filter((i): i is string => typeof i === 'string') : [],
     reflection: typeof c.reflection === 'string' ? c.reflection : undefined,
   }
+}
+
+function getDisplayTitle(entry: EntryRow): string {
+  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'important_contacts') return 'Important Contacts'
+  if (entry.document_type === 'financial_information') return 'Financial Information'
+  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
+  if (entry.document_type === 'keepsake_inventory') return 'Keepsake Inventory'
+  if (entry.activity === 'values_ranking') return 'Values Ranking'
+  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.title?.trim()) return entry.title.trim()
+  return 'Untitled'
+}
+
+function getExportFilename(entry: EntryRow): string {
+  const date = entry.created_at
+    ? new Date(entry.created_at).toISOString().slice(0, 10)
+    : new Date().toISOString().slice(0, 10)
+  if (entry.document_type === 'advance_directive_supplement') return `nightside-your-wishes-${date}`
+  if (entry.document_type === 'personal_admin_info') return `nightside-personal-admin-${date}`
+  if (entry.document_type === 'important_contacts') return `nightside-important-contacts-${date}`
+  if (entry.document_type === 'financial_information') return `nightside-financial-information-${date}`
+  if (entry.document_type === 'devices_and_accounts') return `nightside-devices-and-accounts-${date}`
+  if (entry.document_type === 'keepsake_inventory') return `nightside-keepsake-inventory-${date}`
+  if (entry.activity === 'values_ranking') return `nightside-values-ranking-${date}`
+  if (entry.activity === 'legacy_map') return `nightside-legacy-map-${date}`
+  return `nightside-export-${date}`
+}
+
+function camelCaseToLabel(key: string): string {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (s) => s.toUpperCase())
+    .replace(/_/g, ' ')
+    .trim()
 }
 
 function formatDate(dateString: string | null): string | null {

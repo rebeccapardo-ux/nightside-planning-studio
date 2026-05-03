@@ -115,24 +115,16 @@ export default function ReflectPage() {
 
       {/* Header */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '72px 24px 0' }}>
-        <div className="ns-title-wrap">
-          <h1
-            className="ns-title-section"
-            style={{ fontSize: 64, fontWeight: 500, lineHeight: 1.08, color: '#130426', margin: 0 }}
-          >
-            <span className="ns-title-underline">Reflect</span>
-          </h1>
-        </div>
-        <p style={{
-          fontFamily: fontHelvetica,
-          fontSize: 20,
-          fontWeight: 400,
-          lineHeight: 1.55,
-          color: 'rgba(19,4,38,0.78)',
-          maxWidth: 760,
-          marginTop: 20,
-          marginBottom: 0,
-        }}>
+        <h1
+          className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]"
+          style={{ color: '#130426' }}
+        >
+          Reflection Prompts
+        </h1>
+        <p
+          className="mt-2 max-w-[520px] text-[16px] leading-[1.4] md:text-[17px]"
+          style={{ color: 'rgba(19,4,38,0.78)' }}
+        >
           These prompts are here to help you think, talk, or reflect. You can start anywhere and come back anytime.
         </p>
       </div>

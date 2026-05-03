@@ -8,7 +8,7 @@ import {
   type Scenario,
   type ScenarioChoice,
 } from '@/lib/scenario-navigator-data'
-import { createNote } from '@/lib/notes'
+import { createNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 
 // ---------------------------------------------------------------------------
@@ -155,8 +155,8 @@ export default function ScenarioNavigatorPage() {
 function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) => void }) {
   return (
     <div className="max-w-5xl mx-auto px-4 py-16">
-      <Link href="/app/explore" className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors text-sm">
-        ← Back to Explore
+      <Link href="/app/reflect" className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors text-sm">
+        ← Back to Reflect
       </Link>
       <div className="mt-8 mb-12">
         <h1 className="ns-title-activity text-[#f8f4eb]">Scenario Navigator</h1>
@@ -464,7 +464,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write here if you want to capture something…"
+                placeholder="Write anything that comes up for you…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
@@ -475,11 +475,8 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 }}
                 className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 8 }}>
-                {noteSaved ? 'Saved ✓ ' : 'Your note is saved automatically. '}
-                <Link href="/app/materials" style={{ color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 2 }}>
-                  View in Your Plan
-                </Link>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
+                {noteSaved ? 'Saved' : ''}
               </p>
               <div style={{ marginTop: 12 }}>
                 {showVoice ? (
@@ -812,7 +809,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write here if you want to capture something…"
+                placeholder="Write anything that comes up for you…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
@@ -823,11 +820,8 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 }}
                 className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 8 }}>
-                {noteSaved ? 'Saved ✓ ' : 'Your note is saved automatically. '}
-                <Link href="/app/materials" style={{ color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 2 }}>
-                  View in Your Plan
-                </Link>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
+                {noteSaved ? 'Saved' : ''}
               </p>
               <div style={{ marginTop: 12 }}>
                 {showVoice ? (
@@ -1138,7 +1132,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write here if you want to capture something…"
+                placeholder="Write anything that comes up for you…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
@@ -1149,11 +1143,8 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 }}
                 className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 8 }}>
-                {noteSaved ? 'Saved ✓ ' : 'Your note is saved automatically. '}
-                <Link href="/app/materials" style={{ color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 2 }}>
-                  View in Your Plan
-                </Link>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
+                {noteSaved ? 'Saved' : ''}
               </p>
               <div style={{ marginTop: 12 }}>
                 {showVoice ? (
@@ -1364,6 +1355,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
   const [noteSaved, setNoteSaved] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noteTextRef = useRef('')
+  const savedNoteIdRef = useRef<string | null>(null)
 
   function toggleSource(sourceId: string) {
     setOpenSourceId((prev) => (prev === sourceId ? null : sourceId))
@@ -1372,7 +1364,12 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
   async function saveNote() {
     const trimmed = noteTextRef.current.trim()
     if (!trimmed) return
-    await createNote(trimmed)
+    if (savedNoteIdRef.current) {
+      await updateNote(savedNoteIdRef.current, trimmed)
+    } else {
+      const note = await createNote(trimmed)
+      if (note) savedNoteIdRef.current = note.id
+    }
     setNoteSaved(true)
     setTimeout(() => setNoteSaved(false), 2500)
   }
@@ -1382,11 +1379,16 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
     noteTextRef.current = val
     setNoteSaved(false)
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (val.trim()) debounceRef.current = setTimeout(saveNote, 2000)
+    if (val.trim()) debounceRef.current = setTimeout(() => {
+      debounceRef.current = null
+      saveNote()
+    }, 1500)
   }
 
   async function handleNoteBlur() {
-    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null }
+    if (!debounceRef.current) return
+    clearTimeout(debounceRef.current)
+    debounceRef.current = null
     await saveNote()
   }
 
@@ -1536,7 +1538,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
                 rows={4}
                 className="w-full bg-white text-[#130426] placeholder:text-[#130426]/35 px-3 py-2.5 rounded-lg text-sm leading-relaxed focus:outline-none resize-none border border-[#130426]/10"
               />
-              {noteSaved && <p className="mt-1.5 text-xs font-semibold text-[#130426]">Saved ✓</p>}
+              {noteSaved && <p className="mt-1.5 text-xs text-[#130426]" style={{ color: 'rgba(26,26,26,0.72)', fontSize: 13 }}>Saved</p>}
             </section>
           )}
           {choice.resources.length > 0 && (
@@ -1699,7 +1701,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write here if you want to capture something…"
+                placeholder="Write anything that comes up for you…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
@@ -1712,11 +1714,8 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
               />
 
               {/* Save confirmation + link */}
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', marginTop: 8 }}>
-                {noteSaved ? 'Saved ✓ ' : 'Your note is saved automatically. '}
-                <Link href="/app/materials" style={{ color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 2 }}>
-                  View in Your Plan
-                </Link>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
+                {noteSaved ? 'Saved' : ''}
               </p>
 
               {/* Voice option */}
