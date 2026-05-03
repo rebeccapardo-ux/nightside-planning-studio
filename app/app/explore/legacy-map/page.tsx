@@ -928,39 +928,35 @@ export default function LegacyMapPage() {
               With a few moments on the map, patterns sometimes start to emerge. Take your time with these questions — there are no right answers.
             </p>
 
-            <div className="mt-6 grid gap-5">
-              <PromptField
-                label="What themes stand out?"
+            <div className="mt-6">
+              <ol className="mb-5 space-y-2" style={{ paddingLeft: 0, listStyle: 'none' }}>
+                {[
+                  'What themes stand out?',
+                  'Are there any surprises or realizations?',
+                  'What values or traditions do you want to pass on?',
+                  'What kind of legacy project could express these values or lessons?',
+                ].map((q, i) => (
+                  <li key={i} className="text-sm font-medium" style={{ color: 'rgba(19,4,38,0.85)', fontFamily: hv }}>
+                    {q}
+                  </li>
+                ))}
+              </ol>
+              <textarea
                 value={state.themes}
-                onChange={(v) => handleReflectionChange('themes', v)}
+                onChange={(e) => handleReflectionChange('themes', e.target.value)}
                 onBlur={handleReflectionBlur}
-                placeholder="What patterns, repeated concerns, commitments, relationships, or turning points show up?"
-                saveStatus={getReflectionStatusText()}
+                placeholder="Share your reflections…"
+                rows={5}
+                className="w-full resize-none rounded-[18px] border px-4 py-3 text-sm leading-6 outline-none transition-colors"
+                style={{
+                  backgroundColor: 'rgba(248,244,235,0.98)',
+                  color: COLORS.midnight,
+                  borderColor: 'rgba(44,55,119,0.14)',
+                }}
               />
-              <PromptField
-                label="Are there any surprises or realizations?"
-                value={state.surprises}
-                onChange={(v) => handleReflectionChange('surprises', v)}
-                onBlur={handleReflectionBlur}
-                placeholder="What became clearer as you looked across these moments?"
-                saveStatus={getReflectionStatusText()}
-              />
-              <PromptField
-                label="What values or traditions do you want to pass on?"
-                value={state.valuesToPassOn}
-                onChange={(v) => handleReflectionChange('valuesToPassOn', v)}
-                onBlur={handleReflectionBlur}
-                placeholder="What lessons, practices, beliefs, or ways of being feel important to carry forward?"
-                saveStatus={getReflectionStatusText()}
-              />
-              <PromptField
-                label="What kind of legacy project could express these values or lessons?"
-                value={state.legacyProjects}
-                onChange={(v) => handleReflectionChange('legacyProjects', v)}
-                onBlur={handleReflectionBlur}
-                placeholder="Examples: a memoir, a video message, a photo book, a letter collection, or a community project."
-                saveStatus={getReflectionStatusText()}
-              />
+              <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: 'rgba(26,26,26,0.72)', minHeight: 18 }}>
+                {getReflectionStatusText()}
+              </p>
             </div>
           </section>
         )}
@@ -1106,39 +1102,3 @@ export default function LegacyMapPage() {
   );
 }
 
-// ─── PromptField ──────────────────────────────────────────────────────────────
-
-type PromptFieldProps = {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  onBlur?: () => void;
-  placeholder: string;
-  saveStatus?: string;
-};
-
-function PromptField({ label, value, onChange, onBlur, placeholder, saveStatus }: PromptFieldProps) {
-  return (
-    <div>
-      <label className="mb-2 block text-sm font-medium" style={{ color: "rgba(19,4,38,0.85)" }}>
-        {label}
-      </label>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        rows={3}
-        className="w-full resize-none rounded-[18px] border px-4 py-3 text-sm leading-6 outline-none transition-colors"
-        style={{
-          backgroundColor: "rgba(248,244,235,0.98)",
-          color: COLORS.midnight,
-          borderColor: "rgba(44,55,119,0.14)",
-        }}
-      />
-      <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: "rgba(26,26,26,0.72)", minHeight: 18, margin: "6px 0 0 0" }}>
-        {saveStatus ?? ''}
-      </p>
-    </div>
-  );
-}
