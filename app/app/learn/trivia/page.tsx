@@ -181,7 +181,7 @@ function CardView({
           items={[
             { label: 'Learn', href: '/app/learn' },
             { label: 'Deathcare Trivia', onClick: onBack },
-            { label: card.question.length > 30 ? card.question.slice(0, 30) + '…' : card.question },
+            { label: card.crumb },
           ]}
         />
       </div>
