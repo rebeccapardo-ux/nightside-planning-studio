@@ -190,8 +190,6 @@ export default function LegacyMapPage() {
 
   // Reflection save status
   const [reflectionSaveStatus, setReflectionSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [reflectionLastSaved, setReflectionLastSaved] = useState<Date | null>(null);
-  const [reflectionStatusNow, setReflectionStatusNow] = useState(Date.now());
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const realMoments = useMemo(() => state.moments, [state.moments]);
@@ -321,13 +319,6 @@ export default function LegacyMapPage() {
     }
   }, [realMoments.length, reflectionMounted]);
 
-  // ── Reflection status clock ─────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!reflectionLastSaved) return;
-    const interval = setInterval(() => setReflectionStatusNow(Date.now()), 30000);
-    return () => clearInterval(interval);
-  }, [reflectionLastSaved]);
 
   // ── Drag cleanup ────────────────────────────────────────────────────────────
 
@@ -426,9 +417,6 @@ export default function LegacyMapPage() {
         }
       }
 
-      const savedAt = new Date();
-      setReflectionLastSaved(savedAt);
-      setReflectionStatusNow(savedAt.getTime());
       setReflectionSaveStatus('saved');
     } catch {
       setReflectionSaveStatus('error');
@@ -464,19 +452,7 @@ export default function LegacyMapPage() {
   function getReflectionStatusText(): string {
     if (reflectionSaveStatus === 'saving') return 'Saving…';
     if (reflectionSaveStatus === 'error') return "Couldn't save — check your connection";
-    if (reflectionSaveStatus === 'saved' && reflectionLastSaved) {
-      const diffMs = Math.max(reflectionStatusNow - reflectionLastSaved.getTime(), 0);
-      const diffSeconds = Math.floor(diffMs / 1000);
-      const diffMinutes = Math.floor(diffSeconds / 60);
-      const diffHours = Math.floor(diffMinutes / 60);
-      const diffDays = Math.floor(diffHours / 24);
-      const diffWeeks = Math.floor(diffDays / 7);
-      if (diffSeconds < 60) return 'Last saved just now';
-      if (diffMinutes < 60) return `Last saved ${diffMinutes} min ago`;
-      if (diffHours < 24) return diffHours === 1 ? 'Last saved 1 hour ago' : `Last saved ${diffHours} hours ago`;
-      if (diffDays < 7) return diffDays === 1 ? 'Last saved 1 day ago' : `Last saved ${diffDays} days ago`;
-      return diffWeeks === 1 ? 'Last saved 1 week ago' : `Last saved ${diffWeeks} weeks ago`;
-    }
+    if (reflectionSaveStatus === 'saved') return 'Saved';
     return '';
   }
 
@@ -603,13 +579,13 @@ export default function LegacyMapPage() {
   return (
     <div
       className="min-h-screen px-5 py-6 md:px-8 md:py-8 lg:px-10"
-      style={{ backgroundColor: COLORS.midnight, color: "#FFFFFF" }}
+      style={{ backgroundColor: COLORS.light, color: "#1A1A1A" }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
 
         <div style={{ marginBottom: 8 }}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
               { label: 'Reflect', href: '/app/reflect' },
               { label: 'Legacy Map' },
@@ -943,15 +919,10 @@ export default function LegacyMapPage() {
               transition: "opacity 0.6s ease, transform 0.6s ease",
             }}
           >
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+            <div style={{ marginBottom: 8 }}>
               <h2 className="text-xl font-medium tracking-[-0.01em]">
                 Now step back and look at the whole picture.
               </h2>
-              {getReflectionStatusText() && (
-                <p style={{ fontSize: 13, fontFamily: hv, color: "rgba(26,26,26,0.72)", flexShrink: 0, margin: 0 }}>
-                  {getReflectionStatusText()}
-                </p>
-              )}
             </div>
             <p className="max-w-3xl text-sm leading-6" style={{ color: "rgba(19,4,38,0.68)" }}>
               With a few moments on the map, patterns sometimes start to emerge. Take your time with these questions — there are no right answers.
@@ -964,6 +935,7 @@ export default function LegacyMapPage() {
                 onChange={(v) => handleReflectionChange('themes', v)}
                 onBlur={handleReflectionBlur}
                 placeholder="What patterns, repeated concerns, commitments, relationships, or turning points show up?"
+                saveStatus={getReflectionStatusText()}
               />
               <PromptField
                 label="Are there any surprises or realizations?"
@@ -971,6 +943,7 @@ export default function LegacyMapPage() {
                 onChange={(v) => handleReflectionChange('surprises', v)}
                 onBlur={handleReflectionBlur}
                 placeholder="What became clearer as you looked across these moments?"
+                saveStatus={getReflectionStatusText()}
               />
               <PromptField
                 label="What values or traditions do you want to pass on?"
@@ -978,6 +951,7 @@ export default function LegacyMapPage() {
                 onChange={(v) => handleReflectionChange('valuesToPassOn', v)}
                 onBlur={handleReflectionBlur}
                 placeholder="What lessons, practices, beliefs, or ways of being feel important to carry forward?"
+                saveStatus={getReflectionStatusText()}
               />
               <PromptField
                 label="What kind of legacy project could express these values or lessons?"
@@ -985,6 +959,7 @@ export default function LegacyMapPage() {
                 onChange={(v) => handleReflectionChange('legacyProjects', v)}
                 onBlur={handleReflectionBlur}
                 placeholder="Examples: a memoir, a video message, a photo book, a letter collection, or a community project."
+                saveStatus={getReflectionStatusText()}
               />
             </div>
           </section>
@@ -1139,9 +1114,10 @@ type PromptFieldProps = {
   onChange: (value: string) => void;
   onBlur?: () => void;
   placeholder: string;
+  saveStatus?: string;
 };
 
-function PromptField({ label, value, onChange, onBlur, placeholder }: PromptFieldProps) {
+function PromptField({ label, value, onChange, onBlur, placeholder, saveStatus }: PromptFieldProps) {
   return (
     <div>
       <label className="mb-2 block text-sm font-medium" style={{ color: "rgba(19,4,38,0.85)" }}>
@@ -1160,6 +1136,9 @@ function PromptField({ label, value, onChange, onBlur, placeholder }: PromptFiel
           borderColor: "rgba(44,55,119,0.14)",
         }}
       />
+      <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: "rgba(26,26,26,0.72)", minHeight: 18, margin: "6px 0 0 0" }}>
+        {saveStatus ?? ''}
+      </p>
     </div>
   );
 }
