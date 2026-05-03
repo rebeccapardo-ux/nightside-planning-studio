@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import PersonalAdminAnimations from './PersonalAdminAnimations'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 export default async function PersonalAdminLearnPage() {
   const supabase = await createSupabaseServerClient()
@@ -95,13 +96,15 @@ export default async function PersonalAdminLearnPage() {
         <section style={{ background: '#2C3777' }}>
           <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
 
-            <Link
-              href="/app/learn"
-              className="hover:opacity-75 transition-opacity"
-              style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, lineHeight: '1.4', color: 'rgba(255,255,255,0.8)', display: 'block', marginBottom: '24px' }}
-            >
-              ← Back to Learn
-            </Link>
+            <div style={{ marginBottom: 24 }}>
+              <Breadcrumbs
+                theme="navy"
+                items={[
+                  { label: 'Learn', href: '/app/learn' },
+                  { label: 'Personal Admin' },
+                ]}
+              />
+            </div>
 
             <div style={{ marginBottom: '16px' }}>
               <h1 className="ns-title-activity" style={{ color: '#FFFFFF', margin: 0 }}>

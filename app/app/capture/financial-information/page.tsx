@@ -193,7 +193,7 @@ export default function FinancialInformationPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Capture', href: '/app/capture' },
+              { label: 'Plan', href: '/app/materials' },
               { label: 'Financial Information' },
             ]}
           />

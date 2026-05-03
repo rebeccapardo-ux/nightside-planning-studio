@@ -449,7 +449,7 @@ export default function ValuesRankingPage() {
           <Breadcrumbs
             theme="navy"
             items={[
-              { label: 'Explore', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Values & Fears Ranking', href: '/app/explore/values-and-fears' },
               { label: 'Values Ranking' },
             ]}

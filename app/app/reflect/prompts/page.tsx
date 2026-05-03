@@ -274,7 +274,8 @@ function ReflectPromptsInner() {
           theme="light"
           items={[
             { label: 'Reflect', href: '/app/reflect' },
-            { label: currentPrompt.label.length > 52 ? currentPrompt.label.slice(0, 52) + '…' : currentPrompt.label },
+            { label: 'Reflection Prompts', href: '/app/reflect' },
+            { label: currentPrompt.label.length > 30 ? currentPrompt.label.slice(0, 30) + '…' : currentPrompt.label },
           ]}
         />
       </div>

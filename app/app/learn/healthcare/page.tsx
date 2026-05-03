@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import HealthcareAnimations from './HealthcareAnimations'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 export default async function HealthcareLearnPage() {
   const supabase = await createSupabaseServerClient()
@@ -108,13 +109,15 @@ export default async function HealthcareLearnPage() {
         {/* ── 1. HERO ── */}
         <section style={{ background: '#130426' }}>
           <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
-            <Link
-              href="/app/learn"
-              className="text-[#F29836] hover:text-[#BBABF4] transition-colors"
-              style={{ fontFamily: inter, fontSize: '16px', fontWeight: 500, lineHeight: '1.5', display: 'block', marginBottom: '24px' }}
-            >
-              ← Back to Learn
-            </Link>
+            <div style={{ marginBottom: 24 }}>
+              <Breadcrumbs
+                theme="navy"
+                items={[
+                  { label: 'Learn', href: '/app/learn' },
+                  { label: 'Healthcare Wishes' },
+                ]}
+              />
+            </div>
             <div style={{ marginBottom: '16px' }}>
               <h1 className="ns-title-activity" style={{ color: '#FFFFFF', margin: 0 }}>
                 <span className="hc-underline">Healthcare Wishes</span>

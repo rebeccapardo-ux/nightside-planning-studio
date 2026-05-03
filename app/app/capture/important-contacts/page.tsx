@@ -206,7 +206,7 @@ export default function ImportantContactsPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Capture', href: '/app/capture' },
+              { label: 'Plan', href: '/app/materials' },
               { label: 'Important Contacts' },
             ]}
           />

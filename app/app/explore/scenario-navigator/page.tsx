@@ -160,7 +160,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Explore', href: '/app/explore' },
+            { label: 'Reflect', href: '/app/reflect' },
             { label: 'Scenario Navigator' },
           ]}
         />
@@ -220,7 +220,7 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Explore', href: '/app/explore' },
+            { label: 'Reflect', href: '/app/reflect' },
             { label: 'Scenario Navigator', onClick: onBack },
             { label: scenario.title },
           ]}
@@ -294,7 +294,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Explore', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -398,7 +398,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Explore', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -644,7 +644,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="light"
               items={[
-                { label: 'Explore', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -748,7 +748,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Explore', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -972,7 +972,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Explore', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -1076,7 +1076,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Explore', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -1300,7 +1300,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Explore', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -1513,7 +1513,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Explore', href: '/app/explore' },
+            { label: 'Reflect', href: '/app/reflect' },
             { label: 'Scenario Navigator', onClick: onBackToAll },
             { label: scenario.title, onClick: onBackToScenario },
             { label: choice.outcomeTitle ?? choice.label },
@@ -1647,7 +1647,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Explore', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },

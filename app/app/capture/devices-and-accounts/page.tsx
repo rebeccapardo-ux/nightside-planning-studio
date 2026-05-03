@@ -207,7 +207,7 @@ export default function DevicesAndAccountsPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Capture', href: '/app/capture' },
+              { label: 'Plan', href: '/app/materials' },
               { label: 'Devices & Accounts' },
             ]}
           />

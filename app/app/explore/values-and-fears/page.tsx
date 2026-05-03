@@ -5,24 +5,24 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 export default function ValuesAndFearsPage() {
   return (
-    <div className="min-h-screen bg-[#140028] text-white">
+    <div className="min-h-screen bg-[#F8F4EB]">
       <div className="mx-auto w-full max-w-[1200px] px-6 pb-24 pt-16 md:px-10">
         <div style={{ marginBottom: 32 }}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
-              { label: 'Explore', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Values & Fears Ranking' },
             ]}
           />
         </div>
 
         <section className="max-w-3xl">
-          <h1 className="text-[36px] leading-tight font-semibold tracking-[-0.02em] md:text-[42px]">
+          <h1 className="text-[36px] leading-tight font-semibold tracking-[-0.02em] md:text-[42px]" style={{ color: '#130426' }}>
             Values &amp; Fears Ranking
           </h1>
 
-          <p className="mt-4 text-[17px] leading-relaxed text-white/80 md:text-[18px]">
+          <p className="mt-4 text-[17px] leading-relaxed md:text-[18px]" style={{ color: 'rgba(19,4,38,0.72)' }}>
             This exercise helps you reflect on what matters most to you — and what
             you most want to avoid — as you think about serious illness or the end
             of life.
@@ -30,7 +30,7 @@ export default function ValuesAndFearsPage() {
         </section>
 
         <section className="mt-10 overflow-hidden rounded-[24px] bg-[#ee9732] text-[#140028]">
-          <div className="grid gap-px bg-[#140028]/10 md:grid-cols-2">
+          <div className="grid gap-px bg-[#130426]/10 md:grid-cols-2">
             <Link
               href="/app/explore/values-ranking"
               className="group bg-[#b7a7ea] p-8 transition hover:bg-[#c2b4ef] md:p-10"

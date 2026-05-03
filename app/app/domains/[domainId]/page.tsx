@@ -32,6 +32,7 @@ import FragmentField from '@/app/components/FragmentField'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -728,14 +729,18 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Back link — clean zone at the very top, above the fragment SVG */}
+        {/* Breadcrumb — clean zone at the very top, above the fragment SVG */}
         <div
           className="max-w-6xl mx-auto"
           style={{ paddingTop: 16, paddingLeft: 40, paddingRight: 40, paddingBottom: 8, position: 'relative', zIndex: 2 }}
         >
-          <Link href="/app/materials" className="text-app-secondary hover:text-[#f8f4eb] transition-colors text-sm">
-            ← Your Plan
-          </Link>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Plan', href: '/app/materials' },
+              { label: domain?.title ?? '…' },
+            ]}
+          />
         </div>
 
         {/* Fragment SVG — healthcare, legacy, and deathcare only */}
