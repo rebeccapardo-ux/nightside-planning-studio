@@ -9,16 +9,12 @@ export default function FloatingNotepad() {
   // PDF export pages are print views — no interactive controls
   if (pathname.endsWith('/export')) return null
 
-  // Lavender-background pages — use cream button so it's always visible
-  const needsCreamButton =
-    (pathname.startsWith('/app/reflect') && pathname !== '/app/reflect') ||
-    pathname.startsWith('/app/explore') ||
-    pathname.startsWith('/app/capture') ||
-    pathname.startsWith('/app/learn/wills')
-
-  const buttonStyle = (pathname === '/app/reflect' || pathname === '/app/learn')
-    ? 'orange'
-    : needsCreamButton ? 'cream' : 'lavender'
+  const isScenarioPage = pathname.startsWith('/app/explore/scenario-navigator')
+  const isMaterialsPage = pathname === '/app/materials'
+  const isTriviaPage = pathname.startsWith('/app/learn/trivia')
+  const isExploreLanding = pathname === '/app/explore'
+  const isReflectLanding = pathname === '/app/reflect'
+  const buttonStyle = isExploreLanding ? 'lavender' : isScenarioPage || isMaterialsPage || isTriviaPage || isReflectLanding ? 'orange' : 'navy'
 
   return <NotepadModal buttonStyle={buttonStyle} />
 }

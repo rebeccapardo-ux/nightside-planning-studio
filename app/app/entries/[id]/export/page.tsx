@@ -1,6 +1,10 @@
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import PrintButton from './PrintButton'
+import DownloadPDFButton from './DownloadPDFButton'
+import FinancialExportClient from './FinancialExportClient'
+import PersonalAdminExportClient from './PersonalAdminExportClient'
+import DevicesAccountsExportClient from './DevicesAccountsExportClient'
+import type { PDFData, PDFContactEntry } from './pdfTypes'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'Apfel Grotezk', sans-serif"
@@ -35,6 +39,7 @@ type LegacyMapContent = {
 }
 
 type ContactFields = { name: string; phone: string; email: string; address: string }
+type NewContact = { id: string; name: string; role: string; phone: string; email: string; address: string }
 type KeepsakeItem = { id: string; object: string; recipient: string; meaning: string }
 
 // ---------------------------------------------------------------------------
@@ -80,7 +85,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
 
   if (error || !entry) notFound()
 
-  const isActivity = entry.activity === 'values_ranking' || entry.activity === 'legacy_map'
+  const isActivity = entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map'
   const isDocument = !!entry.document_type
   if (!isActivity && !isDocument) notFound()
 
@@ -91,21 +96,70 @@ export default async function ExportPage({ params }: ExportPageProps) {
   if (entry.activity === 'legacy_map') {
     const mapContent = getLegacyMapContent(entry)
     if (!mapContent) notFound()
-    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    const pdfData: PDFData = {
+      kind: 'legacy_map',
+      displayTitle,
+      createdDate,
+      filename,
+      moments: mapContent.moments.map(m => ({ title: m.title, note: m.note || undefined, xPercent: m.xPercent })),
+      themes: mapContent.themes || undefined,
+      surprises: mapContent.surprises || undefined,
+      valuesToPassOn: mapContent.valuesToPassOn || undefined,
+      legacyProjects: mapContent.legacyProjects || undefined,
+      intro: LEGACY_MAP_INTRO,
+    }
+    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} pdfData={pdfData} />
   }
 
   if (entry.activity === 'values_ranking') {
     const ranking = getRankingContent(entry)
     if (!ranking) notFound()
-    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} filename={filename} />
+    const pdfData: PDFData = {
+      kind: 'values_ranking',
+      displayTitle,
+      createdDate,
+      filename,
+      groups: [
+        { label: 'ESSENTIAL',      items: ranking.essential },
+        { label: 'IMPORTANT',      items: ranking.important },
+        { label: 'LESS IMPORTANT', items: ranking.less_central },
+      ].filter(g => g.items.length > 0),
+      reflection: ranking.reflection,
+      intro: VALUES_INTRO,
+    }
+    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} />
   }
 
-  // Document export
+  if (entry.activity === 'fears_ranking') {
+    const ranking = getRankingContent(entry)
+    if (!ranking) notFound()
+    const pdfData: PDFData = {
+      kind: 'fears_ranking',
+      displayTitle,
+      createdDate,
+      filename,
+      groups: [
+        { label: 'MOST PRESSING',      items: ranking.essential },
+        { label: 'SOMEWHAT PRESSING',  items: ranking.important },
+        { label: 'LESS PRESSING',      items: ranking.less_central },
+      ].filter(g => g.items.length > 0),
+      reflection: ranking.reflection,
+      intro: FEARS_INTRO,
+    }
+    return <FearsRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} />
+  }
+
   return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
 }
 
+const VALUES_INTRO = 'This document captures how you sorted and reflected on different personal values in relation to care, identity, and what matters most to you.'
+
+const FEARS_INTRO = 'This document reflects how different fears and concerns felt to you at a particular moment in time.'
+
+const LEGACY_MAP_INTRO = 'This document maps meaningful moments and reflections from across your life.'
+
 // ---------------------------------------------------------------------------
-// Shared print styles & header
+// Shared chrome
 // ---------------------------------------------------------------------------
 
 const PRINT_STYLES = `
@@ -119,22 +173,32 @@ const PRINT_STYLES = `
 function ExportHeader({ title }: { title: string }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 18 }} />
-        <p style={{ fontFamily: hv, fontSize: 12, color: '#1A1A1A' }}>{title}</p>
+        <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 22 }} />
       </div>
-      <div style={{ height: 1, background: '#CCCCCC', marginBottom: 24 }} />
+      <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 16 }} />
     </div>
   )
 }
 
 function ExportFooter() {
   return (
-    <div style={{ marginTop: 56, paddingTop: 20, borderTop: '1px solid #EEEEEE', textAlign: 'center' as const }}>
-      <p style={{ fontFamily: hv, fontSize: 10, color: '#AAAAAA', lineHeight: 1.5 }}>
+    <div style={{ marginTop: 48, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.12)', textAlign: 'center' as const }}>
+      <p style={{ fontFamily: hv, fontSize: 11, color: '#6B6B6B', lineHeight: 1.5 }}>
         This document was generated from your materials in Nightside Planning Studio.
       </p>
+    </div>
+  )
+}
+
+function BackAndExport({ id, pdfData }: { id: string; pdfData: PDFData }) {
+  return (
+    <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+      <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>
+        ← Back
+      </a>
+      <DownloadPDFButton data={pdfData} />
     </div>
   )
 }
@@ -143,11 +207,11 @@ function ExportFooter() {
 // Values Ranking export
 // ---------------------------------------------------------------------------
 
-function ValuesRankingExportPage({ id, ranking, createdDate, filename }: {
+function ValuesRankingExportPage({ id, ranking, createdDate, pdfData }: {
   id: string
   ranking: RankingContent
   createdDate: string | null
-  filename: string
+  pdfData: PDFData
 }) {
   const groups = [
     { key: 'essential' as const, label: 'ESSENTIAL',      items: ranking.essential },
@@ -160,51 +224,32 @@ function ValuesRankingExportPage({ id, ranking, createdDate, filename }: {
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
-
-          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
-              ← Back to snapshot
-            </a>
-            <PrintButton filename={filename} />
-          </div>
-
+          <BackAndExport id={id} pdfData={pdfData} />
           <ExportHeader title="Values Ranking" />
 
-          {/* Metadata */}
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Values Ranking</h1>
             {createdDate && (
-              <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>{createdDate}</p>
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Generated {createdDate}</p>
             )}
-            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
               This is a generated record of your responses. It is not a legal document.
             </p>
           </div>
-          <div style={{ height: 1, background: '#CCCCCC', marginBottom: 24 }} />
+          <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
+            {VALUES_INTRO}
+          </p>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 24 }} />
 
-          {/* Value groups */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {groups.map(({ key, label, items }) => (
               <div key={key} style={{ background: '#F5F5F5', borderRadius: 6, padding: 16 }}>
-                <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', color: '#444444', textTransform: 'uppercase' as const, marginBottom: 10 }}>
+                <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.08em', color: '#444444', textTransform: 'uppercase' as const, marginBottom: 10 }}>
                   {label}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                   {items.map((item) => (
-                    <div
-                      key={item}
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #CCCCCC',
-                        borderRadius: 4,
-                        padding: '10px 12px',
-                        minHeight: 60,
-                        fontFamily: hv,
-                        fontSize: 13,
-                        color: '#1A1A1A',
-                        lineHeight: 1.5,
-                      }}
-                    >
+                    <div key={item} style={{ background: '#FFFFFF', border: '1px solid #CCCCCC', borderRadius: 4, padding: '10px 12px', minHeight: 60, fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.5 }}>
                       {item}
                     </div>
                   ))}
@@ -214,8 +259,81 @@ function ValuesRankingExportPage({ id, ranking, createdDate, filename }: {
           </div>
 
           {ranking.reflection?.trim() && (
-            <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid #EEEEEE' }}>
-              <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', color: '#888888', textTransform: 'uppercase' as const, marginBottom: 8 }}>
+            <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.10)' }}>
+              <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 8 }}>
+                Reflection note
+              </p>
+              <p style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                {ranking.reflection.trim()}
+              </p>
+            </div>
+          )}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Fears Ranking export
+// ---------------------------------------------------------------------------
+
+function FearsRankingExportPage({ id, ranking, createdDate, pdfData }: {
+  id: string
+  ranking: RankingContent
+  createdDate: string | null
+  pdfData: PDFData
+}) {
+  const groups = [
+    { key: 'essential' as const, label: 'MOST PRESSING',     items: ranking.essential },
+    { key: 'important' as const, label: 'SOMEWHAT PRESSING', items: ranking.important },
+    { key: 'less',               label: 'LESS PRESSING',     items: ranking.less_central },
+  ].filter(g => g.items.length > 0)
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
+          <BackAndExport id={id} pdfData={pdfData} />
+          <ExportHeader title="Fears Ranking" />
+
+          <div style={{ marginBottom: 16 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Fears Ranking</h1>
+            {createdDate && (
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Generated {createdDate}</p>
+            )}
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
+              This is a generated record of your responses. It is not a legal document.
+            </p>
+          </div>
+          <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
+            {FEARS_INTRO}
+          </p>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 24 }} />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {groups.map(({ key, label, items }) => (
+              <div key={key} style={{ background: '#F5F5F5', borderRadius: 6, padding: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.08em', color: '#444444', textTransform: 'uppercase' as const, marginBottom: 10 }}>
+                  {label}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {items.map((item) => (
+                    <div key={item} style={{ background: '#FFFFFF', border: '1px solid #CCCCCC', borderRadius: 4, padding: '10px 12px', minHeight: 60, fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.5 }}>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {ranking.reflection?.trim() && (
+            <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid rgba(0,0,0,0.10)' }}>
+              <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.08em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 8 }}>
                 Reflection note
               </p>
               <p style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
@@ -235,12 +353,12 @@ function ValuesRankingExportPage({ id, ranking, createdDate, filename }: {
 // Legacy Map export
 // ---------------------------------------------------------------------------
 
-function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, filename }: {
+function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, pdfData }: {
   id: string
   mapContent: LegacyMapContent
   createdDate: string | null
   displayTitle: string
-  filename: string
+  pdfData: PDFData
 }) {
   const hasReflection = mapContent.themes || mapContent.surprises || mapContent.valuesToPassOn || mapContent.legacyProjects
   const sorted = [...mapContent.moments].sort((a, b) => a.xPercent - b.xPercent)
@@ -250,92 +368,84 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, filena
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
+          <BackAndExport id={id} pdfData={pdfData} />
+          <ExportHeader title={displayTitle} />
 
-          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
-              ← Back to snapshot
-            </a>
-            <PrintButton filename={filename} />
-          </div>
-
-          <ExportHeader title="Legacy Map" />
-
-          {/* Metadata */}
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Legacy Map</h1>
             {createdDate && (
-              <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>{createdDate}</p>
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Generated {createdDate}</p>
             )}
-            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
               This is a generated record of your responses. It is not a legal document.
             </p>
           </div>
-          <div style={{ height: 1, background: '#CCCCCC', marginBottom: 20 }} />
+          <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
+            {LEGACY_MAP_INTRO}
+          </p>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 20 }} />
 
-          {/* Map SVG */}
           {sorted.length > 0 && (
-            <div style={{
-              border: '1px solid #CCCCCC',
-              borderRadius: 4,
-              padding: 12,
-              marginBottom: 20,
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
+            <div style={{ border: '1px solid #1A1A1A', borderRadius: 6, height: 130, marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
               <svg
                 viewBox={`0 0 ${LM_VB_W} ${LM_VB_H}`}
                 preserveAspectRatio="none"
-                style={{ width: '100%', height: 120, display: 'block' }}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
                 aria-hidden="true"
               >
-                <path d={LM_PATH_D} fill="none" stroke="#333333" strokeWidth="2" strokeLinecap="round" />
-                {sorted.map((m) => {
-                  const pt = lmPathPoint(m.xPercent)
-                  return (
-                    <circle key={m.id} cx={pt.x} cy={pt.y} r="11" fill="#FFFFFF" stroke="#666666" strokeWidth="2" />
-                  )
-                })}
+                <path d={LM_PATH_D} fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <span style={{ fontFamily: hv, fontSize: 10, color: '#999' }}>Birth</span>
-                <span style={{ fontFamily: hv, fontSize: 10, color: '#999' }}>Now</span>
-              </div>
+              {sorted.map((m, i) => {
+                const pt = lmPathPoint(m.xPercent)
+                return (
+                  <div
+                    key={m.id}
+                    style={{
+                      position: 'absolute',
+                      left: `${(pt.x / LM_VB_W) * 100}%`,
+                      top: `${(pt.y / LM_VB_H) * 100}%`,
+                      transform: 'translate(-50%, -50%)',
+                      width: 20,
+                      height: 20,
+                      borderRadius: '50%',
+                      background: '#F8F4EB',
+                      border: '1.5px solid #1A1A1A',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: hv,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: '#1A1A1A',
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                )
+              })}
+              <span style={{ position: 'absolute', bottom: 8, left: 12, fontFamily: hv, fontSize: 10, color: '#1A1A1A' }}>Birth</span>
+              <span style={{ position: 'absolute', bottom: 8, right: 12, fontFamily: hv, fontSize: 10, color: '#1A1A1A' }}>Now</span>
             </div>
           )}
 
-          {/* Moment list */}
           {sorted.length === 0 ? (
-            <p style={{ fontFamily: hv, fontSize: 13, color: '#999' }}>No moments added yet.</p>
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B' }}>No moments added yet.</p>
           ) : (
             <div>
               {sorted.map((m, i) => (
-                <div
-                  key={m.id}
-                  style={{
-                    display: 'flex',
-                    gap: 12,
-                    alignItems: 'flex-start',
-                    padding: '10px 0',
-                    borderBottom: i < sorted.length - 1 ? '1px solid #EEEEEE' : 'none',
-                  }}
-                >
-                  <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, color: '#444444', minWidth: 20, flexShrink: 0, paddingTop: 1 }}>
-                    {i + 1}
-                  </span>
+                <div key={m.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderBottom: i < sorted.length - 1 ? '1px solid rgba(0,0,0,0.10)' : 'none' }}>
+                  <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, color: '#1A1A1A', minWidth: 20, flexShrink: 0, paddingTop: 1 }}>{i + 1}</span>
                   <div>
                     <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.4 }}>{m.title}</p>
-                    {m.note && (
-                      <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', lineHeight: 1.5, marginTop: 2, whiteSpace: 'pre-wrap' }}>{m.note}</p>
-                    )}
+                    {m.note && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', lineHeight: 1.5, marginTop: 2, whiteSpace: 'pre-wrap' }}>{m.note}</p>}
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Reflection fields */}
           {hasReflection && (
-            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #EEEEEE' }}>
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.10)' }}>
               {[
                 { field: mapContent.themes, label: 'THEMES THAT STOOD OUT' },
                 { field: mapContent.surprises, label: 'SURPRISES OR REALIZATIONS' },
@@ -344,7 +454,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, filena
               ].map(({ field, label }) =>
                 field ? (
                   <div key={label} style={{ marginBottom: 20 }}>
-                    <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#888888', textTransform: 'uppercase' as const, marginBottom: 4 }}>
+                    <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 4 }}>
                       {label}
                     </p>
                     <p style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{field}</p>
@@ -362,7 +472,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, filena
 }
 
 // ---------------------------------------------------------------------------
-// Document export
+// Document export router
 // ---------------------------------------------------------------------------
 
 function DocumentExportPage({ id, entry, createdDate, displayTitle, filename }: {
@@ -378,8 +488,93 @@ function DocumentExportPage({ id, entry, createdDate, displayTitle, filename }: 
   if (entry.document_type === 'keepsake_inventory') {
     return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
   }
+  if (entry.document_type === 'financial_information') {
+    return <FinancialExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  }
+  if (entry.document_type === 'personal_admin_info') {
+    return <PersonalAdminExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  }
+  if (entry.document_type === 'devices_and_accounts') {
+    return <DevicesAccountsExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  }
+  if (entry.document_type === 'advance_directive_supplement') {
+    return <AdvanceDirectiveExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  }
   return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
 }
+
+// ---------------------------------------------------------------------------
+// Advance Directive / Your Wishes
+// ---------------------------------------------------------------------------
+
+const AD_FIELDS: { key: string; label: string }[] = [
+  { key: 'perfectDeath', label: 'My perfect death would involve:' },
+  { key: 'whatMatters',  label: 'At the end of my life, this is what matters most:' },
+  { key: 'values',       label: 'My most important personal values:' },
+  { key: 'unacceptable', label: 'What would make prolonging life unacceptable for me:' },
+  { key: 'worries',      label: 'When I think about death, this is what I worry about:' },
+  { key: 'caregiver',    label: 'What I want my caregiver/care team to know:' },
+]
+
+function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, filename }: {
+  id: string
+  entry: EntryRow
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+}) {
+  const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, string | undefined>
+  const fields = AD_FIELDS.filter(f => c[f.key]?.trim()).map(f => ({ label: f.label, value: c[f.key]! }))
+
+  const AD_INTRO = 'This document helps you express your values, preferences, and what matters to you in your care. It is not a legal directive, but can be used alongside one to provide important context.'
+
+  const pdfData: PDFData = { kind: 'generic', displayTitle, createdDate, filename, fields, intro: AD_INTRO }
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
+          <BackAndExport id={id} pdfData={pdfData} />
+          <ExportHeader title={displayTitle} />
+
+          <div style={{ marginBottom: 16 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
+              This is a record of your responses at the time of your last save. It is not a legal document.
+            </p>
+          </div>
+          <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
+            {AD_INTRO}
+          </p>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 28 }} />
+
+          {fields.length === 0 ? (
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B' }}>No content saved yet.</p>
+          ) : (
+            <div>
+              {fields.map(({ label, value }, i) => (
+                <div key={label} style={{ marginBottom: i < fields.length - 1 ? 28 : 0 }}>
+                  <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 4 }}>
+                    {label}
+                  </p>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Generic document
+// ---------------------------------------------------------------------------
 
 function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filename }: {
   id: string
@@ -389,45 +584,43 @@ function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filen
   filename: string
 }) {
   const content = entry.content
-  const fields = (content && typeof content === 'object'
+  const rawFields = (content && typeof content === 'object'
     ? Object.entries(content as Record<string, unknown>)
         .filter(([, v]) => typeof v === 'string' && (v as string).trim().length > 0) as [string, string][]
     : [])
+
+  const pdfData: PDFData = {
+    kind: 'generic',
+    displayTitle,
+    createdDate,
+    filename,
+    fields: rawFields.map(([key, value]) => ({ label: camelCaseToLabel(key), value })),
+  }
 
   return (
     <>
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-
-          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
-              ← Back to snapshot
-            </a>
-            <PrintButton filename={filename} />
-          </div>
-
+          <BackAndExport id={id} pdfData={pdfData} />
           <ExportHeader title={displayTitle} />
 
-          {/* Metadata */}
           <div style={{ marginBottom: 20 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
-            {createdDate && (
-              <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>Last saved {createdDate}</p>
-            )}
-            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
               This is a record of your responses at the time of your last save. It is not a legal document.
             </p>
           </div>
-          <div style={{ height: 1, background: '#DDDDDD', marginBottom: 28 }} />
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 28 }} />
 
-          {fields.length === 0 ? (
-            <p style={{ fontFamily: hv, fontSize: 13, color: '#999' }}>No content saved yet.</p>
+          {rawFields.length === 0 ? (
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B' }}>No content saved yet.</p>
           ) : (
             <div>
-              {fields.map(([key, value], i) => (
-                <div key={key} style={{ marginBottom: i < fields.length - 1 ? 24 : 0 }}>
-                  <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#888888', textTransform: 'uppercase' as const, marginBottom: 5 }}>
+              {rawFields.map(([key, value], i) => (
+                <div key={key} style={{ marginBottom: i < rawFields.length - 1 ? 24 : 0 }}>
+                  <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 5 }}>
                     {camelCaseToLabel(key)}
                   </p>
                   <p style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</p>
@@ -443,6 +636,75 @@ function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filen
   )
 }
 
+// ---------------------------------------------------------------------------
+// Important Contacts
+// ---------------------------------------------------------------------------
+
+function buildContactsPDFData(
+  entry: EntryRow,
+  createdDate: string | null,
+  displayTitle: string,
+  filename: string,
+): PDFData {
+  const content = entry.content as Record<string, unknown> | null
+  const sections: { label: string; contacts: PDFContactEntry[] }[] = []
+
+  if (content) {
+    const isNewFormat = Array.isArray(content.healthcare) || Array.isArray(content.legal) || Array.isArray(content.relatives) || Array.isArray(content.friends)
+
+    if (isNewFormat) {
+      const sectionDefs = [
+        { key: 'healthcare', label: 'DOCTORS & HEALTHCARE' },
+        { key: 'legal',      label: 'LEGAL & DECISION MAKERS' },
+        { key: 'relatives',  label: 'RELATIVES' },
+        { key: 'friends',    label: 'FRIENDS & SUPPORT' },
+        { key: 'spiritual',  label: 'SPIRITUAL / RELIGIOUS' },
+        { key: 'financial',  label: 'FINANCIAL & PROFESSIONAL' },
+        { key: 'other',      label: 'OTHER CONTACTS' },
+      ]
+      for (const { key, label } of sectionDefs) {
+        const entries = ((content[key] as NewContact[]) ?? [])
+          .filter(c => c.name?.trim() || c.phone?.trim() || c.email?.trim())
+        if (entries.length > 0) {
+          sections.push({
+            label,
+            contacts: entries.map(c => ({
+              name: c.name,
+              role: c.role?.trim() || undefined,
+              phone: c.phone?.trim() || undefined,
+              email: c.email?.trim() || undefined,
+              address: c.address?.trim() || undefined,
+            })),
+          })
+        }
+      }
+    } else {
+      const oldContent = content as Record<string, ContactFields>
+      const groupDefs = [
+        { label: 'DOCTORS',                    keys: ['doctor1', 'doctor2', 'doctor3', 'doctor4'] },
+        { label: 'ATTORNEYS / ACCOUNTANTS',     keys: ['attorney1', 'attorney2', 'attorney3', 'attorney4'] },
+        { label: 'FAMILY & EMERGENCY CONTACTS', keys: ['relative1', 'relative2', 'relative3', 'relative4'] },
+        { label: 'FRIENDS',                     keys: ['friend1', 'friend2', 'friend3', 'friend4'] },
+        { label: 'OTHERS',                      keys: ['other1', 'other2', 'other3', 'other4'] },
+      ]
+      for (const { label, keys } of groupDefs) {
+        const contacts = keys
+          .map(k => oldContent[k])
+          .filter((c): c is ContactFields => !!(c && c.name?.trim()))
+          .map(c => ({
+            name: c.name,
+            phone: c.phone?.trim() || undefined,
+            email: c.email?.trim() || undefined,
+            address: c.address?.trim() || undefined,
+          }))
+        if (contacts.length > 0) sections.push({ label, contacts })
+      }
+    }
+  }
+
+  return { kind: 'important_contacts', displayTitle, createdDate, filename, sections }
+}
+
 function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, filename }: {
   id: string
   entry: EntryRow
@@ -450,71 +712,47 @@ function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, fil
   displayTitle: string
   filename: string
 }) {
-  const content = entry.content as Record<string, ContactFields> | null
-  const groups = [
-    { key: 'doctor',   label: 'DOCTORS',                    keys: ['doctor1', 'doctor2', 'doctor3', 'doctor4'] },
-    { key: 'attorney', label: 'ATTORNEYS / ACCOUNTANTS',     keys: ['attorney1', 'attorney2', 'attorney3', 'attorney4'] },
-    { key: 'relative', label: 'FAMILY & EMERGENCY CONTACTS', keys: ['relative1', 'relative2', 'relative3', 'relative4'] },
-    { key: 'friend',   label: 'FRIENDS',                     keys: ['friend1', 'friend2', 'friend3', 'friend4'] },
-    { key: 'other',    label: 'OTHERS',                      keys: ['other1', 'other2', 'other3', 'other4'] },
-  ]
+  const pdfData = buildContactsPDFData(entry, createdDate, displayTitle, filename)
+  const content = entry.content as Record<string, unknown> | null
+  const isNewFormat = !!(content && (Array.isArray(content.healthcare) || Array.isArray(content.legal) || Array.isArray(content.relatives) || Array.isArray(content.friends)))
 
-  let renderedGroups = 0
+  // Preview rendering
+  const previewSections = pdfData.kind === 'important_contacts' ? pdfData.sections : []
+  let renderedCount = 0
 
   return (
     <>
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-
-          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
-              ← Back to snapshot
-            </a>
-            <PrintButton filename={filename} />
-          </div>
-
+          <BackAndExport id={id} pdfData={pdfData} />
           <ExportHeader title={displayTitle} />
 
           <div style={{ marginBottom: 20 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
-            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>Last saved {createdDate}</p>}
-            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
               This is a record of your responses at the time of your last save. It is not a legal document.
             </p>
           </div>
-          <div style={{ height: 1, background: '#DDDDDD', marginBottom: 28 }} />
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 28 }} />
 
-          {content && groups.map((group) => {
-            const filled = group.keys
-              .map((k) => content[k])
-              .filter((c): c is ContactFields => !!(c && c.name?.trim()))
-            if (filled.length === 0) return null
-            const isFirst = renderedGroups === 0
-            renderedGroups++
+          {previewSections.map(({ label, contacts }) => {
+            const isFirst = renderedCount === 0
+            renderedCount++
             return (
-              <div key={group.key}>
-                <p style={{
-                  fontFamily: hv,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.04em',
-                  color: '#444444',
-                  textTransform: 'uppercase' as const,
-                  borderBottom: '0.5px solid #DDDDDD',
-                  paddingBottom: 6,
-                  marginBottom: 12,
-                  marginTop: isFirst ? 0 : 24,
-                }}>
-                  {group.label}
+              <div key={label}>
+                <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: '#444444', textTransform: 'uppercase' as const, borderBottom: '0.5px solid rgba(0,0,0,0.13)', paddingBottom: 6, marginBottom: 10, marginTop: isFirst ? 0 : 24 }}>
+                  {label}
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 8 }}>
-                  {filled.map((contact, ci) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 8 }}>
+                  {contacts.map((c, ci) => (
                     <div key={ci}>
-                      <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A' }}>{contact.name}</p>
-                      {contact.phone && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666' }}>{contact.phone}</p>}
-                      {contact.email && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666' }}>{contact.email}</p>}
-                      {contact.address && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666' }}>{contact.address}</p>}
+                      <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#1A1A1A', marginBottom: 2, lineHeight: 1.3 }}>{c.name}</p>
+                      {c.role && <p style={{ fontFamily: hv, fontSize: 12, color: '#4A4A4A', lineHeight: 1.4, marginBottom: 4 }}>{c.role}</p>}
+                      {c.phone && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', lineHeight: 1.4, marginBottom: 1 }}>{c.phone}</p>}
+                      {c.email && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', lineHeight: 1.4, marginBottom: 1 }}>{c.email}</p>}
+                      {c.address && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{c.address}</p>}
                     </div>
                   ))}
                 </div>
@@ -529,6 +767,10 @@ function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, fil
   )
 }
 
+// ---------------------------------------------------------------------------
+// Keepsake Inventory
+// ---------------------------------------------------------------------------
+
 function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, filename }: {
   id: string
   entry: EntryRow
@@ -539,56 +781,51 @@ function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, fil
   const content = entry.content as { entries?: KeepsakeItem[] } | null
   const items = content?.entries?.filter((e) => e.object?.trim()) ?? []
 
+  const pdfData: PDFData = {
+    kind: 'keepsake_inventory',
+    displayTitle,
+    createdDate,
+    filename,
+    items: items.map(item => ({
+      object: item.object,
+      recipient: item.recipient?.trim() || undefined,
+      meaning: item.meaning?.trim() || undefined,
+    })),
+  }
+
   return (
     <>
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-
-          <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
-            <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#999', textDecoration: 'none' }}>
-              ← Back to snapshot
-            </a>
-            <PrintButton filename={filename} />
-          </div>
-
+          <BackAndExport id={id} pdfData={pdfData} />
           <ExportHeader title={displayTitle} />
 
           <div style={{ marginBottom: 20 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
-            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#888888' }}>Last saved {createdDate}</p>}
-            <p style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', marginTop: 6, lineHeight: 1.5 }}>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
               This is a record of your responses at the time of your last save. It is not a legal document.
             </p>
           </div>
-          <div style={{ height: 1, background: '#DDDDDD', marginBottom: 28 }} />
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 28 }} />
 
           {items.length === 0 ? (
-            <p style={{ fontFamily: hv, fontSize: 13, color: '#999' }}>No keepsakes saved yet.</p>
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B' }}>No keepsakes saved yet.</p>
           ) : (
             <div>
               {items.map((item, i) => (
-                <div
-                  key={item.id}
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    alignItems: 'flex-start',
-                    padding: '16px 0',
-                    borderBottom: i < items.length - 1 ? '0.5px solid #EEEEEE' : 'none',
-                  }}
-                >
-                  <span style={{ fontFamily: hv, fontSize: 11, color: '#AAAAAA', minWidth: 18, flexShrink: 0, paddingTop: 1 }}>{i + 1}</span>
+                <div key={item.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '13px 0', borderBottom: i < items.length - 1 ? '0.5px solid rgba(0,0,0,0.10)' : 'none' }}>
+                  <span style={{ fontFamily: hv, fontSize: 10, color: 'rgba(0,0,0,0.22)', minWidth: 18, flexShrink: 0, paddingTop: 2 }}>{i + 1}</span>
                   <div>
-                    <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A' }}>{item.object}</p>
+                    <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#1A1A1A', marginBottom: 3, lineHeight: 1.3 }}>{item.object}</p>
                     {item.recipient?.trim() && (
-                      <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', marginTop: 2 }}>For: {item.recipient}</p>
-                    )}
-                    {item.meaning?.trim() && (
-                      <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', marginTop: 4, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
-                        {item.meaning}
+                      <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.4, marginBottom: 2 }}>
+                        <span style={{ color: '#9A9A9A' }}>For </span>
+                        <span style={{ color: '#3A3A3A' }}>{item.recipient}</span>
                       </p>
                     )}
+                    {item.meaning?.trim() && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', marginTop: 4, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{item.meaning}</p>}
                   </div>
                 </div>
               ))}
@@ -645,8 +882,9 @@ function getDisplayTitle(entry: EntryRow): string {
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'keepsake_inventory') return 'Keepsake Inventory'
+  if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
   if (entry.activity === 'values_ranking') return 'Values Ranking'
+  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
   if (entry.activity === 'legacy_map') return 'Legacy Map'
   if (entry.title?.trim()) return entry.title.trim()
   return 'Untitled'
@@ -663,6 +901,7 @@ function getExportFilename(entry: EntryRow): string {
   if (entry.document_type === 'devices_and_accounts') return `nightside-devices-and-accounts-${date}`
   if (entry.document_type === 'keepsake_inventory') return `nightside-keepsake-inventory-${date}`
   if (entry.activity === 'values_ranking') return `nightside-values-ranking-${date}`
+  if (entry.activity === 'fears_ranking') return `nightside-fears-ranking-${date}`
   if (entry.activity === 'legacy_map') return `nightside-legacy-map-${date}`
   return `nightside-export-${date}`
 }

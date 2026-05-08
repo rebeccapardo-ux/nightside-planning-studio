@@ -23,7 +23,6 @@ export default async function LearnAreaPage({ params }: LearnAreaPageProps) {
           theme="navy"
           items={[
             { label: 'Learn', href: '/app/learn' },
-            { label: 'Areas of Planning', href: '/app/learn/areas' },
             { label: area.title },
           ]}
         />

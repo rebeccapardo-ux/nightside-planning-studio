@@ -273,7 +273,7 @@ function ReflectPromptsInner() {
         <Breadcrumbs
           theme="light"
           items={[
-            { label: 'Reflect', href: '/app/reflect' },
+            { label: 'Reflect', href: '/app/explore' },
             { label: 'Reflection Prompts', href: '/app/reflect' },
             { label: currentPrompt.crumb },
           ]}
@@ -312,14 +312,14 @@ function ReflectPromptsInner() {
                 const text = texts[currentPrompt.id] || ''
                 if (text.trim()) saveText(currentPrompt.id, text, currentPrompt.label)
               }}
-              placeholder="Write something down if you want…"
+              placeholder="Capture anything that comes up…"
               style={{
                 display: 'block',
                 width: '100%',
-                padding: '14px 16px',
+                padding: '12px',
                 borderRadius: '10px',
-                border: inputFocused ? '1px solid rgba(187,171,244,0.7)' : '1px solid rgba(255,255,255,0.1)',
-                background: '#F8F4EB',
+                border: inputFocused ? '1px solid #2C3777' : '1px solid #2C3777',
+                background: '#FFFFFF',
                 color: '#130426',
                 fontFamily: fontHelvetica,
                 fontSize: '15px',
@@ -332,12 +332,12 @@ function ReflectPromptsInner() {
             />
 
             {/* Save status */}
-            <p style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: '6px 0 0 0', minHeight: '18px' }}>
+            <p style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)', margin: '6px 0 0 0', minHeight: '18px' }}>
               {saveLabel ?? ''}
             </p>
 
             {/* Voice note */}
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ marginTop: '10px' }}>
               {voiceSaveMode ? (
                 <VoiceNoteButton
                   saveMode={voiceSaveMode}
@@ -356,27 +356,32 @@ function ReflectPromptsInner() {
                   }}
                   disabled={preparingVoice}
                   style={{
-                    fontFamily: fontHelvetica,
-                    fontSize: '13px',
-                    color: preparingVoice ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.7)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: preparingVoice ? 'default' : 'pointer',
-                    padding: 0,
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: '7px',
+                    gap: 10,
+                    width: '100%',
+                    padding: '11px 16px',
+                    borderRadius: 10,
+                    cursor: preparingVoice ? 'default' : 'pointer',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1.5px solid rgba(255,255,255,0.22)',
+                    boxSizing: 'border-box' as const,
+                    opacity: preparingVoice ? 0.6 : 1,
+                    transition: 'opacity 0.15s ease',
                   }}
                 >
-                  {preparingVoice ? 'Preparing…' : (
+                  {preparingVoice ? (
+                    <span style={{ fontFamily: fontHelvetica, fontSize: 14, fontWeight: 700, color: '#ffffff' }}>Preparing…</span>
+                  ) : (
                     <>
-                      <svg width="14" height="18" viewBox="0 0 14 18" fill="none" aria-hidden>
-                        <rect x="3" y="0.5" width="8" height="11" rx="4" fill="currentColor" />
-                        <path d="M1 9c0 3.31 2.69 6 6 6s6-2.69 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
-                        <line x1="7" y1="15" x2="7" y2="17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        <line x1="4" y1="17.5" x2="10" y2="17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                        <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="rgba(255,255,255,0.9)" />
+                        <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                        <line x1="6" y1="13" x2="6" y2="15.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" />
+                        <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" />
                       </svg>
-                      {hasVoiceNote ? 'Record another voice response' : 'Record a voice response instead'}
+                      <span style={{ fontFamily: fontHelvetica, fontSize: 14, fontWeight: 700, color: '#ffffff' }}>Record a voice note</span>
+                      <span style={{ fontFamily: fontHelvetica, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.25)' }}>auto-transcribed</span>
                     </>
                   )}
                 </button>
@@ -389,13 +394,13 @@ function ReflectPromptsInner() {
                 onClick={goToNext}
                 style={{ background: '#F29836', color: '#130426', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
               >
-                Next →
+                Next card →
               </button>
               <button
-                onClick={goToPrevious}
+                onClick={() => router.push('/app/reflect')}
                 style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
               >
-                Back
+                Back to deck
               </button>
             </div>
 

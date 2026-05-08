@@ -34,19 +34,19 @@ const CARD_STYLES = [
 
 const ALS_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'ventilator': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#1A1A1A', bodyColor: 'rgba(26,26,26,0.72)',
-    ctaBg: '#130426', ctaColor: '#F8F4EB', hoverBorder: '2px solid #2C3777',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'palliative-care': {
-    bg: '#DB5835', border: 'none',
-    titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.82)',
-    ctaBg: '#F8F4EB', ctaColor: '#1A1A1A', hoverBorder: '2px solid #F8F4EB',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'non-invasive-support': {
-    bg: '#2C3777', border: 'none',
-    titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.78)',
-    ctaBg: '#F8F4EB', ctaColor: '#130426', hoverBorder: '2px solid #BBABF4',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
 }
 
@@ -62,14 +62,14 @@ const ALS_CONSEQUENCE_PREVIEWS: Record<string, string> = {
 
 const CPR_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'full-resuscitation': {
-    bg: '#2C3777', border: 'none',
-    titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.78)',
-    ctaBg: '#F8F4EB', ctaColor: '#130426', hoverBorder: '2px solid #BBABF4',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'limited-interventions': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#1A1A1A', bodyColor: 'rgba(26,26,26,0.72)',
-    ctaBg: '#130426', ctaColor: '#F8F4EB', hoverBorder: '2px solid #2C3777',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
 }
 
@@ -153,38 +153,103 @@ export default function ScenarioNavigatorPage() {
 // SelectionView
 // ---------------------------------------------------------------------------
 
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
 function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) => void }) {
+  const [tipsOpen, setTipsOpen] = useState(false)
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-16">
-      <div style={{ marginBottom: 32 }}>
-        <Breadcrumbs
-          theme="navy"
-          items={[
-            { label: 'Reflect', href: '/app/reflect' },
-            { label: 'Scenario Navigator' },
-          ]}
-        />
-      </div>
-      <div className="mb-12">
-        <h1 className="ns-title-activity text-[#f8f4eb]">Scenario Navigator</h1>
-        <p className="ns-lead-activity text-[#f8f4eb]" style={{ marginTop: '12px' }}>
-          Work through realistic situations to see how your values and preferences might apply in practice. Explore any path — nothing locks you in.
+    <div className="min-h-screen bg-[#2f3f8f] text-white">
+
+      {/* Midnight banner — full width */}
+      <div style={{ background: '#130426', padding: '64px 32px 60px 96px' }}>
+        <div style={{ marginBottom: 24 }}>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Scenario Navigator' },
+            ]}
+          />
+        </div>
+        <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
+          Scenario Navigator
+        </h1>
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+          Work through realistic situations to explore how different decisions might feel in practice.
         </p>
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+          Comparing different paths can help clarify what matters most to you, especially when tradeoffs become more concrete.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
+          {['Choose any scenario to start', 'Explore different paths to compare outcomes', 'Notes save to your plan'].map((text) => (
+            <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+              {text}
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={() => setTipsOpen(true)}
+            style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+          >
+            More tips ›
+          </button>
+        </div>
       </div>
-      <div className="grid gap-6 md:grid-cols-2">
-        {SCENARIOS.map((scenario, i) => {
-          const style = CARD_STYLES[i % CARD_STYLES.length]
-          return (
-            <button key={scenario.id} type="button" onClick={() => onSelectScenario(scenario.id)}
-              className={`rounded-2xl px-8 py-8 text-left transition hover:opacity-90 ${style.bg}`}
-            >
-              <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{scenario.title}</h2>
-              <p className={`leading-relaxed text-base mb-6 ${style.text}`}>{scenario.tileOverview}</p>
-              <span className={`inline-block text-sm font-semibold rounded-full px-5 py-2 ${style.pill}`}>Explore →</span>
-            </button>
-          )
-        })}
+
+      {/* Tips modal */}
+      {tipsOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using this activity</h2>
+              <button
+                onClick={() => setTipsOpen(false)}
+                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ fontFamily: hv }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                Different paths may feel emotionally, practically, or ethically difficult in different ways. Pay attention to moments that feel surprising, uncomfortable, reassuring, or especially important to you.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                You may notice that your reactions are shaped by personal experiences, caregiving roles, medical situations you've witnessed, cultural expectations, or conversations you've had with others over time.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                Try exploring more than one path within the same scenario to compare how different outcomes feel.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+                This activity can also be useful to do with a partner, family member, or substitute decision maker to surface differences in assumptions, preferences, or expectations.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scenario cards grid */}
+      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
+        <div className="grid gap-6 md:grid-cols-2" style={{ maxWidth: 900, marginTop: 40, marginLeft: 'auto', marginRight: 'auto' }}>
+          {SCENARIOS.map((scenario, i) => {
+            const style = scenario.id === 'cognitive-decline'
+              ? { bg: 'bg-[#DB5835]', text: 'text-[#ffffff]', pill: 'bg-[#f8f4eb] text-[#130426]' }
+              : CARD_STYLES[i % CARD_STYLES.length]
+            return (
+              <button key={scenario.id} type="button" onClick={() => onSelectScenario(scenario.id)}
+                className={`rounded-2xl px-8 py-8 text-left transition hover:opacity-90 ${style.bg}`}
+              >
+                <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{scenario.title}</h2>
+                <p className={`leading-relaxed text-base mb-6 ${style.text}`}>{scenario.tileOverview}</p>
+                <span className={`inline-block text-sm font-semibold rounded-full px-5 py-2 ${style.pill}`}>Explore →</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
+
     </div>
   )
 }
@@ -220,7 +285,7 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Reflect', href: '/app/reflect' },
+            { label: 'Reflect', href: '/app/explore' },
             { label: 'Scenario Navigator', onClick: onBack },
             { label: scenario.title },
           ]}
@@ -254,19 +319,19 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
 
 const PANCREATIC_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'aggressive-treatment': {
-    bg: '#2C3777', border: 'none',
-    titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.78)',
-    ctaBg: '#F8F4EB', ctaColor: '#130426', hoverBorder: '2px solid #BBABF4',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'comfort-care': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#1A1A1A', bodyColor: 'rgba(26,26,26,0.72)',
-    ctaBg: '#130426', ctaColor: '#F8F4EB', hoverBorder: '2px solid #2C3777',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'clinical-trial': {
-    bg: '#F29836', border: 'none',
-    titleColor: '#1A1A1A', bodyColor: 'rgba(26,26,26,0.72)',
-    ctaBg: '#130426', ctaColor: '#F8F4EB', hoverBorder: '2px solid #DB5835',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
 }
 
@@ -288,13 +353,13 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
       {/* Hero band */}
-      <div style={{ background: '#130426', padding: '56px 24px' }}>
+      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ marginBottom: 28 }}>
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/reflect' },
+                { label: 'Reflect', href: '/app/explore' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -311,17 +376,21 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Editorial description */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 0' }}>
-        {scenario.fullOverview.split('\n\n').map((para, i) => (
-          <p key={i} style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-            {para}
-          </p>
-        ))}
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          You have been living with Stage IV pancreatic cancer, which has spread to other organs. After several rounds of chemotherapy, your health has significantly declined. You can no longer make or communicate decisions about your care.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          Your medical team has told your substitute decision-maker that further treatment is unlikely to cure the cancer or meaningfully extend your life, but options remain: continuing aggressive treatment, shifting to comfort-focused care, or enrolling in a clinical trial that may offer experimental options — each with different implications for how you spend your remaining time.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
+        </p>
       </div>
 
       {/* Choice section */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 80px' }}>
-        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#1A1A1A', marginTop: 64, marginBottom: 28 }}>
-          Choose a path to explore
+        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
+          Choose a path to explore:
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
           className="!grid-cols-1 sm:!grid-cols-3">
@@ -398,7 +467,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/reflect' },
+              { label: 'Reflect', href: '/app/explore' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -483,12 +552,12 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write anything that comes up for you…"
+                placeholder="Capture anything that comes up…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid rgba(26,26,26,0.16)', borderRadius: 12,
-                  padding: 16, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
+                  border: '1px solid #2C3777', borderRadius: 12,
+                  padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
@@ -497,7 +566,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
               <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
                 {noteSaved ? 'Saved' : ''}
               </p>
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 10 }}>
                 {showVoice ? (
                   <VoiceNoteButton
                     saveMode={{ kind: 'freeform' }}
@@ -510,15 +579,27 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                   <button
                     type="button"
                     onClick={() => setShowVoice(true)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '11px 16px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      background: 'rgba(44,55,119,0.06)',
+                      border: '1.5px solid rgba(44,55,119,0.2)',
+                      boxSizing: 'border-box' as const,
+                    }}
                   >
-                    <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
-                    Record a voice response instead
+                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
                   </button>
                 )}
               </div>
@@ -561,19 +642,17 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
                   Additional resources
                 </h3>
-                <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(26,26,26,0.75)', flex: 1, marginBottom: 0 }}>
-                  Guidance and clinical information for this situation.
-                </p>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
                     style={{
-                      display: 'inline-flex', alignItems: 'center', height: 48,
+                      display: 'inline-flex', alignItems: 'center',
+                      paddingTop: 12, paddingBottom: 12,
                       background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
-                      width: 'fit-content',
+                      alignSelf: 'flex-start',
                     }}>
-                    View resource →
+                    {r.label} →
                   </a>
                 ) : (
                   <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
@@ -604,19 +683,19 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
 const COGNITIVE_DECLINE_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'aggressive-treatment': {
-    bg: '#2C3777', border: 'none',
-    titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.78)',
-    ctaBg: '#F8F4EB', ctaColor: '#130426', hoverBorder: '2px solid #BBABF4',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'comfort-care': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#1A1A1A', bodyColor: 'rgba(26,26,26,0.72)',
-    ctaBg: '#130426', ctaColor: '#F8F4EB', hoverBorder: '2px solid #2C3777',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
   'long-term-care': {
-    bg: '#DB5835', border: 'none',
-    titleColor: '#FFFFFF', bodyColor: 'rgba(255,255,255,0.82)',
-    ctaBg: '#F8F4EB', ctaColor: '#1A1A1A', hoverBorder: '2px solid #F8F4EB',
+    bg: 'transparent', border: '1.5px solid #130426',
+    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
   },
 }
 
@@ -638,22 +717,22 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
       {/* Hero band */}
-      <div style={{ background: '#F29836', padding: '56px 24px' }}>
+      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ marginBottom: 28 }}>
             <Breadcrumbs
-              theme="light"
+              theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/reflect' },
+                { label: 'Reflect', href: '/app/explore' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
             />
           </div>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.72)', marginBottom: 16 }}>
+          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
             Scenario
           </p>
-          <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
+          <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#FFFFFF', margin: 0 }}>
             {scenario.title}
           </h1>
         </div>
@@ -661,17 +740,21 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Editorial description */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 0' }}>
-        {scenario.fullOverview.split('\n\n').map((para, i) => (
-          <p key={i} style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-            {para}
-          </p>
-        ))}
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          You were diagnosed with Alzheimer&apos;s disease several years ago. Your condition has progressed to the point where you can no longer recognize close family members, communicate your needs, or make decisions about your own care. You need assistance with eating, bathing, and moving around. You are physically stable for now, but new health issues — infections, falls, difficulty swallowing — are increasingly likely.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          Your substitute decision-maker must now make ongoing decisions about how aggressively to treat each new medical issue as it arises, and where you will receive care.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
+        </p>
       </div>
 
       {/* Choice section */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 80px' }}>
-        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#1A1A1A', marginTop: 64, marginBottom: 28 }}>
-          Choose a path to explore
+        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
+          Choose a path to explore:
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
           className="!grid-cols-1 sm:!grid-cols-3">
@@ -748,7 +831,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/reflect' },
+              { label: 'Reflect', href: '/app/explore' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -833,12 +916,12 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write anything that comes up for you…"
+                placeholder="Capture anything that comes up…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid rgba(26,26,26,0.16)', borderRadius: 12,
-                  padding: 16, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
+                  border: '1px solid #2C3777', borderRadius: 12,
+                  padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
@@ -847,7 +930,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
               <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
                 {noteSaved ? 'Saved' : ''}
               </p>
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 10 }}>
                 {showVoice ? (
                   <VoiceNoteButton
                     saveMode={{ kind: 'freeform' }}
@@ -860,15 +943,27 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                   <button
                     type="button"
                     onClick={() => setShowVoice(true)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '11px 16px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      background: 'rgba(44,55,119,0.06)',
+                      border: '1.5px solid rgba(44,55,119,0.2)',
+                      boxSizing: 'border-box' as const,
+                    }}
                   >
-                    <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
-                    Record a voice response instead
+                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
                   </button>
                 )}
               </div>
@@ -911,19 +1006,17 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
                   Additional resources
                 </h3>
-                <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(26,26,26,0.75)', flex: 1, marginBottom: 0 }}>
-                  Guidance and clinical information for this situation.
-                </p>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
                     style={{
-                      display: 'inline-flex', alignItems: 'center', height: 48,
+                      display: 'inline-flex', alignItems: 'center',
+                      paddingTop: 12, paddingBottom: 12,
                       background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
-                      width: 'fit-content',
+                      alignSelf: 'flex-start',
                     }}>
-                    View resource →
+                    {r.label} →
                   </a>
                 ) : (
                   <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
@@ -966,13 +1059,13 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
       {/* Hero band */}
-      <div style={{ background: '#DB5835', padding: '56px 24px' }}>
+      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ marginBottom: 28 }}>
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/reflect' },
+                { label: 'Reflect', href: '/app/explore' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -989,17 +1082,21 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Editorial description */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 0' }}>
-        {scenario.fullOverview.split('\n\n').map((para, i) => (
-          <p key={i} style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-            {para}
-          </p>
-        ))}
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          You are generally healthy with no major conditions when you experience a sudden cardiac arrest. You collapse without warning. Emergency responders arrive within minutes.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          They can attempt full resuscitation — chest compressions, electric shocks to restart your heart, a breathing tube, and ICU admission. This is an aggressive intervention. It may save your life, and it carries significant physical risks. Without intervention, you will not survive.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          <strong>If you could not speak for yourself in this moment, what would you want your decision-maker to choose?</strong>
+        </p>
       </div>
 
       {/* Choice section */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 80px' }}>
-        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#1A1A1A', marginTop: 64, marginBottom: 28 }}>
-          Choose a path to explore
+        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
+          Choose a path to explore:
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}
           className="!grid-cols-1 sm:!grid-cols-2">
@@ -1028,7 +1125,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
                 }}
               >
                 <div>
-                  <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 600, lineHeight: 1.35, color: cs.titleColor, margin: 0 }}>
+                  <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 600, lineHeight: 1.35, color: cs.titleColor, margin: 0, whiteSpace: 'pre-line' }}>
                     {choice.label}
                   </p>
                 </div>
@@ -1076,7 +1173,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/reflect' },
+              { label: 'Reflect', href: '/app/explore' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -1161,12 +1258,12 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write anything that comes up for you…"
+                placeholder="Capture anything that comes up…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid rgba(26,26,26,0.16)', borderRadius: 12,
-                  padding: 16, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
+                  border: '1px solid #2C3777', borderRadius: 12,
+                  padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
@@ -1175,7 +1272,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
               <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
                 {noteSaved ? 'Saved' : ''}
               </p>
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 10 }}>
                 {showVoice ? (
                   <VoiceNoteButton
                     saveMode={{ kind: 'freeform' }}
@@ -1188,15 +1285,27 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                   <button
                     type="button"
                     onClick={() => setShowVoice(true)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '11px 16px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      background: 'rgba(44,55,119,0.06)',
+                      border: '1.5px solid rgba(44,55,119,0.2)',
+                      boxSizing: 'border-box' as const,
+                    }}
                   >
-                    <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
-                    Record a voice response instead
+                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
                   </button>
                 )}
               </div>
@@ -1239,19 +1348,17 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
                   Additional resources
                 </h3>
-                <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(26,26,26,0.75)', flex: 1, marginBottom: 0 }}>
-                  Guidance and clinical information for this situation.
-                </p>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
                     style={{
-                      display: 'inline-flex', alignItems: 'center', height: 48,
+                      display: 'inline-flex', alignItems: 'center',
+                      paddingTop: 12, paddingBottom: 12,
                       background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
-                      width: 'fit-content',
+                      alignSelf: 'flex-start',
                     }}>
-                    View resource →
+                    {r.label} →
                   </a>
                 ) : (
                   <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
@@ -1300,7 +1407,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/reflect' },
+                { label: 'Reflect', href: '/app/explore' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -1317,17 +1424,21 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Editorial description */}
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '56px 24px 0' }}>
-        {scenario.fullOverview.split('\n\n').map((para, i) => (
-          <p key={i} style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-            {para}
-          </p>
-        ))}
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          You have been living with ALS for several years. The disease has progressed to the point where you can no longer speak, swallow, or move independently. You rely on a feeding tube for nutrition and need full assistance with daily activities. Your respiratory muscles are weakening; breathing is becoming increasingly difficult, and your medical team has told your substitute decision-maker that you will likely need more breathing support soon.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          You cannot communicate your wishes in this moment. Your substitute decision maker must decide how to proceed, knowing that each path involves a different set of tradeoffs between length of life, comfort, and the level of medical intervention required.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
+          <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
+        </p>
       </div>
 
       {/* Choice section */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 80px' }}>
-        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#1A1A1A', marginTop: 64, marginBottom: 28 }}>
-          Choose a path to explore
+        <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
+          Choose a path to explore:
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
           className="!grid-cols-1 sm:!grid-cols-3">
@@ -1513,7 +1624,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Reflect', href: '/app/reflect' },
+            { label: 'Reflect', href: '/app/explore' },
             { label: 'Scenario Navigator', onClick: onBackToAll },
             { label: scenario.title, onClick: onBackToScenario },
             { label: choice.outcomeTitle ?? choice.label },
@@ -1647,7 +1758,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/reflect' },
+              { label: 'Reflect', href: '/app/explore' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -1739,12 +1850,12 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 value={noteText}
                 onChange={(e) => handleNoteChange(e.target.value)}
                 onBlur={handleNoteBlur}
-                placeholder="Write anything that comes up for you…"
+                placeholder="Capture anything that comes up…"
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid rgba(26,26,26,0.16)', borderRadius: 12,
-                  padding: 16, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
+                  border: '1px solid #2C3777', borderRadius: 12,
+                  padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
@@ -1757,7 +1868,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
               </p>
 
               {/* Voice option */}
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 10 }}>
                 {showVoice ? (
                   <VoiceNoteButton
                     saveMode={{ kind: 'freeform' }}
@@ -1770,15 +1881,27 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                   <button
                     type="button"
                     onClick={() => setShowVoice(true)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '11px 16px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      background: 'rgba(44,55,119,0.06)',
+                      border: '1.5px solid rgba(44,55,119,0.2)',
+                      boxSizing: 'border-box' as const,
+                    }}
                   >
-                    <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
-                    Record a voice response instead
+                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
                   </button>
                 )}
               </div>
@@ -1823,19 +1946,17 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
                   Additional resources
                 </h3>
-                <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(26,26,26,0.75)', flex: 1, marginBottom: 0 }}>
-                  Province-specific guidance and clinical information for this situation.
-                </p>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
                     style={{
-                      display: 'inline-flex', alignItems: 'center', height: 48,
+                      display: 'inline-flex', alignItems: 'center',
+                      paddingTop: 12, paddingBottom: 12,
                       background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
-                      width: 'fit-content',
+                      alignSelf: 'flex-start',
                     }}>
-                    View resource →
+                    {r.label} →
                   </a>
                 ) : (
                   <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import DomainAssigner from '@/app/components/DomainAssigner'
+import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import { deleteNote, updateNote } from '@/lib/notes'
 import type { Container } from '@/lib/notes'
 
@@ -12,6 +13,9 @@ type NoteRow = {
   prompt_context: string | null
   note_mode: string | null
   transcript: string | null
+  audio_url?: string | null
+  duration_seconds?: number | null
+  transcription_status?: 'pending' | 'complete' | 'failed' | null
 }
 
 const STICKY_COLORS = ['#f5f2e3', '#eae7f5', '#f3ede8']
@@ -68,6 +72,57 @@ export default function PlanNotesGrid({
         }}
       >
         {visibleNotes.map((note, idx) => {
+          const isVoice = note.note_mode === 'audio'
+
+          // Voice notes render as a dedicated card with waveform
+          if (isVoice) {
+            const noteObj = {
+              id: note.id,
+              content: note.content ?? '',
+              created_at: '',
+              updated_at: '',
+              note_mode: 'audio' as const,
+              audio_url: note.audio_url ?? null,
+              transcript: note.transcript ?? null,
+              duration_seconds: note.duration_seconds ?? null,
+              transcription_status: note.transcription_status ?? null,
+            }
+            return (
+              <VoiceNoteCard
+                key={note.id}
+                note={noteObj}
+                promptContext={note.origin_type === 'prompt' ? note.prompt_context : null}
+                actions={
+                  <>
+                    <DomainAssigner
+                      itemId={note.id}
+                      itemType="note"
+                      allDomains={allDomains}
+                      initialLinkedDomainIds={[]}
+                      label="Add to"
+                      theme="light"
+                      showCount={false}
+                      buttonVariant="pill"
+                    />
+                    <button
+                      onClick={() => setConfirmDeleteId(note.id)}
+                      style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(0,0,0,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      className="hover:opacity-75 transition-opacity"
+                    >
+                      {confirmDeleteId === note.id ? (
+                        <span style={{ display: 'inline-flex', gap: 6 }}>
+                          <button onClick={(e) => { e.stopPropagation(); confirmDelete(note.id) }} style={{ fontSize: 12, fontWeight: 600, color: '#C0392B', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Confirm</button>
+                          <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }} style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
+                        </span>
+                      ) : 'Delete'}
+                    </button>
+                  </>
+                }
+              />
+            )
+          }
+
+          // Text notes render as sticky squares
           const bg = STICKY_COLORS[idx % STICKY_COLORS.length]
           const displayText = note.content?.trim() || note.transcript?.trim() || null
           const isEditing = editingId === note.id
@@ -204,6 +259,7 @@ export default function PlanNotesGrid({
                         label="Add to"
                         showCount={false}
                         theme="light"
+                        buttonVariant="pill"
                       />
                     </div>
                     <button
@@ -245,7 +301,7 @@ export default function PlanNotesGrid({
           }}
           className="hover:opacity-70 transition-opacity"
         >
-          View all notes →
+          View all notes ({notes.length}) →
         </button>
       )}
     </div>

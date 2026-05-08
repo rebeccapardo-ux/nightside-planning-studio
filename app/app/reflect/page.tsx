@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 const PROMPTS = [
   { id: 'prompt_1',  label: 'What matters most to you right now?' },
@@ -52,7 +53,21 @@ const PROMPTS = [
 const fontHelvetica = "'HelveticaNeue-Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 const fontHelveticaMedium = "'HelveticaNeue-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 
+const REVIEWED_PROMPTS_STORAGE_KEY = 'reflect-reviewed-prompts'
+
 export default function ReflectPage() {
+  const [tipsOpen, setTipsOpen] = useState(false)
+  const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(REVIEWED_PROMPTS_STORAGE_KEY)
+    if (!stored) return
+    try {
+      const parsed: string[] = JSON.parse(stored)
+      setReviewedIds(new Set(parsed))
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     const elements = document.querySelectorAll('.ns-title-wrap')
     if (!elements.length) return
@@ -113,30 +128,85 @@ export default function ReflectPage() {
         }
       `}</style>
 
-      {/* Header */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '72px 24px 0' }}>
-        <h1
-          className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]"
-          style={{ color: '#130426' }}
-        >
+      {/* Midnight banner — full width */}
+      <div style={{ background: '#130426', padding: '64px 32px 60px 96px' }}>
+        <div style={{ marginBottom: 24 }}>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Reflection Prompts' },
+            ]}
+          />
+        </div>
+        <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
           Reflection Prompts
         </h1>
-        <p
-          className="mt-2 max-w-[520px] text-[16px] leading-[1.4] md:text-[17px]"
-          style={{ color: 'rgba(19,4,38,0.78)' }}
-        >
-          These prompts are here to help you think, talk, or reflect. You can start anywhere and come back anytime.
+        <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+          These prompts are designed to help you reflect on what matters most to you. Some focus directly on illness, loss, grief, or end-of-life experiences, while others explore broader questions about relationships, identity, values, routines, and meaning.
         </p>
+        <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+          Together, they help surface the connections between what matters to you in life and what may matter most in times of illness or at the end of life.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
+          {['Explore prompts in any order', 'Capture thoughts, notes, or voice reflections', 'Return to prompts anytime'].map((text) => (
+            <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: fontHelvetica, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+              {text}
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={() => setTipsOpen(true)}
+            style={{ fontFamily: fontHelvetica, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+          >
+            More tips ›
+          </button>
+        </div>
       </div>
 
+      {/* Tips modal */}
+      {tipsOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using these prompts</h2>
+              <button
+                onClick={() => setTipsOpen(false)}
+                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ fontFamily: fontHelvetica }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                Some prompts may feel immediately relevant, while others may not resonate right now. Follow what feels interesting, difficult, surprising, or important to you.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                You may notice connections to personal experiences, relationships, caregiving, loss, or conversations you've had over time.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                You can respond briefly, write at length, record a voice note, discuss prompts with someone else, or revisit them as your thoughts and circumstances change.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+                These prompts can also be meaningful to explore with others. Conversations may deepen understanding, strengthen connection, or surface things that surprise you about each other.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Card grid */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '56px 24px 96px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px 96px' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '24px',
         }}>
-          {PROMPTS.map((prompt) => (
+          {PROMPTS.map((prompt) => {
+            const seen = reviewedIds.has(prompt.id)
+            return (
             <Link
               key={prompt.id}
               href={`/app/reflect/prompts?prompt=${prompt.id}`}
@@ -152,6 +222,7 @@ export default function ReflectPage() {
                 minHeight: '236px',
                 boxSizing: 'border-box',
                 textDecoration: 'none',
+                opacity: seen ? 0.4 : 1,
               }}
             >
               <p style={{
@@ -180,7 +251,8 @@ export default function ReflectPage() {
                 Explore →
               </span>
             </Link>
-          ))}
+            )
+          })}
         </div>
       </div>
 

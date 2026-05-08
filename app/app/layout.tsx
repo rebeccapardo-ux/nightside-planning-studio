@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import GlobalNav from '@/app/components/GlobalNav'
 import FloatingNotepad from '@/app/components/FloatingNotepad'
+import WelcomeModal from '@/app/components/WelcomeModal'
 
 export default async function AppLayout({
   children,
@@ -14,8 +15,10 @@ export default async function AppLayout({
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/auth/signin')
   }
+
+  const hasSeenWelcome = user.user_metadata?.has_seen_welcome === true
 
   return (
     <div className="min-h-screen bg-[#130426]">
@@ -26,6 +29,8 @@ export default async function AppLayout({
       </div>
 
       <main>{children}</main>
+
+      {!hasSeenWelcome && <WelcomeModal />}
     </div>
   )
 }

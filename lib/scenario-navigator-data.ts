@@ -111,7 +111,7 @@ export const SCENARIOS: Scenario[] = [
     tileOverview:
       'You experience a sudden health crisis (cardiac arrest, stroke). Emergency responders arrive and need to know: Should they attempt CPR and full life support?',
     fullOverview:
-      'You experience a sudden health crisis (cardiac arrest, stroke). Emergency responders arrive and need to know: Should they attempt CPR and full life support?',
+      'You experience a sudden health crisis (cardiac arrest, stroke).\n\nEmergency responders arrive and need to know: Should they attempt CPR and full life support?',
     choices: [
       {
         id: 'full-resuscitation',
@@ -137,8 +137,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label:
-              'Heart and Stroke Foundation of Canada – CPR techniques, success rates, and the importance of timely intervention',
+            label: 'Heart & Stroke Canada',
             url: 'https://heartandstroke.ca',
           },
         ],
@@ -162,8 +161,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label:
-              'Canadian Virtual Hospice – Provides information on advance care planning, including the decision-making process around resuscitation and palliative care options',
+            label: 'Canadian Virtual Hospice',
             url: 'https://virtualhospice.ca',
           },
         ],
@@ -202,8 +200,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label:
-              'ALS Society of Canada – detailed information on treatment options, including mechanical ventilation, and their impact on quality of life',
+            label: 'ALS Society of Canada',
             url: 'https://als.ca',
           },
         ],
@@ -230,8 +227,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label:
-              'Canadian Hospice Palliative Care Association – information on hospice services, including the support available for patients with ALS',
+            label: 'Canadian Hospice Palliative Care Association',
             url: 'https://chpca.ca',
           },
         ],
@@ -257,9 +253,7 @@ export const SCENARIOS: Scenario[] = [
           'Would you want to use assistive devices to communicate as long as possible?',
           'At what point would you want to stop interventions and focus solely on comfort?',
         ],
-        // TODO: no resources extracted from this slide — "Next Steps" section present
-        // but contained no text. Check source workbook for omitted resource links.
-        resources: [],
+        resources: [{ label: 'ALS Society of Canada', url: 'https://als.ca' }],
       },
     ],
   },
@@ -298,12 +292,11 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            // No URL present in workbook for this entry
-            label: 'Canadian Cancer Society – advanced cancer treatment options',
+            label: 'Canadian Cancer Society — advanced cancer treatment options',
+            url: 'https://cancer.ca',
           },
           {
-            label:
-              'Pancreatic Cancer Action Network (PANCAN) – information and resources specific to pancreatic cancer',
+            label: 'Pancreatic Cancer Action Network',
             url: 'https://pancan.org',
           },
         ],
@@ -332,12 +325,11 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label: 'Canadian Virtual Hospice - palliative care information and support',
+            label: 'Canadian Virtual Hospice',
             url: 'https://virtualhospice.ca',
           },
           {
-            label:
-              'Canadian Hospice Palliative Care Association – tools and resources for families navigating hospice and palliative care',
+            label: 'Canadian Hospice Palliative Care Association',
             url: 'https://chpca.ca',
           },
         ],
@@ -362,13 +354,8 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label: 'Canadian Cancer Trials – ongoing cancer clinical trials across Canada',
+            label: 'Canadian Cancer Trials',
             url: 'https://canadiancancertrials.ca',
-          },
-          {
-            label:
-              'Canadian Cancer Society – overview of clinical trials and answers to frequently asked questions',
-            url: 'https://cancer.ca',
           },
         ],
       },
@@ -406,8 +393,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label:
-              'Alzheimer Society of Canada – information on how aggressive treatments for other health issues (such as infections, surgeries, or respiratory issues) can affect those with dementia',
+            label: 'Alzheimer Society of Canada',
             url: 'https://alzheimer.ca',
           },
         ],
@@ -438,8 +424,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         resources: [
           {
-            label:
-              'Canadian Hospice Palliative Care Association – resources and tools to support palliative care transitions',
+            label: 'Canadian Hospice Palliative Care Association',
             url: 'https://chpca.ca',
           },
         ],
@@ -466,9 +451,7 @@ export const SCENARIOS: Scenario[] = [
           'How important is it to you to remain in a familiar or comforting environment, even as your needs increase?',
           'What role do you envision for your loved ones in your care if you are placed in a long-term care setting or hospice?',
         ],
-        // TODO: no resources extracted from this slide — "Next Steps" section present
-        // but contained no text. Check source workbook for omitted resource links.
-        resources: [],
+        resources: [{ label: 'Alzheimer Society of Canada — care planning', url: 'https://alzheimer.ca' }],
       },
     ],
   },

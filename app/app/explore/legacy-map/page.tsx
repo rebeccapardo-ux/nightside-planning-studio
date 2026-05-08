@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import VoiceNoteButton from "@/app/components/VoiceNoteButton";
 import Breadcrumbs from "@/app/components/navigation/Breadcrumbs";
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
@@ -41,17 +42,6 @@ const SERPENTINE_D = (() => {
   return `M ${pts.join(" L ")}`;
 })();
 
-// ─── Placeholder ghost moments ────────────────────────────────────────────────
-
-const PLACEHOLDER_MOMENTS = [
-  { id: "ph-1", xPercent: 10 },
-  { id: "ph-2", xPercent: 27 },
-  { id: "ph-3", xPercent: 45 },
-  { id: "ph-4", xPercent: 62 },
-  { id: "ph-5", xPercent: 80 },
-];
-
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type LegacyMoment = {
@@ -81,9 +71,9 @@ type DraftMoment = {
 
 const STORAGE_KEY = "nightside-legacy-map-v4";
 const ENTRY_ID_KEY = "nightside-legacy-map-entry-id";
-const LABEL_OFFSET = 34;       // px from circle center to label edge
-const LABEL_TRUNCATE = 20;     // truncate labels longer than this on map
-const CLOSE_THRESHOLD = 13;    // xPercent difference below which labels may collide
+const LABEL_OFFSET = 34;
+const LABEL_TRUNCATE = 20;
+const CLOSE_THRESHOLD = 13;
 
 function createId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -148,18 +138,30 @@ const DEFAULT_STATE: LegacyMapState = {
 };
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+const apfel = "'Apfel Grotezk', sans-serif";
+
+const TIPS = [
+  'Choose moments that feel meaningful to you, even if they would seem small to someone else',
+  'You might include challenges, relationships, places, achievements, losses, changes, or turning points',
+  'Look for patterns: what keeps showing up across different parts of your life?',
+  'You can use the map to think about stories, values, lessons, or traditions you may want to pass on',
+  'You can revisit this anytime — your map does not need to be finished in one sitting',
+];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function LegacyMapPage() {
+  const router = useRouter();
   const [state, setState] = useState<LegacyMapState>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Auto-save (for drag/moment position changes)
+  const [tipsModalOpen, setTipsModalOpen] = useState(false);
+
+  // Auto-save
   const [dirtyCount, setDirtyCount] = useState(0);
-  const [savedVisible, setSavedVisible] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [statusNow, setStatusNow] = useState(() => Date.now());
   const stateRef = useRef<LegacyMapState>(DEFAULT_STATE);
-  const saveClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   stateRef.current = state;
 
   // Interaction
@@ -175,21 +177,19 @@ export default function LegacyMapPage() {
   const [tooltipId, setTooltipId] = useState<string | null>(null);
   const touchModeRef = useRef(false);
 
-  // Supabase entry ID
+  // Supabase
   const [supabaseEntryId, setSupabaseEntryId] = useState<string | null>(null);
   const supabaseEntryIdRef = useRef<string | null>(null);
   supabaseEntryIdRef.current = supabaseEntryId;
 
-  // Placeholder tracking
-  const [hiddenPlaceholderIds, setHiddenPlaceholderIds] = useState<Set<string>>(new Set());
-  const openedFromPlaceholderIdRef = useRef<string | null>(null);
-
-  // Reflection gate
+  // Reflection
   const [reflectionMounted, setReflectionMounted] = useState(false);
   const [reflectionVisible, setReflectionVisible] = useState(false);
-
-  // Reflection save status
   const [reflectionSaveStatus, setReflectionSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [reflectionSavedShowing, setReflectionSavedShowing] = useState(false);
+  const [reflectionSavedFading, setReflectionSavedFading] = useState(false);
+  const reflectionFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [voiceActive, setVoiceActive] = useState(false);
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const realMoments = useMemo(() => state.moments, [state.moments]);
@@ -229,25 +229,32 @@ export default function LegacyMapPage() {
 
       try {
         const stored = window.localStorage.getItem(ENTRY_ID_KEY);
+        const supabase = createSupabaseBrowserClient();
+        const { data: { user } } = await supabase.auth.getUser();
         if (stored) {
           setSupabaseEntryId(stored);
           supabaseEntryIdRef.current = stored;
-        } else {
-          const supabase = createSupabaseBrowserClient();
-          const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             const { data } = await supabase
               .from("entries")
-              .select("id")
-              .eq("user_id", user.id)
-              .eq("activity", "legacy_map")
-              .order("created_at", { ascending: false })
-              .limit(1);
-            if (data?.[0]?.id) {
-              window.localStorage.setItem(ENTRY_ID_KEY, data[0].id);
-              setSupabaseEntryId(data[0].id);
-              supabaseEntryIdRef.current = data[0].id;
-            }
+              .select("created_at")
+              .eq("id", stored)
+              .single();
+            if (data?.created_at) setLastSavedAt(new Date(data.created_at));
+          }
+        } else if (user) {
+          const { data } = await supabase
+            .from("entries")
+            .select("id, created_at")
+            .eq("user_id", user.id)
+            .eq("activity", "legacy_map")
+            .order("created_at", { ascending: false })
+            .limit(1);
+          if (data?.[0]?.id) {
+            window.localStorage.setItem(ENTRY_ID_KEY, data[0].id);
+            setSupabaseEntryId(data[0].id);
+            supabaseEntryIdRef.current = data[0].id;
+            if (data[0].created_at) setLastSavedAt(new Date(data[0].created_at));
           }
         }
       } catch {
@@ -269,9 +276,7 @@ export default function LegacyMapPage() {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
         setState(toSave);
         stateRef.current = toSave;
-        setSavedVisible(true);
-        if (saveClearRef.current) clearTimeout(saveClearRef.current);
-        saveClearRef.current = setTimeout(() => setSavedVisible(false), 2200);
+        setLastSavedAt(new Date());
       } catch {
         // ignore storage errors
       }
@@ -319,6 +324,12 @@ export default function LegacyMapPage() {
     }
   }, [realMoments.length, reflectionMounted]);
 
+  // Refresh timestamp display every 60s
+  useEffect(() => {
+    if (!lastSavedAt) return;
+    const interval = setInterval(() => setStatusNow(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, [lastSavedAt]);
 
   // ── Drag cleanup ────────────────────────────────────────────────────────────
 
@@ -372,6 +383,7 @@ export default function LegacyMapPage() {
           supabaseEntryIdRef.current = created.id;
         }
       }
+      setLastSavedAt(new Date());
     } catch {
       // silently ignore
     }
@@ -381,7 +393,6 @@ export default function LegacyMapPage() {
     const current = stateRef.current;
     const toSave = { ...current, updatedAt: new Date().toISOString() };
 
-    // Update localStorage
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
       setState(toSave);
@@ -418,6 +429,16 @@ export default function LegacyMapPage() {
       }
 
       setReflectionSaveStatus('saved');
+      setLastSavedAt(new Date());
+
+      // Show fade-out saved indicator
+      setReflectionSavedShowing(true);
+      setReflectionSavedFading(false);
+      if (reflectionFadeTimerRef.current) clearTimeout(reflectionFadeTimerRef.current);
+      reflectionFadeTimerRef.current = setTimeout(() => {
+        setReflectionSavedFading(true);
+        setTimeout(() => setReflectionSavedShowing(false), 400);
+      }, 3000);
     } catch {
       setReflectionSaveStatus('error');
     }
@@ -449,19 +470,17 @@ export default function LegacyMapPage() {
     }
   }
 
-  function getReflectionStatusText(): string {
-    if (reflectionSaveStatus === 'saving') return 'Saving…';
-    if (reflectionSaveStatus === 'error') return "Couldn't save — check your connection";
-    if (reflectionSaveStatus === 'saved') return 'Saved';
-    return '';
+  async function handlePreviewExport() {
+    const id = supabaseEntryIdRef.current;
+    if (!id) return;
+    router.push(`/app/entries/${id}`);
   }
 
   // ── Modal helpers ───────────────────────────────────────────────────────────
 
-  function openCreateModal(xPercent: number, placeholderId?: string) {
+  function openCreateModal(xPercent: number) {
     setSelectedId(null);
     setDraftMoment({ id: null, title: "", note: "", xPercent: clamp(xPercent, 5, 95) });
-    openedFromPlaceholderIdRef.current = placeholderId ?? null;
     setMomentSaveError(false);
     setIsModalOpen(true);
   }
@@ -469,7 +488,6 @@ export default function LegacyMapPage() {
   function openEditModal(moment: LegacyMoment) {
     setSelectedId(moment.id);
     setDraftMoment({ id: moment.id, title: moment.title, note: moment.note, xPercent: moment.xPercent });
-    openedFromPlaceholderIdRef.current = null;
     setTooltipId(null);
     setMomentSaveError(false);
     setIsModalOpen(true);
@@ -479,7 +497,6 @@ export default function LegacyMapPage() {
     setIsModalOpen(false);
     setDraftMoment(null);
     setMomentSaveError(false);
-    openedFromPlaceholderIdRef.current = null;
   }
 
   function handleSaveMoment() {
@@ -504,9 +521,6 @@ export default function LegacyMapPage() {
         { id: nextId, title: cleanTitle, note: draftMoment.note.trim(), xPercent: clamp(draftMoment.xPercent, 5, 95) },
       ];
       nextSelectedId = nextId;
-      if (openedFromPlaceholderIdRef.current) {
-        setHiddenPlaceholderIds((prev) => new Set([...prev, openedFromPlaceholderIdRef.current!]));
-      }
     }
 
     const nextState: LegacyMapState = {
@@ -515,16 +529,12 @@ export default function LegacyMapPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    // Update local state and localStorage immediately
     setState(nextState);
     stateRef.current = nextState;
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState)); } catch { /* ignore */ }
 
     setSelectedId(nextSelectedId);
-
-    // Persist to Supabase immediately (fire-and-forget; errors are silent)
     persistStateToSupabase(nextState);
-
     closeModal();
   }
 
@@ -574,61 +584,125 @@ export default function LegacyMapPage() {
     }));
   }
 
+  const saveStatusText = lastSavedAt
+    ? (() => {
+        const diff = Math.floor((statusNow - lastSavedAt.getTime()) / 1000);
+        if (diff < 60) return 'Saved just now';
+        const mins = Math.floor(diff / 60);
+        if (mins < 60) return `Saved ${mins}m ago`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `Saved ${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        if (days < 7) return `Saved ${days}d ago`;
+        return `Saved ${Math.floor(days / 7)}w ago`;
+      })()
+    : null;
+
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="min-h-screen px-5 py-6 md:px-8 md:py-8 lg:px-10"
-      style={{ backgroundColor: COLORS.light, color: "#1A1A1A" }}
-    >
-      <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="min-h-screen" style={{ background: '#2f3f8f' }}>
 
-        <div style={{ marginBottom: 8 }}>
-          <Breadcrumbs
-            theme="light"
-            items={[
-              { label: 'Reflect', href: '/app/reflect' },
-              { label: 'Legacy Map' },
-            ]}
-          />
+      {/* ── Page header ──────────────────────────────────────────────────────── */}
+      <div style={{ background: '#130426', padding: '64px 148px 60px 96px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+
+        {/* Left: breadcrumbs + title + description + pills */}
+        <div style={{ flex: 1 }}>
+          <div style={{ marginBottom: 24 }}>
+            <Breadcrumbs
+              theme="navy"
+              items={[
+                { label: 'Reflect', href: '/app/explore' },
+                { label: 'Legacy Map' },
+              ]}
+            />
+          </div>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
+            Legacy Map
+          </h1>
+          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+            Map meaningful moments from your life to notice patterns, turning points, and values you may want to carry forward.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
+            {['Add moments', 'Drag to reposition on timeline', 'Edits save automatically'].map((text) => (
+              <span
+                key={text}
+                style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}
+              >
+                {text}
+              </span>
+            ))}
+            <button
+              type="button"
+              onClick={() => setTipsModalOpen(true)}
+              style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0, transition: 'text-decoration 0.15s ease' }}
+              onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
+            >
+              More tips ›
+            </button>
+          </div>
         </div>
 
-        {/* ── Header ─────────────────────────────────────────────────────── */}
-        <section
-          className="rounded-[28px] border p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] md:p-8"
-          style={{
-            background: `linear-gradient(135deg, ${COLORS.night} 0%, ${COLORS.midnight} 100%)`,
-            borderColor: "rgba(187,171,244,0.22)",
-          }}
-        >
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <div className="max-w-3xl">
-              <h1 className="text-3xl font-medium tracking-[-0.02em] md:text-4xl">
-                Legacy Map
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 md:text-base" style={{ color: "rgba(255,255,255,0.78)" }}>
-                Think about 5–10 important moments in your life: experiences that shaped you, challenges, or turning points.
-                They don't have to be dramatic or significant by anyone else's measure.
-              </p>
-              <ul className="mt-3 max-w-2xl space-y-1 text-sm" style={{ color: "rgba(255,255,255,0.68)" }}>
-                <li>Click any circle to add a moment and optional notes</li>
-                <li>Drag moments along the path to reorder them</li>
-                <li>Find your map in <Link href="/app/materials" style={{ color: "rgba(255,255,255,0.88)", textDecoration: "underline" }}>Your Plan</Link> to review and revise</li>
-              </ul>
+        {/* Right: export + saved status (not sticky) */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -32, flexShrink: 0 }}>
+          {supabaseEntryId && (
+            <button
+              type="button"
+              onClick={handlePreviewExport}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836'; }}
+            >
+              <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              Export
+            </button>
+          )}
+          {saveStatusText && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                <circle cx="7" cy="7" r="6" stroke="#ffffff" strokeWidth="1.3" />
+                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontFamily: hv, fontSize: 11, color: '#ffffff', whiteSpace: 'nowrap' }}>{saveStatusText}</span>
             </div>
+          )}
+        </div>
 
-          </div>
-        </section>
+      </div>
 
-        {/* ── Map ────────────────────────────────────────────────────────── */}
+      {/* ── Main content ─────────────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
+
+        {/* ── Map ──────────────────────────────────────────────────────────── */}
         <section
           className="rounded-[28px] border p-4 md:p-6"
           style={{
             backgroundColor: COLORS.light,
             color: COLORS.midnight,
             borderColor: "rgba(44,55,119,0.12)",
+            marginTop: 20,
           }}
         >
+          {/* Add moment button — inside cream panel, centered above canvas */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+            <button
+              type="button"
+              onClick={() => openCreateModal(getNextMomentX(state.moments))}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#2C3777', color: '#ffffff', fontFamily: hv, fontSize: 14, fontWeight: 500, borderRadius: 24, padding: '11px 28px', border: 'none', cursor: 'pointer' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#130426'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#2C3777'; }}
+            >
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                <circle cx="7.5" cy="7.5" r="6.5" stroke="#ffffff" strokeWidth="2" />
+                <path d="M7.5 4.5v6M4.5 7.5h6" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              Add moment
+            </button>
+          </div>
           <div
             ref={pathContainerRef}
             className="relative w-full select-none rounded-[20px] overflow-hidden"
@@ -652,7 +726,7 @@ export default function LegacyMapPage() {
                 <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%"   stopColor={COLORS.dusk}    stopOpacity="0.7" />
                   <stop offset="50%"  stopColor={COLORS.sunrise} stopOpacity="0.8" />
-                  <stop offset="100%"  stopColor={COLORS.sunset}  stopOpacity="0.9" />
+                  <stop offset="100%" stopColor={COLORS.sunset}  stopOpacity="0.9" />
                 </linearGradient>
               </defs>
               <path
@@ -665,72 +739,21 @@ export default function LegacyMapPage() {
               />
             </svg>
 
-            {/* "Birth" label */}
+            {/* Birth label */}
             <div
               className="absolute pointer-events-none select-none"
-              style={{
-                left: "10px",
-                bottom: "44px",
-                color: COLORS.night,
-                opacity: 0.90,
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                backgroundColor: "rgba(44,55,119,0.10)",
-                border: "1px solid rgba(44,55,119,0.22)",
-                borderRadius: "20px",
-                padding: "3px 9px",
-              }}
+              style={{ left: 24, bottom: 16, fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
             >
               Birth
             </div>
 
-            {/* "Now" label */}
+            {/* Now label */}
             <div
               className="absolute pointer-events-none select-none"
-              style={{
-                right: "10px",
-                bottom: "44px",
-                color: COLORS.night,
-                opacity: 0.90,
-                fontSize: "12px",
-                fontWeight: 700,
-                letterSpacing: "0.10em",
-                textTransform: "uppercase",
-                backgroundColor: "rgba(44,55,119,0.10)",
-                border: "1px solid rgba(44,55,119,0.22)",
-                borderRadius: "20px",
-                padding: "3px 9px",
-              }}
+              style={{ right: 24, bottom: 16, fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
             >
               Now
             </div>
-
-            {/* Placeholder ghost nodes */}
-            {PLACEHOLDER_MOMENTS.filter((ph) => !hiddenPlaceholderIds.has(ph.id)).map((ph) => {
-              const pt = getPathPoint(ph.xPercent);
-              return (
-                <button
-                  key={ph.id}
-                  type="button"
-                  aria-label="Add a moment"
-                  onClick={() => openCreateModal(ph.xPercent, ph.id)}
-                  className="absolute z-10 rounded-full transition-transform duration-150 hover:scale-110"
-                  style={{
-                    left: `${(pt.x / VB_W) * 100}%`,
-                    top: `${(pt.y / VB_H) * 100}%`,
-                    transform: "translate(-50%, -50%)",
-                    width: "28px",
-                    height: "28px",
-                    backgroundColor: "rgba(248,244,235,0.75)",
-                    border: "2.5px dashed rgba(44,55,119,0.70)",
-                    opacity: 0.72,
-                    cursor: "pointer",
-                  }}
-                />
-              );
-            })}
 
             {/* Real moment nodes */}
             {state.moments.map((moment) => {
@@ -749,6 +772,13 @@ export default function LegacyMapPage() {
                   ? { left: "-8px", transform: "none" }
                   : xFrac > 0.72
                   ? { right: "-8px", transform: "none" }
+                  : { left: "50%", transform: "translateX(-50%)" };
+
+              const labelHAlign: React.CSSProperties =
+                xFrac < 0.20
+                  ? { left: 0, transform: "none" }
+                  : xFrac > 0.75
+                  ? { right: 0, transform: "none" }
                   : { left: "50%", transform: "translateX(-50%)" };
 
               return (
@@ -778,14 +808,14 @@ export default function LegacyMapPage() {
                         borderRadius: "16px",
                         border: "1px solid rgba(44,55,119,0.13)",
                         boxShadow: "0 8px 32px rgba(19,4,38,0.20), 0 2px 8px rgba(19,4,38,0.10)",
-                        padding: "14px 16px 14px",
+                        padding: "14px 16px",
                         cursor: "pointer",
                       }}
                       onClick={(e) => { e.stopPropagation(); openEditModal(moment); }}
                       onMouseEnter={() => setTooltipId(moment.id)}
                       onMouseLeave={() => setTooltipId(null)}
                     >
-                      <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3" }}>
+                      <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
                         {moment.title}
                       </p>
                       {moment.note && (
@@ -807,16 +837,15 @@ export default function LegacyMapPage() {
 
                   {/* Label */}
                   <div
-                    className="absolute left-1/2 -translate-x-1/2"
+                    className="absolute"
                     style={{
                       ...(above ? { bottom: `${LABEL_OFFSET}px` } : { top: `${LABEL_OFFSET}px` }),
-                      width: "max-content",
-                      maxWidth: 180,
+                      ...labelHAlign,
+                      width: 160,
                     }}
                   >
                     <button
                       type="button"
-                      title={isTruncated ? moment.title : undefined}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (touchModeRef.current) {
@@ -825,15 +854,15 @@ export default function LegacyMapPage() {
                           openEditModal(moment);
                         }
                       }}
-                      className="rounded-full border px-3 py-1.5 text-sm leading-none shadow-sm transition"
+                      className="rounded-[14px] border px-3 py-1.5 text-sm leading-snug shadow-sm transition w-full text-left"
                       style={{
                         backgroundColor: isSelected ? "rgba(242,152,54,0.14)" : "rgba(248,244,235,0.96)",
                         borderColor: isSelected ? "rgba(219,88,53,0.38)" : "rgba(44,55,119,0.16)",
                         color: COLORS.midnight,
-                        whiteSpace: "nowrap",
+                        wordBreak: "break-word",
                       }}
                     >
-                      {displayTitle}
+                      {moment.title}
                     </button>
                   </div>
 
@@ -877,36 +906,10 @@ export default function LegacyMapPage() {
                 </div>
               );
             })}
-
-            {/* "Add moment" button — canvas bottom center */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
-              <button
-                type="button"
-                onClick={() => openCreateModal(getNextMomentX(state.moments))}
-                className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-transform duration-150 hover:-translate-y-[1px]"
-                style={{
-                  backgroundColor: COLORS.sunrise,
-                  color: COLORS.midnight,
-                  boxShadow: "0 4px 18px rgba(242,152,54,0.40)",
-                }}
-              >
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    border: `2px solid ${COLORS.midnight}`,
-                    flexShrink: 0,
-                  }}
-                />
-                Add moment
-              </button>
-            </div>
           </div>
         </section>
 
-        {/* ── Reflection (gated at 3 moments) ────────────────────────────── */}
+        {/* ── Reflection (gated at 3 moments) ──────────────────────────────── */}
         {reflectionMounted && (
           <section
             className="rounded-[28px] border p-6 md:p-8"
@@ -914,6 +917,7 @@ export default function LegacyMapPage() {
               backgroundColor: COLORS.light,
               color: COLORS.midnight,
               borderColor: "rgba(44,55,119,0.12)",
+              marginTop: 24,
               opacity: reflectionVisible ? 1 : 0,
               transform: reflectionVisible ? "none" : "translateY(24px)",
               transition: "opacity 0.6s ease, transform 0.6s ease",
@@ -925,7 +929,7 @@ export default function LegacyMapPage() {
               </h2>
             </div>
             <p className="max-w-3xl text-sm leading-6" style={{ color: "rgba(19,4,38,0.68)" }}>
-              With a few moments on the map, patterns sometimes start to emerge. Take your time with these questions — there are no right answers.
+              Take your time with these questions. There are no right answers.
             </p>
 
             <div className="mt-6">
@@ -947,22 +951,119 @@ export default function LegacyMapPage() {
                 onBlur={handleReflectionBlur}
                 placeholder="Share your reflections…"
                 rows={5}
-                className="w-full resize-none rounded-[18px] border px-4 py-3 text-sm leading-6 outline-none transition-colors"
+                className="w-full resize-none outline-none transition-colors"
                 style={{
-                  backgroundColor: 'rgba(248,244,235,0.98)',
+                  backgroundColor: '#FFFFFF',
                   color: COLORS.midnight,
-                  borderColor: 'rgba(44,55,119,0.14)',
+                  border: '1px solid #2C3777',
+                  borderRadius: 12,
+                  padding: 12,
+                  fontSize: 14,
+                  lineHeight: '1.6',
+                  boxSizing: 'border-box',
                 }}
               />
-              <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: 'rgba(26,26,26,0.72)', minHeight: 18 }}>
-                {getReflectionStatusText()}
-              </p>
+
+              {/* Reflection saved indicator — right-aligned, fades out */}
+              {reflectionSavedShowing && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 6, opacity: reflectionSavedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                    <circle cx="7" cy="7" r="6" stroke="#333333" strokeWidth="1.3" />
+                    <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="#333333" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: '#333333' }}>Saved</span>
+                </div>
+              )}
+
+              {/* Error state */}
+              {reflectionSaveStatus === 'error' && (
+                <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: 'rgba(219,88,53,0.85)', minHeight: 18 }}>
+                  Couldn't save — check your connection
+                </p>
+              )}
+
+              <div style={{ marginTop: 8 }}>
+                {voiceActive ? (
+                  <VoiceNoteButton
+                    saveMode={{ kind: 'freeform' }}
+                    theme="light"
+                    autoStart
+                    onSaved={() => {}}
+                    onDelete={() => setVoiceActive(false)}
+                    buttonLabel="Record a voice note"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setVoiceActive(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '11px 16px',
+                      borderRadius: 10,
+                      cursor: 'pointer',
+                      background: 'rgba(44,55,119,0.06)',
+                      border: '1.5px solid rgba(44,55,119,0.2)',
+                      boxSizing: 'border-box' as const,
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
+                  </button>
+                )}
+              </div>
             </div>
           </section>
         )}
+
       </div>
 
-      {/* ── Modal ──────────────────────────────────────────────────────────── */}
+      {/* ── Tips modal ───────────────────────────────────────────────────────── */}
+      {tipsModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(19,4,38,0.55)] px-4"
+          onClick={() => setTipsModalOpen(false)}
+        >
+          <div
+            style={{ background: '#F8F4EB', borderRadius: 24, padding: '28px 32px', maxWidth: 560, width: '100%', color: '#130426', position: 'relative' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <h2 style={{ fontFamily: apfel, fontSize: 22, color: '#130426', fontWeight: 400, margin: 0 }}>
+                Tips for using this activity
+              </h2>
+              <button
+                type="button"
+                onClick={() => setTipsModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(19,4,38,0.45)', fontSize: 22, lineHeight: 1, padding: '0 0 0 16px', flexShrink: 0 }}
+              >
+                ×
+              </button>
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {TIPS.map((item, i) => (
+                <li
+                  key={i}
+                  style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.6, color: 'rgba(19,4,38,0.85)', marginBottom: i < TIPS.length - 1 ? 12 : 0, display: 'flex', gap: 10 }}
+                >
+                  <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.3)' }}>—</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* ── Moment modal ─────────────────────────────────────────────────────── */}
       {isModalOpen && draftMoment ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(19,4,38,0.55)] px-4 py-8">
           <div
@@ -984,9 +1085,9 @@ export default function LegacyMapPage() {
                   placeholder="e.g. Moved to Toronto"
                   style={{
                     width: "100%",
-                    borderRadius: 4,
-                    border: "1px solid rgba(26,26,26,0.15)",
-                    padding: "10px 14px",
+                    borderRadius: 12,
+                    border: "1px solid #2C3777",
+                    padding: "12px",
                     fontSize: 16,
                     fontFamily: hv,
                     color: "#1A1A1A",
@@ -998,17 +1099,17 @@ export default function LegacyMapPage() {
               </div>
 
               <div>
-                <label className="mb-2 block" style={{ fontFamily: hv, fontSize: 14, color: "#1A1A1A" }}>Add a note (optional)</label>
+                <p style={{ fontFamily: hv, fontSize: 14, color: "#1A1A1A", margin: '0 0 8px 0' }}>What did you learn from this? How did it change you?</p>
                 <textarea
                   value={draftMoment.note}
                   onChange={(e) => setDraftMoment((c) => c ? { ...c, note: e.target.value } : c)}
-                  placeholder="What did you learn from this? How did this change you?"
+                  placeholder="Add a note (optional)"
                   rows={6}
                   style={{
                     width: "100%",
-                    borderRadius: 4,
-                    border: "1px solid rgba(26,26,26,0.15)",
-                    padding: "10px 14px",
+                    borderRadius: 12,
+                    border: "1px solid #2C3777",
+                    padding: "12px",
                     fontSize: 16,
                     fontFamily: hv,
                     color: "#1A1A1A",
@@ -1101,4 +1202,3 @@ export default function LegacyMapPage() {
     </div>
   );
 }
-

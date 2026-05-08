@@ -24,7 +24,7 @@ type CardConfig = {
 const CARD_CONFIGS: CardConfig[] = [
   {
     bg: '#BBABF4',
-    border: '2px solid rgba(19,4,38,0.14)',
+    border: '2px solid #000000',
     titleColor: '#130426',
     bodyColor: 'rgba(19,4,38,0.78)',
     ctaBg: '#130426',
@@ -32,7 +32,7 @@ const CARD_CONFIGS: CardConfig[] = [
   },
   {
     bg: '#1B1744',
-    border: '2px solid rgba(255,255,255,0.18)',
+    border: '2px solid #000000',
     titleColor: '#FFFFFF',
     bodyColor: 'rgba(255,255,255,0.82)',
     ctaBg: '#F8F4EB',
@@ -40,7 +40,7 @@ const CARD_CONFIGS: CardConfig[] = [
   },
   {
     bg: '#DB5835',
-    border: '2px solid rgba(255,255,255,0.18)',
+    border: '2px solid #000000',
     titleColor: '#FFFFFF',
     bodyColor: 'rgba(255,255,255,0.82)',
     ctaBg: '#F8F4EB',
@@ -48,7 +48,7 @@ const CARD_CONFIGS: CardConfig[] = [
   },
   {
     bg: '#F8F4EB',
-    border: '2px solid rgba(19,4,38,0.14)',
+    border: '2px solid #000000',
     titleColor: '#130426',
     bodyColor: 'rgba(19,4,38,0.78)',
     ctaBg: '#130426',
@@ -229,8 +229,8 @@ function ExploreActivityCard({
     backgroundColor: config.bg,
     border: config.border,
     boxShadow: hovered && !pressed
-      ? '8px 8px 0 rgba(19,4,38,0.24)'
-      : '6px 6px 0 rgba(19,4,38,0.18)',
+      ? '8px 8px 0 rgba(0,0,0,0.88)'
+      : '6px 6px 0 rgba(0,0,0,0.75)',
     transform: hovered && !pressed ? 'translateY(-3px)' : 'translateY(0)',
     transition: 'transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease',
     opacity: isAvailable ? 1 : 0.5,

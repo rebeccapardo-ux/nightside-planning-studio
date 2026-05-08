@@ -154,8 +154,11 @@ function MiniSegmentBar({
           />
         ))}
       </div>
-      <p style={{ fontSize: 13, fontWeight: 500, color: labelColor, margin: 0 }}>
+      <p style={{ fontSize: 13, fontWeight: 600, color: labelColor, margin: '0 0 4px 0' }}>
         {qualitativeLabel(exploredCount)}
+      </p>
+      <p style={{ fontSize: 12, color: labelColor, margin: 0 }}>
+        {exploredCount} of {totalCount} topics started
       </p>
     </div>
   )
@@ -166,37 +169,29 @@ function MiniSegmentBar({
 // ---------------------------------------------------------------------------
 
 const DOMAIN_STYLES = [
-  { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.6)'   },
-  { bg: 'bg-[#2C3777]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.7)' },
-  { bg: 'bg-[#f29836]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.6)'   },
-  { bg: 'bg-[#130426]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.7)' },
-  { bg: 'bg-[#DB5835]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.7)' },
+  { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.82)'    },
+  { bg: 'bg-[#2C3777]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.88)' },
+  { bg: 'bg-[#f29836]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.82)'    },
+  { bg: 'bg-[#130426]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.88)' },
+  { bg: 'bg-[#DB5835]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.88)' },
 ]
 
 export default function DomainStateCard({
   domain,
   colorIndex,
-  docCount = 0,
-  noteCount = 0,
-  outputCount = 0,
 }: {
   domain: { id: string; title: string }
   colorIndex: number
-  docCount?: number
-  noteCount?: number
-  outputCount?: number
 }) {
   const style    = DOMAIN_STYLES[colorIndex % DOMAIN_STYLES.length]
   const segments = getDomainSegments(domain.title)
   const isDark   = style.text === 'text-[#f8f4eb]'
-  const iconColor = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
-  const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   return (
     <Link
       href={`/app/domains/${domain.id}`}
       className={`flex flex-col h-full transition-transform duration-150 ease-out hover:scale-[1.02] ${style.bg}`}
-      style={{ borderRadius: 20, minHeight: 190, padding: 28, overflow: 'hidden' }}
+      style={{ borderRadius: 20, minHeight: 220, padding: 34, overflow: 'hidden' }}
     >
       <div className={`text-[18px] font-semibold leading-snug mb-4 ${style.text}`}>
         {domain.title}
@@ -214,31 +209,6 @@ export default function DomainStateCard({
             No topics yet
           </p>
         )}
-      </div>
-
-      {/* Material counts */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 10,
-        rowGap: 6,
-        marginBottom: 20,
-        borderTop: isDark ? '1px solid rgba(255,255,255,0.35)' : '1px solid rgba(0,0,0,0.18)',
-        paddingTop: 12,
-      }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: hv, fontSize: 13, fontWeight: 500, color: iconColor, whiteSpace: 'nowrap' }}>
-          <CardDocIcon color={iconColor} />
-          {docCount} {docCount === 1 ? 'document' : 'documents'}
-        </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: hv, fontSize: 13, fontWeight: 500, color: iconColor, whiteSpace: 'nowrap' }}>
-          <CardNoteIcon color={iconColor} />
-          {noteCount} {noteCount === 1 ? 'note' : 'notes'}
-        </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: hv, fontSize: 13, fontWeight: 500, color: iconColor, whiteSpace: 'nowrap' }}>
-          <span style={{ fontSize: 13, lineHeight: 1 }}>▣</span>
-          {outputCount} {outputCount === 1 ? 'activity output' : 'activity outputs'}
-        </span>
       </div>
 
       {/* CTA */}
@@ -262,21 +232,3 @@ export default function DomainStateCard({
   )
 }
 
-function CardDocIcon({ color }: { color: string }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke={color} strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
-      <path d="M10 1v3h3" stroke={color} strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
-      <path d="M5.5 7.5h5M5.5 10h5" stroke={color} strokeWidth="1.25" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function CardNoteIcon({ color }: { color: string }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <rect x="2" y="4" width="12" height="11" rx="1" stroke={color} strokeWidth="1.25" fill="none"/>
-      <circle cx="8" cy="4" r="2.5" fill={color}/>
-    </svg>
-  )
-}

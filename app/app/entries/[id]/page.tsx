@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import FadeIn from '@/app/components/FadeIn'
+import FinancialInformationSnapshot from './FinancialInformationSnapshot'
+import PersonalAdminSnapshot from './PersonalAdminSnapshot'
+import DevicesAndAccountsSnapshot from './DevicesAndAccountsSnapshot'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'Apfel Grotezk', sans-serif"
@@ -98,65 +101,120 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
   // Date line
   let dateLine = formattedDate ?? ''
-  if (entry.activity === 'legacy_map' && legacyMap && legacyMap.moments.length > 0) {
-    const n = legacyMap.moments.length
-    const momentStr = `${n} moment${n === 1 ? '' : 's'}`
-    dateLine = formattedDate ? `${formattedDate} · ${momentStr}` : momentStr
-  }
   if (isDocument && formattedDate) {
+    dateLine = `Last saved ${formattedDate}`
+  }
+  if ((entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && formattedDate) {
     dateLine = `Last saved ${formattedDate}`
   }
 
   const showExport = entry.activity === 'values_ranking' || entry.activity === 'legacy_map' || isDocument
-  const editLabel = isDocument
-    ? 'Continue editing →'
-    : entry.activity === 'legacy_map'
-      ? 'Keep working →'
-      : 'Revisit exercise →'
+  const editLabel = entry.document_type === 'financial_information'
+    ? '← Continue editing'
+    : isDocument
+      ? 'Continue editing →'
+      : entry.activity === 'legacy_map'
+        ? 'Keep working →'
+        : 'Revisit exercise →'
 
   const maxWidth = isDocument ? 680 : 800
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
+    <div className="min-h-screen" style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#CBBBEA' : '#F8F4EB' }}>
       <div style={{ maxWidth, margin: '0 auto', padding: '48px 24px 80px' }}>
 
-        {/* Back link */}
-        <Link
-          href={backHref}
-          style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', display: 'block', marginBottom: 32, textDecoration: 'none' }}
-          className="hover:text-[#1A1A1A] transition-colors"
-        >
-          {backLabel}
-        </Link>
+        {/* Back link — not shown on document or ranking snapshot views */}
+        {entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+          <Link
+            href={backHref}
+            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', display: 'block', marginBottom: 32, textDecoration: 'none' }}
+            className="hover:text-[#1A1A1A] transition-colors"
+          >
+            {backLabel}
+          </Link>
+        )}
+
+        {/* Continue in document / revisit exercise link — shown above the card */}
+        {isDocument && editHref && (
+          <Link
+            href={editHref}
+            style={{ fontFamily: hv, fontSize: 16, color: '#1A1A1A', display: 'block', marginBottom: 24, textDecoration: 'none' }}
+            className="hover:text-[#1A1A1A] transition-colors"
+          >
+            ← Continue working in document
+          </Link>
+        )}
+        {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && editHref && (
+          <Link
+            href={editHref}
+            style={{ fontFamily: hv, fontSize: 16, color: '#1A1A1A', display: 'block', marginBottom: 24, textDecoration: 'none' }}
+            className="hover:text-[#1A1A1A] transition-colors"
+          >
+            ← Revisit exercise
+          </Link>
+        )}
 
         <FadeIn>
           {/* Card */}
           <div
-            style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
+            style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#F8F4EB' : '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
             className="p-6 md:py-10 md:px-12"
           >
             {/* Title */}
-            <h1 style={{
-              fontFamily: apfel,
-              fontSize: isDocument ? 32 : 36,
-              fontWeight: 400,
-              color: '#1A1A1A',
-              lineHeight: 1.1,
-              marginBottom: 8,
-            }}>
-              {displayTitle}
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
+              <h1 style={{
+                fontFamily: apfel,
+                fontSize: isDocument ? 32 : 36,
+                fontWeight: 400,
+                color: '#1A1A1A',
+                lineHeight: 1.1,
+                marginBottom: 0,
+              }}>
+                {displayTitle}
+              </h1>
+              {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && (
+                <Link
+                  href={`/app/entries/${entry.id}/export`}
+                  style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block', flexShrink: 0 }}
+                >
+                  Export as PDF →
+                </Link>
+              )}
+            </div>
 
             {/* Date line */}
             {dateLine && (
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: isDocument ? 16 : 24 }}>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.56)', marginBottom: (isDocument || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? 16 : 24 }}>
                 {dateLine}
               </p>
             )}
 
             {/* Disclaimer — documents only */}
             {isDocument && (
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+              <>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement') ? 8 : 24, lineHeight: 1.55 }}>
+                  This is a record of your responses at the time of your last save. It is not a legal document.
+                </p>
+                {entry.document_type === 'financial_information' && (
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                    Account numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
+                  </p>
+                )}
+                {entry.document_type === 'personal_admin_info' && (
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                    SIN and health card numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
+                  </p>
+                )}
+                {entry.document_type === 'devices_and_accounts' && (
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                    Passwords and PIN numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
+                  </p>
+                )}
+              </>
+            )}
+
+            {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && (
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 8, lineHeight: 1.55 }}>
                 This is a record of your responses at the time of your last save. It is not a legal document.
               </p>
             )}
@@ -166,7 +224,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
             {/* Action links */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
-              {editHref && (
+              {editHref && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
                 <Link
                   href={editHref}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
@@ -175,7 +233,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
                   {editLabel}
                 </Link>
               )}
-              {showExport && (
+              {showExport && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
                 <Link
                   href={`/app/entries/${entry.id}/export`}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
@@ -190,7 +248,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             {legacyMap ? (
               <LegacyMapSnapshot content={legacyMap} />
             ) : ranking ? (
-              <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} />
+              <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} id={entry.id} />
             ) : isDocument ? (
               <DocumentSnapshot entry={entry} />
             ) : (
@@ -215,23 +273,47 @@ function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
     <div>
       {/* Map visual */}
       {sorted.length > 0 && (
-        <div style={{ background: '#2C3777', borderRadius: 10, height: 180, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: '#FFFFFF', border: '1px solid #1A1A1A', borderRadius: 10, height: 180, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+          {/* Path only — preserveAspectRatio="none" is fine for lines, but distorts circles */}
           <svg
             viewBox={`0 0 ${LM_VB_W} ${LM_VB_H}`}
             preserveAspectRatio="none"
-            style={{ width: '100%', height: '100%', display: 'block' }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
             aria-hidden="true"
           >
-            <path d={LM_PATH_D} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" strokeLinecap="round" />
-            {sorted.map((m) => {
-              const pt = lmPathPoint(m.xPercent)
-              return (
-                <circle key={m.id} cx={pt.x} cy={pt.y} r="12" fill="#FFFFFF" opacity="0.92" />
-              )
-            })}
+            <path d={LM_PATH_D} fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <span style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: hv, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Birth</span>
-          <span style={{ position: 'absolute', bottom: 10, right: 14, fontFamily: hv, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Now</span>
+          {/* Circles as divs so they stay round regardless of container aspect ratio */}
+          {sorted.map((m, i) => {
+            const pt = lmPathPoint(m.xPercent)
+            return (
+              <div
+                key={m.id}
+                style={{
+                  position: 'absolute',
+                  left: `${(pt.x / LM_VB_W) * 100}%`,
+                  top: `${(pt.y / LM_VB_H) * 100}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  background: '#FFFFFF',
+                  border: '2px solid #1A1A1A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: hv,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: '#1A1A1A',
+                }}
+              >
+                {i + 1}
+              </div>
+            )
+          })}
+          <span style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: hv, fontSize: 11, color: '#1A1A1A' }}>Birth</span>
+          <span style={{ position: 'absolute', bottom: 10, right: 14, fontFamily: hv, fontSize: 11, color: '#1A1A1A' }}>Now</span>
         </div>
       )}
 
@@ -255,14 +337,15 @@ function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
                 width: 22,
                 height: 22,
                 borderRadius: '50%',
-                background: '#2C3777',
-                color: '#FFFFFF',
+                background: '#F8F4EB',
+                border: '1.5px solid #1A1A1A',
+                color: '#1A1A1A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontFamily: hv,
                 fontSize: 11,
-                fontWeight: 500,
+                fontWeight: 600,
                 flexShrink: 0,
                 marginTop: 2,
               }}>
@@ -311,9 +394,9 @@ function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
 // RankingSnapshot
 // ---------------------------------------------------------------------------
 
-function RankingSnapshot({ ranking, activity }: { ranking: RankingContent; activity: string }) {
+function RankingSnapshot({ ranking, activity, id }: { ranking: RankingContent; activity: string; id: string }) {
   if (activity === 'values_ranking') {
-    return <ValuesCardSnapshot ranking={ranking} />
+    return <ValuesCardSnapshot ranking={ranking} id={id} />
   }
   return <FearsTextSnapshot ranking={ranking} />
 }
@@ -326,38 +409,41 @@ const VALUE_GROUPS = [
   {
     key: 'essential' as const,
     label: 'ESSENTIAL',
-    containerBg: '#BBABF4',
+    containerBg: '#9B8BE8',
     containerBorder: undefined as string | undefined,
     cardBg: 'rgba(255,255,255,0.55)',
     cardBorder: 'none',
     cardText: '#2C3777',
+    labelColor: '#2C3777',
   },
   {
     key: 'important' as const,
     label: 'IMPORTANT',
-    containerBg: '#F8F4EB',
-    containerBorder: '1px solid rgba(26,26,26,0.08)',
-    cardBg: '#FFFFFF',
-    cardBorder: '1px solid rgba(26,26,26,0.12)',
-    cardText: '#1A1A1A',
+    containerBg: '#BBABF4',
+    containerBorder: undefined,
+    cardBg: 'rgba(255,255,255,0.55)',
+    cardBorder: 'none',
+    cardText: '#2C3777',
+    labelColor: '#2C3777',
   },
   {
     key: 'less_central' as const,
     label: 'LESS IMPORTANT',
-    containerBg: '#2C3777',
+    containerBg: '#D6CEF8',
     containerBorder: undefined,
-    cardBg: 'rgba(255,255,255,0.1)',
-    cardBorder: '1px solid rgba(255,255,255,0.15)',
-    cardText: 'rgba(255,255,255,0.9)',
+    cardBg: 'rgba(255,255,255,0.55)',
+    cardBorder: 'none',
+    cardText: '#2C3777',
+    labelColor: '#2C3777',
   },
 ]
 
-function ValuesCardSnapshot({ ranking }: { ranking: RankingContent }) {
+function ValuesCardSnapshot({ ranking, id }: { ranking: RankingContent; id: string }) {
   const hasReflection = !!(ranking.reflection?.trim())
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {VALUE_GROUPS.map(({ key, label, containerBg, containerBorder, cardBg, cardBorder, cardText }) => {
+      {VALUE_GROUPS.map(({ key, label, containerBg, containerBorder, cardBg, cardBorder, cardText, labelColor }) => {
         const items = ranking[key]
         if (!items || items.length === 0) return null
         return (
@@ -372,10 +458,10 @@ function ValuesCardSnapshot({ ranking }: { ranking: RankingContent }) {
           >
             <p style={{
               fontFamily: hv,
-              fontSize: 11,
-              fontWeight: 500,
+              fontSize: 13,
+              fontWeight: 600,
               letterSpacing: '0.08em',
-              color: 'rgba(26,26,26,0.56)',
+              color: labelColor,
               marginBottom: 12,
               textTransform: 'uppercase' as const,
             }}>
@@ -428,6 +514,7 @@ function ValuesCardSnapshot({ ranking }: { ranking: RankingContent }) {
           </p>
         </div>
       )}
+
     </div>
   )
 }
@@ -436,81 +523,46 @@ function ValuesCardSnapshot({ ranking }: { ranking: RankingContent }) {
 // FearsTextSnapshot
 // ---------------------------------------------------------------------------
 
+const FEAR_GROUPS = [
+  { key: 'essential' as const, label: 'MOST PRESSING',     containerBg: '#9B8BE8', cardBg: 'rgba(255,255,255,0.55)', cardText: '#2C3777', labelColor: '#2C3777' },
+  { key: 'important' as const, label: 'SOMEWHAT PRESSING', containerBg: '#BBABF4', cardBg: 'rgba(255,255,255,0.55)', cardText: '#2C3777', labelColor: '#2C3777' },
+  { key: 'less_central' as const, label: 'LESS PRESSING',  containerBg: '#D6CEF8', cardBg: 'rgba(255,255,255,0.55)', cardText: '#2C3777', labelColor: '#2C3777' },
+]
+
 function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
-  const hasEssential = ranking.essential.length > 0
-  const hasImportant = ranking.important.length > 0
-  const hasLessCentral = ranking.less_central.length > 0
   const hasReflection = !!(ranking.reflection?.trim())
 
   return (
-    <div>
-      {hasEssential && (
-        <section style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 16, textTransform: 'uppercase' as const }}>
-            Most present for me
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {ranking.essential.map((item, i) => (
-              <p key={item} style={{
-                fontFamily: hv,
-                fontSize: i < 2 ? 18 : 16,
-                fontWeight: i < 2 ? 500 : 400,
-                color: i < 2 ? '#1A1A1A' : 'rgba(26,26,26,0.85)',
-                lineHeight: 1.4,
-              }}>
-                {item}
-              </p>
-            ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {FEAR_GROUPS.map(({ key, label, containerBg, cardBg, cardText, labelColor }) => {
+        const items = ranking[key]
+        if (!items || items.length === 0) return null
+        return (
+          <div key={key} style={{ background: containerBg, borderRadius: 10, padding: 20 }}>
+            <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: labelColor, marginBottom: 12, textTransform: 'uppercase' as const }}>
+              {label}
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+              {items.map((item) => (
+                <div key={item} style={{ background: cardBg, borderRadius: 8, padding: '12px 14px', minHeight: 80, fontFamily: hv, fontSize: 14, color: cardText, lineHeight: 1.5 }}>
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
-        </section>
-      )}
+        )
+      })}
 
-      {hasImportant && (
-        <section style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 16, textTransform: 'uppercase' as const }}>
-            Also present
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {ranking.important.map((item, i) => (
-              <p key={item} style={{
-                fontFamily: hv,
-                fontSize: i < 2 ? 16 : 15,
-                fontWeight: 400,
-                color: i < 2 ? 'rgba(26,26,26,0.85)' : 'rgba(26,26,26,0.72)',
-                lineHeight: 1.4,
-              }}>
-                {item}
-              </p>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {hasLessCentral && (
-        <section style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 16, textTransform: 'uppercase' as const }}>
-            Less present right now
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {ranking.less_central.map((item) => (
-              <p key={item} style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', lineHeight: 1.4 }}>
-                {item}
-              </p>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!hasEssential && !hasImportant && !hasLessCentral && (
+      {!FEAR_GROUPS.some(({ key }) => (ranking[key]?.length ?? 0) > 0) && (
         <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>Nothing has been placed yet.</p>
       )}
 
       {hasReflection && (
         <div style={{ marginTop: 8, paddingTop: 24, borderTop: '1px solid rgba(26,26,26,0.08)' }}>
           <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 8, textTransform: 'uppercase' as const }}>
-            Reflection note
+            REFLECTION NOTE
           </p>
-          <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(26,26,26,0.8)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+          <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
             {ranking.reflection!.trim()}
           </p>
         </div>
@@ -530,10 +582,57 @@ function DocumentSnapshot({ entry }: { entry: EntryRow }) {
   if (entry.document_type === 'important_contacts') {
     return <ImportantContactsSnapshot entry={entry} />
   }
+  if (entry.document_type === 'financial_information') {
+    return <FinancialInformationSnapshot entry={entry} />
+  }
+  if (entry.document_type === 'personal_admin_info') {
+    return <PersonalAdminSnapshot entry={entry} />
+  }
+  if (entry.document_type === 'devices_and_accounts') {
+    return <DevicesAndAccountsSnapshot entry={entry} />
+  }
   if (entry.document_type === 'keepsake_inventory') {
     return <KeepsakeInventorySnapshot entry={entry} />
   }
+  if (entry.document_type === 'advance_directive_supplement') {
+    return <AdvanceDirectiveSnapshot entry={entry} />
+  }
   return <GenericDocumentSnapshot entry={entry} />
+}
+
+const AD_FIELDS: { key: string; label: string }[] = [
+  { key: 'perfectDeath', label: 'My perfect death would involve:' },
+  { key: 'whatMatters',  label: 'At the end of my life, this is what matters most:' },
+  { key: 'values',       label: 'My most important personal values:' },
+  { key: 'unacceptable', label: 'What would make prolonging life unacceptable for me:' },
+  { key: 'worries',      label: 'When I think about death, this is what I worry about:' },
+  { key: 'caregiver',    label: 'What I want my caregiver/care team to know:' },
+]
+
+function AdvanceDirectiveSnapshot({ entry }: { entry: EntryRow }) {
+  const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, string | undefined>
+  const fields = AD_FIELDS.filter(f => c[f.key]?.trim())
+  if (fields.length === 0) {
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+  }
+  return (
+    <div>
+      {fields.map((f, i) => (
+        <div key={f.key} style={{ marginBottom: i < fields.length - 1 ? 28 : 0 }}>
+          <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(26,26,26,0.6)', marginBottom: 5 }}>{f.label}</p>
+          <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{c[f.key]}</p>
+        </div>
+      ))}
+      <div style={{ marginTop: 32 }}>
+        <Link
+          href={`/app/entries/${entry.id}/export`}
+          style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block' }}
+        >
+          Export as PDF →
+        </Link>
+      </div>
+    </div>
+  )
 }
 
 function GenericDocumentSnapshot({ entry }: { entry: EntryRow }) {
@@ -563,42 +662,80 @@ function GenericDocumentSnapshot({ entry }: { entry: EntryRow }) {
 }
 
 function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
-  const content = entry.content as Record<string, ContactFields> | null
+  const content = entry.content as Record<string, unknown> | null
   if (!content) return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No contacts saved yet.</p>
 
+  // New array-based format
+  if (Array.isArray(content.healthcare) || Array.isArray(content.legal) || Array.isArray(content.relatives) || Array.isArray(content.friends)) {
+    type NewContact = { id: string; name: string; role: string; phone: string; email: string; address: string }
+    const sections: { key: string; label: string }[] = [
+      { key: 'healthcare', label: 'Doctors & Healthcare' },
+      { key: 'legal', label: 'Legal & Decision Makers' },
+      { key: 'relatives', label: 'Relatives' },
+      { key: 'friends', label: 'Friends & Support Network' },
+      { key: 'spiritual', label: 'Spiritual / Religious' },
+      { key: 'financial', label: 'Financial & Professional Services' },
+      { key: 'other', label: 'Other Important Contacts' },
+    ]
+    const hasAny = sections.some(s => ((content[s.key] as NewContact[]) ?? []).some(c => c.name?.trim() || c.phone?.trim() || c.email?.trim()))
+    if (!hasAny) return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No contacts saved yet.</p>
+    let first = true
+    return (
+      <div>
+        {sections.map(({ key, label }) => {
+          const entries = ((content[key] as NewContact[]) ?? []).filter(c => c.name?.trim() || c.phone?.trim() || c.email?.trim() || c.address?.trim())
+          if (entries.length === 0) return null
+          const isFirst = first; first = false
+          return (
+            <div key={key}>
+              <p style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, letterSpacing: '0.04em', color: 'rgba(26,26,26,0.85)', marginBottom: 16, marginTop: isFirst ? 0 : 32 }}>
+                {label}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {entries.map((c, ci) => (
+                  <div key={c.id || ci}>
+                    {c.name?.trim() && <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 500, color: '#1A1A1A' }}>{c.name}</p>}
+                    {c.role?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>{c.role}</p>}
+                    {c.phone?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{c.phone}</p>}
+                    {c.email?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{c.email}</p>}
+                    {c.address?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', whiteSpace: 'pre-wrap' }}>{c.address}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+        <div style={{ marginTop: 32 }}>
+          <Link
+            href={`/app/entries/${entry.id}/export`}
+            style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block' }}
+          >
+            Export as PDF →
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Old fixed-field format
+  const oldContent = content as Record<string, ContactFields>
   const groups = [
-    { key: 'doctor',   label: 'DOCTORS',                      keys: ['doctor1', 'doctor2', 'doctor3', 'doctor4'] },
-    { key: 'attorney', label: 'ATTORNEYS / ACCOUNTANTS',       keys: ['attorney1', 'attorney2', 'attorney3', 'attorney4'] },
-    { key: 'relative', label: 'FAMILY & EMERGENCY CONTACTS',   keys: ['relative1', 'relative2', 'relative3', 'relative4'] },
-    { key: 'friend',   label: 'FRIENDS',                       keys: ['friend1', 'friend2', 'friend3', 'friend4'] },
-    { key: 'other',    label: 'OTHERS',                        keys: ['other1', 'other2', 'other3', 'other4'] },
+    { key: 'doctor',   label: 'Doctors',                     keys: ['doctor1', 'doctor2', 'doctor3', 'doctor4'] },
+    { key: 'attorney', label: 'Attorneys / Accountants',     keys: ['attorney1', 'attorney2', 'attorney3', 'attorney4'] },
+    { key: 'relative', label: 'Family & Emergency Contacts', keys: ['relative1', 'relative2', 'relative3', 'relative4'] },
+    { key: 'friend',   label: 'Friends',                     keys: ['friend1', 'friend2', 'friend3', 'friend4'] },
+    { key: 'other',    label: 'Others',                      keys: ['other1', 'other2', 'other3', 'other4'] },
   ]
-
   let renderedGroups = 0
-
   return (
     <div>
       {groups.map((group) => {
-        const filled = group.keys
-          .map((k) => content[k])
-          .filter((c): c is ContactFields => !!(c && c.name?.trim()))
+        const filled = group.keys.map((k) => oldContent[k]).filter((c): c is ContactFields => !!(c && c.name?.trim()))
         if (filled.length === 0) return null
-        const isFirst = renderedGroups === 0
-        renderedGroups++
+        const isFirst = renderedGroups === 0; renderedGroups++
         return (
           <div key={group.key}>
-            <p style={{
-              fontFamily: hv,
-              fontSize: 13,
-              fontWeight: 500,
-              letterSpacing: '0.04em',
-              color: 'rgba(26,26,26,0.56)',
-              textTransform: 'uppercase' as const,
-              borderBottom: '1px solid rgba(26,26,26,0.1)',
-              paddingBottom: 8,
-              marginBottom: 16,
-              marginTop: isFirst ? 0 : 32,
-            }}>
+            <p style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, letterSpacing: '0.04em', color: 'rgba(26,26,26,0.85)', marginBottom: 16, marginTop: isFirst ? 0 : 32 }}>
               {group.label}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -614,9 +751,18 @@ function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
           </div>
         )
       })}
+      <div style={{ marginTop: 32 }}>
+        <Link
+          href={`/app/entries/${entry.id}/export`}
+          style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block' }}
+        >
+          Export as PDF →
+        </Link>
+      </div>
     </div>
   )
 }
+
 
 function KeepsakeInventorySnapshot({ entry }: { entry: EntryRow }) {
   const content = entry.content as { entries?: KeepsakeItem[] } | null
@@ -653,6 +799,14 @@ function KeepsakeInventorySnapshot({ entry }: { entry: EntryRow }) {
           </div>
         </div>
       ))}
+      <div style={{ marginTop: 32 }}>
+        <Link
+          href={`/app/entries/${entry.id}/export`}
+          style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block' }}
+        >
+          Export as PDF →
+        </Link>
+      </div>
     </div>
   )
 }
@@ -763,7 +917,7 @@ function getDisplayTitle(entry: EntryRow): string {
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'keepsake_inventory') return 'Keepsake Inventory'
+  if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
   if (entry.title?.trim()) return entry.title.trim()
   if (entry.activity === 'values_ranking') return 'Values Ranking'
   if (entry.activity === 'fears_ranking') return 'Fears Ranking'

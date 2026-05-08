@@ -16,6 +16,7 @@ export type KeepsakeEntry = {
   object: string
   recipient: string
   meaning: string
+  why: string
 }
 
 export type KeepsakeInventory = {

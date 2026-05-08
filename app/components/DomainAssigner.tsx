@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   addNoteToContainer,
   removeNoteFromContainer,
@@ -8,6 +8,8 @@ import {
   removeEntryFromContainer,
   type Container,
 } from '@/lib/notes'
+
+type DropdownPos = { top: number; left: number; openUp: boolean }
 
 export default function DomainAssigner({
   itemId,
@@ -17,6 +19,7 @@ export default function DomainAssigner({
   label = 'Add to',
   theme = 'dark',
   showCount = true,
+  buttonVariant = 'text',
   onToggled,
   onDone,
 }: {
@@ -27,13 +30,46 @@ export default function DomainAssigner({
   label?: string
   theme?: 'dark' | 'light'
   showCount?: boolean
+  buttonVariant?: 'text' | 'pill'
   onToggled?: (domainId: string, isNowLinked: boolean) => void
   onDone?: (currentLinkedIds: string[]) => void
 }) {
   const [linkedIds, setLinkedIds] = useState<string[]>(initialLinkedDomainIds)
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState<DropdownPos | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   if (allDomains.length === 0) return null
+
+  function handleOpen(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (open) {
+      setOpen(false)
+      setPos(null)
+      return
+    }
+
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    // Estimate dropdown height: ~34px per item + 48px for footer/padding
+    const estimatedHeight = allDomains.length * 34 + 48
+    const spaceBelow = window.innerHeight - rect.bottom
+    const openUp = spaceBelow < estimatedHeight + 8 && rect.top > estimatedHeight
+
+    setPos({
+      top: openUp ? rect.top - estimatedHeight - 6 : rect.bottom + 6,
+      left: rect.left,
+      openUp,
+    })
+    setOpen(true)
+  }
+
+  function handleClose() {
+    setOpen(false)
+    setPos(null)
+    onDone?.(linkedIds)
+  }
 
   async function handleToggle(domainId: string) {
     const isLinked = linkedIds.includes(domainId)
@@ -58,23 +94,38 @@ export default function DomainAssigner({
 
   return (
     <div className="relative inline-block">
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o) }}
-        className={`text-xs transition-colors ${
-          theme === 'light'
-            ? 'text-[#130426]/70 hover:text-[#130426]'
-            : 'text-[#f8f4eb]/60 hover:text-[#f8f4eb]/90'
-        }`}
-      >
-        {label}{showCount && linkedCount > 0 ? ` · ${linkedCount}` : ''}
-      </button>
+      {buttonVariant === 'pill' ? (
+        <button
+          ref={buttonRef}
+          onClick={handleOpen}
+          style={{ fontSize: '12px', fontWeight: 600, color: '#FFFFFF', background: '#F29836', border: 'none', borderRadius: 999, padding: '6px 12px', cursor: 'pointer', lineHeight: '1.2', flexShrink: 0 }}
+          className="hover:opacity-90 transition-opacity"
+        >
+          {label}{showCount && linkedCount > 0 ? ` · ${linkedCount}` : ''}
+        </button>
+      ) : (
+        <button
+          ref={buttonRef}
+          onClick={handleOpen}
+          className={`text-xs transition-colors ${
+            theme === 'light'
+              ? 'text-[#130426]/70 hover:text-[#130426]'
+              : 'text-[#f8f4eb]/60 hover:text-[#f8f4eb]/90'
+          }`}
+        >
+          {label}{showCount && linkedCount > 0 ? ` · ${linkedCount}` : ''}
+        </button>
+      )}
 
-      {open && (
+      {open && pos && (
         <>
-          {/* Intercepts clicks outside without letting them propagate to links below */}
-          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); onDone?.(linkedIds) }} />
+          {/* Backdrop — intercepts outside clicks without propagation */}
+          <div className="fixed inset-0 z-40" onClick={handleClose} />
 
-          <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[160px] rounded-xl bg-[#2C3777] border border-[#f8f4eb]/10 shadow-xl">
+          <div
+            style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 50 }}
+            className="min-w-[160px] rounded-xl bg-[#2C3777] border border-[#f8f4eb]/10 shadow-xl"
+          >
             <div className="py-1.5">
               {allDomains.map((domain) => {
                 const linked = linkedIds.includes(domain.id)
@@ -96,13 +147,13 @@ export default function DomainAssigner({
             </div>
             <div className="border-t border-[#f8f4eb]/10 px-4 py-2 flex items-center gap-3">
               <button
-                onClick={() => { setOpen(false); onDone?.(linkedIds) }}
+                onClick={handleClose}
                 className="text-xs text-app-secondary hover:text-[#f8f4eb] transition-colors"
               >
                 Done
               </button>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => { setOpen(false); setPos(null) }}
                 className="text-xs text-app-tertiary hover:text-[#f8f4eb] transition-colors"
               >
                 Cancel

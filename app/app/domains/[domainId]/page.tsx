@@ -890,15 +890,15 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
                 value={composerText}
                 onChange={(e) => handleScratchpadChange(e.target.value)}
                 onBlur={handleScratchpadBlur}
-                placeholder="Capture a thought, question, or anything on your mind about this area..."
+                placeholder="Capture anything that comes up about this area..."
                 className="placeholder:text-[#130426]/30"
                 style={{
                   display: 'block',
                   width: '100%',
-                  background: '#F5F3EE',
-                  border: '1.5px solid rgba(44,55,119,0.45)',
-                  borderRadius: 20,
-                  padding: '24px 28px',
+                  background: '#FFFFFF',
+                  border: '1px solid #2C3777',
+                  borderRadius: 12,
+                  padding: '12px',
                   fontSize: 17,
                   lineHeight: 1.6,
                   color: '#130426',
@@ -913,7 +913,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             </div>
 
             {/* Voice note capture — below scratchpad, right-aligned */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+            <div style={{ marginTop: 10 }}>
               {showVoiceCapture ? (
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}
@@ -926,26 +926,26 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
                 <button
                   onClick={() => setShowVoiceCapture(true)}
                   style={{
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: 6,
-                    fontSize: 13,
-                    fontWeight: 400,
-                    color: '#130426',
-                    background: 'none',
-                    border: 'none',
+                    gap: 10,
+                    width: '100%',
+                    padding: '11px 16px',
+                    borderRadius: 10,
                     cursor: 'pointer',
-                    padding: 0,
+                    background: 'rgba(44,55,119,0.06)',
+                    border: '1.5px solid rgba(44,55,119,0.2)',
+                    boxSizing: 'border-box' as const,
                   }}
-                  className="hover:opacity-70 transition-opacity"
                 >
-                  <svg width="12" height="16" viewBox="0 0 12 16" fill="none" aria-hidden>
-                    <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                    <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                    <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                    <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                    <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                    <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
-                  Record a voice note
+                  <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                  <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
                 </button>
               )}
             </div>

@@ -20,6 +20,8 @@ type NavStyle = {
   border: string
   wordmark: string
   link: string
+  subtitle: string
+  divider: string
 }
 
 const NAV_STYLES: Record<NavTheme, NavStyle> = {
@@ -27,11 +29,15 @@ const NAV_STYLES: Record<NavTheme, NavStyle> = {
     border: 'border-[#f8f4eb]/10',
     wordmark: '/The-Nightside-Wordmark-White.svg',
     link: 'text-[#f8f4eb]/80 hover:text-[#f8f4eb]',
+    subtitle: '#ffffff',
+    divider: 'rgba(255,255,255,0.4)',
   },
   light: {
     border: 'border-[#130426]/10',
     wordmark: '/The-Nightside-Wordmark-Black.svg',
     link: 'text-[#130426]/70 hover:text-[#130426]',
+    subtitle: '#130426',
+    divider: 'rgba(26,26,26,0.3)',
   },
 }
 
@@ -61,10 +67,13 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // Entries / snapshot pages — same navy as materials for continuity
   { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
 
-  // Reflect/Explore landing: cream nav over navy page — exact match only,
+  // App homepage — navy nav, exact match only
+  { prefix: '/app',         exact: true, theme: 'dark',  navBg: 'bg-[#2C3777]' },
+
+  // Reflect/Explore landing: cream nav — exact match only,
   // so sub-pages fall through to default nav.
   { prefix: '/app/explore', exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/reflect',  exact: true, theme: 'dark',  navBg: 'bg-[#200840]' },
+  { prefix: '/app/reflect',  exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
@@ -99,14 +108,31 @@ export default function GlobalNav() {
   return (
     <nav className={`border-b ${style.border} ${entry.navBg} sticky top-0 z-50`}>
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/app" className="flex items-center">
+        <div className="flex justify-between items-center h-[76px]">
+          <Link
+            href="/app"
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 1, textDecoration: 'none', color: style.subtitle, transition: 'opacity 0.2s ease', paddingTop: 8, paddingBottom: 8 }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={style.wordmark}
               alt="The Nightside"
-              className="h-[31px] w-auto"
+              className="h-[40px] w-auto"
             />
+            <div style={{ width: '100%', height: 1.5, background: style.divider, margin: '2px 0' }} />
+            <span style={{
+              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              fontSize: 12,
+              lineHeight: '14px',
+              fontWeight: 500,
+              letterSpacing: '0.01em',
+              color: style.subtitle,
+              marginLeft: 18,
+            }}>
+              Planning Studio
+            </span>
           </Link>
 
           <div className="flex items-center gap-6">
@@ -120,7 +146,7 @@ export default function GlobalNav() {
               </Link>
             ))}
 
-            <form action="/auth/signout" method="post">
+            <form action="/auth/signout" method="POST">
               <button
                 type="submit"
                 className={`text-[15.7px] font-medium transition-colors ${style.link}`}

@@ -7,6 +7,8 @@ import { createNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
 type View =
   | { kind: 'deck' }
   | { kind: 'card'; card: TriviaCard }
@@ -62,63 +64,121 @@ function DeckView({
   onSelect: (card: TriviaCard) => void
 }) {
   const unseenCount = TRIVIA_CARDS.length - seenIds.size
+  const [tipsOpen, setTipsOpen] = useState(false)
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <div style={{ marginBottom: 24 }}>
-        <Breadcrumbs
-          theme="light"
-          items={[
-            { label: 'Learn', href: '/app/learn' },
-            { label: 'Deathcare Trivia' },
-          ]}
-        />
-      </div>
+    <div>
 
-      <div className="mb-10">
-        <h1 className="ns-title-activity text-[#f8f4eb]">
+      {/* Midnight banner — full width */}
+      <div style={{ background: '#130426', padding: '64px 32px 60px 96px' }}>
+        <div style={{ marginBottom: 24 }}>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Learn', href: '/app/learn' },
+              { label: 'Deathcare Trivia' },
+            ]}
+          />
+        </div>
+        <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
           Deathcare Trivia
         </h1>
-        <p className="ns-lead-activity" style={{ marginTop: '12px', color: '#1A1A1A' }}>
-          Pick any card from the deck.
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+          Explore questions and facts about death, dying, grief, and end-of-life care.
         </p>
-        {seenIds.size > 0 && unseenCount > 0 && (
-          <p className="text-sm mt-2" style={{ color: 'rgba(19,4,38,0.55)' }}>
-            {unseenCount} card{unseenCount === 1 ? '' : 's'} remaining
-          </p>
-        )}
-        {unseenCount === 0 && (
-          <p className="text-sm mt-2" style={{ color: 'rgba(19,4,38,0.55)' }}>You've been through the full deck.</p>
-        )}
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+          Understanding your options, rights, and the realities of deathcare can help you make more informed decisions, communicate your preferences more clearly, and advocate for the kinds of care and support you want.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
+          {['Open any card to start', 'Flip to reveal answers', 'Save notes or reactions'].map((text) => (
+            <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+              {text}
+            </span>
+          ))}
+          <button
+            type="button"
+            onClick={() => setTipsOpen(true)}
+            style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+          >
+            More tips ›
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {TRIVIA_CARDS.map((card) => {
-          const seen = seenIds.has(card.id)
-          return (
-            <button
-              key={card.id}
-              onClick={() => onSelect(card)}
-              style={{
-                minHeight: '180px',
-                background: 'linear-gradient(145deg, #354a9e 0%, #1e2b6b 100%)',
-                border: '1px solid rgba(255,255,255,0.18)',
-                boxShadow: seen ? 'none' : '0 8px 20px rgba(19,4,38,0.18), inset 0 1px 0 rgba(255,255,255,0.07)',
-              }}
-              className={`rounded-2xl px-6 py-8 text-left transition-all duration-150
-                ${seen
-                  ? 'opacity-25 cursor-default'
-                  : 'hover:-translate-y-1.5 hover:shadow-[0_12px_28px_rgba(19,4,38,0.28)] active:translate-y-0 cursor-pointer'
-                }
-              `}
-            >
-              <p className="text-[#BBABF4] text-lg font-bold leading-snug">
-                {card.question}
+      {/* Tips modal */}
+      {tipsOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using this activity</h2>
+              <button
+                onClick={() => setTipsOpen(false)}
+                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ fontFamily: hv }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                These cards are designed to spark curiosity, reflection, and conversation.
               </p>
-            </button>
-          )
-        })}
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                Play through them on your own, or use them with a partner, family member, friend, or group. It can be a low-pressure way to learn together, compare assumptions, and talk about topics that are often hard to bring up directly.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                Pay attention to what surprises you, challenges something you assumed, or makes you want to learn more.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+                Some topics may connect to personal experiences, cultural beliefs, caregiving, grief, or conversations you've had with others over time.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Card grid */}
+      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
+        <div style={{ marginTop: 40 }}>
+          <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.9)', marginBottom: 16 }}>
+            {unseenCount === 0
+              ? "You've been through the full deck."
+              : seenIds.size > 0
+              ? `${unseenCount} card${unseenCount === 1 ? '' : 's'} remaining — select one to continue.`
+              : 'Select any card to begin.'}
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {TRIVIA_CARDS.map((card) => {
+              const seen = seenIds.has(card.id)
+              return (
+                <button
+                  key={card.id}
+                  onClick={() => onSelect(card)}
+                  style={{
+                    aspectRatio: '3/4',
+                    background: 'linear-gradient(145deg, #354a9e 0%, #1e2b6b 100%)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    boxShadow: seen ? 'none' : '0 8px 20px rgba(19,4,38,0.18), inset 0 1px 0 rgba(255,255,255,0.07)',
+                  }}
+                  className={`rounded-2xl px-5 py-6 text-left transition-all duration-150 flex flex-col justify-center
+                    ${seen
+                      ? 'opacity-25 cursor-default'
+                      : 'hover:-translate-y-1.5 hover:shadow-[0_12px_28px_rgba(19,4,38,0.28)] active:translate-y-0 cursor-pointer'
+                    }
+                  `}
+                >
+                  <p className="text-[#F8F4EB] text-xl font-bold leading-snug">
+                    {card.question}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </div>
       </div>
+
     </div>
   )
 }
@@ -267,10 +327,10 @@ function CardView({
                       if (noteDebounceRef.current) { clearTimeout(noteDebounceRef.current); noteDebounceRef.current = null }
                       autoSaveNote(noteText)
                     }}
-                    placeholder="Write a note about this card…"
+                    placeholder="Capture anything that comes up…"
                     rows={2}
-                    className="w-full rounded-lg bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/40 px-3 py-2 text-sm leading-relaxed resize-none outline-none overflow-hidden"
-                    style={{ fontSize: 16 }}
+                    className="w-full text-[#130426] placeholder:text-[#130426]/40 leading-relaxed resize-none outline-none overflow-hidden"
+                    style={{ fontSize: 16, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: 12 }}
                   />
                   <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', minHeight: 18 }}>
                     {noteStatus === 'saving' ? 'Saving…' : noteStatus === 'saved' ? 'Saved' : ''}
@@ -289,15 +349,27 @@ function CardView({
                       <button
                         type="button"
                         onClick={() => setShowVoice(true)}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(255,255,255,0.78)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          width: '100%',
+                          padding: '11px 16px',
+                          borderRadius: 10,
+                          cursor: 'pointer',
+                          background: 'rgba(255,255,255,0.1)',
+                          border: '1.5px solid rgba(255,255,255,0.22)',
+                          boxSizing: 'border-box' as const,
+                        }}
                       >
-                        <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
-                          <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                          <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                          <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                          <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                          <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="rgba(255,255,255,0.9)" />
+                          <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                          <line x1="6" y1="13" x2="6" y2="15.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" />
+                          <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
-                        Record a voice note
+                        <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#ffffff' }}>Record a voice note</span>
+                        <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.25)' }}>auto-transcribed</span>
                       </button>
                     )}
                   </div>

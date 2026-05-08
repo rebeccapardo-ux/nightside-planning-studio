@@ -9,9 +9,11 @@ import type { Note } from '@/lib/notes'
 export default function NotepadModal({
   variant = 'floating',
   buttonStyle = 'lavender',
+  size = 'default',
 }: {
   variant?: 'floating' | 'panel'
-  buttonStyle?: 'lavender' | 'cream' | 'orange'
+  buttonStyle?: 'lavender' | 'cream' | 'orange' | 'midnight' | 'navy'
+  size?: 'default' | 'sm'
 }) {
   const [composerText, setComposerText] = useState('')
   const [saving, setSaving] = useState(false)
@@ -21,6 +23,7 @@ export default function NotepadModal({
   const [voiceConfirmVisible, setVoiceConfirmVisible] = useState(false)
 
   const composerRef = useRef<HTMLTextAreaElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pathname = usePathname()
 
   // Pages with dark backgrounds — ghost panel should be cream with dark text
@@ -43,14 +46,14 @@ export default function NotepadModal({
         labelColor: '#130426',
       }
     : {
-        bg: 'rgba(22,18,15,0.96)',
+        bg: '#2d3a6b',
         border: '1px solid rgba(187,171,244,0.55)',
         shadow: '0 8px 32px rgba(0,0,0,0.45)',
-        textareaBg: 'rgba(248,244,235,0.10)',
-        textareaBorder: '1px solid rgba(187,171,244,0.40)',
-        placeholderClass: 'placeholder:text-[#f8f4eb]/80',
-        iconColor: '#F8F4EB',
-        labelColor: '#F8F4EB',
+        textareaBg: 'rgba(255,255,255,0.1)',
+        textareaBorder: '1px solid rgba(255,255,255,0.2)',
+        placeholderClass: 'placeholder:text-white/45',
+        iconColor: 'rgba(255,255,255,0.75)',
+        labelColor: 'rgba(255,255,255,0.75)',
       }
 
   // Auto-resize panel composer textarea
@@ -113,14 +116,15 @@ export default function NotepadModal({
 
   const modalOverlay = isOpen && (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
-      <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+      <div className="w-full max-w-xl rounded-2xl border border-white/10 p-6 shadow-2xl" style={{ background: '#2d3a6b' }}>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-2xl font-semibold text-[#f8f4eb]">Notepad</h2>
           <button
             onClick={handleClose}
-            className="text-app-secondary hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+            className="transition-colors text-xl leading-none hover:opacity-100"
+            style={{ color: 'rgba(255,255,255,0.7)' }}
           >
             ×
           </button>
@@ -129,58 +133,36 @@ export default function NotepadModal({
         {/* Composer */}
         <textarea
           value={composerText}
-          onChange={(e) => setComposerText(e.target.value)}
           placeholder="Capture a thought, question, or anything on your mind…"
-          className="h-44 w-full rounded-lg bg-[#f8f4eb] px-4 py-3 text-[#130426] placeholder:text-[#130426]/45 text-sm leading-relaxed resize-none outline-none"
+          className="h-44 w-full text-[#130426] placeholder:text-[#130426]/45 text-sm leading-relaxed resize-none outline-none"
+          style={{ background: '#ffffff', border: '1.5px solid rgba(26,26,26,0.15)', borderRadius: 10, padding: '12px 16px' }}
+          onChange={(e) => {
+            const text = e.target.value
+            setComposerText(text)
+            if (debounceRef.current) clearTimeout(debounceRef.current)
+            const trimmed = text.trim()
+            if (!trimmed) return
+            debounceRef.current = setTimeout(async () => {
+              setSaving(true)
+              await createNote(trimmed)
+              setSaving(false)
+              setComposerText('')
+              setConfirmVisible(true)
+              setTimeout(() => setConfirmVisible(false), 2000)
+            }, 900)
+          }}
         />
 
-        {/* Inline confirmation */}
-        <div style={{ minHeight: 20, marginTop: 6, marginBottom: 16 }}>
-          {confirmVisible && (
-            <p style={{ fontSize: 13, fontFamily: hv, color: 'rgba(248,244,235,0.72)', margin: 0 }}>
-              Added to your Plan
-            </p>
-          )}
-        </div>
-
-        {/* Add note button */}
-        <button
-          onClick={handleModalSave}
-          disabled={!composerText.trim() || saving}
-          style={{
-            display: 'block',
-            fontSize: 14,
-            fontWeight: 500,
-            fontFamily: hv,
-            color: '#f8f4eb',
-            background: 'transparent',
-            border: '1px solid rgba(248,244,235,0.4)',
-            borderRadius: 4,
-            padding: '8px 16px',
-            cursor: composerText.trim() && !saving ? 'pointer' : 'default',
-            opacity: composerText.trim() && !saving ? 1 : 0.4,
-            marginBottom: 20,
-          }}
-        >
-          {saving ? 'Saving…' : 'Add note'}
-        </button>
+        {/* Save status */}
+        <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: '6px 0 16px', minHeight: 18 }}>
+          {saving ? 'Saving…' : confirmVisible ? 'Saved to your Plan' : ''}
+        </p>
 
         {/* Voice note */}
         <div className="mb-4">
           <VoiceNoteButton
             saveMode={{ kind: 'freeform' }}
             theme="dark"
-            buttonLabel={
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-                <svg width="12" height="16" viewBox="0 0 12 16" fill="none" aria-hidden>
-                  <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                  <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                  <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-                Record a voice note
-              </span>
-            }
             onSaved={(_note: Note) => {
               setVoiceConfirmVisible(true)
               setTimeout(() => {
@@ -190,7 +172,7 @@ export default function NotepadModal({
             }}
           />
           {voiceConfirmVisible && (
-            <p style={{ fontSize: 13, fontFamily: hv, color: 'rgba(248,244,235,0.72)', marginTop: 8 }}>
+            <p style={{ fontSize: 13, fontFamily: hv, color: 'rgba(255,255,255,0.75)', marginTop: 8 }}>
               Saved to your Plan
             </p>
           )}
@@ -273,18 +255,51 @@ export default function NotepadModal({
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Notepad button */}
-        <button
-          onClick={openModal}
-          className={`rounded-full px-5 py-3 text-sm font-semibold transition-colors ${
-            buttonStyle === 'cream'
-              ? 'bg-[#f8f4eb] text-[#130426] hover:bg-[#BBABF4]'
-              : buttonStyle === 'orange'
-              ? 'bg-[#DB5835] text-[#f8f4eb] hover:bg-[#F29836]'
-              : 'bg-[#BBABF4] text-[#130426] hover:bg-[#f8f4eb]'
-          }`}
-        >
-          ✎ Notepad
-        </button>
+        {size === 'sm' ? (
+          <button
+            onClick={openModal}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              height: 30,
+              borderRadius: 20,
+              paddingLeft: 14,
+              paddingRight: 14,
+              fontSize: 12,
+              fontWeight: 500,
+              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              border: '1px solid rgba(187,171,244,0.6)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap' as const,
+              background: buttonStyle === 'cream' ? '#f8f4eb' : buttonStyle === 'orange' ? '#DB5835' : buttonStyle === 'midnight' ? '#130426' : buttonStyle === 'navy' ? '#2C3777' : '#BBABF4',
+              color: buttonStyle === 'orange' || buttonStyle === 'midnight' || buttonStyle === 'navy' ? '#f8f4eb' : '#130426',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <rect x="2.5" y="1" width="8" height="10.5" rx="1.5" stroke="#130426" strokeWidth="1.3" />
+              <path d="M4.5 4h4M4.5 6.5h4M4.5 9h2.5" stroke="#130426" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            Notepad
+          </button>
+        ) : (
+          <button
+            onClick={openModal}
+            className={`rounded-full px-5 py-3 text-sm font-semibold transition-colors ${
+              buttonStyle === 'cream'
+                ? 'bg-[#f8f4eb] text-[#130426] hover:bg-[#BBABF4]'
+                : buttonStyle === 'orange'
+                ? 'bg-[#DB5835] text-[#f8f4eb] hover:bg-[#C04828]'
+                : buttonStyle === 'midnight'
+                ? 'bg-[#130426] text-[#f8f4eb] hover:bg-[#200840]'
+                : buttonStyle === 'navy'
+                ? 'bg-[#2C3777] text-[#f8f4eb] hover:bg-[#3d4e8f]'
+                : 'bg-[#BBABF4] text-[#130426] hover:bg-[#f8f4eb]'
+            }`}
+          >
+            ✎ Notepad
+          </button>
+        )}
 
         {/* Ghost preview panel — appears below button on hover */}
         <div

@@ -11,7 +11,7 @@ export default function ValuesAndFearsPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/reflect' },
+              { label: 'Reflect', href: '/app/explore' },
               { label: 'Values & Fears Ranking' },
             ]}
           />
@@ -35,10 +35,6 @@ export default function ValuesAndFearsPage() {
               href="/app/explore/values-ranking"
               className="group bg-[#b7a7ea] p-8 transition hover:bg-[#c2b4ef] md:p-10"
             >
-              <p className="text-xs uppercase tracking-[0.14em] text-[#140028]/60">
-                Activity
-              </p>
-
               <h2 className="mt-3 text-[28px] leading-tight font-semibold tracking-[-0.02em] md:text-[34px]">
                 Values
               </h2>
@@ -55,12 +51,8 @@ export default function ValuesAndFearsPage() {
 
             <Link
               href="/app/explore/fears-ranking"
-              className="group bg-[#f3eee3] p-8 transition hover:bg-[#f8f4eb] md:p-10"
+              className="group bg-[#F29836] p-8 transition hover:bg-[#f5a840] md:p-10"
             >
-              <p className="text-xs uppercase tracking-[0.14em] text-[#140028]/60">
-                Activity
-              </p>
-
               <h2 className="mt-3 text-[28px] leading-tight font-semibold tracking-[-0.02em] md:text-[34px]">
                 Fears
               </h2>

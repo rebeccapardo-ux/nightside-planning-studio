@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Link from 'next/link'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
@@ -69,12 +70,16 @@ type TieredItem =
 
 export default function AdvanceDirectivePage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const formRef = useRef<FormState>(EMPTY_FORM)
+  const router = useRouter()
   const [entryId, setEntryId] = useState<string | null>(null)
+  const entryIdRef = useRef<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [statusNow, setStatusNow] = useState(Date.now())
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [focusedField, setFocusedField] = useState<keyof FormState | null>(null)
   // Tracks cursor position in last-focused field (ref = no re-render on every keystroke)
@@ -116,19 +121,19 @@ export default function AdvanceDirectivePage() {
         const existing = existingRows?.[0]
 
         if (existing) {
-          setEntryId(existing.id)
-          setForm({
+          const loaded: FormState = {
             perfectDeath: existing.content?.perfectDeath || '',
             whatMatters: existing.content?.whatMatters || '',
             values: existing.content?.values || '',
             unacceptable: existing.content?.unacceptable || '',
             worries: existing.content?.worries || '',
             caregiver: existing.content?.caregiver || '',
-          })
-
-          if (existing.created_at) {
-            setLastSavedAt(new Date(existing.created_at))
           }
+          setEntryId(existing.id)
+          entryIdRef.current = existing.id
+          if (existing.created_at) setLastSavedAt(new Date(existing.created_at))
+          setForm(loaded)
+          formRef.current = loaded
         }
       } catch (err) {
         console.error('UNEXPECTED LOAD ERROR:', err)
@@ -151,7 +156,11 @@ export default function AdvanceDirectivePage() {
   }, [lastSavedAt])
 
   function updateField(field: keyof FormState, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }))
+    const next = { ...formRef.current, [field]: value }
+    formRef.current = next
+    setForm(next)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => handleSave(), 1500)
   }
 
   function handleCursorChange(field: keyof FormState, pos: number) {
@@ -235,14 +244,14 @@ export default function AdvanceDirectivePage() {
         return
       }
 
-      if (!entryId) {
+      if (!entryIdRef.current) {
         const payload = {
           user_id: user.id,
           title: 'Your Wishes',
           section: 'capture',
           activity: 'advance_directive',
           document_type: 'advance_directive_supplement',
-          content: form,
+          content: formRef.current,
         }
 
         const { data: created, error: createError } = await supabase
@@ -259,6 +268,7 @@ export default function AdvanceDirectivePage() {
 
         if (created) {
           setEntryId(created.id)
+          entryIdRef.current = created.id
           setLastSavedAt(new Date())
           setStatusNow(Date.now())
           setSaveState('saved')
@@ -274,8 +284,8 @@ export default function AdvanceDirectivePage() {
 
       const { error } = await supabase
         .from('entries')
-        .update({ content: form })
-        .eq('id', entryId)
+        .update({ content: formRef.current })
+        .eq('id', entryIdRef.current)
 
       if (error) {
         console.error('SAVE ERROR:', error)
@@ -286,7 +296,7 @@ export default function AdvanceDirectivePage() {
       setLastSavedAt(new Date())
       setStatusNow(Date.now())
       setSaveState('saved')
-      associateWithHealthcare(entryId)
+      associateWithHealthcare(entryIdRef.current!)
 
       window.setTimeout(() => {
         setSaveState((current) => (current === 'saved' ? 'idle' : current))
@@ -295,6 +305,12 @@ export default function AdvanceDirectivePage() {
       console.error('UNEXPECTED SAVE ERROR:', err)
       setSaveState('error')
     }
+  }
+
+  async function handlePreviewExport() {
+    if (!entryIdRef.current) return
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; await handleSave() }
+    router.push(`/app/entries/${entryIdRef.current}`)
   }
 
   const saveButtonLabel = useMemo(() => {
@@ -314,11 +330,11 @@ export default function AdvanceDirectivePage() {
     const diffDays = Math.floor(diffHours / 24)
 
     const diffWeeks = Math.floor(diffDays / 7)
-    if (diffSeconds < 60) return 'Last saved just now'
-    if (diffMinutes < 60) return `Last saved ${diffMinutes} min ago`
-    if (diffHours < 24) return diffHours === 1 ? 'Last saved 1 hour ago' : `Last saved ${diffHours} hours ago`
-    if (diffDays < 7) return diffDays === 1 ? 'Last saved 1 day ago' : `Last saved ${diffDays} days ago`
-    return diffWeeks === 1 ? 'Last saved 1 week ago' : `Last saved ${diffWeeks} weeks ago`
+    if (diffSeconds < 60) return 'Saved'
+    if (diffMinutes < 60) return `Saved ${diffMinutes}m ago`
+    if (diffHours < 24) return diffHours === 1 ? 'Saved 1h ago' : `Saved ${diffHours}h ago`
+    if (diffDays < 7) return diffDays === 1 ? 'Saved 1 day ago' : `Saved ${diffDays} days ago`
+    return diffWeeks === 1 ? 'Saved 1 week ago' : `Saved ${diffWeeks} weeks ago`
   }, [lastSavedAt, statusNow])
 
   if (loading) {
@@ -349,29 +365,40 @@ export default function AdvanceDirectivePage() {
         {/* LEFT: form */}
         <div>
           <div className="mb-8">
-            <h1 className="ns-title-activity text-[#130426]">
-              Your Wishes
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 0 }}>
+              <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
+                Your Wishes
+              </h1>
+              {entryId && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 8 }}>
+                  {saveStatusText && (
+                    <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 500, color: '#2C3777' }}>{saveStatusText}</span>
+                  )}
+                  <button type="button" onClick={handlePreviewExport} disabled={saveState === 'saving'}
+                    style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '8px 12px', cursor: saveState === 'saving' ? 'default' : 'pointer' }}
+                    onMouseEnter={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.background = '#F8F4EB' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#2C3777' }}
+                    onMouseDown={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#130426' }}
+                    onMouseUp={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#2C3777' }}>
+                    {saveState === 'saving' ? 'Preparing…' : 'Export'}
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Explanatory block — always visible */}
-            <div className="rounded-xl bg-[#130426]/[0.08] border border-[#130426]/[0.12] px-5 py-4 mb-4">
-              <p className="text-[#130426]/85 text-sm leading-relaxed mb-1">
-                This document helps you express your values, preferences, and what matters to you in your care.
-              </p>
-              <p className="text-[#130426]/85 text-sm leading-relaxed mb-1">
-                It is not a legal directive, but can be used alongside one to provide important context.
-              </p>
-              <p className="text-[#130426]/85 text-sm leading-relaxed mb-3">
-                You can revisit, edit, or export it in{' '}
-                <Link href="/app/materials" className="underline underline-offset-2 hover:text-[#130426]/70 transition-colors">Your Plan</Link>.
+            <div className="mb-4 mt-3">
+              <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, lineHeight: 1.5, fontWeight: 400, color: '#130426', marginBottom: 12 }}>
+                This document helps you express your values, preferences, and what matters to you in your care. It is not a legal directive, but can be used alongside one to provide important context.
               </p>
               <a
                 href={RESOURCE_HUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-[#130426] underline underline-offset-2 hover:text-[#130426]/70 transition-colors"
+                className="text-sm text-[#130426]"
               >
-                Looking for official legal forms? View province-specific resources →
+                Looking for official legal forms?{' '}
+                <span className="underline underline-offset-2 hover:text-[#130426]/70 transition-colors">View province-specific resources →</span>
               </a>
             </div>
           </div>
@@ -431,37 +458,6 @@ export default function AdvanceDirectivePage() {
               onCursorChange={(pos) => handleCursorChange('caregiver', pos)}
             />
 
-            <div className="pt-2 space-y-2">
-              <button
-                onClick={handleSave}
-                disabled={saveState === 'saving'}
-                className="px-6 py-3 bg-[#f29836] text-[#130426] rounded font-semibold hover:bg-[#f29836]/90 transition disabled:opacity-50"
-              >
-                {saveButtonLabel}
-              </button>
-
-              {(saveStatusText || saveState === 'error') && (
-                <div className="space-y-1">
-                  {saveStatusText && (
-                    <p className="text-sm text-[#130426]/80">{saveStatusText}</p>
-                  )}
-
-                  {saveState === 'error' ? (
-                    <p className="text-sm text-[#130426]">
-                      Your changes did not save. Please try again.
-                    </p>
-                  ) : (
-                    <p className="text-sm text-[#130426]/60">
-                      You can return to this anytime in{' '}
-                      <Link href="/app/materials" className="underline">
-                        Your Plan
-                      </Link>
-                      .
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
@@ -515,7 +511,7 @@ function Field({
     >
       <label
         className="block text-sm mb-2 transition-colors duration-200"
-        style={{ fontWeight: isActive ? 600 : 400, color: isActive ? '#130426' : 'rgba(19,4,38,0.65)' }}
+        style={{ fontWeight: isActive ? 600 : 500, color: isActive ? '#130426' : 'rgba(19,4,38,0.85)' }}
       >
         {label}
       </label>

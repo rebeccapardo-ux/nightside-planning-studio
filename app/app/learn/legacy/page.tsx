@@ -47,14 +47,16 @@ export default async function LegacyLearnPage() {
           transition: transform 150ms ease;
           flex-shrink: 0;
         }
-        .lg-why-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 72px;
-          align-items: start;
+        .lg-source-link {
+          font-size: 13px;
+          color: #F29836;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+          margin-left: 4px;
+          white-space: nowrap;
         }
-        @media (max-width: 768px) {
-          .lg-why-grid { grid-template-columns: 1fr; gap: 40px; }
+        .lg-source-link:hover {
+          color: #C47820;
         }
       `}</style>
 
@@ -78,48 +80,79 @@ export default async function LegacyLearnPage() {
               Legacy Planning
             </h1>
 
+            <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '680px', marginBottom: '24px' }}>
+              The word &ldquo;legacy&rdquo; can feel like it belongs only to people with long careers, complicated estates, or their names on buildings. But legacy belongs to everyone, and can include simple things like the way you made people laugh, or the lessons you taught someone without meaning to.
+            </p>
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '680px' }}>
-              Legacy planning focuses on how you want to be remembered and the impact you leave behind. This can include writing letters or messages for loved ones, creating personal projects, or documenting your life story. It also encompasses decisions about how your values, beliefs, and achievements are celebrated or shared after your death, such as ensuring the correct pronouns are used in your obituary or being remembered in ways that reflect your true self.
+              Legacy planning is the practice of consciously reflecting on what you want to leave behind, and doing that reflecting while you&apos;re still here to shape it. This can mean creating artifacts, like writing letters, recording stories, or other projects. Or it can mean simply deciding how you want your values and relationships to be remembered, and having intentional conversations to share this with the people in your life.
             </p>
 
           </div>
         </section>
 
-        {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
+        {/* ── 2. WHY THIS MATTERS ── cream, single column */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
           <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
 
-            <h2 style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
+            <h2 style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '36px' }}>
               Why this matters
             </h2>
 
-            <div className="lg-why-grid">
-
-              {/* Left column */}
-              <div>
-                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                  Reflecting on your legacy gives you the opportunity to shape how you are remembered and what you leave behind, beyond financial or legal matters.
-                </p>
-                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: 0 }}>
-                  This might include writing letters, recording personal stories, or creating projects that express your values, identity, and relationships.
-                </p>
-              </div>
-
-              {/* Right column */}
-              <div>
-                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                  Without intentional reflection, these aspects of your life are often left undefined or interpreted by others.
-                </p>
-                <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: 0 }}>
-                  Taking time to consider how you want to be remembered, and communicating those wishes, can create clarity, connection, and meaning for the people in your life.
-                </p>
-              </div>
-
+            <div style={{ maxWidth: '640px' }}>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                Without intentional reflection, the most meaningful parts of a life often go undocumented, or may be interpreted by others after the fact. Legacy work is a way of telling your own story, in your own words, on your own terms.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                Psychologist David Kessler, who collaborated with Elisabeth K&uuml;bler-Ross, identified meaning-making as a distinct part of how we process loss — not just for those left behind, but for the person dying. Shifting focus from a life being lost to a life that has been lived is one of the more significant things legacy work can do.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                It also tends to change the quality of conversations. People who engage in this kind of reflection often find themselves having exchanges with family that wouldn&apos;t have happened otherwise, hearing stories for the first time, or finally saying things that had gone unsaid.
+              </p>
             </div>
+
+            {/* Did You Know? panel */}
+            <div style={{ marginTop: '48px', maxWidth: '640px', background: '#FFFFFF', borderRadius: '16px', padding: '32px 36px' }}>
+              <div style={{ fontFamily: hv, fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: '#F29836', textTransform: 'uppercase', marginBottom: '16px' }}>
+                Did You Know?
+              </div>
+              <p style={{ fontFamily: hv, fontSize: '16px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '16px' }}>
+                Research on legacy work in end-of-life care has found that people who engage in structured life reflection experience reduced anticipatory grief. Families report feeling more connected to the dying person, and less anxious about what&apos;s ahead.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: '16px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                In some studies, people who engaged in meaning-making practices reported that physical symptoms — such as pain and difficulty breathing — felt more manageable, likely connected to reduced psychological distress.<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2664509/" target="_blank" rel="noopener noreferrer" className="lg-source-link">[source]</a>
+              </p>
+            </div>
+
           </div>
         </section>
 
-        {/* ── 3. NEXT STEPS ── deep purple */}
+        {/* ── 3. WHAT LEGACY WORK CAN LOOK LIKE ── cream */}
+        <section style={{ width: '100%', background: '#F8F4EB', borderTop: '1px solid rgba(19,4,38,0.08)', paddingTop: '72px', paddingBottom: '72px' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+
+            <h2 style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '36px' }}>
+              What legacy work can look like
+            </h2>
+
+            <div style={{ maxWidth: '640px' }}>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                There are no rules, and no required format. Legacy work is whatever is meaningful to the person doing it.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                Some people write letters for milestones they won&apos;t be present for, or to say things that might otherwise go unsaid. Some record audio or video, telling stories in their own voice. Others make something physical: a collection of recipes, a quilt from meaningful clothing, a hand casting made together with someone they love. Cultural traditions like altars or shrines offer their own form of legacy-making. So do scholarships, dedicated benches, or causes given to in someone&apos;s name.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
+                There&apos;s no single right time to begin. Some people start years before any illness, others at diagnosis, while others return to it in pieces over time. If you&apos;re living with a serious illness, it&apos;s worth starting sooner rather than later, while you have the most energy and clarity to shape it.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: 0 }}>
+                Legacy work often surfaces memories and clarifies priorities. It&apos;s often worth doing with someone rather than alone, because the conversations it opens with the people around you can be as meaningful as whatever tangible outputs get created.
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ── 4. NEXT STEPS ── deep purple */}
         <section style={{ width: '100%', background: '#130426', paddingTop: '104px', paddingBottom: '104px' }}>
           <div style={inner}>
 

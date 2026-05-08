@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
@@ -60,9 +60,11 @@ const EMPTY: Assignments = {
 const ESSENTIAL_SLOTS = 5
 const MIN_OTHER_SLOTS = 8
 
-const CARD_W = 'w-[100px]'
-const CARD_H = 'h-[136px]'
+const CARD_W = 'w-[112px]'
+const CARD_H = 'h-[152px]'
 const CARD_SIZE = `${CARD_W} ${CARD_H}`
+
+const HERO_CARD_SIZE = 'w-[124px] h-[168px]'
 
 type MoveMode =
   | { type: 'none' }
@@ -85,6 +87,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 export default function FearsRankingPage() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const entryIdFromUrl = searchParams.get('entry')
 
   const [index, setIndex] = useState(0)
@@ -101,10 +104,10 @@ export default function FearsRankingPage() {
   const [reflectionSaveStatus, setReflectionSaveStatus] = useState<SaveStatus>('idle')
   const [resetConfirm, setResetConfirm] = useState(false)
   const [voiceActive, setVoiceActive] = useState(false)
+  const [tipsOpen, setTipsOpen] = useState(false)
 
   const cardSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // Ref so autosave closures always see the latest savedEntryId
   const savedEntryIdRef = useRef<string | null>(null)
 
   const current = FEARS[index] ?? null
@@ -124,26 +127,25 @@ export default function FearsRankingPage() {
 
   const currentCardIsActive = moveMode.type === 'none' && !!current
 
-  // Load saved entry on mount — always fetch the most recent, not just by URL param
   useEffect(() => {
     async function loadSavedEntry() {
       const supabase = createSupabaseBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoadingSavedEntry(false); return }
 
-      let data: { id: string; content: unknown; activity: string | null } | null = null
+      let data: { id: string; content: unknown; activity: string | null; created_at: string | null } | null = null
 
       if (entryIdFromUrl) {
         const result = await supabase
           .from('entries')
-          .select('id, content, activity')
+          .select('id, content, activity, created_at')
           .eq('id', entryIdFromUrl)
           .single()
         if (!result.error && result.data?.activity === 'fears_ranking') data = result.data
       } else {
         const result = await supabase
           .from('entries')
-          .select('id, content, activity')
+          .select('id, content, activity, created_at')
           .eq('user_id', user.id)
           .eq('activity', 'fears_ranking')
           .order('created_at', { ascending: false })
@@ -161,6 +163,7 @@ export default function FearsRankingPage() {
         setReflection(typeof content.reflection === 'string' ? content.reflection : '')
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
+        if (data.created_at) { setLastSavedAt(new Date(data.created_at)); setSaveStatus('saved') }
         const restoredCount = typeof content.sorted_count === 'number'
           ? content.sorted_count
           : essential.length + important.length + less_central.length
@@ -171,7 +174,6 @@ export default function FearsRankingPage() {
     loadSavedEntry()
   }, [entryIdFromUrl])
 
-  // Autosave card state 1500ms after assignments change
   useEffect(() => {
     if (!isDirty) return
     if (cardSaveTimerRef.current) clearTimeout(cardSaveTimerRef.current)
@@ -180,7 +182,6 @@ export default function FearsRankingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignments, isDirty])
 
-  // Refresh timestamp display every 60s
   useEffect(() => {
     if (!lastSavedAt) return
     const interval = setInterval(() => setStatusNow(Date.now()), 60000)
@@ -320,7 +321,7 @@ export default function FearsRankingPage() {
     }
     if (moveMode.type === 'making_room_for_incoming') {
       if (!moveMode.selected) {
-        return 'Choose a card in Essential to move out.'
+        return 'Choose a card in Most pressing to move out.'
       }
       return 'Choose a new slot for this card.'
     }
@@ -364,11 +365,11 @@ export default function FearsRankingPage() {
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (!moveMode.selected) {
-        setErrorMessage('First choose a card in Essential to move out.')
+        setErrorMessage('First choose a card in Most pressing to move out.')
         return
       }
       if (bucket === 'essential') {
-        setErrorMessage('Choose an empty slot in Important or Less important.')
+        setErrorMessage('Choose an empty slot in Somewhat pressing or Less pressing.')
         return
       }
       if (!current) {
@@ -403,7 +404,7 @@ export default function FearsRankingPage() {
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (bucket !== 'essential') {
-        setErrorMessage('Choose a card in Essential to move out.')
+        setErrorMessage('Choose a card in Most pressing to move out.')
         return
       }
       setMoveMode({
@@ -425,11 +426,29 @@ export default function FearsRankingPage() {
     setMoveMode({ type: 'moving_existing', value, from: bucket })
   }
 
+  async function handlePreviewExport() {
+    const id = savedEntryIdRef.current
+    if (!id) return
+    if (cardSaveTimerRef.current) {
+      clearTimeout(cardSaveTimerRef.current)
+      cardSaveTimerRef.current = null
+      await autoSaveCardState()
+    }
+    router.push(`/app/entries/${id}`)
+  }
+
   const saveStatusText = saveStatus === 'saving' ? 'Saving…'
     : saveStatus === 'saved' && lastSavedAt
       ? (() => {
           const diff = Math.floor((statusNow - lastSavedAt.getTime()) / 1000)
-          return diff < 60 ? 'Last saved just now' : `Last saved ${Math.floor(diff / 60)} min ago`
+          if (diff < 60) return 'Saved'
+          const mins = Math.floor(diff / 60)
+          if (mins < 60) return `Saved ${mins}m ago`
+          const hours = Math.floor(mins / 60)
+          if (hours < 24) return `Saved ${hours}h ago`
+          const days = Math.floor(hours / 24)
+          if (days < 7) return `Saved ${days}d ago`
+          return `Saved ${Math.floor(days / 7)}w ago`
         })()
       : saveStatus === 'error' ? "Couldn't save — check your connection"
       : ''
@@ -444,137 +463,220 @@ export default function FearsRankingPage() {
 
   return (
     <div className="min-h-screen bg-[#2f3f8f] text-white">
-      <div className="mx-auto max-w-[1320px] px-6 pb-14 pt-5 md:px-10">
 
-        <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs
-            theme="navy"
-            items={[
-              { label: 'Reflect', href: '/app/reflect' },
-              { label: 'Values & Fears Ranking', href: '/app/explore/values-and-fears' },
-              { label: 'Fears Ranking' },
-            ]}
-          />
-        </div>
-        {/* Header with save status */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-          <section className="max-w-4xl">
-            <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]">
-              Fears Ranking
-            </h1>
-            <p className="mt-2 max-w-[520px] text-[16px] leading-[1.4] text-white/86 md:text-[17px]">
-              Clarify what you most want to avoid, so your wishes are easier to communicate.
-            </p>
-          </section>
-          {saveStatusText ? (
-            <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.78)', paddingTop: 6 }}>
-              {saveStatusText}
-            </p>
-          ) : null}
+      {/* Midnight banner — full width */}
+      <div style={{ background: '#130426', padding: '64px 148px 60px 96px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+
+        {/* Left: breadcrumbs + title + description + pills */}
+        <div style={{ flex: 1 }}>
+          <div style={{ marginBottom: 24 }}>
+            <Breadcrumbs
+              theme="navy"
+              items={[
+                { label: 'Reflect', href: '/app/explore' },
+                { label: 'Values & Fears Ranking', href: '/app/explore/values-and-fears' },
+                { label: 'Fears Ranking' },
+              ]}
+            />
+          </div>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
+            Fears Ranking
+          </h1>
+          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+            Many fears can feel equally present in the abstract. Forced ranking helps clarify which concerns feel most pressing or emotionally charged.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+            These reactions can help clarify what matters most to you, guide planning decisions, and make it easier to communicate the kinds of care and support you would want from others.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
+            {['Sort cards into 3 groups', 'Place up to 5 cards in Most pressing', 'To move a card: select it, then select the new slot'].map((text) => (
+              <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+                {text}
+              </span>
+            ))}
+            <button
+              type="button"
+              onClick={() => setTipsOpen(true)}
+              style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+              onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
+              onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
+            >
+              More tips ›
+            </button>
+          </div>
         </div>
 
-        <section className="mt-5 grid items-start gap-x-16 gap-y-0 lg:grid-cols-[500px_560px]">
-          <div className="flex flex-col items-center pt-6 lg:items-center">
-            <div className="flex items-start justify-center gap-4">
-              <div className="flex flex-col items-center">
-                <div className={`relative ${CARD_SIZE}`}>
-                  <div className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${CARD_SIZE}`} />
-                  <div className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${CARD_SIZE}`} />
-                  <div className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${CARD_SIZE}`}>
-                    <span className="text-[11px] uppercase tracking-[0.14em] text-[#170327]/62">
-                      Deck
-                    </span>
-                  </div>
+        {/* Right: export + saved status (not sticky) */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -32, flexShrink: 0 }}>
+          {savedEntryId && (
+            <button
+              type="button"
+              onClick={handlePreviewExport}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
+                <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              Export
+            </button>
+          )}
+          {saveStatusText && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+                <circle cx="7" cy="7" r="6" stroke="#ffffff" strokeWidth="1.3" />
+                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontFamily: hv, fontSize: 11, color: '#ffffff', whiteSpace: 'nowrap' }}>{saveStatusText}</span>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Tips modal */}
+      {tipsOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
+          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using this activity</h2>
+              <button
+                onClick={() => setTipsOpen(false)}
+                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ fontFamily: hv }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                You can approach this in different ways. Some people move quickly and follow instinctive reactions, while others prefer to sit with each fear before placing it.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 8 }}>
+                If something feels difficult to place, try asking:
+              </p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}>
+                {[
+                  'Which concern feels hardest to imagine living with?',
+                  'Which fear feels most persistent or emotionally present?',
+                  'What might this fear be pointing to underneath?',
+                ].map((item, i, arr) => (
+                  <li key={i} style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: i < arr.length - 1 ? 8 : 0, display: 'flex', gap: 8 }}>
+                    <span style={{ flexShrink: 0, color: 'rgba(248,244,235,0.4)' }}>—</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                You can revisit this activity over time. Your responses may shift as your experiences, relationships, or circumstances change.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+                This activity can also be useful to do with others. Comparing rankings may help surface differences in priorities, assumptions, or unspoken concerns.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
+
+        {/* Interaction cluster — centered */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 40 }}>
+
+          {/* Card area */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: 24, marginBottom: 6 }}>
+            <div className="flex flex-col items-center">
+              <div className={`relative ${HERO_CARD_SIZE}`}>
+                <div className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${HERO_CARD_SIZE}`} />
+                <div className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${HERO_CARD_SIZE}`} />
+                <div className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${HERO_CARD_SIZE}`}>
+                  <span className="text-[11px] uppercase tracking-[0.14em] text-[#170327]/62">
+                    Deck
+                  </span>
                 </div>
-                <p className="mt-2 text-[13px] text-[#f8f4eb]/72">
-                  {Math.max(remainingCount, 0)} left
-                </p>
               </div>
-
-              <div className="flex flex-col items-center">
-                <button
-                  type="button"
-                  onClick={handleCurrentCardClick}
-                  className={`rounded-[18px] border-2 p-3 text-left transition ${CARD_SIZE} ${
-                    currentCardIsActive
-                      ? 'border-[#f29836] bg-[#170327] text-[#f8f4eb] shadow-[0_0_0_2px_rgba(242,152,54,0.22)]'
-                      : 'border-[#170327] bg-[#170327]/94 text-[#f8f4eb] hover:bg-[#170327]'
-                  }`}
-                >
-                  <div className="flex h-full items-center justify-center px-2">
-                    <span className="max-w-[84px] text-center text-[16px] leading-[1.28] tracking-[-0.01em]">
-                      {current ?? 'Done'}
-                    </span>
-                  </div>
-                </button>
-                <p className="mt-2 text-[13px] text-[#f8f4eb]/72">
-                  {sortedCount} sorted
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex min-h-[48px] flex-wrap items-center justify-center gap-3">
-              <p className="text-[16px] font-medium leading-[1.3] text-[#f8f4eb] md:text-[17px]">
-                {liveInstruction}
+              <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
+                {Math.max(remainingCount, 0)} left
               </p>
             </div>
 
-            {errorMessage && (
-              <p className="mt-2.5 text-[14px] leading-relaxed text-[#ffd2a6]">
-                {errorMessage}
+            <div className="flex flex-col items-center">
+              <button
+                type="button"
+                onClick={handleCurrentCardClick}
+                className={`rounded-[18px] border-2 p-3 text-left transition ${HERO_CARD_SIZE} ${
+                  currentCardIsActive
+                    ? 'border-[#f29836] bg-[#170327] text-[#f8f4eb] shadow-[0_0_0_2px_rgba(242,152,54,0.22)]'
+                    : 'border-[#170327] bg-[#170327]/94 text-[#f8f4eb] hover:bg-[#170327]'
+                }`}
+              >
+                <div className="flex h-full items-center justify-center px-2">
+                  <span className="max-w-[92px] text-center text-[15px] leading-[1.2] tracking-[-0.01em]">
+                    {current ?? 'Done'}
+                  </span>
+                </div>
+              </button>
+              <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
+                {sortedCount} sorted
               </p>
-            )}
-          </div>
-
-          <div className="max-w-[560px] pt-4">
-            <div className="rounded-[20px] border border-[#f29836]/70 px-5 py-4">
-              <h2 className="text-[20px] font-semibold leading-none tracking-[-0.02em] text-[#f8f4eb] md:text-[22px]">
-                How it works
-              </h2>
-              <div className="mt-3 space-y-2 text-[14px] leading-[1.34] text-[#f8f4eb]/92 md:text-[15px]">
-                <p>You'll sort cards into three groups: Essential, Important, and Less important.</p>
-                <p>Only 5 cards can be placed in Essential. If Essential is full, you'll choose one to move out before adding a new one.</p>
-                <p>You can move cards at any time — nothing is locked in. To move a card from its slot, select the card you want to move, then select the new slot you want to move it to.</p>
-              </div>
             </div>
           </div>
-        </section>
 
-        {/* Reset ranking affordance */}
-        {sortedCount > 0 && (
-          <div style={{ textAlign: 'right', marginTop: 12, marginBottom: 4 }}>
-            {resetConfirm ? (
-              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.78)' }}>
-                This will clear your saved ranking.{' '}
+          {/* Instruction text */}
+          <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 12, marginBottom: 12 }}>
+            {liveInstruction}
+          </p>
+
+          {errorMessage && (
+            <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 14, color: '#ffd2a6', marginBottom: 8 }}>
+              {errorMessage}
+            </p>
+          )}
+
+          {/* Reset button */}
+          {resetConfirm ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 24 }}>
+              <p style={{ fontFamily: hv, fontSize: 15, lineHeight: '22px', color: 'rgba(255,255,255,0.75)', margin: 0 }}>
+                This will clear your saved ranking.
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <button
                   onClick={handleReset}
-                  style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.88)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                  style={{ background: '#F29836', color: '#130426', border: 'none', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 600, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
                 >
-                  Reset
+                  Reset cards
                 </button>
-                {' '}
                 <button
                   onClick={() => setResetConfirm(false)}
-                  style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.56)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  style={{ background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 500, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }}
                 >
                   Cancel
                 </button>
-              </span>
-            ) : (
+              </div>
+            </div>
+          ) : (
+            sortedCount > 0 && (
               <button
+                type="button"
                 onClick={() => setResetConfirm(true)}
-                style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.56)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                className="hover:opacity-80 transition-opacity"
+                style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#FFFFFF', padding: '8px 14px', borderRadius: 999, fontFamily: hv, fontSize: 13, cursor: 'pointer', margin: '0 auto 24px auto' }}
+                className="hover:bg-white/20 transition-colors"
               >
-                Reset ranking
+                Reset all cards
               </button>
-            )}
-          </div>
-        )}
+            )
+          )}
+
+        </div>
 
         <div className="mt-3 space-y-2.5">
           <BucketSection
-            title="Essential"
+            title="Most pressing"
             bucket="essential"
             values={assignments.essential}
             slotCount={ESSENTIAL_SLOTS}
@@ -588,7 +690,7 @@ export default function FearsRankingPage() {
             cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.18)]"
           />
           <BucketSection
-            title="Important"
+            title="Somewhat pressing"
             bucket="important"
             values={assignments.important}
             slotCount={importantSlots}
@@ -602,7 +704,7 @@ export default function FearsRankingPage() {
             cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.12)]"
           />
           <BucketSection
-            title="Less important"
+            title="Less pressing"
             bucket="less_central"
             values={assignments.less_central}
             slotCount={lessCentralSlots}
@@ -617,11 +719,14 @@ export default function FearsRankingPage() {
           />
         </div>
 
-        {/* Reflection textarea */}
-        <section className="mt-4 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#170327] md:px-8 md:py-6">
-          <label className="block text-[11px] uppercase tracking-[0.16em] text-[#170327]/62">
-            Optional note
-          </label>
+        {/* Reflection */}
+        <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#170327] md:px-8 md:py-6">
+          <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
+            Once you've placed a few cards, you might start to notice patterns.
+          </p>
+          <p className="text-[18px] font-semibold leading-snug tracking-[-0.01em] text-[#1A1A1A]" style={{ marginBottom: 12 }}>
+            What patterns, reactions, or connections to past experiences do you notice as you look at your ranking?
+          </p>
           <textarea
             value={reflection}
             onChange={(e) => handleReflectionChange(e.target.value)}
@@ -629,8 +734,8 @@ export default function FearsRankingPage() {
               if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current)
               if (reflection.trim()) autoSaveReflection(reflection)
             }}
-            placeholder="What stands out to you about these choices?"
-            className="mt-3 min-h-[140px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2f3f8f]/35 focus:outline-none"
+            placeholder="Share your thoughts…"
+            className="min-h-[120px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2f3f8f]/35 focus:outline-none"
           />
           <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
             {reflectionSaveStatus === 'saving' ? 'Saving…'
@@ -652,21 +757,33 @@ export default function FearsRankingPage() {
               <button
                 type="button"
                 onClick={() => setVoiceActive(true)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontFamily: hv, color: 'rgba(26,26,26,0.72)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  width: '100%',
+                  padding: '11px 16px',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                  background: 'rgba(44,55,119,0.06)',
+                  border: '1.5px solid rgba(44,55,119,0.2)',
+                  boxSizing: 'border-box' as const,
+                }}
               >
-                <svg width="11" height="15" viewBox="0 0 12 16" fill="none" aria-hidden>
-                  <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="currentColor" />
-                  <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                  <line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+                  <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
+                  <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                  <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
-                Record a voice note
+                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
+                <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
               </button>
             )}
           </div>
         </section>
 
-        {/* Navigation links — outside the reflection box */}
+        {/* Navigation links */}
         <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
           <a
             href="/app/materials"
@@ -749,7 +866,7 @@ function BucketSection({
                 }`}
               >
                 <div className="flex h-full items-center justify-center px-1.5">
-                  <span className="max-w-[84px] text-center text-[13px] leading-[1.22]">
+                  <span className="max-w-[92px] text-center text-[14px] leading-[1.22]">
                     {value}
                   </span>
                 </div>
