@@ -28,7 +28,7 @@ export default function NotepadModal({
 
   // Pages with dark backgrounds — ghost panel should be cream with dark text
   const darkPageBg =
-    pathname?.startsWith('/app/explore') ||
+    pathname?.startsWith('/app/reflect') ||
     pathname?.startsWith('/app/reflect/prompts') ||
     pathname?.startsWith('/app/capture') ||
     pathname?.startsWith('/app/plan') ||

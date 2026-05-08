@@ -171,7 +171,7 @@ export default async function LegacyLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/explore/legacy-map', label: 'Legacy Map' },
+                    { href: '/app/reflect/legacy-map', label: 'Legacy Map' },
                     { href: '/app/capture/advance-directive', label: 'Your Wishes' },
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="lg-activity-row" style={{ display: 'flex', width: '100%' }}>

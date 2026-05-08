@@ -78,7 +78,7 @@ export default function AppHomePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'stretch' }}>
 
             {/* Reflect */}
-            <Link href="/app/explore" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#BBABF4', borderRadius: 16, padding: '28px 24px 24px' }}>
+            <Link href="/app/reflect" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#BBABF4', borderRadius: 16, padding: '28px 24px 24px' }}>
               <p style={{ fontFamily: apfel, fontSize: 28, fontWeight: 500, color: '#000000', margin: '0 0 16px' }}>Reflect</p>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
                 <svg width="160" height="148" viewBox="0 0 140 130" style={{ overflow: 'visible' }}>

@@ -72,7 +72,7 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
 
   // Reflect/Explore landing: cream nav — exact match only,
   // so sub-pages fall through to default nav.
-  { prefix: '/app/explore', exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/reflect', exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
   { prefix: '/app/reflect',  exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
 ]
 
@@ -95,7 +95,7 @@ function getNavEntry(pathname: string): RouteThemeEntry {
 // ---------------------------------------------------------------------------
 
 const NAV_LINKS = [
-  { href: '/app/explore',   label: 'Reflect' },
+  { href: '/app/reflect',   label: 'Reflect' },
   { href: '/app/learn',     label: 'Learn' },
   { href: '/app/plan', label: 'Plan' },
 ]

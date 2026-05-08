@@ -29,9 +29,9 @@ const KNOWN_DOCUMENTS = [
 ]
 
 const KNOWN_ACTIVITIES = [
-  { activity: 'values_ranking', label: 'Values Ranking', href: '/app/explore/values-ranking' },
-  { activity: 'fears_ranking',  label: 'Fears Ranking',  href: '/app/explore/fears-ranking'  },
-  { activity: 'legacy_map',     label: 'Legacy Map',     href: '/app/explore/legacy-map'      },
+  { activity: 'values_ranking', label: 'Values Ranking', href: '/app/reflect/values-ranking' },
+  { activity: 'fears_ranking',  label: 'Fears Ranking',  href: '/app/reflect/fears-ranking'  },
+  { activity: 'legacy_map',     label: 'Legacy Map',     href: '/app/reflect/legacy-map'      },
 ]
 
 // ---------------------------------------------------------------------------

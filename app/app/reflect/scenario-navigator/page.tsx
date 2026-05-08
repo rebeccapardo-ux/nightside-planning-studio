@@ -167,7 +167,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
           <Breadcrumbs
             theme="navy"
             items={[
-              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator' },
             ]}
           />
@@ -285,7 +285,7 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Reflect', href: '/app/explore' },
+            { label: 'Reflect', href: '/app/reflect' },
             { label: 'Scenario Navigator', onClick: onBack },
             { label: scenario.title },
           ]}
@@ -359,7 +359,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -467,7 +467,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -524,7 +524,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/explore/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/reflect/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -723,7 +723,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -831,7 +831,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -888,7 +888,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/explore/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/reflect/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -1065,7 +1065,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -1173,7 +1173,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -1230,7 +1230,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/explore/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/reflect/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -1407,7 +1407,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/explore' },
+                { label: 'Reflect', href: '/app/reflect' },
                 { label: 'Scenario Navigator', onClick: onBack },
                 { label: scenario.title },
               ]}
@@ -1624,7 +1624,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         <Breadcrumbs
           theme="navy"
           items={[
-            { label: 'Reflect', href: '/app/explore' },
+            { label: 'Reflect', href: '/app/reflect' },
             { label: 'Scenario Navigator', onClick: onBackToAll },
             { label: scenario.title, onClick: onBackToScenario },
             { label: choice.outcomeTitle ?? choice.label },
@@ -1663,7 +1663,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
                       {isOpen && (
                         <div className="mt-3 rounded-lg bg-[#f8f4eb] px-4 py-3">
                           <p className="text-sm text-[#130426] leading-relaxed mb-2">{source.shortLabel}</p>
-                          <Link href="/app/explore/scenario-navigator/sources" className="text-sm text-[#2C3777] font-semibold hover:underline">View all sources →</Link>
+                          <Link href="/app/reflect/scenario-navigator/sources" className="text-sm text-[#2C3777] font-semibold hover:underline">View all sources →</Link>
                         </div>
                       )}
                     </div>
@@ -1758,7 +1758,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Reflect', href: '/app/explore' },
+              { label: 'Reflect', href: '/app/reflect' },
               { label: 'Scenario Navigator', onClick: onBackToAll },
               { label: scenario.title, onClick: onBackToScenario },
               { label: choice.outcomeTitle ?? choice.label },
@@ -1817,7 +1817,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/explore/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/reflect/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>

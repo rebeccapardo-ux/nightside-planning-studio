@@ -905,9 +905,9 @@ function getContinueHref(entry: EntryRow): string | null {
   if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
   if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
   if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
-  if (entry.activity === 'values_ranking') return `/app/explore/values-ranking?entry=${entry.id}`
-  if (entry.activity === 'fears_ranking') return `/app/explore/fears-ranking?entry=${entry.id}`
-  if (entry.activity === 'legacy_map') return '/app/explore/legacy-map'
+  if (entry.activity === 'values_ranking') return `/app/reflect/values-ranking?entry=${entry.id}`
+  if (entry.activity === 'fears_ranking') return `/app/reflect/fears-ranking?entry=${entry.id}`
+  if (entry.activity === 'legacy_map') return '/app/reflect/legacy-map'
   return null
 }
 

@@ -9,44 +9,43 @@ import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 
 type Bucket = 'essential' | 'important' | 'less_central'
 
-const FEARS = [
-  'Being in unmanageable pain',
-  'Not being able to make my own decisions',
-  'Overly aggressive medical intervention',
-  'Being alone',
-  'Feeling confused or disoriented',
-  'Being a burden on loved ones',
-  'Losing my sight or hearing',
-  'Not being able to communicate verbally',
-  'Being dependent on others, e.g. for eating',
-  'Being incontinent',
-  'Feeling regret',
-  'Feeling like I have unresolved conflicts',
-  'Prolonged emotional/psychological suffering',
-  'Feeling like financial/logistic affairs are not organized',
-  'Not receiving enough attention/compassion from caregivers',
-  'Feeling betrayed by my body',
-  'Being negatively remembered or misunderstood after death',
-  'Leaving loved ones financially strained/unprepared',
-  'Losing a sense of purpose or meaning in life',
-  'Having doctors disregard my wishes',
-  'Feeling judged about my choices',
-  'Having spiritual or existential fear',
-  'Feeling embarrassed by physical changes',
-  'Feeling a lack of closure in my life journey',
-  'Having unresolved/unspoken truths that remain hidden',
-  'Not having time to say goodbye/feeling rushed in dying',
-  'Being dependent on life-support machines',
-  'Not having my stories/memories documented',
-  'Losing access to routines that bring comfort',
-  'Being physically restrained or immobilized in a medical setting',
-  "Feeling pressured into making choices I don't want",
-  'Feeling emotionally abandoned',
-  'Not being able to express emotions',
-  'Feeling unprepared for changes to body, mind, or spirit that come with dying',
-  'Having a diminished sense of humor or joy',
-  'Losing mobility',
-  'Having a slow death',
+const VALUES = [
+  'Being kept clean',
+  'Not dying alone',
+  'Maintaining dignity',
+  'Preventing family conflict',
+  'Having my identity respected',
+  'Having a chance to say goodbye',
+  'Being able to communicate verbally',
+  'Not having difficulty breathing',
+  'Being mentally cogent',
+  'Prayer/spiritual support',
+  'Not being anxious',
+  'Having physical touch',
+  'Being free from pain',
+  'Having companionship',
+  'Access to nature',
+  'Having financial/logistic affairs organized',
+  'Having funeral/memorial plans organized',
+  'Knowing what to expect with my body',
+  'Having my loved ones prepared',
+  'Reflecting on my life and accomplishments',
+  'Not burdening my loved ones',
+  'Dying at home',
+  'Having a care team I trust',
+  'Addressing unfinished business in relationships',
+  'Being able to talk about death/my fears',
+  'Being able to write',
+  'Feeling I have lived a complete life',
+  'Living as long as possible',
+  'Quality of life',
+  'Independence',
+  'Time with pets',
+  'Birthdays and special occasions',
+  'Religious/spiritual traditions',
+  'Letters/objects to be given to others after my death',
+  'Being able to enjoy food',
+  'Time with loved ones',
 ]
 
 type Assignments = Record<Bucket, string[]>
@@ -65,6 +64,7 @@ const CARD_H = 'h-[152px]'
 const CARD_SIZE = `${CARD_W} ${CARD_H}`
 
 const HERO_CARD_SIZE = 'w-[124px] h-[168px]'
+
 
 type MoveMode =
   | { type: 'none' }
@@ -85,10 +85,10 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-export default function FearsRankingPage() {
+export default function ValuesRankingPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const entryIdFromUrl = searchParams.get('entry')
+  const router = useRouter()
 
   const [index, setIndex] = useState(0)
   const [assignments, setAssignments] = useState<Assignments>(EMPTY)
@@ -108,16 +108,17 @@ export default function FearsRankingPage() {
 
   const cardSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Ref so autosave closures always see the latest savedEntryId
   const savedEntryIdRef = useRef<string | null>(null)
 
-  const current = FEARS[index] ?? null
+  const current = VALUES[index] ?? null
   const sortedCount =
     assignments.essential.length +
     assignments.important.length +
     assignments.less_central.length
 
-  const remainingCount = FEARS.length - sortedCount
-  const isDone = index >= FEARS.length
+  const remainingCount = VALUES.length - sortedCount
+  const isDone = index >= VALUES.length
 
   const importantSlots = Math.max(assignments.important.length + 4, MIN_OTHER_SLOTS)
   const lessCentralSlots = Math.max(
@@ -127,6 +128,7 @@ export default function FearsRankingPage() {
 
   const currentCardIsActive = moveMode.type === 'none' && !!current
 
+  // Load saved entry on mount — always fetch the most recent, not just by URL param
   useEffect(() => {
     async function loadSavedEntry() {
       const supabase = createSupabaseBrowserClient()
@@ -141,13 +143,13 @@ export default function FearsRankingPage() {
           .select('id, content, activity, created_at')
           .eq('id', entryIdFromUrl)
           .single()
-        if (!result.error && result.data?.activity === 'fears_ranking') data = result.data
+        if (!result.error && result.data?.activity === 'values_ranking') data = result.data
       } else {
         const result = await supabase
           .from('entries')
           .select('id, content, activity, created_at')
           .eq('user_id', user.id)
-          .eq('activity', 'fears_ranking')
+          .eq('activity', 'values_ranking')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
@@ -174,6 +176,7 @@ export default function FearsRankingPage() {
     loadSavedEntry()
   }, [entryIdFromUrl])
 
+  // Autosave card state 1500ms after assignments change
   useEffect(() => {
     if (!isDirty) return
     if (cardSaveTimerRef.current) clearTimeout(cardSaveTimerRef.current)
@@ -182,6 +185,7 @@ export default function FearsRankingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignments, isDirty])
 
+  // Refresh timestamp display every 60s
   useEffect(() => {
     if (!lastSavedAt) return
     const interval = setInterval(() => setStatusNow(Date.now()), 60000)
@@ -196,10 +200,10 @@ export default function FearsRankingPage() {
     setSaveStatus('saving')
     const currentEntryId = savedEntryIdRef.current
     const payload = {
-      title: 'Fears Ranking',
+      title: 'Values Ranking',
       user_id: user.id,
       section: 'explore',
-      activity: 'fears_ranking',
+      activity: 'values_ranking',
       content: {
         essential: assignments.essential,
         important: assignments.important,
@@ -207,7 +211,7 @@ export default function FearsRankingPage() {
         reflection: reflection.trim(),
         is_complete: isDone,
         sorted_count: sortedCount,
-        total_count: FEARS.length,
+        total_count: VALUES.length,
       },
     }
 
@@ -260,7 +264,7 @@ export default function FearsRankingPage() {
               reflection: value.trim(),
               is_complete: isDone,
               sorted_count: sortedCount,
-              total_count: FEARS.length,
+              total_count: VALUES.length,
             },
           })
           .eq('id', currentEntryId)
@@ -269,10 +273,10 @@ export default function FearsRankingPage() {
         const { data, error } = await supabase
           .from('entries')
           .insert({
-            title: 'Fears Ranking',
+            title: 'Values Ranking',
             user_id: user.id,
             section: 'explore',
-            activity: 'fears_ranking',
+            activity: 'values_ranking',
             content: {
               essential: assignments.essential,
               important: assignments.important,
@@ -280,7 +284,7 @@ export default function FearsRankingPage() {
               reflection: value.trim(),
               is_complete: isDone,
               sorted_count: sortedCount,
-              total_count: FEARS.length,
+              total_count: VALUES.length,
             },
           })
           .select('id')
@@ -314,14 +318,14 @@ export default function FearsRankingPage() {
 
   const liveInstruction = useMemo(() => {
     if (!current && moveMode.type === 'none') {
-      return 'All fears have been placed.'
+      return 'All values have been placed.'
     }
     if (moveMode.type === 'moving_existing') {
       return 'Place this card in a new slot.'
     }
     if (moveMode.type === 'making_room_for_incoming') {
       if (!moveMode.selected) {
-        return 'Choose a card in Most pressing to move out.'
+        return 'Choose a card in Essential to move out.'
       }
       return 'Choose a new slot for this card.'
     }
@@ -365,11 +369,11 @@ export default function FearsRankingPage() {
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (!moveMode.selected) {
-        setErrorMessage('First choose a card in Most pressing to move out.')
+        setErrorMessage('First choose a card in Essential to move out.')
         return
       }
       if (bucket === 'essential') {
-        setErrorMessage('Choose an empty slot in Somewhat pressing or Less pressing.')
+        setErrorMessage('Choose an empty slot in Important or Less important.')
         return
       }
       if (!current) {
@@ -404,7 +408,7 @@ export default function FearsRankingPage() {
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (bucket !== 'essential') {
-        setErrorMessage('Choose a card in Most pressing to move out.')
+        setErrorMessage('Choose a card in Essential to move out.')
         return
       }
       setMoveMode({
@@ -473,23 +477,20 @@ export default function FearsRankingPage() {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/explore' },
-                { label: 'Values & Fears Ranking', href: '/app/explore/values-and-fears' },
-                { label: 'Fears Ranking' },
+                { label: 'Reflect', href: '/app/reflect' },
+                { label: 'Values & Fears Ranking', href: '/app/reflect/values-and-fears' },
+                { label: 'Values Ranking' },
               ]}
             />
           </div>
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
-            Fears Ranking
+            Values Ranking
           </h1>
           <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
-            Many fears can feel equally present in the abstract. Forced ranking helps clarify which concerns feel most pressing or emotionally charged.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
-            These reactions can help clarify what matters most to you, guide planning decisions, and make it easier to communicate the kinds of care and support you would want from others.
+            Many things can feel equally important in theory. Forced ranking helps clarify what matters most by asking you to make comparisons and notice your instinctive reactions.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-            {['Sort cards into 3 groups', 'Place up to 5 cards in Most pressing', 'To move a card: select it, then select the new slot'].map((text) => (
+            {['Sort cards into 3 groups', 'Place up to 5 cards in Essential', 'To move a card: select it, then select the new slot'].map((text) => (
               <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
                 {text}
               </span>
@@ -551,16 +552,19 @@ export default function FearsRankingPage() {
             </div>
             <div style={{ fontFamily: hv }}>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
-                You can approach this in different ways. Some people move quickly and follow instinctive reactions, while others prefer to sit with each fear before placing it.
+                You can approach this in different ways. Some people move quickly and follow instinctive reactions, while others prefer to reflect carefully before placing each card.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+                The goal isn't to create a perfect hierarchy, but to notice what feels easy, difficult, surprising, or emotionally charged.
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 8 }}>
-                If something feels difficult to place, try asking:
+                If you get stuck between two values, try asking:
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}>
                 {[
-                  'Which concern feels hardest to imagine living with?',
-                  'Which fear feels most persistent or emotionally present?',
-                  'What might this fear be pointing to underneath?',
+                  'Which would matter most in a difficult or uncertain situation?',
+                  'Which would feel hardest to lose?',
+                  'Which most shapes how I want to live or be cared for?',
                 ].map((item, i, arr) => (
                   <li key={i} style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: i < arr.length - 1 ? 8 : 0, display: 'flex', gap: 8 }}>
                     <span style={{ flexShrink: 0, color: 'rgba(248,244,235,0.4)' }}>—</span>
@@ -568,11 +572,8 @@ export default function FearsRankingPage() {
                   </li>
                 ))}
               </ul>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
-                You can revisit this activity over time. Your responses may shift as your experiences, relationships, or circumstances change.
-              </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
-                This activity can also be useful to do with others. Comparing rankings may help surface differences in priorities, assumptions, or unspoken concerns.
+                This activity can also be useful to do with a partner, family member, or friend. Comparing rankings can help surface differences in priorities, assumptions, or communication styles.
               </p>
             </div>
           </div>
@@ -584,99 +585,99 @@ export default function FearsRankingPage() {
         {/* Interaction cluster — centered */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 40 }}>
 
-          {/* Card area */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: 24, marginBottom: 6 }}>
-            <div className="flex flex-col items-center">
-              <div className={`relative ${HERO_CARD_SIZE}`}>
-                <div className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${HERO_CARD_SIZE}`} />
-                <div className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${HERO_CARD_SIZE}`} />
-                <div className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${HERO_CARD_SIZE}`}>
-                  <span className="text-[11px] uppercase tracking-[0.14em] text-[#170327]/62">
-                    Deck
-                  </span>
+            {/* 4. Card area */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: 24, marginBottom: 6 }}>
+              <div className="flex flex-col items-center">
+                <div className={`relative ${HERO_CARD_SIZE}`}>
+                  <div className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${HERO_CARD_SIZE}`} />
+                  <div className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${HERO_CARD_SIZE}`} />
+                  <div className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${HERO_CARD_SIZE}`}>
+                    <span className="text-[11px] uppercase tracking-[0.14em] text-[#170327]/62">
+                      Deck
+                    </span>
+                  </div>
                 </div>
+                <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
+                  {Math.max(remainingCount, 0)} left
+                </p>
               </div>
-              <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
-                {Math.max(remainingCount, 0)} left
-              </p>
+
+              <div className="flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={handleCurrentCardClick}
+                  className={`rounded-[18px] border-2 p-3 text-left transition ${HERO_CARD_SIZE} ${
+                    currentCardIsActive
+                      ? 'border-[#f29836] bg-[#170327] text-[#f8f4eb] shadow-[0_0_0_2px_rgba(242,152,54,0.22)]'
+                      : 'border-[#170327] bg-[#170327]/94 text-[#f8f4eb] hover:bg-[#170327]'
+                  }`}
+                >
+                  <div className="flex h-full items-center justify-center px-2">
+                    <span className="max-w-[92px] text-center text-[15px] leading-[1.2] tracking-[-0.01em]">
+                      {current ?? 'Done'}
+                    </span>
+                  </div>
+                </button>
+                <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
+                  {sortedCount} sorted
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center">
-              <button
-                type="button"
-                onClick={handleCurrentCardClick}
-                className={`rounded-[18px] border-2 p-3 text-left transition ${HERO_CARD_SIZE} ${
-                  currentCardIsActive
-                    ? 'border-[#f29836] bg-[#170327] text-[#f8f4eb] shadow-[0_0_0_2px_rgba(242,152,54,0.22)]'
-                    : 'border-[#170327] bg-[#170327]/94 text-[#f8f4eb] hover:bg-[#170327]'
-                }`}
-              >
-                <div className="flex h-full items-center justify-center px-2">
-                  <span className="max-w-[92px] text-center text-[15px] leading-[1.2] tracking-[-0.01em]">
-                    {current ?? 'Done'}
-                  </span>
-                </div>
-              </button>
-              <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
-                {sortedCount} sorted
-              </p>
-            </div>
-          </div>
-
-          {/* Instruction text */}
-          <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 12, marginBottom: 12 }}>
-            {liveInstruction}
-          </p>
-
-          {errorMessage && (
-            <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 14, color: '#ffd2a6', marginBottom: 8 }}>
-              {errorMessage}
+            {/* 6. Instruction text */}
+            <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 12, marginBottom: 12 }}>
+              {liveInstruction}
             </p>
-          )}
 
-          {/* Reset button */}
-          {resetConfirm ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 24 }}>
-              <p style={{ fontFamily: hv, fontSize: 15, lineHeight: '22px', color: 'rgba(255,255,255,0.75)', margin: 0 }}>
-                This will clear your saved ranking.
+            {errorMessage && (
+              <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 14, color: '#ffd2a6', marginBottom: 8 }}>
+                {errorMessage}
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            )}
+
+            {/* 7. Reset button */}
+            {sortedCount > 0 && (
+              resetConfirm ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 24 }}>
+                  <p style={{ fontFamily: hv, fontSize: 15, lineHeight: '22px', color: 'rgba(255,255,255,0.75)', margin: 0 }}>
+                    This will clear your saved ranking.
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <button
+                      onClick={handleReset}
+                      style={{ background: '#F29836', color: '#130426', border: 'none', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 600, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+                    >
+                      Reset cards
+                    </button>
+                    <button
+                      onClick={() => setResetConfirm(false)}
+                      style={{ background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 500, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
                 <button
-                  onClick={handleReset}
-                  style={{ background: '#F29836', color: '#130426', border: 'none', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 600, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+                  type="button"
+                  onClick={() => setResetConfirm(true)}
+                  style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#FFFFFF', padding: '8px 14px', borderRadius: 999, fontFamily: hv, fontSize: 13, cursor: 'pointer', margin: '0 auto 24px auto' }}
+                  className="hover:bg-white/20 transition-colors"
                 >
-                  Reset cards
+                  Reset all cards
                 </button>
-                <button
-                  onClick={() => setResetConfirm(false)}
-                  style={{ background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 500, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            sortedCount > 0 && (
-              <button
-                type="button"
-                onClick={() => setResetConfirm(true)}
-                style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#FFFFFF', padding: '8px 14px', borderRadius: 999, fontFamily: hv, fontSize: 13, cursor: 'pointer', margin: '0 auto 24px auto' }}
-                className="hover:bg-white/20 transition-colors"
-              >
-                Reset all cards
-              </button>
-            )
-          )}
+              )
+            )}
 
         </div>
 
         <div className="mt-3 space-y-2.5">
           <BucketSection
-            title="Most pressing"
+            title="Essential"
             bucket="essential"
             values={assignments.essential}
             slotCount={ESSENTIAL_SLOTS}
@@ -690,7 +691,7 @@ export default function FearsRankingPage() {
             cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.18)]"
           />
           <BucketSection
-            title="Somewhat pressing"
+            title="Important"
             bucket="important"
             values={assignments.important}
             slotCount={importantSlots}
@@ -704,7 +705,7 @@ export default function FearsRankingPage() {
             cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.12)]"
           />
           <BucketSection
-            title="Less pressing"
+            title="Less important"
             bucket="less_central"
             values={assignments.less_central}
             slotCount={lessCentralSlots}
@@ -725,7 +726,7 @@ export default function FearsRankingPage() {
             Once you've placed a few cards, you might start to notice patterns.
           </p>
           <p className="text-[18px] font-semibold leading-snug tracking-[-0.01em] text-[#1A1A1A]" style={{ marginBottom: 12 }}>
-            What patterns, reactions, or connections to past experiences do you notice as you look at your ranking?
+            What stands out to you about these choices?
           </p>
           <textarea
             value={reflection}
@@ -783,7 +784,7 @@ export default function FearsRankingPage() {
           </div>
         </section>
 
-        {/* Navigation links */}
+        {/* Navigation links — outside the reflection box */}
         <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
           <a
             href="/app/plan"
@@ -792,10 +793,10 @@ export default function FearsRankingPage() {
             Go to Your Plan
           </a>
           <Link
-            href="/app/explore/values-ranking"
+            href="/app/reflect/fears-ranking"
             style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
           >
-            Go to Values Ranking
+            Go to Fears Ranking
           </Link>
         </div>
 
