@@ -354,7 +354,7 @@ export default function AdvanceDirectivePage() {
         <Breadcrumbs
           theme="light"
           items={[
-            { label: 'Plan', href: '/app/materials' },
+            { label: 'Plan', href: '/app/plan' },
             { label: 'Your Wishes' },
           ]}
         />

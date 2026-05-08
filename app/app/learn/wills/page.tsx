@@ -7,7 +7,7 @@ export default async function WillsLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let willsDomainHref = '/app/materials'
+  let willsDomainHref = '/app/plan'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -214,7 +214,7 @@ export default async function WillsLearnPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
                     { href: '/app/reflect', label: 'Reflection Prompts' },
-                    { href: '/app/materials', label: 'Estate Planning Resources' },
+                    { href: '/app/plan', label: 'Estate Planning Resources' },
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="wl-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>

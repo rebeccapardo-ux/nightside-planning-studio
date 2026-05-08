@@ -384,7 +384,7 @@ export default function UnassignedSection({
       {hasMore && (
         <p className="text-xs text-app-tertiary mt-2">
           Showing {showingCount} of {totalCount} unassigned items.{' '}
-          <Link href="/app/materials/all" className="underline hover:text-[#f8f4eb]/70 transition-colors">
+          <Link href="/app/plan/all" className="underline hover:text-[#f8f4eb]/70 transition-colors">
             View all →
           </Link>
         </p>

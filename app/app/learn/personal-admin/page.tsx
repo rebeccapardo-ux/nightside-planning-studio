@@ -7,7 +7,7 @@ export default async function PersonalAdminLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let personalAdminDomainHref = '/app/materials'
+  let personalAdminDomainHref = '/app/plan'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')

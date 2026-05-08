@@ -31,7 +31,7 @@ export default function NotepadModal({
     pathname?.startsWith('/app/explore') ||
     pathname?.startsWith('/app/reflect/prompts') ||
     pathname?.startsWith('/app/capture') ||
-    pathname?.startsWith('/app/materials') ||
+    pathname?.startsWith('/app/plan') ||
     pathname?.startsWith('/app/domains')
 
   const ghost = darkPageBg

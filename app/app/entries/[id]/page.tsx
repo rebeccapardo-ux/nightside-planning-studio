@@ -96,7 +96,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   const formattedDate = formatDate(entry.created_at)
   const isDocument = !!entry.document_type
 
-  const backHref = returnTo ?? '/app/materials'
+  const backHref = returnTo ?? '/app/plan'
   const backLabel = returnTo?.startsWith('/app/domains/') ? '← Back to area' : '← Back to Your Plan'
 
   // Date line

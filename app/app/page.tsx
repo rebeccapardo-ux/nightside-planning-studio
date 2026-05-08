@@ -112,7 +112,7 @@ export default function AppHomePage() {
             </Link>
 
             {/* Plan */}
-            <Link href="/app/materials" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#F29836', borderRadius: 16, padding: '28px 24px 24px' }}>
+            <Link href="/app/plan" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#F29836', borderRadius: 16, padding: '28px 24px 24px' }}>
               <p style={{ fontFamily: apfel, fontSize: 28, fontWeight: 500, color: '#412402', margin: '0 0 16px' }}>Plan</p>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 30 }}>
                 <svg width="160" height="148" viewBox="0 0 140 130" style={{ overflow: 'visible' }}>

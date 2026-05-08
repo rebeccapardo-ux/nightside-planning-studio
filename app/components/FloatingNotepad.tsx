@@ -10,11 +10,11 @@ export default function FloatingNotepad() {
   if (pathname.endsWith('/export')) return null
 
   const isScenarioPage = pathname.startsWith('/app/explore/scenario-navigator')
-  const isMaterialsPage = pathname === '/app/materials'
+  const isPlanPage = pathname === '/app/plan'
   const isTriviaPage = pathname.startsWith('/app/learn/trivia')
   const isExploreLanding = pathname === '/app/explore'
   const isReflectLanding = pathname === '/app/reflect'
-  const buttonStyle = isExploreLanding ? 'lavender' : isScenarioPage || isMaterialsPage || isTriviaPage || isReflectLanding ? 'orange' : 'navy'
+  const buttonStyle = isExploreLanding ? 'lavender' : isScenarioPage || isPlanPage || isTriviaPage || isReflectLanding ? 'orange' : 'navy'
 
   return <NotepadModal buttonStyle={buttonStyle} />
 }

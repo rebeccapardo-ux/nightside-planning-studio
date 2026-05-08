@@ -737,7 +737,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           <Breadcrumbs
             theme="navy"
             items={[
-              { label: 'Plan', href: '/app/materials' },
+              { label: 'Plan', href: '/app/plan' },
               { label: domain?.title ?? '…' },
             ]}
           />
@@ -824,7 +824,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               Notes you&apos;ve added to this area. Add them to a section above to organize your planning.
             </p>
             <Link
-              href="/app/materials"
+              href="/app/plan"
               style={{ display: 'inline-block', marginTop: 8, fontSize: 16, fontWeight: 600, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 3 }}
             >
               View all your notes in Your Plan →
@@ -2322,7 +2322,7 @@ function RowNotesPanel({
         )}
 
         <div style={{ marginTop: 32 }}>
-          <Link href="/app/materials" style={{ fontSize: 13, color: '#2C3777', fontWeight: 500 }}>
+          <Link href="/app/plan" style={{ fontSize: 13, color: '#2C3777', fontWeight: 500 }}>
             Manage notes in My Materials →
           </Link>
         </div>

@@ -6,7 +6,7 @@ export default async function LegacyLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let legacyDomainHref = '/app/materials'
+  let legacyDomainHref = '/app/plan'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')

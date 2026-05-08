@@ -252,7 +252,7 @@ export default function PersonalAdminPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Plan', href: '/app/materials' },
+              { label: 'Plan', href: '/app/plan' },
               { label: 'Personal Admin Info' },
             ]}
           />

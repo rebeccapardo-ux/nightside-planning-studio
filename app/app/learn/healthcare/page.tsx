@@ -7,7 +7,7 @@ export default async function HealthcareLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let healthcareDomainHref = '/app/materials'
+  let healthcareDomainHref = '/app/plan'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')

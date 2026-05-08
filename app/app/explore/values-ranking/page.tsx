@@ -787,7 +787,7 @@ export default function ValuesRankingPage() {
         {/* Navigation links — outside the reflection box */}
         <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
           <a
-            href="/app/materials"
+            href="/app/plan"
             style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
           >
             Go to Your Plan

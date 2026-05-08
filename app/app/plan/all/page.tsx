@@ -108,10 +108,10 @@ export default async function AllUnassignedPage() {
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="mb-10">
           <Link
-            href="/app/materials"
+            href="/app/plan"
             className="text-sm text-white/60 hover:text-white transition-colors"
           >
-            ← My Materials
+            ← Your Plan
           </Link>
         </div>
 
