@@ -166,8 +166,8 @@ export default async function ContainerDetailPage({
 
   const entries =
     containerEntries
-      ?.map((ce) => ce.entry)
-      .filter(Boolean) ?? [];
+      ?.flatMap((ce) => Array.isArray(ce.entry) ? ce.entry : ce.entry ? [ce.entry] : [])
+      ?? [];
 
   return (
     <main style={{ padding: 24 }}>

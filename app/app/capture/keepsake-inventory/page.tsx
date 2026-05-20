@@ -230,7 +230,7 @@ export default function KeepsakeDocumentPage() {
         const savedDate = storedSave ? new Date(storedSave) : inv.created_at ? new Date(inv.created_at) : null
         if (savedDate) setLastSavedAt(savedDate)
         const loaded = inv.entries
-          .map((e) => ({ why: '', ...e }))
+          .map((e) => ({ ...e, why: e.why ?? '' }))
           .filter((e) => !isEntryEmpty(e))
         setEntries(loaded)
         if (loaded.length > 0) {
