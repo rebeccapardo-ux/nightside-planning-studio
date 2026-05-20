@@ -14,9 +14,11 @@ CREATE POLICY "Users can read their own profile"
 -- Automatically create a profile row when a new user signs up,
 -- extracting terms_accepted_at from the metadata stored at signup.
 CREATE OR REPLACE FUNCTION handle_new_user_profile()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
-  INSERT INTO user_profiles (user_id, terms_accepted_at)
+  INSERT INTO public.user_profiles (user_id, terms_accepted_at)
   VALUES (
     NEW.id,
     CASE
