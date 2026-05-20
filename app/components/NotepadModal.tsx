@@ -12,7 +12,7 @@ export default function NotepadModal({
   size = 'default',
 }: {
   variant?: 'floating' | 'panel'
-  buttonStyle?: 'lavender' | 'cream' | 'orange' | 'midnight' | 'navy'
+  buttonStyle?: 'lavender' | 'cream' | 'orange' | 'midnight' | 'navy' | 'sunrise'
   size?: 'default' | 'sm'
 }) {
   const [composerText, setComposerText] = useState('')
@@ -20,7 +20,6 @@ export default function NotepadModal({
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [confirmVisible, setConfirmVisible] = useState(false)
-  const [voiceConfirmVisible, setVoiceConfirmVisible] = useState(false)
 
   const composerRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -100,14 +99,12 @@ export default function NotepadModal({
     setIsOpen(false)
     setComposerText('')
     setConfirmVisible(false)
-    setVoiceConfirmVisible(false)
   }
 
   function openModal() {
     setIsOpen(true)
     setComposerText('')
     setConfirmVisible(false)
-    setVoiceConfirmVisible(false)
   }
 
   // ─── Modal overlay ────────────────────────────────────────────────────────────
@@ -154,28 +151,30 @@ export default function NotepadModal({
         />
 
         {/* Save status */}
-        <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: '6px 0 16px', minHeight: 18 }}>
-          {saving ? 'Saving…' : confirmVisible ? 'Saved to your Plan' : ''}
-        </p>
+        <div style={{ margin: '6px 0 16px', minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {saving && (
+            <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Saving…</span>
+          )}
+          {confirmVisible && !saving && (
+            <>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.75)" strokeWidth="1.3" />
+                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.75)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Saved to Your Plan</span>
+            </>
+          )}
+        </div>
 
         {/* Voice note */}
         <div className="mb-4">
           <VoiceNoteButton
             saveMode={{ kind: 'freeform' }}
             theme="dark"
-            onSaved={(_note: Note) => {
-              setVoiceConfirmVisible(true)
-              setTimeout(() => {
-                setVoiceConfirmVisible(false)
-                setIsOpen(false)
-              }, 2000)
+            onSaved={() => {
+              setTimeout(() => setIsOpen(false), 3000)
             }}
           />
-          {voiceConfirmVisible && (
-            <p style={{ fontSize: 13, fontFamily: hv, color: 'rgba(255,255,255,0.75)', marginTop: 8 }}>
-              Saved to your Plan
-            </p>
-          )}
         </div>
 
       </div>
@@ -272,7 +271,7 @@ export default function NotepadModal({
               border: '1px solid rgba(187,171,244,0.6)',
               cursor: 'pointer',
               whiteSpace: 'nowrap' as const,
-              background: buttonStyle === 'cream' ? '#f8f4eb' : buttonStyle === 'orange' ? '#DB5835' : buttonStyle === 'midnight' ? '#130426' : buttonStyle === 'navy' ? '#2C3777' : '#BBABF4',
+              background: buttonStyle === 'cream' ? '#f8f4eb' : buttonStyle === 'orange' ? '#DB5835' : buttonStyle === 'midnight' ? '#130426' : buttonStyle === 'navy' ? '#2C3777' : buttonStyle === 'sunrise' ? '#F29836' : '#BBABF4',
               color: buttonStyle === 'orange' || buttonStyle === 'midnight' || buttonStyle === 'navy' ? '#f8f4eb' : '#130426',
             }}
           >
@@ -285,7 +284,7 @@ export default function NotepadModal({
         ) : (
           <button
             onClick={openModal}
-            className={`rounded-full px-5 py-3 text-sm font-semibold transition-colors ${
+            className={`rounded-full px-5 py-3 text-sm font-semibold transition-colors flex items-center gap-2 ${
               buttonStyle === 'cream'
                 ? 'bg-[#f8f4eb] text-[#130426] hover:bg-[#BBABF4]'
                 : buttonStyle === 'orange'
@@ -294,10 +293,15 @@ export default function NotepadModal({
                 ? 'bg-[#130426] text-[#f8f4eb] hover:bg-[#200840]'
                 : buttonStyle === 'navy'
                 ? 'bg-[#2C3777] text-[#f8f4eb] hover:bg-[#3d4e8f]'
+                : buttonStyle === 'sunrise'
+                ? 'bg-[#F29836] text-[#130426] hover:bg-[#e08a25]'
                 : 'bg-[#BBABF4] text-[#130426] hover:bg-[#f8f4eb]'
             }`}
           >
-            ✎ Notepad
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+              <path d="M11.5 6L6.5 11C5.4 12.1 3.6 12.1 2.5 11C1.4 9.9 1.4 8.1 2.5 7L8 1.5C8.8 0.7 10.2 0.7 11 1.5C11.8 2.3 11.8 3.7 11 4.5L5.5 10C5.1 10.4 4.4 10.4 4 10C3.6 9.6 3.6 8.9 4 8.5L9 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Notepad
           </button>
         )}
 

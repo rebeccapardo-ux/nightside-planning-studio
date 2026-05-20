@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -21,7 +21,6 @@ const p3Props = { fill: '#F8F4EB', stroke: '#130426', strokeWidth: '1.5' }
 // ---------------------------------------------------------------------------
 
 export default function AppHomePage() {
-  const [aboutOpen, setAboutOpen] = useState(false)
   const headingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -230,72 +229,6 @@ export default function AppHomePage() {
         </div>
       </div>
 
-      {/* ── Footer credit ── */}
-      <div style={{ background: '#f8f4eb', padding: '40px 16px', textAlign: 'center' }}>
-        <p style={{ fontFamily: hv, fontSize: 15, color: '#2A2A2A', margin: 0 }}>
-          Built by Rebecca Pardo, PhD — anthropologist, designer, and death doula.{' '}
-          <button onClick={() => setAboutOpen(true)} className="about-link" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: hv, fontSize: 15 }}>
-            Read more →
-          </button>
-        </p>
-      </div>
-
-      {/* ── About Rebecca modal ── */}
-      {aboutOpen && (
-        <div
-          onClick={() => setAboutOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(19,4,38,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ background: '#F8F4EB', borderRadius: 16, padding: '40px 48px', maxWidth: 600, width: '100%', maxHeight: '80vh', overflowY: 'auto', position: 'relative', animation: 'modal-in 0.25s ease' }}
-          >
-            <style>{`
-              @keyframes modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-              .modal-close:hover { color: #130426 !important; }
-              .nightside-link { color: #DB5835; text-decoration: none; }
-              .nightside-link:hover { text-decoration: underline; }
-            `}</style>
-
-            <button
-              onClick={() => setAboutOpen(false)}
-              className="modal-close"
-              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', padding: 8, cursor: 'pointer', fontSize: 20, color: '#5F5E5A', lineHeight: 1 }}
-              aria-label="Close"
-            >×</button>
-
-            <p style={{ fontFamily: hv, fontSize: 24, fontWeight: 500, color: '#130426', margin: '0 0 24px' }}>About Rebecca</p>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/rebecca-pardo.png" alt="Rebecca Pardo"
-                style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-              <p style={{ fontFamily: hv, fontSize: 14, color: '#5F5E5A', margin: 0, lineHeight: 1.5 }}>
-                Rebecca Pardo, PhD<br/>
-                Anthropologist · Designer · Death Doula<br/>
-                Founder, <a href="https://thenightside.net/" target="_blank" rel="noopener noreferrer" className="nightside-link">The Nightside</a>
-              </p>
-            </div>
-
-            <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: '0 0 16px' }}>
-              I&apos;m Rebecca Pardo — an anthropologist, technologist, and death doula. For over 15 years I&apos;ve worked in research, design, and technology, exploring how technology shapes human behavior. My focus shifted when I began working in end-of-life spaces, bringing my expertise in design and interaction to help create more supportive and compassionate experiences around dying, death, and grief.
-            </p>
-            <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: '0 0 16px' }}>
-              My perspective changed dramatically when I joined Facebook&apos;s Memorialization team, studying what happens when account holders die. Through international ethnographic research — observing and participating in death rituals in Indonesia, India, and Mexico — I saw firsthand how deeply personal and complex death planning is. I also saw how avoidance and a lack of planning leave families in distress, with unanswered questions and uncertainty.
-            </p>
-            <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
-              And then, my dog Quincy got sick. Suddenly, what I had been researching became deeply personal. Drawing on my research and leaning into rituals, I transformed what could have been a devastating experience into one of peace, meaning, and love. It changed how I approached death and life forever. This platform is the culmination of that journey — designed to empower you to make informed, compassionate choices, not just for yourself but for the people you care about most.
-            </p>
-
-            <div style={{ borderTop: '0.5px solid #D3D1C7', marginTop: 24, paddingTop: 16 }}>
-              <p style={{ fontFamily: hv, fontSize: 13, color: '#5F5E5A', margin: 0 }}>
-                Rebecca Pardo, PhD<br/>Anthropologist · Designer · Death Doula<br/>Founder,{' '}
-                <a href="https://thenightside.net/" target="_blank" rel="noopener noreferrer" className="nightside-link">The Nightside</a>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

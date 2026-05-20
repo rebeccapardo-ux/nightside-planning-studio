@@ -111,7 +111,7 @@ export default function PlanNotesGrid({
                     >
                       {confirmDeleteId === note.id ? (
                         <span style={{ display: 'inline-flex', gap: 6 }}>
-                          <button onClick={(e) => { e.stopPropagation(); confirmDelete(note.id) }} style={{ fontSize: 12, fontWeight: 600, color: '#C0392B', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Confirm</button>
+                          <button onClick={(e) => { e.stopPropagation(); confirmDelete(note.id) }} style={{ fontSize: 12, fontWeight: 600, color: '#C0392B', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Delete</button>
                           <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }} style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
                         </span>
                       ) : 'Delete'}
@@ -291,7 +291,7 @@ export default function PlanNotesGrid({
             fontFamily: inter,
             fontSize: 14,
             fontWeight: 500,
-            color: '#FFFFFF',
+            color: '#130426',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
@@ -299,7 +299,7 @@ export default function PlanNotesGrid({
             marginTop: 16,
             display: 'block',
           }}
-          className="hover:opacity-70 transition-opacity"
+          className="hover:underline transition-all"
         >
           View all notes ({notes.length}) →
         </button>

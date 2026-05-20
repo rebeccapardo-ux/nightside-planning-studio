@@ -109,7 +109,7 @@ export default function DomainNullStateBanner({
       margin: '0 0 20px 0',
       lineHeight: 1.55,
     }}>
-      If you&rsquo;re just getting started, begin with reflection or learning—then come back here to organize your plan.
+      If you&rsquo;re just getting started, consider exploring reflection or learning first. Your work there will appear in this section as you go.
     </p>
   )
 }

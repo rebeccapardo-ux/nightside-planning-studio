@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
@@ -70,7 +71,7 @@ export default function DevicesAndAccountsPage() {
 
   const router = useRouter()
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
-  const [openSection, setOpenSection] = useState<number | null>(0)
+  const [openSection, setOpenSection] = useState<number | null>(null)
   const [visibleDevice, setVisibleDevice] = useState(0)
   const [visibleSocial, setVisibleSocial] = useState(0)
   const [visibleOther, setVisibleOther] = useState(0)
@@ -85,6 +86,14 @@ export default function DevicesAndAccountsPage() {
   const socialEntryRefs = useRef<(HTMLDivElement | null)[]>([])
   const otherEntryRefs = useRef<(HTMLDivElement | null)[]>([])
   const assetEntryRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  const lastEditedEntryKeyRef = useRef<string | null>(null)
+  const [savingEntryKey, setSavingEntryKey] = useState<string | null>(null)
+  const [savedIndicatorKey, setSavedIndicatorKey] = useState<string | null>(null)
+  const [savedIndicatorFading, setSavedIndicatorFading] = useState(false)
+  const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => { window.scrollTo(0, 0) }, [])
 
   useEffect(() => {
     async function load() {
@@ -101,7 +110,9 @@ export default function DevicesAndAccountsPage() {
         if (existing) {
           entryIdRef.current = existing.id
           setSavedEntryId(existing.id)
-          if (existing.created_at) setLastSavedAt(new Date(existing.created_at))
+          const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${existing.id}`)
+          const savedDate = storedSave ? new Date(storedSave) : existing.created_at ? new Date(existing.created_at) : null
+          if (savedDate) setLastSavedAt(savedDate)
           const merged = { ...EMPTY_FORM, ...(existing.content as object) } as FormState
           formRef.current = merged
           setForm(merged)
@@ -135,37 +146,57 @@ export default function DevicesAndAccountsPage() {
     const newForm = { ...formRef.current, [field]: value }
     formRef.current = newForm
     setForm(newForm)
+    const match = /^(device|socialMedia|otherAccount|digitalAsset)(\d)/.exec(field)
+    if (match) {
+      const prefix = match[1] === 'socialMedia' ? 'social' : match[1] === 'otherAccount' ? 'other' : match[1] === 'digitalAsset' ? 'asset' : 'device'
+      lastEditedEntryKeyRef.current = `${prefix}-${parseInt(match[2]) - 1}`
+    }
     scheduleAutosave()
   }
 
   function scheduleAutosave() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => performAutosave(), 1500)
+    debounceRef.current = setTimeout(() => { debounceRef.current = null; performAutosave() }, 1500)
   }
 
   function handleBlur() {
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; performAutosave() }
   }
 
+  function triggerSavedIndicator(key: string | null) {
+    if (!key) return
+    if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current)
+    setSavedIndicatorKey(key)
+    setSavedIndicatorFading(false)
+    savedFadeTimerRef.current = setTimeout(() => {
+      setSavedIndicatorFading(true)
+      setTimeout(() => setSavedIndicatorKey(null), 400)
+    }, 2600)
+  }
+
   async function performAutosave() {
+    const targetKey = lastEditedEntryKeyRef.current
     const currentForm = formRef.current
     setSaveStatus('saving')
+    setSavingEntryKey(targetKey)
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) { setSaveStatus('error'); return }
+      if (userError || !user) { setSaveStatus('error'); setSavingEntryKey(null); return }
       if (!entryIdRef.current) {
         const { data: created, error } = await supabase.from('entries')
           .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: currentForm })
           .select('id').single()
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingEntryKey(null); return }
         if (created) { entryIdRef.current = created.id; setSavedEntryId(created.id) }
       } else {
         const { error } = await supabase.from('entries').update({ content: currentForm }).eq('id', entryIdRef.current)
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingEntryKey(null); return }
       }
+      if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
       setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveStatus('saved')
-    } catch { setSaveStatus('error') }
+      setSavingEntryKey(null); triggerSavedIndicator(targetKey)
+    } catch { setSaveStatus('error'); setSavingEntryKey(null) }
   }
 
   async function handlePreviewExport() {
@@ -189,7 +220,7 @@ export default function DevicesAndAccountsPage() {
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24), w = Math.floor(d / 7)
-    if (s < 60) return 'Saved'
+    if (s < 60) return 'Saved just now'
     if (m < 60) return `Saved ${m}m ago`
     if (h < 24) return h === 1 ? 'Saved 1h ago' : `Saved ${h}h ago`
     if (d < 7) return d === 1 ? 'Saved 1 day ago' : `Saved ${d} days ago`
@@ -320,32 +351,58 @@ export default function DevicesAndAccountsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F4EB', position: 'relative' }}>
+      {savedEntryId && hasAnyContent && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <button
+            type="button"
+            onClick={handlePreviewExport}
+            disabled={saveStatus === 'saving'}
+            className="hover:opacity-90 transition-opacity"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            {saveStatus === 'saving' ? 'Preparing…' : 'Finalize & Export'}
+          </button>
+          {saveStatusText && (
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+          )}
+        </div>
+      )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Devices & Accounts' }]} />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
-            Devices & Accounts
+        <div style={{ marginBottom: 48 }}>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
+            Devices &amp; Accounts
           </h1>
-          {savedEntryId && hasAnyContent && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 8 }}>
-              {saveStatusText && (
-                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777' }}>{saveStatusText}</span>
-              )}
-              <button type="button" onClick={handlePreviewExport} disabled={saveStatus === 'saving'}
-                style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '8px 12px', cursor: saveStatus === 'saving' ? 'default' : 'pointer' }}
-                onMouseEnter={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.background = '#F8F4EB' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#2C3777' }}
-                onMouseDown={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#130426' }}
-                onMouseUp={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#2C3777' }}>
-                {saveStatus === 'saving' ? 'Preparing…' : 'Finalize and Export'}
-              </button>
-            </div>
-          )}
+          <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            A place to record your digital footprint; accounts, subscriptions, and devices the people handling your affairs will need to know about. Your email, social media, photo libraries, subscriptions, and other online accounts may need to be accessed, memorialized, or closed. Without a written record, accounts get locked, recurring charges continue, and digital memories become inaccessible.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            Financial account details (account numbers, balances) belong in{' '}
+            <Link href="/app/capture/financial-information" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>
+              Financial Information
+            </Link>
+            {' '}rather than here. This document focuses on access; that one focuses on the financial picture.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
+            Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to your plan. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
+            <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Expand a section to fill it in', 'Update anytime as accounts change', 'Add access details at the moment of export'].map((text) => (
+              <span key={text} style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
+                {text}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -354,6 +411,7 @@ export default function DevicesAndAccountsPage() {
           <AccordionSection
             idx={0} open={openSection === 0} onToggle={toggleSection}
             title="Devices"
+            description="Phones, computers, tablets, and other devices that may need to be accessed or wiped."
             sectionRef={(el) => { sectionRefs.current[0] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -369,6 +427,9 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenDeviceIdx, i)}
                     onDelete={() => deleteDevice(i)}
+                    isSaving={savingEntryKey === `device-${i}`}
+                    isSaved={savedIndicatorKey === `device-${i}`}
+                    savedFading={savedIndicatorFading}
                   >
                     <Field label="Device:" value={form[`device${n}Name`]} onChange={(v) => updateField(`device${n}Name`, v)} onBlur={handleBlur} rows={1} />
                     <Field label="Account / Login (if applicable):" value={form[`device${n}LoginAccount`]} onChange={(v) => updateField(`device${n}LoginAccount`, v)} onBlur={handleBlur} rows={1} />
@@ -387,6 +448,7 @@ export default function DevicesAndAccountsPage() {
           <AccordionSection
             idx={1} open={openSection === 1} onToggle={toggleSection}
             title="Social Media"
+            description="Accounts on platforms like Facebook, Instagram, LinkedIn, and others that may need to be memorialized, deactivated, or closed."
             sectionRef={(el) => { sectionRefs.current[1] = el }}
           >
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.7)', lineHeight: 1.55, margin: '0 0 16px 0' }}>
@@ -408,6 +470,9 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenSocialIdx, i)}
                     onDelete={() => deleteSocial(i)}
+                    isSaving={savingEntryKey === `social-${i}`}
+                    isSaved={savedIndicatorKey === `social-${i}`}
+                    savedFading={savedIndicatorFading}
                   >
                     <Field label="Platform:" value={form[`socialMedia${n}Platform`]} onChange={(v) => updateField(`socialMedia${n}Platform`, v)} onBlur={handleBlur} rows={1} />
                     <Field label="Username:" value={form[`socialMedia${n}Username`]} onChange={(v) => updateField(`socialMedia${n}Username`, v)} onBlur={handleBlur} rows={1} />
@@ -425,7 +490,8 @@ export default function DevicesAndAccountsPage() {
           {/* ── Other Accounts ── */}
           <AccordionSection
             idx={2} open={openSection === 2} onToggle={toggleSection}
-            title="Other Accounts (e.g. subscriptions, utilities)"
+            title="Other Accounts"
+            description="Subscriptions, utilities, email accounts, and other online services that may need to be transferred or cancelled."
             sectionRef={(el) => { sectionRefs.current[2] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -441,6 +507,9 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenOtherIdx, i)}
                     onDelete={() => deleteOther(i)}
+                    isSaving={savingEntryKey === `other-${i}`}
+                    isSaved={savedIndicatorKey === `other-${i}`}
+                    savedFading={savedIndicatorFading}
                   >
                     <Field label="Account:" value={form[`otherAccount${n}Name`]} onChange={(v) => updateField(`otherAccount${n}Name`, v)} onBlur={handleBlur} rows={1} />
                     <Field label="Username:" value={form[`otherAccount${n}Username`]} onChange={(v) => updateField(`otherAccount${n}Username`, v)} onBlur={handleBlur} rows={1} />
@@ -459,6 +528,7 @@ export default function DevicesAndAccountsPage() {
           <AccordionSection
             idx={3} open={openSection === 3} onToggle={toggleSection}
             title="Digital Assets"
+            description="Cryptocurrency, NFTs, domain names, and other digital assets of value."
             sectionRef={(el) => { sectionRefs.current[3] = el }}
           >
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.7)', lineHeight: 1.55, margin: '0 0 16px 0' }}>
@@ -480,6 +550,9 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenAssetIdx, i)}
                     onDelete={() => deleteAsset(i)}
+                    isSaving={savingEntryKey === `asset-${i}`}
+                    isSaved={savedIndicatorKey === `asset-${i}`}
+                    savedFading={savedIndicatorFading}
                   >
                     <Field label="Asset:" value={form[`digitalAsset${n}Name`]} onChange={(v) => updateField(`digitalAsset${n}Name`, v)} onBlur={handleBlur} rows={1} />
                     <SensitiveFieldDisplay label="Access details:" />
@@ -502,11 +575,12 @@ export default function DevicesAndAccountsPage() {
 
 // ── AccordionSection ──────────────────────────────────────────────────────────
 
-function AccordionSection({ idx, open, onToggle, title, sectionRef, children }: {
+function AccordionSection({ idx, open, onToggle, title, description, sectionRef, children }: {
   idx: number
   open: boolean
   onToggle: (idx: number) => void
   title: string
+  description?: string
   sectionRef: (el: HTMLDivElement | null) => void
   children: React.ReactNode
 }) {
@@ -521,12 +595,19 @@ function AccordionSection({ idx, open, onToggle, title, sectionRef, children }: 
           <button
             type="button"
             onClick={() => onToggle(idx)}
-            style={{ width: '100%', background: 'transparent', border: 'none', padding: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, textAlign: 'left' }}
+            style={{ width: '100%', background: 'transparent', border: 'none', padding: 24, cursor: 'pointer', display: 'flex', alignItems: description ? 'flex-start' : 'center', justifyContent: 'space-between', gap: 16, textAlign: 'left' }}
           >
-            <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', margin: 0, lineHeight: 1.2 }}>
-              {title}
-            </p>
-            <svg width="14" height="9" viewBox="0 0 14 9" fill="none" style={{ flexShrink: 0, transition: 'transform 0.25s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            <div>
+              <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', margin: 0, lineHeight: 1.2 }}>
+                {title}
+              </p>
+              {description && (
+                <p style={{ fontFamily: hv, fontSize: 14, color: '#2C3777', margin: '6px 0 0', lineHeight: 1.4 }}>
+                  {description}
+                </p>
+              )}
+            </div>
+            <svg width="14" height="9" viewBox="0 0 14 9" fill="none" style={{ flexShrink: 0, transition: 'transform 0.25s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', marginTop: description ? 4 : 0 }}>
               <path d="M1 1.5L7 7.5L13 1.5" stroke="#2C3777" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
@@ -543,12 +624,15 @@ function AccordionSection({ idx, open, onToggle, title, sectionRef, children }: 
 
 // ── EntryCard ─────────────────────────────────────────────────────────────────
 
-function EntryCard({ title, isOpen, onToggle, onDelete, entryRef, children }: {
+function EntryCard({ title, isOpen, onToggle, onDelete, entryRef, isSaving, isSaved, savedFading, children }: {
   title: string
   isOpen: boolean
   onToggle: () => void
   onDelete: () => void
   entryRef: (el: HTMLDivElement | null) => void
+  isSaving: boolean
+  isSaved: boolean
+  savedFading: boolean
   children: React.ReactNode
 }) {
   return (
@@ -570,7 +654,7 @@ function EntryCard({ title, isOpen, onToggle, onDelete, entryRef, children }: {
         <div style={{ padding: '0 16px 16px', borderTop: '1px solid #2C3777', display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ height: 16 }} />
           {children}
-          <div style={{ paddingTop: 4 }}>
+          <div style={{ paddingTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <button
               type="button"
               onClick={onDelete}
@@ -578,6 +662,20 @@ function EntryCard({ title, isOpen, onToggle, onDelete, entryRef, children }: {
             >
               Delete
             </button>
+            {isSaving && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+              </div>
+            )}
+            {isSaved && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: savedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
+                  <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+              </div>
+            )}
           </div>
         </div>
       )}

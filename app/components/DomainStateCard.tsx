@@ -88,12 +88,13 @@ function getSegmentStatus(domainId: string, seg: SegmentDef): Status {
   return 'not_started'
 }
 
-function qualitativeLabel(exploredCount: number): string {
-  if (exploredCount === 0) return 'Not yet started'
-  if (exploredCount <= 2)  return 'Just beginning'
-  if (exploredCount <= 4)  return 'Taking shape'
-  if (exploredCount <= 6)  return 'Well underway'
-  return 'Deeply explored'
+function qualitativeLabel(exploredCount: number, totalCount: number): string {
+  if (exploredCount === 0 || totalCount === 0) return 'Not yet started'
+  const pct = exploredCount / totalCount
+  if (pct >= 1)    return 'Deeply explored'
+  if (pct >= 0.67) return 'Well underway'
+  if (pct >= 0.34) return 'Taking shape'
+  return 'Just beginning'
 }
 
 function getDomainSegments(title: string): SegmentDef[] {
@@ -125,37 +126,29 @@ function MiniSegmentBar({
     setStatuses(segments.map((seg) => getSegmentStatus(domainId, seg)))
   }, [domainId, segments])
 
-  const totalCount    = segments.length
-  const completedCount = statuses.filter((s) => s === 'complete').length
-  const exploredCount  = statuses.filter((s) => s !== 'not_started').length
-  const inProgress     = statuses.some((s) => s === 'in_progress')
+  const totalCount   = segments.length
+  const exploredCount = statuses.filter((s) => s !== 'not_started').length
+  const ORDER: Record<Status, number> = { complete: 0, in_progress: 1, not_started: 2 }
+  const sortedStatuses = [...statuses].sort((a, b) => ORDER[a] - ORDER[b])
 
-  // Fixed 5 segments — fill count proportional to completed topics; in_progress shown as lighter partial
-  const filledCount = totalCount > 0
-    ? Math.min(5, Math.max(0, Math.round((completedCount / totalCount) * 5)))
-    : 0
-  const hasPartial = inProgress && filledCount < 5
-
-  const segStyle = (i: number): React.CSSProperties => {
-    if (i < filledCount)
-      return { background: '#D85A30' }
-    if (i === filledCount && hasPartial)
-      return { background: '#F0997B' }
-    return { background: '#FAECE7', border: '1px solid #7A4A2E' }
+  function segColor(status: Status): string {
+    if (status === 'complete')    return '#D85A30'
+    if (status === 'in_progress') return '#F0997B'
+    return '#F8F4EB'
   }
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 3, width: '100%', marginBottom: 8 }}>
-        {[0, 1, 2, 3, 4].map((i) => (
+      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+        {sortedStatuses.map((status, i) => (
           <div
             key={i}
-            style={{ flex: '1 1 0', height: 10, borderRadius: 4, ...segStyle(i) }}
+            style={{ width: 24, height: 6, borderRadius: 3, flexShrink: 0, background: segColor(status), border: '1px solid rgba(216,90,48,0.45)' }}
           />
         ))}
       </div>
       <p style={{ fontSize: 13, fontWeight: 600, color: labelColor, margin: '0 0 4px 0' }}>
-        {qualitativeLabel(exploredCount)}
+        {qualitativeLabel(exploredCount, totalCount)}
       </p>
       <p style={{ fontSize: 12, color: labelColor, margin: 0 }}>
         {exploredCount} of {totalCount} topics started

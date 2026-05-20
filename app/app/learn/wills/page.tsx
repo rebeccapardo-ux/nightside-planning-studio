@@ -94,8 +94,8 @@ export default async function WillsLearnPage() {
 
       <div>
 
-        {/* ── 1. HERO ── coral */}
-        <section style={{ background: '#DB5835' }}>
+        {/* ── 1. HERO ── navy */}
+        <section style={{ background: '#2C3777' }}>
           <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
 
             <div style={{ marginBottom: 24 }}>

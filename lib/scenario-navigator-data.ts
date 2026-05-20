@@ -210,7 +210,7 @@ export const SCENARIOS: Scenario[] = [
         label: 'Transition to palliative-focused care and focus on comfort measures',
         outcomeTitle: 'Palliative-Focused Care',
         summary: [
-          'Instead of a ventilator, your SDM chooses to focus on comfort care and symptom relief. Doctors provide medications for breathing difficulties and muscle symptoms, but you do not receive life-prolonging interventions. You remain in a hospice or home setting, surrounded by loved ones.',
+          'Instead of a ventilator, your substitute decision-maker chooses to focus on comfort care and symptom relief. Doctors provide medications for breathing difficulties and muscle symptoms, but you do not receive life-prolonging interventions. You remain in a hospice or home setting, surrounded by loved ones.',
         ],
         didYouKnow: [
           {
@@ -238,7 +238,7 @@ export const SCENARIOS: Scenario[] = [
         outcomeTitle: 'Non-Invasive Support',
         summary: [
           'Instead of full ventilation, you use non-invasive breathing devices (e.g., BiPAP) to ease symptoms. You rely on assistive communication technology (eye-tracking devices, text-to-speech software) to continue engaging with loved ones.',
-          'Eventually, your SDM will need to decide if or when to transition fully to comfort care.',
+          'Eventually, your substitute decision-maker will need to decide if or when to transition fully to comfort care.',
         ],
         didYouKnow: [
           {
@@ -306,7 +306,7 @@ export const SCENARIOS: Scenario[] = [
         label: 'Transition to comfort-focused care (hospice and palliative care)',
         outcomeTitle: 'Comfort-Focused Care',
         summary: [
-          'Your SDM declines further chemotherapy and hospital treatments, shifting the focus to symptom management, pain relief, and emotional support.',
+          'Your substitute decision-maker declines further chemotherapy and hospital treatments, shifting the focus to symptom management, pain relief, and emotional support.',
           'You spend more time at home with loved ones rather than in hospitals. Your medical team helps manage nausea, pain, and anxiety, ensuring comfort.',
         ],
         didYouKnow: [
@@ -380,7 +380,7 @@ export const SCENARIOS: Scenario[] = [
         outcomeTitle: 'Aggressive Treatment',
         summary: [
           'Each new illness or infection is treated with hospitalization, surgery, or antibiotics. You develop difficulty swallowing, and doctors recommend a feeding tube to maintain nutrition.',
-          'Your SDM struggles with balancing prolonging life vs. prioritizing comfort.',
+          'Your substitute decision-maker struggles with balancing prolonging life vs. prioritizing comfort.',
         ],
         didYouKnow: [
           {
@@ -420,7 +420,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         reflectionQuestions: [
           'Would you prefer to remain in a familiar environment (home, care facility) rather than being admitted to a hospital for treatments?',
-          'Have you communicated these preferences to your SDM?',
+          'Have you communicated these preferences to your substitute decision-maker?',
         ],
         resources: [
           {

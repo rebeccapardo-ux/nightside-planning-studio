@@ -68,7 +68,7 @@ const FAMILY_FIELDS: { key: keyof PersonalAdminContent; label: string }[] = [
 const LEGAL_FIELDS: { key: keyof PersonalAdminContent; label: string }[] = [
   { key: 'willLocation',                   label: 'My will is located' },
   { key: 'hasCareDecisionMaker',           label: 'Formally designated decision-maker/s for care' },
-  { key: 'careDecisionMakerDocLocation',   label: 'Care decision-maker document is located' },
+  { key: 'careDecisionMakerDocLocation',   label: 'Document location' },
   { key: 'hasEndOfLifeWishesDoc',          label: 'End-of-life care wishes captured in writing' },
   { key: 'endOfLifeWishesDocLocation',     label: 'End-of-life wishes document is located' },
   { key: 'hasPropertyDecisionMaker',       label: 'Formally designated decision-maker/s for property/finances' },

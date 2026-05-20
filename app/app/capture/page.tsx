@@ -18,7 +18,7 @@ type CardDef = {
 const WISHES_CARDS: CardDef[] = [
   {
     href: '/app/capture/advance-directive',
-    title: 'Your Wishes',
+    title: 'My Care Wishes',
     description: 'Express your care values and preferences in your own words. Designed to support and complement legal documents.',
     bg: '#BBABF4',
     titleColor: '#130426',
@@ -41,7 +41,7 @@ const WISHES_CARDS: CardDef[] = [
 const ADMIN_CARDS: CardDef[] = [
   {
     href: '/app/capture/personal-admin',
-    title: 'Personal Admin Info',
+    title: 'Personal Admin Information',
     description: 'Biographical details, important documents, and end of life wishes.',
     bg: '#F8F4EB',
     titleColor: '#130426',
@@ -243,7 +243,7 @@ export default function CapturePage() {
                 color: '#FFFFFF',
                 margin: '0 0 16px 0',
               }}>
-                Your Wishes
+                My Care Wishes
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {WISHES_CARDS.map((card) => (

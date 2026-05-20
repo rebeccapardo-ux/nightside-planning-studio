@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 // ---------------------------------------------------------------------------
 // Nav theme definitions
@@ -60,6 +61,12 @@ const DEFAULT_ENTRY: RouteThemeEntry = {
 }
 
 const ROUTE_THEME_MAP: RouteThemeEntry[] = [
+  // Capture documents
+  { prefix: '/app/capture/devices-and-accounts', theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/capture/financial-information', theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-[#2C3777]' },
+
   // Materials + Domains share a navy nav to complement their dark page bg
   { prefix: '/app/plan',      theme: 'dark',  navBg: 'bg-[#2C3777]' },
   { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
@@ -74,6 +81,16 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // so sub-pages fall through to default nav.
   { prefix: '/app/reflect', exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
   { prefix: '/app/reflect',  exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
+
+  // Values & Fears landing + ranking activities — navy nav on blue workspace
+  { prefix: '/app/reflect/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/reflect/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/reflect/fears-ranking',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
+
+  // Account management pages — cream nav
+  { prefix: '/app/account', theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/help',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/about',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
@@ -99,6 +116,45 @@ const NAV_LINKS = [
   { href: '/app/learn',     label: 'Learn' },
   { href: '/app/plan', label: 'Plan' },
 ]
+
+const STORAGE_PREFIXES = ['nightside.', 'nightside-legacy-map', 'reflect-', 'checkbox_', 'ready_', 'orient_', 'planning_']
+const SS_PREFIXES = ['nightside_', 'nightside.']
+
+function shouldClearKey(key: string, currentUserId: string): boolean {
+  // Preserve keys that belong to the signing-out user
+  if (key.includes(currentUserId)) return false
+  // Clear keys with no user ID (legacy un-namespaced) or a different user's ID
+  return true
+}
+
+async function handleSignOut() {
+  const supabase = createSupabaseBrowserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const uid = user?.id ?? ''
+
+  // Clear platform localStorage keys that don't belong to the current user
+  const lsKeys: string[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key && STORAGE_PREFIXES.some((p) => key.startsWith(p)) && shouldClearKey(key, uid)) {
+      lsKeys.push(key)
+    }
+  }
+  lsKeys.forEach((k) => localStorage.removeItem(k))
+
+  // Clear platform sessionStorage keys that don't belong to the current user
+  const ssKeys: string[] = []
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const key = sessionStorage.key(i)
+    if (key && SS_PREFIXES.some((p) => key.startsWith(p)) && shouldClearKey(key, uid)) {
+      ssKeys.push(key)
+    }
+  }
+  ssKeys.forEach((k) => sessionStorage.removeItem(k))
+
+  await supabase.auth.signOut()
+  window.location.href = '/auth/signin'
+}
 
 export default function GlobalNav() {
   const pathname = usePathname()
@@ -146,14 +202,13 @@ export default function GlobalNav() {
               </Link>
             ))}
 
-            <form action="/auth/signout" method="POST">
-              <button
-                type="submit"
-                className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-              >
-                Sign out
-              </button>
-            </form>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+            >
+              Sign out
+            </button>
           </div>
         </div>
       </div>

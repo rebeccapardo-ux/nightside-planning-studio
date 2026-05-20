@@ -107,7 +107,7 @@ export default async function HealthcareLearnPage() {
       <div>
 
         {/* ── 1. HERO ── */}
-        <section style={{ background: '#130426' }}>
+        <section style={{ background: '#2C3777' }}>
           <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
             <div style={{ marginBottom: 24 }}>
               <Breadcrumbs
@@ -130,6 +130,15 @@ export default async function HealthcareLearnPage() {
             </p>
           </div>
         </section>
+
+        {/* ── Disclaimer ── */}
+        <div style={{ width: '100%', background: '#F8F4EB', paddingTop: '32px', paddingBottom: '0' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
+              The information here is for understanding. For medical decisions, consult your healthcare team.
+            </p>
+          </div>
+        </div>
 
         {/* ── 2. WHY THIS MATTERS — heading above, equal columns below ── */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>

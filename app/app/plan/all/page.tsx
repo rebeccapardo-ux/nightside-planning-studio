@@ -158,8 +158,8 @@ function getContinueHref(entry: EntryRow): string | null {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'

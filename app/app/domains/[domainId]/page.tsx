@@ -27,8 +27,9 @@ import {
   type EntryRef,
   type TopicNoteRow,
 } from '@/lib/notes'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import DomainAssigner from '@/app/components/DomainAssigner'
-import FragmentField from '@/app/components/FragmentField'
+// import FragmentField from '@/app/components/FragmentField'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
@@ -39,9 +40,10 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 // ---------------------------------------------------------------------------
 
 function entryLabel(entry: EntryRef): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
+  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.document_type === 'funeral_wishes') return 'Funeral & Ceremony Wishes'
   if (entry.title?.trim()) return entry.title.trim()
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
@@ -52,6 +54,7 @@ function entryLabel(entry: EntryRef): string {
 
 function getEntryHref(entry: EntryRef, domainId?: string): string {
   if (entry.document_type === 'advance_directive_supplement') return '/app/capture/advance-directive'
+  if (entry.document_type === 'funeral_wishes') return '/app/capture/funeral-wishes'
   if (entry.document_type === 'personal_admin_info') return '/app/capture/personal-admin'
   if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
   if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
@@ -92,6 +95,7 @@ type ReadinessItemDef = {
   relatedActivities?: string[]
   relatedDocumentTypes?: string[]
   checkboxes: string[]
+  checkboxHelpers?: (string | null)[]
   staticLinks?: { href: string; label: string }[]
   // allowedReflectPrompts is intentionally absent — Practical Readiness rows never auto-surface notes
 }
@@ -155,11 +159,14 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           key: 'wishes_clear_shared',
           title: 'My wishes are clear and shared',
           explanation: '',
-          staticLinks: [{ href: '/app/capture/advance-directive', label: 'Your Wishes' }],
+          staticLinks: [{ href: '/app/capture/advance-directive', label: 'My Care Wishes' }],
           checkboxes: [
-            'I have documented what matters most to me',
-            'I have shared my wishes with my decision-maker',
-            'I have taken steps to formally document my wishes (if applicable)',
+            'I have communicated my wishes to my decision maker',
+            'I have formally documented my wishes',
+          ],
+          checkboxHelpers: [
+            null,
+            'This may include an advance directive or equivalent document in your province. See the resource hub for guidance.',
           ],
         },
       ],
@@ -196,7 +203,7 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
             'I have shared these wishes with people in my life',
             "If applicable, I have registered with my province's organ and tissue donation registry",
           ],
-          staticLinks: [{ href: '/app/capture/advance-directive', label: 'Your Wishes' }],
+          staticLinks: [{ href: '/app/capture/funeral-wishes', label: 'Funeral & Ceremony Wishes' }],
         },
       ],
     },
@@ -243,7 +250,7 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           key: 'legal_will_in_place',
           title: 'Legal will',
           explanation: '',
-          checkboxes: ['I have created a valid legal will', 'My will is up to date'],
+          checkboxes: ['I have a valid, up-to-date legal will'],
         },
         {
           key: 'other_estate_planning',
@@ -296,7 +303,7 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
             'I have shared my preferences for ritual and ceremony with people in my life',
             'My preferences are documented somewhere accessible (if I choose to)',
           ],
-          staticLinks: [{ href: '/app/capture/advance-directive', label: 'Your Wishes' }],
+          staticLinks: [{ href: '/app/capture/funeral-wishes', label: 'Funeral & Ceremony Wishes' }],
         },
       ],
     },
@@ -346,8 +353,9 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Sharing what matters to me',
           explanation: 'Some people choose to share their stories, values, or messages directly with others. This might happen through conversation, writing, or something else entirely.',
           checkboxes: [
-            'I have shared something meaningful with someone in my life',
             'I have created or captured something I want to leave behind (if I choose to)',
+            'I have documented my obituary wishes or what I want said about my life',
+            'I have noted causes or organizations I want remembered or supported',
           ],
         },
       ],
@@ -370,7 +378,7 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Personal information',
           explanation: '',
           checkboxes: ['I have documented my key biographical information'],
-          staticLinks: [{ href: '/app/capture/personal-admin', label: 'Personal Admin Info' }],
+          staticLinks: [{ href: '/app/capture/personal-admin', label: 'Personal Admin Information' }],
         },
         {
           key: 'important_contacts',
@@ -744,6 +752,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
         </div>
 
         {/* Fragment SVG — healthcare, legacy, and deathcare only */}
+        {/* DISABLED: fragment removed from domain pages (restore by uncommenting FragmentField import + this block)
         {(isHealthcare || isLegacy || isDeathcare) && !loading && (
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }}>
             <FragmentField
@@ -754,21 +763,36 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             />
           </div>
         )}
+        */}
 
         {/* Title — scrim only on fragment domains */}
+        {/* DISABLED: scrim removed along with fragment (restore when re-enabling fragment above)
+        {(isHealthcare || isLegacy || isDeathcare) ? (
+          <div style={{ display: 'inline-block', background: 'rgba(19,4,38,0.6)', padding: '8px 16px', borderRadius: 4 }}>
+            <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
+          </div>
+        ) : (
+          <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
+        )}
+        */}
         <div
           className="max-w-6xl mx-auto"
           style={{ padding: '4px 40px 56px', position: 'relative', zIndex: 1 }}
         >
-          {(isHealthcare || isLegacy || isDeathcare) ? (
-            <div style={{ display: 'inline-block', background: 'rgba(19,4,38,0.6)', padding: '8px 16px', borderRadius: 4 }}>
-              <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
-            </div>
-          ) : (
-            <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
-          )}
+          <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
         </div>
       </div>
+
+      {/* ── Wills disclaimer ── */}
+      {isWills && (
+        <div style={{ background: '#F8F4EB', padding: '20px 40px' }}>
+          <div className="max-w-6xl mx-auto">
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
+              The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating decision-makers, consult a lawyer in your province.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Section 1: Status ── */}
       {domainStructure && (
@@ -777,9 +801,11 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             <PlanningStatusSection
               domainId={domainId}
               structure={domainStructure}
+              domainTitle={domain?.title ?? ''}
               entries={dedupedEntriesForStatus}
               isHealthcare={isHealthcare || isLegacy || isDeathcare || isWills || isRitual || isPersonalAdmin}
               showWishesCard={isHealthcare}
+              showFuneralWishesCard={isDeathcare}
               onReadyStatusChange={(key, status) => setReadyStatusForHeader(prev => ({ ...prev, [key]: status }))}
               eligibleNotes={eligiblePromptNotes}
               allUserNotes={allUserNotes}
@@ -823,16 +849,18 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             <p style={{ marginTop: 8, fontSize: 16, lineHeight: 1.5, color: 'rgba(0,0,0,0.7)', maxWidth: 640 }}>
               Notes you&apos;ve added to this area. Add them to a section above to organize your planning.
             </p>
-            <Link
-              href="/app/plan"
-              style={{ display: 'inline-block', marginTop: 8, fontSize: 16, fontWeight: 600, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 3 }}
-            >
-              View all your notes in Your Plan →
-            </Link>
+            {yourThoughtsNotes.length > 0 && (
+              <Link
+                href="/app/plan"
+                style={{ display: 'inline-block', marginTop: 8, fontSize: 16, fontWeight: 600, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 3 }}
+              >
+                View all your notes in Your Plan →
+              </Link>
+            )}
 
             {/* Empty state — shows only before any notes exist */}
             {!loading && !hasEverHadNotes && notes.length === 0 && (
-              <p style={{ fontSize: 16, color: 'rgba(19,4,38,0.38)', marginTop: 28, marginBottom: 0 }}>
+              <p style={{ fontSize: 16, color: 'rgba(19,4,38,0.60)', marginTop: 28, marginBottom: 0 }}>
                 Your thoughts about this area will appear here.
               </p>
             )}
@@ -1213,9 +1241,11 @@ type OpenRowPanel = {
 function PlanningStatusSection({
   domainId,
   structure,
+  domainTitle = '',
   entries = [],
   isHealthcare = false,
   showWishesCard = false,
+  showFuneralWishesCard = false,
   onReadyStatusChange,
   eligibleNotes = [],
   allUserNotes = [],
@@ -1228,9 +1258,11 @@ function PlanningStatusSection({
 }: {
   domainId: string
   structure: DomainStructure | null
+  domainTitle?: string
   entries?: EntryRef[]
   isHealthcare?: boolean
   showWishesCard?: boolean
+  showFuneralWishesCard?: boolean
   onReadyStatusChange: (key: string, status: DomainItemStatus) => void
   eligibleNotes?: Note[]
   allUserNotes?: Note[]
@@ -1312,11 +1344,107 @@ function PlanningStatusSection({
     setOrientStatuses(loaded)
   }, [structure, domainId, isHealthcare])
 
+  // Seed sync checkboxes from Supabase user_metadata on mount
+  useEffect(() => {
+    if (!structure || !domainTitle) return
+    const lower = domainTitle.toLowerCase()
+    const isWillsDomain = lower.includes('will')
+    const isHealthcareDomain = lower.includes('healthcare')
+    const isDeathcareDomain = lower.includes('death')
+    if (!isWillsDomain && !isHealthcareDomain && !isDeathcareDomain) return
+
+    async function seedFromMeta() {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const meta = user.user_metadata ?? {}
+
+      if (isWillsDomain && typeof meta.sync_has_will === 'boolean') {
+        const val = meta.sync_has_will as boolean
+        localStorage.setItem(`checkbox_${domainId}_legal_will_in_place_0`, String(val))
+        const status: DomainItemStatus = val ? 'complete' : 'not_started'
+        localStorage.setItem(`ready_${domainId}_legal_will_in_place`, status)
+        setCheckboxes(prev => ({ ...prev, legal_will_in_place: [val] }))
+        onReadyStatusChange('legal_will_in_place', status)
+      }
+
+      if (isHealthcareDomain) {
+        if (typeof meta.sync_has_care_decision_maker === 'boolean') {
+          const val = meta.sync_has_care_decision_maker as boolean
+          localStorage.setItem(`checkbox_${domainId}_who_will_decide_0`, String(val))
+          localStorage.setItem(`checkbox_${domainId}_who_will_decide_2`, String(val))
+          const idx1 = localStorage.getItem(`checkbox_${domainId}_who_will_decide_1`) === 'true'
+          const vals = [val, idx1, val]
+          const status: DomainItemStatus = computeReadyStatus(vals, 3)
+          localStorage.setItem(`ready_${domainId}_who_will_decide`, status)
+          setCheckboxes(prev => ({ ...prev, who_will_decide: vals }))
+          onReadyStatusChange('who_will_decide', status)
+        }
+        if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
+          const val = meta.sync_has_eol_wishes_doc as boolean
+          localStorage.setItem(`checkbox_${domainId}_wishes_clear_shared_0`, String(val))
+          localStorage.setItem(`checkbox_${domainId}_wishes_clear_shared_1`, String(val))
+          const vals = [val, val]
+          const status: DomainItemStatus = computeReadyStatus(vals, 2)
+          localStorage.setItem(`ready_${domainId}_wishes_clear_shared`, status)
+          setCheckboxes(prev => ({ ...prev, wishes_clear_shared: vals }))
+          onReadyStatusChange('wishes_clear_shared', status)
+        }
+      }
+
+      if (isDeathcareDomain) {
+        if (typeof meta.sync_has_funeral_wishes === 'boolean') {
+          const val = meta.sync_has_funeral_wishes as boolean
+          localStorage.setItem(`checkbox_${domainId}_final_resting_place_wishes_0`, String(val))
+          const idx1 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_1`) === 'true'
+          const idx2 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_2`) === 'true'
+          const vals = [val, idx1, idx2]
+          const status: DomainItemStatus = computeReadyStatus(vals, 3)
+          localStorage.setItem(`ready_${domainId}_final_resting_place_wishes`, status)
+          setCheckboxes(prev => ({ ...prev, final_resting_place_wishes: vals }))
+          onReadyStatusChange('final_resting_place_wishes', status)
+        }
+        if (typeof meta.sync_has_organ_donation_wishes === 'boolean') {
+          const val = meta.sync_has_organ_donation_wishes as boolean
+          localStorage.setItem(`checkbox_${domainId}_final_resting_place_wishes_2`, String(val))
+          const idx0 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_0`) === 'true'
+          const idx1 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_1`) === 'true'
+          const vals = [idx0, idx1, val]
+          const status: DomainItemStatus = computeReadyStatus(vals, 3)
+          localStorage.setItem(`ready_${domainId}_final_resting_place_wishes`, status)
+          setCheckboxes(prev => ({ ...prev, final_resting_place_wishes: vals }))
+          onReadyStatusChange('final_resting_place_wishes', status)
+        }
+      }
+    }
+    void seedFromMeta()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [structure, domainId, domainTitle])
+
   function computeReadyStatus(vals: boolean[], total: number): DomainItemStatus {
     const checked = vals.filter(Boolean).length
     if (checked === 0) return 'not_started'
     if (checked === total) return 'complete'
     return 'in_progress'
+  }
+
+  function syncCheckboxToMeta(itemKey: string, idx: number, vals: boolean[]) {
+    const lower = domainTitle.toLowerCase()
+    const supabase = createSupabaseBrowserClient()
+    if (lower.includes('will') && itemKey === 'legal_will_in_place' && idx === 0) {
+      supabase.auth.updateUser({ data: { sync_has_will: vals[0] } }).catch(() => {})
+    } else if (lower.includes('healthcare') && itemKey === 'who_will_decide' && (idx === 0 || idx === 2)) {
+      supabase.auth.updateUser({ data: { sync_has_care_decision_maker: vals[0] || vals[2] } }).catch(() => {})
+    } else if (lower.includes('healthcare') && itemKey === 'wishes_clear_shared' && (idx === 0 || idx === 1)) {
+      const communicated = vals[0]
+      const documented = vals[1]
+      const careStatus = communicated && documented ? 'both' : communicated ? 'communicated' : documented ? 'documented' : null
+      supabase.auth.updateUser({ data: { sync_has_eol_wishes_doc: communicated || documented, sync_care_preferences_status: careStatus } }).catch(() => {})
+    } else if (lower.includes('death') && itemKey === 'final_resting_place_wishes' && idx === 0) {
+      supabase.auth.updateUser({ data: { sync_has_funeral_wishes: vals[0] } }).catch(() => {})
+    } else if (lower.includes('death') && itemKey === 'final_resting_place_wishes' && idx === 2) {
+      supabase.auth.updateUser({ data: { sync_has_organ_donation_wishes: vals[2] } }).catch(() => {})
+    }
   }
 
   function handleCheckbox(itemKey: string, idx: number, total: number) {
@@ -1328,6 +1456,7 @@ function PlanningStatusSection({
       const status = computeReadyStatus(updated, total)
       localStorage.setItem(`ready_${domainId}_${itemKey}`, status)
       onReadyStatusChange(itemKey, status)
+      syncCheckboxToMeta(itemKey, idx, updated)
       return { ...prev, [itemKey]: updated }
     })
   }
@@ -1429,29 +1558,60 @@ function PlanningStatusSection({
           </div>
 
           {/* Your Wishes card — healthcare only */}
-          {showWishesCard && <div style={{ maxWidth: 720, width: '100%', marginLeft: 'auto', marginRight: 'auto', marginBottom: 32 }}>
-          <div style={{ background: '#2C3777', borderRadius: 16, padding: 28 }}>
-            <p style={{ fontFamily: "'Apfel Grotezk', sans-serif", fontSize: 28, fontWeight: 500, color: '#FFFFFF', marginBottom: 8, lineHeight: 1.1, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginTop: 1 }}>
-                <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="#2C3777" strokeWidth="1.5" fill="#FFFFFF"/>
-                <line x1="4.5" y1="5" x2="9.5" y2="5" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
-                <line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
-                <line x1="4.5" y1="10" x2="7.5" y2="10" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
-              </svg>
-              Your Wishes
-            </p>
-            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.75)', marginBottom: 16, lineHeight: 1.5 }}>
+          {showWishesCard && <div style={{ maxWidth: 520, width: '100%', marginLeft: 'auto', marginRight: 'auto', marginBottom: 32 }}>
+          <div style={{ background: 'transparent', border: '1.5px solid rgba(44,55,119,0.45)', borderRadius: 16, padding: '14px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
+              <p style={{ fontFamily: "'Apfel Grotezk', sans-serif", fontSize: 18, fontWeight: 500, color: '#130426', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                  <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="#2C3777" strokeWidth="1.5" fill="none"/>
+                  <line x1="4.5" y1="5" x2="9.5" y2="5" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="4.5" y1="10" x2="7.5" y2="10" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+                My Care Wishes
+              </p>
+              <a
+                href="/app/capture/advance-directive"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, fontWeight: 500, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
+                className="hover:opacity-80 transition-opacity"
+              >
+                Open document →
+              </a>
+            </div>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.80)', margin: 0, lineHeight: 1.5 }}>
               Capture what matters most for your care.
             </p>
-            <a
-              href="/app/capture/advance-directive"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 16, fontWeight: 500, color: '#F29836', textDecoration: 'none' }}
-              className="hover:opacity-80 transition-opacity"
-            >
-              Open document →
-            </a>
+          </div>
+          </div>}
+
+          {/* Funeral Wishes card — deathcare only */}
+          {showFuneralWishesCard && <div style={{ maxWidth: 580, width: '100%', marginLeft: 'auto', marginRight: 'auto', marginBottom: 32 }}>
+          <div style={{ background: 'transparent', border: '1.5px solid rgba(44,55,119,0.45)', borderRadius: 16, padding: '14px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
+              <p style={{ fontFamily: "'Apfel Grotezk', sans-serif", fontSize: 18, fontWeight: 500, color: '#130426', margin: 0, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                  <rect x="2" y="1" width="10" height="13" rx="1.5" stroke="#2C3777" strokeWidth="1.5" fill="none"/>
+                  <line x1="4.5" y1="5" x2="9.5" y2="5" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="4.5" y1="7.5" x2="9.5" y2="7.5" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
+                  <line x1="4.5" y1="10" x2="7.5" y2="10" stroke="#2C3777" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+                Wishes for My Body, Funeral &amp; Ceremony
+              </p>
+              <a
+                href="/app/capture/funeral-wishes"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, fontWeight: 500, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
+                className="hover:opacity-80 transition-opacity"
+              >
+                Open document →
+              </a>
+            </div>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.80)', margin: 0, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+              Document your wishes for what happens to your body,{'\n'}any funeral or ceremony, and how you&apos;d like to be remembered.
+            </p>
           </div>
           </div>}
 
@@ -1459,6 +1619,9 @@ function PlanningStatusSection({
           <div className="planning-panels">
             <div className="rounded-xl p-6" style={{ background: '#BBABF4' }}>
               <p className="text-[22px] font-bold text-[#130426] mb-2">Reflection + Learning</p>
+              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>
+                Topics to think through and read about for this area.
+              </p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 24 }}>
                 Update your status as you explore each topic.
               </p>
@@ -1483,6 +1646,7 @@ function PlanningStatusSection({
 
             <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }}>
               <p className="text-[22px] font-bold mb-2" style={{ color: '#DB5835' }}>Practical Readiness</p>
+              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document.</p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 24 }}>Your progress updates as you complete each step.</p>
               <div className="space-y-3">
                 {structure.readiness.map((item) => {
@@ -1548,7 +1712,7 @@ function PlanningStatusSection({
           <h2 style={{ fontSize: '32px', fontWeight: 600, lineHeight: '1.15', color: '#130426', marginBottom: '10px' }}>
             Planning Status
           </h2>
-          <p className="text-[14px]" style={{ color: 'rgba(19,4,38,0.60)' }}>
+          <p className="text-[14px]" style={{ color: 'rgba(19,4,38,0.80)' }}>
             {[
               inProgressCount > 0 && `${inProgressCount} in progress`,
               completeCount   > 0 && `${completeCount} complete`,
@@ -1560,7 +1724,9 @@ function PlanningStatusSection({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="rounded-xl p-6" style={{ background: '#BBABF4' }}>
             <div className="mb-8">
-              <p className="text-[22px] font-bold text-[#130426] mb-1">Reflection + Learning</p>
+              <p className="text-[22px] font-bold text-[#130426] mb-2">Reflection + Learning</p>
+              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Topics to think through and read about for this area.</p>
+              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 0 }}>Update your status as you explore each topic.</p>
             </div>
             <div className="space-y-3">
               {structure.orientation.map((item) => {
@@ -1591,6 +1757,7 @@ function PlanningStatusSection({
           <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }}>
             <div className="mb-8">
               <p className="text-[22px] font-bold mb-2" style={{ color: '#DB5835' }}>Practical Readiness</p>
+              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document.</p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 0 }}>Your progress updates as you complete each step.</p>
             </div>
             <div className="space-y-3">
@@ -1895,17 +2062,24 @@ function ReadinessCard({
         )}
         <div className="space-y-1.5 mb-4">
           {item.checkboxes.map((label, idx) => (
-            <label key={idx} className="flex items-start gap-2.5 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={vals[idx] ?? false}
-                onChange={() => onToggle(idx)}
-                className="mt-0.5 shrink-0 accent-[#DB5835]"
-              />
-              <span className={`text-[12px] leading-snug transition-colors ${vals[idx] ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
-                {label}
-              </span>
-            </label>
+            <div key={idx}>
+              <label className="flex items-start gap-2.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={vals[idx] ?? false}
+                  onChange={() => onToggle(idx)}
+                  className="mt-0.5 shrink-0 accent-[#DB5835]"
+                />
+                <span className={`text-[12px] leading-snug transition-colors ${vals[idx] ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
+                  {label}
+                </span>
+              </label>
+              {item.checkboxHelpers?.[idx] && (
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontStyle: 'italic', color: 'rgba(19,4,38,0.5)', margin: '3px 0 0 22px', lineHeight: 1.4 }}>
+                  {item.checkboxHelpers[idx]}
+                </p>
+              )}
+            </div>
           ))}
         </div>
         {matched.length > 0 && <ItemMaterials matched={matched} domainId={domainId} panelType="readiness" />}
@@ -1968,7 +2142,8 @@ function ItemMaterials({
           rel="noopener noreferrer"
           style={{ background: linkBg, border: `1px solid ${linkBorder}` }}
         >
-          <span className="text-[13px] font-semibold leading-snug" style={{ color: labelColor }}>
+          <span className="flex items-center gap-2 text-[13px] font-semibold leading-snug" style={{ color: labelColor }}>
+            {entry.activity ? <EntryOutputIcon /> : <EntryDocIcon />}
             {entryLabel(entry)}
           </span>
           <span className="text-[11px] shrink-0 ml-3" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
@@ -2444,6 +2619,31 @@ function NoteCard({
 }
 
 // ---------------------------------------------------------------------------
+// EntryCard icons
+// ---------------------------------------------------------------------------
+
+function EntryDocIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
+      <path d="M10 1v3h3" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
+      <path d="M5.5 7.5h5M5.5 10h5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function EntryOutputIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+      <rect x="2" y="2.5" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round"/>
+      <circle cx="5.5" cy="7" r="1.5" fill="currentColor"/>
+      <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor"/>
+      <circle cx="11" cy="5.5" r="1.5" fill="currentColor"/>
+    </svg>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // EntryCard
 // ---------------------------------------------------------------------------
 
@@ -2469,17 +2669,20 @@ function EntryCard({
           <div style={{ width: '4px', flexShrink: 0, background: '#BBABF4', borderRadius: '999px' }} />
           <div style={{ flex: 1, padding: '24px 26px' }}>
             <Link href={href} target="_blank" rel="noopener noreferrer" className="block" style={{ marginBottom: '12px' }}>
-              <p style={{ fontSize: '16px', fontWeight: 600, color: '#130426', lineHeight: '1.3' }} className="hover:opacity-70 transition-opacity">{label}</p>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: '#130426' }}>
+                <div style={{ flexShrink: 0, marginTop: 2 }}><EntryOutputIcon /></div>
+                <p style={{ fontSize: '16px', fontWeight: 600, color: '#130426', lineHeight: '1.3' }} className="hover:opacity-70 transition-opacity">{label}</p>
+              </div>
             </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(44,55,119,0.08)' }}>
-              <Link href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">Open</Link>
+              <Link href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Open</Link>
               {entry.activity === 'values_ranking' && (
                 <>
                   <span style={{ color: 'rgba(19,4,38,0.25)', fontSize: '12px' }}>·</span>
-                  <Link href={`/app/entries/${entry.id}/export`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">Export</Link>
+                  <Link href={`/app/entries/${entry.id}/export`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Export</Link>
                 </>
               )}
-              <button onClick={handleRemove} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">Remove</button>
+              <button onClick={handleRemove} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Remove</button>
               <DomainAssigner itemId={entry.id} itemType="entry" allDomains={allDomains} initialLinkedDomainIds={linkedDomainIds} label="Add to" showCount={false} theme="light" onToggled={onToggled} />
             </div>
           </div>
@@ -2494,11 +2697,14 @@ function EntryCard({
         <div style={{ width: '4px', flexShrink: 0, background: '#2C3777', borderRadius: '999px' }} />
         <div style={{ flex: 1, padding: '24px 26px' }}>
           <Link href={href} target="_blank" rel="noopener noreferrer" className="block" style={{ marginBottom: '12px' }}>
-            <p style={{ fontSize: '16px', fontWeight: 600, color: '#130426', lineHeight: '1.3' }} className="hover:opacity-70 transition-opacity">{label}</p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: '#130426' }}>
+              <div style={{ flexShrink: 0, marginTop: 2 }}><EntryDocIcon /></div>
+              <p style={{ fontSize: '16px', fontWeight: 600, color: '#130426', lineHeight: '1.3' }} className="hover:opacity-70 transition-opacity">{label}</p>
+            </div>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(19,4,38,0.07)' }}>
-            <Link href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">Open</Link>
-            <button onClick={handleRemove} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.60)' }} className="hover:opacity-75 transition-opacity">Remove</button>
+            <Link href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Open</Link>
+            <button onClick={handleRemove} style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Remove</button>
             <DomainAssigner itemId={entry.id} itemType="entry" allDomains={allDomains} initialLinkedDomainIds={linkedDomainIds} label="Add to" showCount={false} theme="light" onToggled={onToggled} />
           </div>
         </div>

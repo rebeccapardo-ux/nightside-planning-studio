@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -26,18 +25,14 @@ export default function WelcomeModal() {
   }, [mounted, leaving])
 
   function handleDismiss() {
-    const supabase = createSupabaseBrowserClient()
-    supabase.auth.updateUser({ data: { has_seen_welcome: true } })
     setLeaving(true)
     setTimeout(() => setGone(true), 300)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    // Trap focus — only one interactive element, so Tab goes nowhere
     if (e.key === 'Tab') {
       e.preventDefault()
     }
-    // Escape intentionally does not dismiss
   }
 
   if (gone) return null
@@ -101,7 +96,7 @@ export default function WelcomeModal() {
             margin: '0 0 20px 0',
           }}
         >
-          Welcome to The Nightside.
+          Welcome to The Nightside Planning Studio
         </h2>
 
         {/* Body */}
@@ -111,18 +106,9 @@ export default function WelcomeModal() {
             fontSize: '16px',
             lineHeight: 1.65,
             color: '#3a3a3a',
-            margin: '0 0 20px 0',
-          }}>
-            This is your space to reflect on what matters, learn about your options, and document your wishes at your own pace.
-          </p>
-          <p style={{
-            fontFamily: hv,
-            fontSize: '16px',
-            lineHeight: 1.65,
-            color: '#3a3a3a',
             margin: 0,
           }}>
-            Everything here is private by default. This platform is a thinking and documentation tool — not a source of legal or medical advice.
+            Your email is confirmed and your account is ready.
           </p>
         </div>
 

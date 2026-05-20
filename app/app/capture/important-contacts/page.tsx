@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
@@ -22,6 +22,7 @@ type ContactEntry = {
   id: string
   name: string
   role: string
+  institution: string
   phone: string
   email: string
   address: string
@@ -37,7 +38,7 @@ const EMPTY_FORM: FormState = {
 }
 
 function isContactEntryEmpty(e: ContactEntry) {
-  return !e.name.trim() && !e.role.trim() && !e.phone.trim() && !e.email.trim() && !e.address.trim()
+  return !e.name.trim() && !e.role.trim() && !(e.institution ?? '').trim() && !e.phone.trim() && !e.email.trim() && !e.address.trim()
 }
 
 // ---------------------------------------------------------------------------
@@ -56,7 +57,7 @@ function migrateContact(raw: unknown): ContactEntry | null {
   const email = typeof r.email === 'string' ? r.email : ''
   const address = typeof r.address === 'string' ? r.address : ''
   if (!name && !phone && !email && !address) return null
-  return { id: genId(), name, role: '', phone, email, address }
+  return { id: genId(), name, role: '', institution: '', phone, email, address }
 }
 
 function migrateOldFormat(old: Record<string, unknown>): FormState {
@@ -83,7 +84,7 @@ function migrateOldFormat(old: Record<string, unknown>): FormState {
 // Page
 // ---------------------------------------------------------------------------
 
-export default function ImportantContactsPage() {
+function ImportantContactsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const formRef = useRef<FormState>(EMPTY_FORM)
   const entryIdRef = useRef<string | null>(null)
@@ -93,9 +94,20 @@ export default function ImportantContactsPage() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [statusNow, setStatusNow] = useState(Date.now())
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
 
-  const [openSection, setOpenSection] = useState<number | null>(0)
+  const lastEditedEntryIdRef = useRef<string | null>(null)
+  const [savingEntryId, setSavingEntryId] = useState<string | null>(null)
+  const [savedIndicatorId, setSavedIndicatorId] = useState<string | null>(null)
+  const [savedIndicatorFading, setSavedIndicatorFading] = useState(false)
+  const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const sectionParam = searchParams.get('section')
+  const isSectionEntry = sectionParam === 'healthcare' || sectionParam === 'legal'
+  const [openSection, setOpenSection] = useState<number | null>(
+    sectionParam === 'healthcare' ? 0 : sectionParam === 'legal' ? 1 : null
+  )
   const [openHealthcareIds, setOpenHealthcareIds] = useState<Set<string>>(new Set())
   const [openLegalIds, setOpenLegalIds] = useState<Set<string>>(new Set())
   const [openRelativesIds, setOpenRelativesIds] = useState<Set<string>>(new Set())
@@ -126,6 +138,21 @@ export default function ImportantContactsPage() {
     other: openOtherIds,
   }
 
+  useEffect(() => { if (!isSectionEntry) window.scrollTo(0, 0) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!isSectionEntry || loading) return
+    const targetIdx = sectionParam === 'healthcare' ? 0 : 1
+    const timer = setTimeout(() => {
+      const el = sectionRefs.current[targetIdx]
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 96
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [loading, isSectionEntry]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     async function load() {
       const supabase = createSupabaseBrowserClient()
@@ -141,7 +168,9 @@ export default function ImportantContactsPage() {
         if (existing) {
           entryIdRef.current = existing.id
           setSavedEntryId(existing.id)
-          if (existing.created_at) setLastSavedAt(new Date(existing.created_at))
+          const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${existing.id}`)
+          const savedDate = storedSave ? new Date(storedSave) : existing.created_at ? new Date(existing.created_at) : null
+          if (savedDate) setLastSavedAt(savedDate)
           const raw = existing.content as Record<string, unknown>
           let loaded: FormState
           if (isOldFormat(raw)) {
@@ -185,28 +214,43 @@ export default function ImportantContactsPage() {
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; performAutosave() }
   }
 
+  function triggerSavedIndicator(id: string | null) {
+    if (!id) return
+    if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current)
+    setSavedIndicatorId(id)
+    setSavedIndicatorFading(false)
+    savedFadeTimerRef.current = setTimeout(() => {
+      setSavedIndicatorFading(true)
+      setTimeout(() => setSavedIndicatorId(null), 400)
+    }, 2600)
+  }
+
   async function performAutosave() {
+    const targetId = lastEditedEntryIdRef.current
     const currentForm = formRef.current
     const saveableForm: FormState = Object.fromEntries(
       (Object.keys(currentForm) as SectionKey[]).map(k => [k, currentForm[k].filter(e => !isContactEntryEmpty(e))])
     ) as FormState
     setSaveStatus('saving')
+    setSavingEntryId(targetId)
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) { setSaveStatus('error'); return }
+      if (userError || !user) { setSaveStatus('error'); setSavingEntryId(null); return }
       if (!entryIdRef.current) {
         const { data: created, error } = await supabase.from('entries')
           .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: saveableForm })
           .select('id').single()
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingEntryId(null); return }
         if (created) { entryIdRef.current = created.id; setSavedEntryId(created.id) }
       } else {
         const { error } = await supabase.from('entries').update({ content: saveableForm }).eq('id', entryIdRef.current)
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingEntryId(null); return }
       }
+      if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
       setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveStatus('saved')
-    } catch { setSaveStatus('error') }
+      setSavingEntryId(null); triggerSavedIndicator(targetId)
+    } catch { setSaveStatus('error'); setSavingEntryId(null) }
   }
 
   async function handlePreviewExport() {
@@ -222,7 +266,7 @@ export default function ImportantContactsPage() {
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24), w = Math.floor(d / 7)
-    if (s < 60) return 'Saved'
+    if (s < 60) return 'Saved just now'
     if (m < 60) return `Saved ${m}m ago`
     if (h < 24) return h === 1 ? 'Saved 1h ago' : `Saved ${h}h ago`
     if (d < 7) return d === 1 ? 'Saved 1 day ago' : `Saved ${d} days ago`
@@ -246,11 +290,12 @@ export default function ImportantContactsPage() {
     }
     formRef.current = updated
     setForm(updated)
+    lastEditedEntryIdRef.current = id
     scheduleAutosave()
   }
 
   function addEntry(section: SectionKey) {
-    const entry: ContactEntry = { id: genId(), name: '', role: '', phone: '', email: '', address: '' }
+    const entry: ContactEntry = { id: genId(), name: '', role: '', institution: '', phone: '', email: '', address: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
     setForm(updated)
@@ -300,9 +345,13 @@ export default function ImportantContactsPage() {
               onDelete={() => deleteEntry(section, entry.id)}
               pendingFocusId={pendingFocusId}
               onFocused={() => setPendingFocusId(null)}
+              isSaving={savingEntryId === entry.id}
+              isSaved={savedIndicatorId === entry.id}
+              savedFading={savedIndicatorFading}
             >
               <Field label="Name:" value={entry.name} onChange={(v) => updateField(section, entry.id, 'name', v)} onBlur={handleBlur} rows={1} />
               <Field label="Relationship / Role:" value={entry.role} onChange={(v) => updateField(section, entry.id, 'role', v)} onBlur={handleBlur} rows={1} />
+              <Field label="Institution / Organization:" value={entry.institution ?? ''} onChange={(v) => updateField(section, entry.id, 'institution', v)} onBlur={handleBlur} rows={1} />
               <Field label="Phone:" value={entry.phone} onChange={(v) => updateField(section, entry.id, 'phone', v)} onBlur={handleBlur} rows={1} />
               <Field label="Email:" value={entry.email} onChange={(v) => updateField(section, entry.id, 'email', v)} onBlur={handleBlur} rows={1} />
               <Field label="Address:" value={entry.address} onChange={(v) => updateField(section, entry.id, 'address', v)} onBlur={handleBlur} rows={2} />
@@ -318,32 +367,50 @@ export default function ImportantContactsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F4EB', position: 'relative' }}>
+      {savedEntryId && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <button
+            type="button"
+            onClick={handlePreviewExport}
+            disabled={saveStatus === 'saving'}
+            className="hover:opacity-90 transition-opacity"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            {saveStatus === 'saving' ? 'Preparing…' : 'Export'}
+          </button>
+          {saveStatusText && (
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+          )}
+        </div>
+      )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Important Contacts' }]} />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
+        <div style={{ marginBottom: 48 }}>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
             Important Contacts
           </h1>
-          {savedEntryId && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 8 }}>
-              {saveStatusText && (
-                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777' }}>{saveStatusText}</span>
-              )}
-              <button type="button" onClick={handlePreviewExport} disabled={saveStatus === 'saving'}
-                style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '8px 12px', cursor: saveStatus === 'saving' ? 'default' : 'pointer' }}
-                onMouseEnter={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.background = '#F8F4EB' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#2C3777' }}
-                onMouseDown={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#130426' }}
-                onMouseUp={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#2C3777' }}>
-                {saveStatus === 'saving' ? 'Preparing…' : 'Export'}
-              </button>
-            </div>
-          )}
+          <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            A place to gather the people who&apos;ll need to be reached, and who they are to you.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
+            When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Expand a section to fill it in', 'Add as many contacts as you need', 'Update anytime as things change'].map((text) => (
+              <span key={text} style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
+                {text}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -358,6 +425,14 @@ export default function ImportantContactsPage() {
 
       </div>
     </div>
+  )
+}
+
+export default function Wrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8F4EB]" />}>
+      <ImportantContactsPage />
+    </Suspense>
   )
 }
 
@@ -414,7 +489,7 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
 // EntryCard
 // ---------------------------------------------------------------------------
 
-function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFocused, children }: {
+function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
   id: string
   title: string
   isOpen: boolean
@@ -422,6 +497,9 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
   onDelete: () => void
   pendingFocusId: string | null
   onFocused: () => void
+  isSaving: boolean
+  isSaved: boolean
+  savedFading: boolean
   children: React.ReactNode
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -454,7 +532,7 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
         <div style={{ padding: '0 16px 16px', borderTop: '1px solid #2C3777', display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ height: 16 }} />
           {children}
-          <div style={{ paddingTop: 4 }}>
+          <div style={{ paddingTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <button
               type="button"
               onClick={onDelete}
@@ -462,6 +540,20 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
             >
               Delete
             </button>
+            {isSaving && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+              </div>
+            )}
+            {isSaved && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: savedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
+                  <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+              </div>
+            )}
           </div>
         </div>
       )}

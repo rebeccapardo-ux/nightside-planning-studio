@@ -183,7 +183,7 @@ export default async function RitualLearnPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
                     { href: '/app/reflect', label: 'Reflection Prompts' },
-                    { href: '/app/capture/advance-directive', label: 'Your Wishes' },
+                    { href: '/app/capture/advance-directive', label: 'My Care Wishes' },
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="rc-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>

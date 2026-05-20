@@ -90,7 +90,7 @@ function DeckView({
           Understanding your options, rights, and the realities of deathcare can help you make more informed decisions, communicate your preferences more clearly, and advocate for the kinds of care and support you want.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-          {['Open any card to start', 'Flip to reveal answers', 'Save notes or reactions'].map((text) => (
+          {['Pick a card to start', 'Flip to reveal answers', 'Play solo or in a group'].map((text) => (
             <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
               {text}
             </span>
@@ -110,27 +110,28 @@ function DeckView({
       {/* Tips modal */}
       {tipsOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+          <div className="w-full max-w-xl rounded-2xl p-6 shadow-2xl" style={{ background: '#F8F4EB' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using this activity</h2>
+              <h2 className="text-xl font-semibold" style={{ color: '#130426' }}>Tips for using this activity</h2>
               <button
                 onClick={() => setTipsOpen(false)}
-                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+                className="transition-opacity hover:opacity-60 text-xl leading-none"
+                style={{ color: '#130426' }}
               >
                 ×
               </button>
             </div>
             <div style={{ fontFamily: hv }}>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 These cards are designed to spark curiosity, reflection, and conversation.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
-                Play through them on your own, or use them with a partner, family member, friend, or group. It can be a low-pressure way to learn together, compare assumptions, and talk about topics that are often hard to bring up directly.
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
+                These cards work well alone or as a way to spark conversation with a partner, family member, friend, or group — a low-pressure way to learn together and bring up topics that can be hard to broach directly.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 Pay attention to what surprises you, challenges something you assumed, or makes you want to learn more.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
                 Some topics may connect to personal experiences, cultural beliefs, caregiving, grief, or conversations you've had with others over time.
               </p>
             </div>
@@ -201,7 +202,7 @@ function CardView({
   const [flipped, setFlipped] = useState(false)
   const [noteText, setNoteText] = useState('')
   const [noteStatus, setNoteStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const [showVoice, setShowVoice] = useState(false)
+  const noteSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noteDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedNoteIdRef = useRef<string | null>(null)
 
@@ -216,6 +217,8 @@ function CardView({
         if (note) savedNoteIdRef.current = note.id
       }
       setNoteStatus('saved')
+      if (noteSavedTimerRef.current) clearTimeout(noteSavedTimerRef.current)
+      noteSavedTimerRef.current = setTimeout(() => setNoteStatus('idle'), 3000)
     } catch {
       setNoteStatus('idle')
     }
@@ -228,7 +231,7 @@ function CardView({
     setFlipped(false)
     setNoteText('')
     setNoteStatus('idle')
-    setShowVoice(false)
+    if (noteSavedTimerRef.current) { clearTimeout(noteSavedTimerRef.current); noteSavedTimerRef.current = null }
     savedNoteIdRef.current = null
     if (noteDebounceRef.current) clearTimeout(noteDebounceRef.current)
   }
@@ -257,14 +260,13 @@ function CardView({
               transformStyle: 'preserve-3d',
               transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
               transition: 'transform 0.5s ease',
-              minHeight: '480px',
-              position: 'relative',
+              display: 'grid',
             }}
           >
             {/* Front — question */}
             <div
-              style={{ backfaceVisibility: 'hidden' }}
-              className="absolute inset-0 rounded-2xl bg-[#f8f4eb] px-8 py-10 flex flex-col justify-between"
+              style={{ backfaceVisibility: 'hidden', gridArea: '1/1', minHeight: '480px' }}
+              className="rounded-2xl bg-[#f8f4eb] px-8 py-10 flex flex-col justify-between"
             >
               <div className="flex-1 flex items-center">
                 <p className="text-[#130426] text-xl font-semibold leading-snug whitespace-pre-line">
@@ -284,10 +286,12 @@ function CardView({
               style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
+                gridArea: '1/1',
+                minHeight: '480px',
               }}
-              className="absolute inset-0 rounded-2xl bg-[#2C3777] px-8 py-10 flex flex-col justify-between overflow-hidden"
+              className="rounded-2xl bg-[#2C3777] px-8 py-10 flex flex-col justify-between"
             >
-              <div className="flex-1 overflow-y-auto pr-1">
+              <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#BBABF4] mb-4">Answer</p>
                 <p className="text-[#f8f4eb] text-lg leading-relaxed whitespace-pre-line">
                   {card.answer}
@@ -320,58 +324,39 @@ function CardView({
                       setNoteStatus('idle')
                       if (noteDebounceRef.current) clearTimeout(noteDebounceRef.current)
                       if (e.target.value.trim()) {
-                        noteDebounceRef.current = setTimeout(() => autoSaveNote(e.target.value), 1500)
+                        noteDebounceRef.current = setTimeout(() => { noteDebounceRef.current = null; autoSaveNote(e.target.value) }, 1500)
                       }
                     }}
                     onBlur={() => {
-                      if (noteDebounceRef.current) { clearTimeout(noteDebounceRef.current); noteDebounceRef.current = null }
-                      autoSaveNote(noteText)
+                      if (noteDebounceRef.current) {
+                        clearTimeout(noteDebounceRef.current)
+                        noteDebounceRef.current = null
+                        autoSaveNote(noteText)
+                      }
                     }}
                     placeholder="Capture anything that comes up…"
                     rows={2}
                     className="w-full text-[#130426] placeholder:text-[#130426]/40 leading-relaxed resize-none outline-none overflow-hidden"
                     style={{ fontSize: 16, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: 12 }}
                   />
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', minHeight: 18 }}>
-                    {noteStatus === 'saving' ? 'Saving…' : noteStatus === 'saved' ? 'Saved' : ''}
-                  </p>
-                  <div style={{ marginTop: 4 }}>
-                    {showVoice ? (
-                      <VoiceNoteButton
-                        saveMode={{ kind: 'freeform' }}
-                        theme="dark"
-                        autoStart
-                        onSaved={() => {}}
-                        onDelete={() => setShowVoice(false)}
-                        buttonLabel="Record a voice note"
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setShowVoice(true)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 10,
-                          width: '100%',
-                          padding: '11px 16px',
-                          borderRadius: 10,
-                          cursor: 'pointer',
-                          background: 'rgba(255,255,255,0.1)',
-                          border: '1.5px solid rgba(255,255,255,0.22)',
-                          boxSizing: 'border-box' as const,
-                        }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                          <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="rgba(255,255,255,0.9)" />
-                          <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                          <line x1="6" y1="13" x2="6" y2="15.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" />
-                          <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="rgba(255,255,255,0.9)" strokeWidth="1.5" strokeLinecap="round" />
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {noteStatus === 'saving' && <span>Saving…</span>}
+                    {noteStatus === 'saved' && (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                          <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.78)" strokeWidth="1.3" />
+                          <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.78)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#ffffff' }}>Record a voice note</span>
-                        <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.25)' }}>auto-transcribed</span>
-                      </button>
+                        <span>Saved to Your Plan</span>
+                      </>
                     )}
+                  </div>
+                  <div style={{ marginTop: 4 }}>
+                    <VoiceNoteButton
+                      saveMode={{ kind: 'freeform' }}
+                      theme="dark"
+                      onSaved={() => {}}
+                    />
                   </div>
                 </div>
               </div>

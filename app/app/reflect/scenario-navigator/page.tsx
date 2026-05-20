@@ -202,27 +202,28 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
       {/* Tips modal */}
       {tipsOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+          <div className="w-full max-w-xl rounded-2xl p-6 shadow-2xl" style={{ background: '#F8F4EB' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using this activity</h2>
+              <h2 className="text-xl font-semibold" style={{ color: '#130426' }}>Tips for using this activity</h2>
               <button
                 onClick={() => setTipsOpen(false)}
-                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+                className="transition-opacity hover:opacity-60 text-xl leading-none"
+                style={{ color: '#130426' }}
               >
                 ×
               </button>
             </div>
             <div style={{ fontFamily: hv }}>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 Different paths may feel emotionally, practically, or ethically difficult in different ways. Pay attention to moments that feel surprising, uncomfortable, reassuring, or especially important to you.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 You may notice that your reactions are shaped by personal experiences, caregiving roles, medical situations you've witnessed, cultural expectations, or conversations you've had with others over time.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 Try exploring more than one path within the same scenario to compare how different outcomes feel.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
                 This activity can also be useful to do with a partner, family member, or substitute decision maker to surface differences in assumptions, preferences, or expectations.
               </p>
             </div>
@@ -441,7 +442,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
 // PancreaticOutcomeContent — cream editorial layout for pancreatic-cancer outcome pages
 // ---------------------------------------------------------------------------
 
-function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
+function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, noteSaving, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
   scenario: Scenario
   choice: ScenarioChoice
   onBackToScenario: () => void
@@ -449,6 +450,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
   onSelectChoice: (choiceId: string) => void
   noteText: string
   noteSaved: boolean
+  noteSaving: boolean
   handleNoteChange: (val: string) => void
   handleNoteBlur: () => void
   openSourceId: string | null
@@ -457,8 +459,6 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 }) {
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
   const apfel = "'ApfelGrotezk', sans-serif"
-  const [showVoice, setShowVoice] = useState(false)
-
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
@@ -563,45 +563,26 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 }}
                 className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
-                {noteSaved ? 'Saved' : ''}
-              </p>
-              <div style={{ marginTop: 10 }}>
-                {showVoice ? (
-                  <VoiceNoteButton
-                    saveMode={{ kind: 'freeform' }}
-                    theme="light"
-                    autoStart
-                    onSaved={() => setShowVoice(false)}
-                    onDelete={() => setShowVoice(false)}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowVoice(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      width: '100%',
-                      padding: '11px 16px',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                      background: 'rgba(44,55,119,0.06)',
-                      border: '1.5px solid rgba(44,55,119,0.2)',
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
-                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
-                  </button>
+              <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                {noteSaving && (
+                  <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saving…</span>
                 )}
+                {noteSaved && !noteSaving && (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
+                      <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                  </>
+                )}
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <VoiceNoteButton
+                  saveMode={{ kind: 'freeform' }}
+                  theme="light"
+                  onSaved={() => {}}
+                />
               </div>
             </div>
           )}
@@ -805,7 +786,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
 // CognitiveDeclineOutcomeContent — cream editorial layout for cognitive-decline outcome pages
 // ---------------------------------------------------------------------------
 
-function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
+function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, noteSaving, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
   scenario: Scenario
   choice: ScenarioChoice
   onBackToScenario: () => void
@@ -813,6 +794,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
   onSelectChoice: (choiceId: string) => void
   noteText: string
   noteSaved: boolean
+  noteSaving: boolean
   handleNoteChange: (val: string) => void
   handleNoteBlur: () => void
   openSourceId: string | null
@@ -821,8 +803,6 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 }) {
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
   const apfel = "'ApfelGrotezk', sans-serif"
-  const [showVoice, setShowVoice] = useState(false)
-
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
@@ -927,45 +907,26 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 }}
                 className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
-                {noteSaved ? 'Saved' : ''}
-              </p>
-              <div style={{ marginTop: 10 }}>
-                {showVoice ? (
-                  <VoiceNoteButton
-                    saveMode={{ kind: 'freeform' }}
-                    theme="light"
-                    autoStart
-                    onSaved={() => setShowVoice(false)}
-                    onDelete={() => setShowVoice(false)}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowVoice(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      width: '100%',
-                      padding: '11px 16px',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                      background: 'rgba(44,55,119,0.06)',
-                      border: '1.5px solid rgba(44,55,119,0.2)',
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
-                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
-                  </button>
+              <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                {noteSaving && (
+                  <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saving…</span>
                 )}
+                {noteSaved && !noteSaving && (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
+                      <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                  </>
+                )}
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <VoiceNoteButton
+                  saveMode={{ kind: 'freeform' }}
+                  theme="light"
+                  onSaved={() => {}}
+                />
               </div>
             </div>
           )}
@@ -1147,7 +1108,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
 // CPROutcomeContent — cream editorial layout for cpr-decision outcome pages
 // ---------------------------------------------------------------------------
 
-function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
+function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, noteSaving, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
   scenario: Scenario
   choice: ScenarioChoice
   onBackToScenario: () => void
@@ -1155,6 +1116,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
   onSelectChoice: (choiceId: string) => void
   noteText: string
   noteSaved: boolean
+  noteSaving: boolean
   handleNoteChange: (val: string) => void
   handleNoteBlur: () => void
   openSourceId: string | null
@@ -1163,8 +1125,6 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 }) {
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
   const apfel = "'ApfelGrotezk', sans-serif"
-  const [showVoice, setShowVoice] = useState(false)
-
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
@@ -1269,45 +1229,26 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 }}
                 className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
-                {noteSaved ? 'Saved' : ''}
-              </p>
-              <div style={{ marginTop: 10 }}>
-                {showVoice ? (
-                  <VoiceNoteButton
-                    saveMode={{ kind: 'freeform' }}
-                    theme="light"
-                    autoStart
-                    onSaved={() => setShowVoice(false)}
-                    onDelete={() => setShowVoice(false)}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowVoice(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      width: '100%',
-                      padding: '11px 16px',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                      background: 'rgba(44,55,119,0.06)',
-                      border: '1.5px solid rgba(44,55,119,0.2)',
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
-                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
-                  </button>
+              <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                {noteSaving && (
+                  <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saving…</span>
                 )}
+                {noteSaved && !noteSaving && (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
+                      <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                  </>
+                )}
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <VoiceNoteButton
+                  saveMode={{ kind: 'freeform' }}
+                  theme="light"
+                  onSaved={() => {}}
+                />
               </div>
             </div>
           )}
@@ -1500,6 +1441,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
   const [openSourceId, setOpenSourceId] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
   const [noteSaved, setNoteSaved] = useState(false)
+  const [noteSaving, setNoteSaving] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const noteTextRef = useRef('')
   const savedNoteIdRef = useRef<string | null>(null)
@@ -1511,12 +1453,14 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
   async function saveNote() {
     const trimmed = noteTextRef.current.trim()
     if (!trimmed) return
+    setNoteSaving(true)
     if (savedNoteIdRef.current) {
       await updateNote(savedNoteIdRef.current, trimmed)
     } else {
       const note = await createNote(trimmed)
       if (note) savedNoteIdRef.current = note.id
     }
+    setNoteSaving(false)
     setNoteSaved(true)
     setTimeout(() => setNoteSaved(false), 2500)
   }
@@ -1525,6 +1469,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
     setNoteText(val)
     noteTextRef.current = val
     setNoteSaved(false)
+    setNoteSaving(false)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (val.trim()) debounceRef.current = setTimeout(() => {
       debounceRef.current = null
@@ -1551,6 +1496,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         onSelectChoice={onSelectChoice}
         noteText={noteText}
         noteSaved={noteSaved}
+        noteSaving={noteSaving}
         handleNoteChange={handleNoteChange}
         handleNoteBlur={handleNoteBlur}
         openSourceId={openSourceId}
@@ -1570,6 +1516,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         onSelectChoice={onSelectChoice}
         noteText={noteText}
         noteSaved={noteSaved}
+        noteSaving={noteSaving}
         handleNoteChange={handleNoteChange}
         handleNoteBlur={handleNoteBlur}
         openSourceId={openSourceId}
@@ -1589,6 +1536,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         onSelectChoice={onSelectChoice}
         noteText={noteText}
         noteSaved={noteSaved}
+        noteSaving={noteSaving}
         handleNoteChange={handleNoteChange}
         handleNoteBlur={handleNoteBlur}
         openSourceId={openSourceId}
@@ -1608,6 +1556,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         onSelectChoice={onSelectChoice}
         noteText={noteText}
         noteSaved={noteSaved}
+        noteSaving={noteSaving}
         handleNoteChange={handleNoteChange}
         handleNoteBlur={handleNoteBlur}
         openSourceId={openSourceId}
@@ -1689,7 +1638,20 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
                 rows={4}
                 className="w-full bg-white text-[#130426] placeholder:text-[#130426]/35 px-3 py-2.5 rounded-lg text-sm leading-relaxed focus:outline-none resize-none border border-[#130426]/10"
               />
-              {noteSaved && <p className="mt-1.5 text-xs text-[#130426]" style={{ color: 'rgba(26,26,26,0.72)', fontSize: 13 }}>Saved</p>}
+              <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                {noteSaving && (
+                  <span style={{ fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saving…</span>
+                )}
+                {noteSaved && !noteSaving && (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
+                      <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                  </>
+                )}
+              </div>
             </section>
           )}
           {choice.resources.length > 0 && (
@@ -1732,7 +1694,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
 // ALSOutcomeContent — cream editorial layout for late-stage-als outcome pages
 // ---------------------------------------------------------------------------
 
-function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
+function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, onSelectChoice, noteText, noteSaved, noteSaving, handleNoteChange, handleNoteBlur, openSourceId, toggleSource, otherChoices }: {
   scenario: Scenario
   choice: ScenarioChoice
   onBackToScenario: () => void
@@ -1740,6 +1702,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
   onSelectChoice: (choiceId: string) => void
   noteText: string
   noteSaved: boolean
+  noteSaving: boolean
   handleNoteChange: (val: string) => void
   handleNoteBlur: () => void
   openSourceId: string | null
@@ -1748,8 +1711,6 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 }) {
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
   const apfel = "'ApfelGrotezk', sans-serif"
-  const [showVoice, setShowVoice] = useState(false)
-
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 96px' }}>
@@ -1863,47 +1824,28 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
               />
 
               {/* Save confirmation + link */}
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
-                {noteSaved ? 'Saved' : ''}
-              </p>
+              <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                {noteSaving && (
+                  <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saving…</span>
+                )}
+                {noteSaved && !noteSaving && (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
+                      <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                  </>
+                )}
+              </div>
 
               {/* Voice option */}
               <div style={{ marginTop: 10 }}>
-                {showVoice ? (
-                  <VoiceNoteButton
-                    saveMode={{ kind: 'freeform' }}
-                    theme="light"
-                    autoStart
-                    onSaved={() => setShowVoice(false)}
-                    onDelete={() => setShowVoice(false)}
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowVoice(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      width: '100%',
-                      padding: '11px 16px',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                      background: 'rgba(44,55,119,0.06)',
-                      border: '1.5px solid rgba(44,55,119,0.2)',
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
-                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
-                  </button>
-                )}
+                <VoiceNoteButton
+                  saveMode={{ kind: 'freeform' }}
+                  theme="light"
+                  onSaved={() => {}}
+                />
               </div>
             </div>
           )}

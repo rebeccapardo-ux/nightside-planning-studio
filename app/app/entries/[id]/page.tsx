@@ -68,6 +68,31 @@ const LM_PATH_D = (() => {
   return `M ${pts.join(' L ')}`
 })()
 
+// Thumbnail geometry for snapshot card (viewBox 0 0 460 200)
+const LM_THUMB_MID_Y = 80
+const LM_THUMB_AMP_Y = 45
+
+function lmThumbPoint(xPct: number): { x: number; y: number } {
+  const t = Math.max(0, Math.min(1, xPct / 100))
+  return { x: 44 + t * 392, y: LM_THUMB_MID_Y + LM_THUMB_AMP_Y * Math.sin(t * 2 * Math.PI) }
+}
+
+const LM_THUMB_PATH_D = (() => {
+  const pts: string[] = []
+  for (let i = 0; i <= 300; i++) {
+    const t = i / 300
+    pts.push(`${(44 + t * 392).toFixed(1)},${(LM_THUMB_MID_Y + LM_THUMB_AMP_Y * Math.sin(t * 2 * Math.PI)).toFixed(1)}`)
+  }
+  return `M ${pts.join(' L ')}`
+})()
+
+function lmThumbCircleColor(i: number, total: number): string {
+  if (total <= 1) return '#F29836'
+  if (i < total / 3) return '#BBABF4'
+  if (i < (2 * total) / 3) return '#F29836'
+  return '#DB5835'
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -91,6 +116,9 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
   const ranking = getRankingContent(entry)
   const legacyMap = getLegacyMapContent(entry)
+  const userName = (user.user_metadata?.full_name as string | undefined) ??
+                   (user.user_metadata?.name as string | undefined) ??
+                   user.email ?? ''
   const editHref = getContinueHref(entry)
   const displayTitle = getDisplayTitle(entry)
   const formattedDate = formatDate(entry.created_at)
@@ -120,11 +148,11 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   const maxWidth = isDocument ? 680 : 800
 
   return (
-    <div className="min-h-screen" style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#CBBBEA' : '#F8F4EB' }}>
+    <div className="min-h-screen" style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#CBBBEA' : '#F8F4EB' }}>
       <div style={{ maxWidth, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         {/* Back link — not shown on document or ranking snapshot views */}
-        {entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+        {entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.document_type !== 'funeral_wishes' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
           <Link
             href={backHref}
             style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', display: 'block', marginBottom: 32, textDecoration: 'none' }}
@@ -157,7 +185,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
         <FadeIn>
           {/* Card */}
           <div
-            style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#F8F4EB' : '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
+            style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#F8F4EB' : '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
             className="p-6 md:py-10 md:px-12"
           >
             {/* Title */}
@@ -192,7 +220,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             {/* Disclaimer — documents only */}
             {isDocument && (
               <>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement') ? 8 : 24, lineHeight: 1.55 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes') ? 8 : 24, lineHeight: 1.55 }}>
                   This is a record of your responses at the time of your last save. It is not a legal document.
                 </p>
                 {entry.document_type === 'financial_information' && (
@@ -213,9 +241,14 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
               </>
             )}
 
-            {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && (
+            {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking') && (
               <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 8, lineHeight: 1.55 }}>
                 This is a record of your responses at the time of your last save. It is not a legal document.
+              </p>
+            )}
+            {entry.activity === 'legacy_map' && (
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 8, lineHeight: 1.55 }}>
+                This document maps meaningful moments and reflections from across your life.
               </p>
             )}
 
@@ -223,8 +256,8 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             <div style={{ height: 1, background: 'rgba(26,26,26,0.1)', margin: '24px 0' }} />
 
             {/* Action links */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
-              {editHref && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+            {entry.activity !== 'legacy_map' && <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
+              {editHref && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.document_type !== 'funeral_wishes' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
                 <Link
                   href={editHref}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
@@ -233,7 +266,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
                   {editLabel}
                 </Link>
               )}
-              {showExport && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+              {showExport && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.document_type !== 'funeral_wishes' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
                 <Link
                   href={`/app/entries/${entry.id}/export`}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
@@ -242,11 +275,11 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
                   Export →
                 </Link>
               )}
-            </div>
+            </div>}
 
             {/* Content */}
             {legacyMap ? (
-              <LegacyMapSnapshot content={legacyMap} />
+              <LegacyMapSnapshot content={legacyMap} id={entry.id} userName={userName} />
             ) : ranking ? (
               <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} id={entry.id} />
             ) : isDocument ? (
@@ -265,63 +298,57 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 // LegacyMapSnapshot
 // ---------------------------------------------------------------------------
 
-function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
+function LegacyMapSnapshot({ content, id, userName }: { content: LegacyMapContent; id: string; userName: string }) {
   const sorted = [...content.moments].sort((a, b) => a.xPercent - b.xPercent)
-  const hasReflection = content.themes || content.surprises || content.valuesToPassOn || content.legacyProjects
+  const n = sorted.length
 
   return (
     <div>
-      {/* Map visual */}
-      {sorted.length > 0 && (
-        <div style={{ background: '#FFFFFF', border: '1px solid #1A1A1A', borderRadius: 10, height: 180, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
-          {/* Path only — preserveAspectRatio="none" is fine for lines, but distorts circles */}
-          <svg
-            viewBox={`0 0 ${LM_VB_W} ${LM_VB_H}`}
-            preserveAspectRatio="none"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
-            aria-hidden="true"
-          >
-            <path d={LM_PATH_D} fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          {/* Circles as divs so they stay round regardless of container aspect ratio */}
+      {/* White landscape thumbnail card */}
+      <div style={{
+        background: '#ffffff',
+        aspectRatio: '1.414 / 1',
+        width: '100%',
+        borderRadius: 8,
+        boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
+        <svg
+          viewBox="0 0 460 200"
+          preserveAspectRatio="xMidYMid meet"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="lm-thumb-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#BBABF4" />
+              <stop offset="50%" stopColor="#F29836" />
+              <stop offset="100%" stopColor="#DB5835" />
+            </linearGradient>
+          </defs>
+          <line x1="20" y1="160" x2="440" y2="160" stroke="#f0ece4" strokeWidth="1" />
+          <text x="20" y="175" fontSize="9" fill="rgba(19,4,38,0.65)">Birth</text>
+          <text x="415" y="175" fontSize="9" fill="rgba(19,4,38,0.65)">Now</text>
+          {n > 0 && (
+            <path d={LM_THUMB_PATH_D} fill="none" stroke="url(#lm-thumb-grad)" strokeWidth="2" strokeLinecap="round" />
+          )}
           {sorted.map((m, i) => {
-            const pt = lmPathPoint(m.xPercent)
+            const pt = lmThumbPoint(m.xPercent)
+            const color = lmThumbCircleColor(i, n)
             return (
-              <div
-                key={m.id}
-                style={{
-                  position: 'absolute',
-                  left: `${(pt.x / LM_VB_W) * 100}%`,
-                  top: `${(pt.y / LM_VB_H) * 100}%`,
-                  transform: 'translate(-50%, -50%)',
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: '#FFFFFF',
-                  border: '2px solid #1A1A1A',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: hv,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: '#1A1A1A',
-                }}
-              >
-                {i + 1}
-              </div>
+              <g key={m.id}>
+                <circle cx={pt.x} cy={pt.y} r={9} fill="#ffffff" stroke={color} strokeWidth="1.5" />
+                <text x={pt.x} y={pt.y + 3.5} fontSize="9" fontWeight="600" fill="#2C3777" textAnchor="middle">{i + 1}</text>
+              </g>
             )
           })}
-          <span style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: hv, fontSize: 11, color: '#1A1A1A' }}>Birth</span>
-          <span style={{ position: 'absolute', bottom: 10, right: 14, fontFamily: hv, fontSize: 11, color: '#1A1A1A' }}>Now</span>
-        </div>
-      )}
+        </svg>
+      </div>
 
       {/* Moment list */}
-      {sorted.length === 0 ? (
-        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No moments added yet.</p>
-      ) : (
-        <div>
+      {sorted.length > 0 && (
+        <div style={{ marginTop: 24 }}>
           {sorted.map((m, i) => (
             <div
               key={m.id}
@@ -334,20 +361,10 @@ function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
               }}
             >
               <div style={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: '#F8F4EB',
-                border: '1.5px solid #1A1A1A',
-                color: '#1A1A1A',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: hv,
-                fontSize: 11,
-                fontWeight: 600,
-                flexShrink: 0,
-                marginTop: 2,
+                width: 22, height: 22, borderRadius: '50%',
+                background: '#F8F4EB', border: '1.5px solid #1A1A1A', color: '#1A1A1A',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: hv, fontSize: 11, fontWeight: 600, flexShrink: 0, marginTop: 2,
               }}>
                 {i + 1}
               </div>
@@ -365,13 +382,13 @@ function LegacyMapSnapshot({ content }: { content: LegacyMapContent }) {
       )}
 
       {/* Reflection fields */}
-      {hasReflection && (
+      {(content.themes || content.surprises || content.valuesToPassOn || content.legacyProjects) && (
         <div style={{ marginTop: 32 }}>
           {[
             { field: content.themes, label: 'THEMES THAT STOOD OUT' },
             { field: content.surprises, label: 'SURPRISES OR REALIZATIONS' },
             { field: content.valuesToPassOn, label: 'VALUES TO PASS ON' },
-            { field: content.legacyProjects, label: 'LEGACY PROJECT IDEAS' },
+            { field: content.legacyProjects, label: 'REFLECTIONS' },
           ].map(({ field, label }) =>
             field ? (
               <div key={label} style={{ marginBottom: 28 }}>
@@ -597,6 +614,9 @@ function DocumentSnapshot({ entry }: { entry: EntryRow }) {
   if (entry.document_type === 'advance_directive_supplement') {
     return <AdvanceDirectiveSnapshot entry={entry} />
   }
+  if (entry.document_type === 'funeral_wishes') {
+    return <FuneralWishesSnapshot entry={entry} />
+  }
   return <GenericDocumentSnapshot entry={entry} />
 }
 
@@ -624,6 +644,121 @@ function AdvanceDirectiveSnapshot({ entry }: { entry: EntryRow }) {
         </div>
       ))}
       <div style={{ marginTop: 32 }}>
+        <Link
+          href={`/app/entries/${entry.id}/export`}
+          style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block' }}
+        >
+          Export as PDF →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+const FW_SECTIONS: { key: string; title: string; fields: { key: string; label: string }[] }[] = [
+  { key: 'what_matters_most', title: 'What Matters Most', fields: [
+    { key: 'whatMattersMost', label: 'What matters most to me' },
+  ]},
+  { key: 'organ_donation', title: 'Organ & Tissue Donation', fields: [
+    { key: 'organDonationWishes', label: 'My donation wishes' },
+    { key: 'organDonationSpecific', label: 'Specific organs or tissues' },
+    { key: 'organDonationNotes', label: 'Other notes' },
+  ]},
+  { key: 'final_resting_place', title: 'Final Resting Place', fields: [
+    { key: 'dispositionTypes', label: 'How I want my body to be handled' },
+    { key: 'burialLocation', label: 'Burial: location' },
+    { key: 'burialCasket', label: 'Burial: casket preferences' },
+    { key: 'burialEmbalming', label: 'Burial: embalming preference' },
+    { key: 'burialOtherWishes', label: 'Burial: other wishes' },
+    { key: 'mausoleumLocation', label: 'Above-ground burial: location' },
+    { key: 'mausoleumOtherWishes', label: 'Above-ground burial: other wishes' },
+    { key: 'cremationDirect', label: 'Cremation: direct cremation' },
+    { key: 'cremationRemains', label: 'Cremation: what to do with my remains' },
+    { key: 'cremationLocation', label: 'Cremation: location for remains' },
+    { key: 'cremationOtherWishes', label: 'Cremation: other wishes' },
+    { key: 'aquamationDirect', label: 'Aquamation: direct aquamation' },
+    { key: 'aquamationRemains', label: 'Aquamation: what to do with my remains' },
+    { key: 'aquamationLocation', label: 'Aquamation: location for remains' },
+    { key: 'aquamationOtherWishes', label: 'Aquamation: other wishes' },
+    { key: 'homeFuneralWishes', label: 'Home funeral wishes' },
+    { key: 'bodyDonationPreregistered', label: 'Body donation: pre-registered' },
+    { key: 'bodyDonationDetails', label: 'Body donation: details' },
+    { key: 'bodyDonationAfterWishes', label: 'Body donation: wishes for remains afterward' },
+    { key: 'dispositionOtherText', label: 'Other disposition details' },
+    { key: 'memorialMarker', label: 'Memorial marker preference' },
+    { key: 'memorialMarkerText', label: 'Memorial marker: what it should say' },
+    { key: 'memorialMarkerLocation', label: 'Memorial marker: location' },
+    { key: 'memorialMarkerOtherWishes', label: 'Memorial marker: other wishes' },
+  ]},
+  { key: 'ceremony', title: 'Ceremony', fields: [
+    { key: 'ceremonyCulturalTraditions', label: 'Cultural or religious traditions' },
+    { key: 'ceremonyOfficiant', label: 'Officiant preference' },
+    { key: 'ceremonyGatheringAlive', label: 'Gathering while I am still alive' },
+    { key: 'ceremonyGatheringAliveDetails', label: 'Gathering while alive: details' },
+    { key: 'ceremonyFuneralWants', label: 'Do I want a funeral or memorial service' },
+    { key: 'ceremonyFuneralPublicPrivate', label: 'Public or private' },
+    { key: 'ceremonyFuneralLocation', label: 'Where it should take place' },
+    { key: 'ceremonyFuneralCoordinator', label: 'Who should coordinate' },
+    { key: 'ceremonyFuneralPrearranged', label: 'Have I pre-arranged with a funeral home' },
+    { key: 'ceremonyFuneralPrearrangedDetails', label: 'Pre-arrangement details' },
+    { key: 'ceremonyFuneralSpeakers', label: 'Who should speak' },
+    { key: 'ceremonyFuneralMusic', label: 'Music' },
+    { key: 'ceremonyFuneralFlowers', label: 'Flowers preference' },
+    { key: 'ceremonyFuneralDonationCause', label: 'Charitable cause for donations' },
+    { key: 'ceremonyDoNotWant', label: 'Things I do not want' },
+    { key: 'ceremonyOtherWishes', label: 'Other ceremony wishes' },
+  ]},
+  { key: 'obituary', title: 'Obituary', fields: [
+    { key: 'obituaryWants', label: 'Do I want an obituary' },
+    { key: 'obituaryContent', label: 'What to include' },
+    { key: 'obituaryWriter', label: 'Who should write it' },
+    { key: 'obituaryPublications', label: 'Where to publish' },
+    { key: 'obituaryOnline', label: 'Online presence' },
+  ]},
+  { key: 'note_to_others', title: 'Note to Others', fields: [
+    { key: 'noteToOthers', label: 'My note to others' },
+  ]},
+]
+
+function FuneralWishesSnapshot({ entry }: { entry: EntryRow }) {
+  const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
+  const hasAny = FW_SECTIONS.some(s => s.fields.some(f => {
+    if (f.key === 'dispositionTypes') return Array.isArray(c.dispositionTypes) && (c.dispositionTypes as string[]).length > 0
+    return typeof c[f.key] === 'string' && (c[f.key] as string).trim()
+  }))
+  if (!hasAny) {
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+  }
+  let firstSection = true
+  return (
+    <div>
+      {FW_SECTIONS.map(section => {
+        const visibleFields = section.fields.filter(f => {
+          if (f.key === 'dispositionTypes') return Array.isArray(c.dispositionTypes) && (c.dispositionTypes as string[]).length > 0
+          return typeof c[f.key] === 'string' && (c[f.key] as string).trim()
+        })
+        if (visibleFields.length === 0) return null
+        const isFirst = firstSection; firstSection = false
+        return (
+          <div key={section.key} style={{ marginBottom: 32, marginTop: isFirst ? 0 : 32 }}>
+            <p style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: 'rgba(26,26,26,0.85)', marginBottom: 16 }}>
+              {section.title}
+            </p>
+            {visibleFields.map((f, i) => {
+              const value = f.key === 'dispositionTypes'
+                ? (c.dispositionTypes as string[]).join(', ')
+                : c[f.key] as string
+              return (
+                <div key={f.key} style={{ marginBottom: i < visibleFields.length - 1 ? 20 : 0 }}>
+                  <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(26,26,26,0.6)', marginBottom: 5 }}>{f.label}</p>
+                  <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</p>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })}
+      <div style={{ marginTop: 8 }}>
         <Link
           href={`/app/entries/${entry.id}/export`}
           style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block' }}
@@ -900,6 +1035,7 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
 
 function getContinueHref(entry: EntryRow): string | null {
   if (entry.document_type === 'advance_directive_supplement') return '/app/capture/advance-directive'
+  if (entry.document_type === 'funeral_wishes') return '/app/capture/funeral-wishes'
   if (entry.document_type === 'personal_admin_info') return '/app/capture/personal-admin'
   if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
   if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
@@ -912,8 +1048,9 @@ function getContinueHref(entry: EntryRow): string | null {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'

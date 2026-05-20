@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
 const DOCUMENT_TYPE = 'personal_admin_info'
-const DOCUMENT_TITLE = 'Personal Admin Info'
+const DOCUMENT_TITLE = 'Personal Admin Information'
 
 type FormState = {
   fullLegalName: string
@@ -30,13 +30,26 @@ type FormState = {
   otherFamily: string
   employmentStatus: string
   employerDetails: string
+  hasWill: boolean
   willLocation: string
-  hasCareDecisionMaker: string
+  hasCareDecisionMaker: boolean
   careDecisionMakerDocLocation: string
-  hasEndOfLifeWishesDoc: string
+  careDecisionMaker1Name: string
+  careDecisionMaker1Phone: string
+  careDecisionMaker1Email: string
+  careDecisionMaker2Name: string
+  careDecisionMaker2Phone: string
+  careDecisionMaker2Email: string
+  hasEndOfLifeWishesDoc: boolean
   endOfLifeWishesDocLocation: string
-  hasPropertyDecisionMaker: string
+  hasPropertyDecisionMaker: boolean
   propertyDecisionMakerDocLocation: string
+  propertyDecisionMaker1Name: string
+  propertyDecisionMaker1Phone: string
+  propertyDecisionMaker1Email: string
+  propertyDecisionMaker2Name: string
+  propertyDecisionMaker2Phone: string
+  propertyDecisionMaker2Email: string
   otherDoc1Name: string
   otherDoc1Location: string
   otherDoc1Instructions: string
@@ -60,9 +73,14 @@ const EMPTY_FORM: FormState = {
   parent1LegalName: '', parent1PlaceOfBirth: '', parent2LegalName: '', parent2PlaceOfBirth: '',
   socialInsuranceNumber: '', healthCardNumber: '', maritalStatus: '', spousePartnerLegalName: '',
   numberOfChildren: '', childrensFullNames: '', otherFamily: '', employmentStatus: '', employerDetails: '',
-  willLocation: '', hasCareDecisionMaker: '', careDecisionMakerDocLocation: '',
-  hasEndOfLifeWishesDoc: '', endOfLifeWishesDocLocation: '',
-  hasPropertyDecisionMaker: '', propertyDecisionMakerDocLocation: '',
+  hasWill: false, willLocation: '',
+  hasCareDecisionMaker: false, careDecisionMakerDocLocation: '',
+  careDecisionMaker1Name: '', careDecisionMaker1Phone: '', careDecisionMaker1Email: '',
+  careDecisionMaker2Name: '', careDecisionMaker2Phone: '', careDecisionMaker2Email: '',
+  hasEndOfLifeWishesDoc: false, endOfLifeWishesDocLocation: '',
+  hasPropertyDecisionMaker: false, propertyDecisionMakerDocLocation: '',
+  propertyDecisionMaker1Name: '', propertyDecisionMaker1Phone: '', propertyDecisionMaker1Email: '',
+  propertyDecisionMaker2Name: '', propertyDecisionMaker2Phone: '', propertyDecisionMaker2Email: '',
   otherDoc1Name: '', otherDoc1Location: '', otherDoc1Instructions: '',
   otherDoc2Name: '', otherDoc2Location: '', otherDoc2Instructions: '',
   otherDoc3Name: '', otherDoc3Location: '', otherDoc3Instructions: '',
@@ -83,7 +101,8 @@ const SECTION_DEFS = [
 
 const DOC_NUMS = [1, 2, 3, 4, 5] as const
 
-export default function PersonalAdminPage() {
+function PersonalAdminPage() {
+  const searchParams = useSearchParams()
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const formRef = useRef<FormState>(EMPTY_FORM)
   const entryIdRef = useRef<string | null>(null)
@@ -94,10 +113,25 @@ export default function PersonalAdminPage() {
   const [statusNow, setStatusNow] = useState(Date.now())
   const router = useRouter()
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
-  const [openSection, setOpenSection] = useState<number | null>(0)
+  const [openSection, setOpenSection] = useState<number | null>(
+    searchParams.get('section') === 'legal' ? 3 : null
+  )
   const [visibleDocCount, setVisibleDocCount] = useState(0)
   const [openDocIndex, setOpenDocIndex] = useState<number | null>(null)
+  const [showSecondCareDecisionMaker, setShowSecondCareDecisionMaker] = useState(false)
+  const [showSecondPropertyDecisionMaker, setShowSecondPropertyDecisionMaker] = useState(false)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
+  const lastEditedSectionIdxRef = useRef<number | null>(null)
+  const [savingSectionIdx, setSavingSectionIdx] = useState<number | null>(null)
+  const [savedSectionIdx, setSavedSectionIdx] = useState<number | null>(null)
+  const [savedSectionFading, setSavedSectionFading] = useState(false)
+  const [persistSectionIdx, setPersistSectionIdx] = useState<number | null>(null)
+  const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isLegalEntry = searchParams.get('section') === 'legal'
+
+  useEffect(() => {
+    if (!isLegalEntry) window.scrollTo(0, 0)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     async function load() {
@@ -120,8 +154,27 @@ export default function PersonalAdminPage() {
         if (existing) {
           entryIdRef.current = existing.id
           setSavedEntryId(existing.id)
-          if (existing.created_at) setLastSavedAt(new Date(existing.created_at))
-          const merged = { ...EMPTY_FORM, ...existing.content }
+          const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${existing.id}`)
+          const savedDate = storedSave ? new Date(storedSave) : existing.created_at ? new Date(existing.created_at) : null
+          if (savedDate) setLastSavedAt(savedDate)
+
+          // Start from entries content, then apply any sync flags set by the domain page
+          let merged = { ...EMPTY_FORM, ...existing.content } as FormState
+          const meta = user.user_metadata ?? {}
+          let syncedFromMeta = false
+          if (typeof meta.sync_has_will === 'boolean' && meta.sync_has_will !== merged.hasWill) {
+            merged = { ...merged, hasWill: meta.sync_has_will }
+            syncedFromMeta = true
+          }
+          if (typeof meta.sync_has_care_decision_maker === 'boolean' && meta.sync_has_care_decision_maker !== merged.hasCareDecisionMaker) {
+            merged = { ...merged, hasCareDecisionMaker: meta.sync_has_care_decision_maker }
+            syncedFromMeta = true
+          }
+          if (typeof meta.sync_has_eol_wishes_doc === 'boolean' && meta.sync_has_eol_wishes_doc !== merged.hasEndOfLifeWishesDoc) {
+            merged = { ...merged, hasEndOfLifeWishesDoc: meta.sync_has_eol_wishes_doc }
+            syncedFromMeta = true
+          }
+
           formRef.current = merged
           setForm(merged)
           const count = DOC_NUMS.filter(n =>
@@ -130,6 +183,22 @@ export default function PersonalAdminPage() {
             merged[`otherDoc${n}Instructions` as keyof FormState]
           ).length
           setVisibleDocCount(count)
+          setShowSecondCareDecisionMaker(
+            !!(merged.careDecisionMaker2Name || merged.careDecisionMaker2Phone || merged.careDecisionMaker2Email)
+          )
+          setShowSecondPropertyDecisionMaker(
+            !!(merged.propertyDecisionMaker2Name || merged.propertyDecisionMaker2Phone || merged.propertyDecisionMaker2Email)
+          )
+          if (syncedFromMeta) {
+            supabase.from('entries').update({ content: toSaveable(merged) }).eq('id', existing.id).then(() => {}, () => {})
+          }
+          supabase.auth.updateUser({
+            data: {
+              sync_has_will: merged.hasWill,
+              sync_has_care_decision_maker: merged.hasCareDecisionMaker,
+              sync_has_eol_wishes_doc: merged.hasEndOfLifeWishesDoc,
+            },
+          }).catch(() => {})
         }
       } finally {
         setLoading(false)
@@ -139,21 +208,69 @@ export default function PersonalAdminPage() {
   }, [])
 
   useEffect(() => {
+    if (!isLegalEntry || loading) return
+    const timer = setTimeout(() => {
+      const el = sectionRefs.current[3]
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 96
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [loading, isLegalEntry])
+
+  useEffect(() => {
     if (!lastSavedAt) return
     const interval = window.setInterval(() => setStatusNow(Date.now()), 30000)
     return () => window.clearInterval(interval)
   }, [lastSavedAt])
 
+  type BooleanKey = 'hasWill' | 'hasCareDecisionMaker' | 'hasEndOfLifeWishesDoc' | 'hasPropertyDecisionMaker'
+
   function updateField(field: keyof FormState, value: string) {
-    const newForm = { ...formRef.current, [field]: value }
+    const newForm = { ...formRef.current, [field]: value } as FormState
     formRef.current = newForm
     setForm(newForm)
     scheduleAutosave()
   }
 
+  function updateBoolField(field: BooleanKey, value: boolean) {
+    const newForm = { ...formRef.current, [field]: value } as FormState
+    formRef.current = newForm
+    setForm(newForm)
+    scheduleAutosave()
+  }
+
+  function handleRemoveSecondDecisionMaker() {
+    const newForm = {
+      ...formRef.current,
+      careDecisionMaker2Name: '',
+      careDecisionMaker2Phone: '',
+      careDecisionMaker2Email: '',
+    }
+    formRef.current = newForm
+    setForm(newForm)
+    setShowSecondCareDecisionMaker(false)
+    scheduleAutosave()
+  }
+
+  function handleRemoveSecondPropertyDecisionMaker() {
+    const newForm = {
+      ...formRef.current,
+      propertyDecisionMaker2Name: '',
+      propertyDecisionMaker2Phone: '',
+      propertyDecisionMaker2Email: '',
+    }
+    formRef.current = newForm
+    setForm(newForm)
+    setShowSecondPropertyDecisionMaker(false)
+    scheduleAutosave()
+  }
+
   function scheduleAutosave() {
+    lastEditedSectionIdxRef.current = openSection
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => performAutosave(), 1500)
+    debounceRef.current = setTimeout(() => { debounceRef.current = null; performAutosave() }, 1500)
   }
 
   function handleBlur() {
@@ -164,6 +281,18 @@ export default function PersonalAdminPage() {
     }
   }
 
+  function triggerSavedIndicator(idx: number | null) {
+    if (idx === null) return
+    if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current)
+    setPersistSectionIdx(idx)
+    setSavedSectionIdx(idx)
+    setSavedSectionFading(false)
+    savedFadeTimerRef.current = setTimeout(() => {
+      setSavedSectionFading(true)
+      setTimeout(() => setSavedSectionIdx(null), 400)
+    }, 2600)
+  }
+
   function toSaveable(f: FormState): Omit<FormState, 'socialInsuranceNumber' | 'healthCardNumber'> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { socialInsuranceNumber, healthCardNumber, ...safe } = f
@@ -171,12 +300,14 @@ export default function PersonalAdminPage() {
   }
 
   async function performAutosave() {
+    const targetIdx = lastEditedSectionIdxRef.current
     const currentForm = formRef.current
     setSaveStatus('saving')
+    setSavingSectionIdx(targetIdx)
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) { setSaveStatus('error'); return }
+      if (userError || !user) { setSaveStatus('error'); setSavingSectionIdx(null); return }
 
       if (!entryIdRef.current) {
         const { data: created, error } = await supabase
@@ -184,17 +315,27 @@ export default function PersonalAdminPage() {
           .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: toSaveable(currentForm) })
           .select('id')
           .single()
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingSectionIdx(null); return }
         if (created) { entryIdRef.current = created.id; setSavedEntryId(created.id) }
       } else {
         const { error } = await supabase.from('entries').update({ content: toSaveable(currentForm) }).eq('id', entryIdRef.current)
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingSectionIdx(null); return }
       }
+      supabase.auth.updateUser({
+        data: {
+          sync_has_will: currentForm.hasWill,
+          sync_has_care_decision_maker: currentForm.hasCareDecisionMaker,
+          sync_has_eol_wishes_doc: currentForm.hasEndOfLifeWishesDoc,
+        },
+      }).catch(() => {})
+      if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
       setLastSavedAt(new Date())
       setStatusNow(Date.now())
       setSaveStatus('saved')
+      setSavingSectionIdx(null); triggerSavedIndicator(targetIdx)
     } catch {
       setSaveStatus('error')
+      setSavingSectionIdx(null)
     }
   }
 
@@ -219,12 +360,27 @@ export default function PersonalAdminPage() {
     const diffHours = Math.floor(diffMinutes / 60)
     const diffDays = Math.floor(diffHours / 24)
     const diffWeeks = Math.floor(diffDays / 7)
-    if (diffSeconds < 60) return 'Saved'
+    if (diffSeconds < 60) return 'Saved just now'
     if (diffMinutes < 60) return `Saved ${diffMinutes}m ago`
     if (diffHours < 24) return diffHours === 1 ? 'Saved 1h ago' : `Saved ${diffHours}h ago`
     if (diffDays < 7) return diffDays === 1 ? 'Saved 1 day ago' : `Saved ${diffDays} days ago`
     return diffWeeks === 1 ? 'Saved 1 week ago' : `Saved ${diffWeeks} weeks ago`
   }, [lastSavedAt, statusNow, saveStatus])
+
+  const sectionSaveText = useMemo(() => {
+    if (!lastSavedAt) return null
+    const diffMs = Math.max(statusNow - lastSavedAt.getTime(), 0)
+    const diffSeconds = Math.floor(diffMs / 1000)
+    const diffMinutes = Math.floor(diffSeconds / 60)
+    const diffHours = Math.floor(diffMinutes / 60)
+    const diffDays = Math.floor(diffHours / 24)
+    const diffWeeks = Math.floor(diffDays / 7)
+    if (diffSeconds < 60) return 'Saved just now'
+    if (diffMinutes < 60) return `Saved ${diffMinutes}m ago`
+    if (diffHours < 24) return diffHours === 1 ? 'Saved 1h ago' : `Saved ${diffHours}h ago`
+    if (diffDays < 7) return diffDays === 1 ? 'Saved 1 day ago' : `Saved ${diffDays} days ago`
+    return diffWeeks === 1 ? 'Saved 1 week ago' : `Saved ${diffWeeks} weeks ago`
+  }, [lastSavedAt, statusNow])
 
   function toggleSection(idx: number) {
     const next = openSection === idx ? null : idx
@@ -245,7 +401,27 @@ export default function PersonalAdminPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F4EB', position: 'relative' }}>
+      {savedEntryId && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <button
+            type="button"
+            onClick={handlePreviewExport}
+            disabled={saveStatus === 'saving'}
+            className="hover:opacity-90 transition-opacity"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            {saveStatus === 'saving' ? 'Preparing…' : 'Finalize & Export'}
+          </button>
+          {saveStatusText && (
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+          )}
+        </div>
+      )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
@@ -253,30 +429,32 @@ export default function PersonalAdminPage() {
             theme="light"
             items={[
               { label: 'Plan', href: '/app/plan' },
-              { label: 'Personal Admin Info' },
+              { label: 'Personal Admin Information' },
             ]}
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
-            Personal Admin Info
+        <div style={{ marginBottom: 48 }}>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
+            Personal Admin
           </h1>
-          {savedEntryId && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 8 }}>
-              {saveStatusText && (
-                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777' }}>{saveStatusText}</span>
-              )}
-              <button type="button" onClick={handlePreviewExport} disabled={saveStatus === 'saving'}
-                style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '8px 12px', cursor: saveStatus === 'saving' ? 'default' : 'pointer' }}
-                onMouseEnter={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.background = '#F8F4EB' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#2C3777' }}
-                onMouseDown={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#130426' }}
-                onMouseUp={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#2C3777' }}>
-                {saveStatus === 'saving' ? 'Preparing…' : 'Finalize and export'}
-              </button>
-            </div>
-          )}
+          <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            A place to record your basic personal information, family details for official records, and where to find important documents.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            When you&apos;re incapacitated or after you die, the people handling your affairs need basic information about you and your family, and they need to know where to find your important documents. Most people have no idea where their loved ones keep these things. This document gives them a map.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
+            Identification and health numbers are designed to be added at the moment of export rather than saved to your plan. This protects information that&apos;s most often targeted by identity theft.{' '}
+            <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Expand a section to fill it in', 'Update anytime as things change', 'Add identification and health numbers at the moment of export'].map((text) => (
+              <span key={text} style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
+                {text}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -287,7 +465,10 @@ export default function PersonalAdminPage() {
             open={openSection === 0}
             onToggle={toggleSection}
             def={SECTION_DEFS[0]}
-            saveStatusText={openSection === 0 ? saveStatusText : null}
+            isSaving={savingSectionIdx === 0}
+            isSaved={savedSectionIdx === 0}
+            savedFading={savedSectionFading}
+            persistText={persistSectionIdx === 0 ? sectionSaveText : null}
             sectionRef={(el) => { sectionRefs.current[0] = el }}
             withPanel
           >
@@ -309,7 +490,10 @@ export default function PersonalAdminPage() {
             open={openSection === 1}
             onToggle={toggleSection}
             def={SECTION_DEFS[1]}
-            saveStatusText={openSection === 1 ? saveStatusText : null}
+            isSaving={savingSectionIdx === 1}
+            isSaved={savedSectionIdx === 1}
+            savedFading={savedSectionFading}
+            persistText={persistSectionIdx === 1 ? sectionSaveText : null}
             sectionRef={(el) => { sectionRefs.current[1] = el }}
             withPanel
           >
@@ -330,7 +514,10 @@ export default function PersonalAdminPage() {
             open={openSection === 2}
             onToggle={toggleSection}
             def={SECTION_DEFS[2]}
-            saveStatusText={openSection === 2 ? saveStatusText : null}
+            isSaving={savingSectionIdx === 2}
+            isSaved={savedSectionIdx === 2}
+            savedFading={savedSectionFading}
+            persistText={persistSectionIdx === 2 ? sectionSaveText : null}
             sectionRef={(el) => { sectionRefs.current[2] = el }}
             withPanel
           >
@@ -344,17 +531,140 @@ export default function PersonalAdminPage() {
             open={openSection === 3}
             onToggle={toggleSection}
             def={SECTION_DEFS[3]}
-            saveStatusText={openSection === 3 ? saveStatusText : null}
+            isSaving={savingSectionIdx === 3}
+            isSaved={savedSectionIdx === 3}
+            savedFading={savedSectionFading}
+            persistText={persistSectionIdx === 3 ? sectionSaveText : null}
             sectionRef={(el) => { sectionRefs.current[3] = el }}
             withPanel
           >
-            <Field label="My will is located:" value={form.willLocation} onChange={(v) => updateField('willLocation', v)} onBlur={handleBlur} rows={3} />
-            <Field label="I have formally designated decision-maker/s for care:" value={form.hasCareDecisionMaker} onChange={(v) => updateField('hasCareDecisionMaker', v)} onBlur={handleBlur} rows={2} />
-            <Field label="If Yes: That document is located:" value={form.careDecisionMakerDocLocation} onChange={(v) => updateField('careDecisionMakerDocLocation', v)} onBlur={handleBlur} rows={3} />
-            <Field label="I have captured my wishes for end-of-life care either in writing, e.g. an Advance Directive document, or another format:" value={form.hasEndOfLifeWishesDoc} onChange={(v) => updateField('hasEndOfLifeWishesDoc', v)} onBlur={handleBlur} rows={2} />
-            <Field label="If Yes: That document (or other format, e.g. audio recording) is located:" value={form.endOfLifeWishesDocLocation} onChange={(v) => updateField('endOfLifeWishesDocLocation', v)} onBlur={handleBlur} rows={3} />
-            <Field label="I have formally designated decision-maker/s for property/finances:" value={form.hasPropertyDecisionMaker} onChange={(v) => updateField('hasPropertyDecisionMaker', v)} onBlur={handleBlur} rows={2} />
-            <Field label="If Yes: That document is located:" value={form.propertyDecisionMakerDocLocation} onChange={(v) => updateField('propertyDecisionMakerDocLocation', v)} onBlur={handleBlur} rows={3} />
+            <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
+              The designations you record here are for organizing your planning. The binding legal documents themselves are not generated by this platform. For those, consult a lawyer in your province.
+            </p>
+
+            {/* Legal Will */}
+            <div>
+              <CheckboxItem
+                label="I have a legal will"
+                checked={form.hasWill}
+                onChange={(v) => updateBoolField('hasWill', v)}
+              />
+              {form.hasWill && (
+                <div style={{ marginTop: 14, paddingLeft: 30 }}>
+                  <Field label="My will is located:" value={form.willLocation} onChange={(v) => updateField('willLocation', v)} onBlur={handleBlur} rows={3} />
+                </div>
+              )}
+            </div>
+
+            {/* Care Decision Maker */}
+            <div>
+              <CheckboxItem
+                label="I have formally designated decision-maker/s for care"
+                checked={form.hasCareDecisionMaker}
+                onChange={(v) => updateBoolField('hasCareDecisionMaker', v)}
+              />
+              {form.hasCareDecisionMaker && (
+                <div style={{ marginTop: 14, paddingLeft: 30, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <Field label="Document location:" value={form.careDecisionMakerDocLocation} onChange={(v) => updateField('careDecisionMakerDocLocation', v)} onBlur={handleBlur} rows={3} />
+                  <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 600, color: '#2C3777', margin: 0, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>
+                    Decision maker details
+                  </p>
+                  <Field label="Name" value={form.careDecisionMaker1Name} onChange={(v) => updateField('careDecisionMaker1Name', v)} onBlur={handleBlur} rows={2} />
+                  <Field label="Phone" value={form.careDecisionMaker1Phone} onChange={(v) => updateField('careDecisionMaker1Phone', v)} onBlur={handleBlur} rows={2} />
+                  <Field label="Email" value={form.careDecisionMaker1Email} onChange={(v) => updateField('careDecisionMaker1Email', v)} onBlur={handleBlur} rows={2} />
+                  {showSecondCareDecisionMaker ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12, borderTop: '1px solid rgba(187,171,244,0.5)' }}>
+                      <Field label="Name" value={form.careDecisionMaker2Name} onChange={(v) => updateField('careDecisionMaker2Name', v)} onBlur={handleBlur} rows={2} />
+                      <Field label="Phone" value={form.careDecisionMaker2Phone} onChange={(v) => updateField('careDecisionMaker2Phone', v)} onBlur={handleBlur} rows={2} />
+                      <Field label="Email" value={form.careDecisionMaker2Email} onChange={(v) => updateField('careDecisionMaker2Email', v)} onBlur={handleBlur} rows={2} />
+                      <button
+                        type="button"
+                        onClick={handleRemoveSecondDecisionMaker}
+                        style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' as const, alignSelf: 'flex-start' as const }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowSecondCareDecisionMaker(true)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        background: '#FFFFFF', border: '1px solid #2C3777',
+                        borderRadius: 999, padding: '8px 16px',
+                        fontFamily: hv, fontSize: 13, color: '#2C3777', cursor: 'pointer',
+                        fontWeight: 500, alignSelf: 'flex-start' as const,
+                      }}
+                    >
+                      + Add second decision maker
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* End-of-Life Wishes */}
+            <div>
+              <CheckboxItem
+                label="I have captured my end-of-life care wishes in writing (e.g. an Advance Directive) or another format"
+                checked={form.hasEndOfLifeWishesDoc}
+                onChange={(v) => updateBoolField('hasEndOfLifeWishesDoc', v)}
+              />
+              {form.hasEndOfLifeWishesDoc && (
+                <div style={{ marginTop: 14, paddingLeft: 30 }}>
+                  <Field label="Document (or other format, e.g. audio recording) location:" value={form.endOfLifeWishesDocLocation} onChange={(v) => updateField('endOfLifeWishesDocLocation', v)} onBlur={handleBlur} rows={3} />
+                </div>
+              )}
+            </div>
+
+            {/* Property / Finances Decision Maker */}
+            <div>
+              <CheckboxItem
+                label="I have formally designated decision-maker/s for property/finances"
+                checked={form.hasPropertyDecisionMaker}
+                onChange={(v) => updateBoolField('hasPropertyDecisionMaker', v)}
+              />
+              {form.hasPropertyDecisionMaker && (
+                <div style={{ marginTop: 14, paddingLeft: 30, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <Field label="Document location:" value={form.propertyDecisionMakerDocLocation} onChange={(v) => updateField('propertyDecisionMakerDocLocation', v)} onBlur={handleBlur} rows={3} />
+                  <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 600, color: '#2C3777', margin: 0, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>
+                    Decision maker details
+                  </p>
+                  <Field label="Name" value={form.propertyDecisionMaker1Name} onChange={(v) => updateField('propertyDecisionMaker1Name', v)} onBlur={handleBlur} rows={2} />
+                  <Field label="Phone" value={form.propertyDecisionMaker1Phone} onChange={(v) => updateField('propertyDecisionMaker1Phone', v)} onBlur={handleBlur} rows={2} />
+                  <Field label="Email" value={form.propertyDecisionMaker1Email} onChange={(v) => updateField('propertyDecisionMaker1Email', v)} onBlur={handleBlur} rows={2} />
+                  {showSecondPropertyDecisionMaker ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12, borderTop: '1px solid rgba(187,171,244,0.5)' }}>
+                      <Field label="Name" value={form.propertyDecisionMaker2Name} onChange={(v) => updateField('propertyDecisionMaker2Name', v)} onBlur={handleBlur} rows={2} />
+                      <Field label="Phone" value={form.propertyDecisionMaker2Phone} onChange={(v) => updateField('propertyDecisionMaker2Phone', v)} onBlur={handleBlur} rows={2} />
+                      <Field label="Email" value={form.propertyDecisionMaker2Email} onChange={(v) => updateField('propertyDecisionMaker2Email', v)} onBlur={handleBlur} rows={2} />
+                      <button
+                        type="button"
+                        onClick={handleRemoveSecondPropertyDecisionMaker}
+                        style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' as const, alignSelf: 'flex-start' as const }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowSecondPropertyDecisionMaker(true)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        background: '#FFFFFF', border: '1px solid #2C3777',
+                        borderRadius: 999, padding: '8px 16px',
+                        fontFamily: hv, fontSize: 13, color: '#2C3777', cursor: 'pointer',
+                        fontWeight: 500, alignSelf: 'flex-start' as const,
+                      }}
+                    >
+                      + Add second decision maker
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </AccordionSection>
 
           {/* ── Section 4: Other Important Documents ── */}
@@ -363,14 +673,17 @@ export default function PersonalAdminPage() {
             open={openSection === 4}
             onToggle={toggleSection}
             def={SECTION_DEFS[4]}
-            saveStatusText={openSection === 4 ? saveStatusText : null}
+            isSaving={savingSectionIdx === 4}
+            isSaved={savedSectionIdx === 4}
+            savedFading={savedSectionFading}
+            persistText={persistSectionIdx === 4 ? sectionSaveText : null}
             sectionRef={(el) => { sectionRefs.current[4] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {DOC_NUMS.slice(0, visibleDocCount).map((n) => {
                 const docIdx = n - 1
                 const isDocOpen = openDocIndex === docIdx
-                const docName = form[`otherDoc${n}Name` as keyof FormState]
+                const docName = form[`otherDoc${n}Name` as keyof FormState] as string
                 const docTitle = docName.trim() || 'Document'
                 return (
                   <div
@@ -409,9 +722,9 @@ export default function PersonalAdminPage() {
                     </button>
                     {isDocOpen && (
                       <div style={{ padding: '16px 18px 20px', display: 'flex', flexDirection: 'column', gap: 20, background: '#FFFFFF', borderTop: `1px solid #BBABF4` }}>
-                        <Field label="Document:" value={form[`otherDoc${n}Name` as keyof FormState]} onChange={(v) => updateField(`otherDoc${n}Name` as keyof FormState, v)} onBlur={handleBlur} rows={2} />
-                        <Field label="Location:" value={form[`otherDoc${n}Location` as keyof FormState]} onChange={(v) => updateField(`otherDoc${n}Location` as keyof FormState, v)} onBlur={handleBlur} rows={2} />
-                        <Field label="Instructions:" value={form[`otherDoc${n}Instructions` as keyof FormState]} onChange={(v) => updateField(`otherDoc${n}Instructions` as keyof FormState, v)} onBlur={handleBlur} rows={3} />
+                        <Field label="Document:" value={form[`otherDoc${n}Name` as keyof FormState] as string} onChange={(v) => updateField(`otherDoc${n}Name` as keyof FormState, v)} onBlur={handleBlur} rows={2} />
+                        <Field label="Location:" value={form[`otherDoc${n}Location` as keyof FormState] as string} onChange={(v) => updateField(`otherDoc${n}Location` as keyof FormState, v)} onBlur={handleBlur} rows={2} />
+                        <Field label="Instructions:" value={form[`otherDoc${n}Instructions` as keyof FormState] as string} onChange={(v) => updateField(`otherDoc${n}Instructions` as keyof FormState, v)} onBlur={handleBlur} rows={3} />
                       </div>
                     )}
                   </div>
@@ -461,7 +774,10 @@ function AccordionSection({
   open,
   onToggle,
   def,
-  saveStatusText,
+  isSaving,
+  isSaved,
+  savedFading,
+  persistText,
   sectionRef,
   withPanel = false,
   children,
@@ -470,7 +786,10 @@ function AccordionSection({
   open: boolean
   onToggle: (idx: number) => void
   def: { title: string; description: string }
-  saveStatusText: string | null
+  isSaving: boolean
+  isSaved: boolean
+  savedFading: boolean
+  persistText: string | null
   sectionRef: (el: HTMLDivElement | null) => void
   withPanel?: boolean
   children: React.ReactNode
@@ -517,10 +836,20 @@ function AccordionSection({
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 4 }}>
-              {saveStatusText && (
-                <span style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A' }}>
-                  {saveStatusText}
-                </span>
+              {isSaving && (
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+              )}
+              {isSaved && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, opacity: savedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                    <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
+                    <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+                </div>
+              )}
+              {!isSaving && !isSaved && persistText && (
+                <span style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A' }}>{persistText}</span>
               )}
               <svg
                 width="14" height="9" viewBox="0 0 14 9" fill="none"
@@ -549,6 +878,14 @@ function AccordionSection({
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Wrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8F4EB]" />}>
+      <PersonalAdminPage />
+    </Suspense>
   )
 }
 
@@ -581,6 +918,33 @@ function SensitiveFieldDisplay({ label }: { label: string }) {
         This will be included in your export, but won&apos;t be saved to your plan.
       </p>
     </div>
+  )
+}
+
+// ── CheckboxItem ──────────────────────────────────────────────────────────────
+
+function CheckboxItem({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' as const }}
+    >
+      <div style={{
+        width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 2,
+        border: `2px solid ${checked ? '#2C3777' : '#BBABF4'}`,
+        background: checked ? '#2C3777' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'background 0.15s, border-color 0.15s',
+      }}>
+        {checked && (
+          <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+            <path d="M1 3.5L4 6.5L10 1" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </div>
+      <span style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.45 }}>{label}</span>
+    </button>
   )
 }
 

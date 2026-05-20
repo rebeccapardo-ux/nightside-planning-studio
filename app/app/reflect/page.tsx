@@ -172,7 +172,7 @@ export default function ExplorePage() {
             <ExploreActivityCard
               title="Reflection Prompts"
               description="Use guided prompts to reflect on your values, wishes, relationships, and what matters most."
-              href="/app/reflect"
+              href="/app/reflect/reflection-prompts"
               status="available"
               index={0}
               cta="Open →"

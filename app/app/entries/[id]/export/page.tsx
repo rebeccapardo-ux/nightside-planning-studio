@@ -65,6 +65,48 @@ const LM_PATH_D = (() => {
   return `M ${pts.join(' L ')}`
 })()
 
+// New geometry for landscape export preview (viewBox 0 0 460 200)
+const LM_NEW_MID_Y = 80
+const LM_NEW_AMP_Y = 45
+
+function lmNewPoint(xPct: number): { x: number; y: number } {
+  const t = Math.max(0, Math.min(1, xPct / 100))
+  return { x: 16 + t * 428, y: LM_NEW_MID_Y + LM_NEW_AMP_Y * Math.sin(t * 2 * Math.PI) }
+}
+
+const LM_NEW_PATH_D = (() => {
+  const pts: string[] = []
+  for (let i = 0; i <= 300; i++) {
+    const t = i / 300
+    pts.push(`${(16 + t * 428).toFixed(1)},${(LM_NEW_MID_Y + LM_NEW_AMP_Y * Math.sin(t * 2 * Math.PI)).toFixed(1)}`)
+  }
+  return `M ${pts.join(' L ')}`
+})()
+
+function lmWrapTitle(title: string, maxCharsPerLine: number): string[] {
+  const words = title.split(' ')
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word
+    if (test.length > maxCharsPerLine && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = test
+    }
+  }
+  if (current) lines.push(current)
+  return lines
+}
+
+function lmCircleColor(i: number, total: number): string {
+  if (total <= 1) return '#F29836'
+  if (i < total / 3) return '#BBABF4'
+  if (i < (2 * total) / 3) return '#F29836'
+  return '#DB5835'
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -75,6 +117,13 @@ export default async function ExportPage({ params }: ExportPageProps) {
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) notFound()
+
+  const _firstName = (user.user_metadata?.first_name as string | undefined)?.trim() ?? ''
+  const _lastName  = (user.user_metadata?.last_name  as string | undefined)?.trim() ?? ''
+  const userName   = [_firstName, _lastName].filter(Boolean).join(' ')
+    || (user.user_metadata?.full_name as string | undefined)?.trim()
+    || user.email
+    || ''
 
   const { data: entry, error } = await supabase
     .from('entries')
@@ -96,6 +145,9 @@ export default async function ExportPage({ params }: ExportPageProps) {
   if (entry.activity === 'legacy_map') {
     const mapContent = getLegacyMapContent(entry)
     if (!mapContent) notFound()
+    const monthYear = entry.created_at
+      ? new Date(entry.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+      : new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
     const pdfData: PDFData = {
       kind: 'legacy_map',
       displayTitle,
@@ -107,8 +159,10 @@ export default async function ExportPage({ params }: ExportPageProps) {
       valuesToPassOn: mapContent.valuesToPassOn || undefined,
       legacyProjects: mapContent.legacyProjects || undefined,
       intro: LEGACY_MAP_INTRO,
+      userName,
+      monthYear,
     }
-    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} pdfData={pdfData} />
+    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} userName={userName} monthYear={monthYear} pdfData={pdfData} />
   }
 
   if (entry.activity === 'values_ranking') {
@@ -126,8 +180,9 @@ export default async function ExportPage({ params }: ExportPageProps) {
       ].filter(g => g.items.length > 0),
       reflection: ranking.reflection,
       intro: VALUES_INTRO,
+      userName,
     }
-    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} />
+    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} />
   }
 
   if (entry.activity === 'fears_ranking') {
@@ -145,11 +200,12 @@ export default async function ExportPage({ params }: ExportPageProps) {
       ].filter(g => g.items.length > 0),
       reflection: ranking.reflection,
       intro: FEARS_INTRO,
+      userName,
     }
-    return <FearsRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} />
+    return <FearsRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} />
   }
 
-  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
 }
 
 const VALUES_INTRO = 'This document captures how you sorted and reflected on different personal values in relation to care, identity, and what matters most to you.'
@@ -170,12 +226,23 @@ const PRINT_STYLES = `
   }
 `
 
-function ExportHeader({ title }: { title: string }) {
+const PRINT_STYLES_LANDSCAPE = `
+  @media print {
+    nav, .no-print { display: none !important; }
+    body { background: white !important; }
+    @page { size: A4 landscape; margin: 0; }
+  }
+`
+
+function ExportHeader({ title, userName }: { title: string; userName?: string }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 22 }} />
+        {userName && (
+          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.5)' }}>{userName}</span>
+        )}
       </div>
       <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 16 }} />
     </div>
@@ -207,11 +274,12 @@ function BackAndExport({ id, pdfData }: { id: string; pdfData: PDFData }) {
 // Values Ranking export
 // ---------------------------------------------------------------------------
 
-function ValuesRankingExportPage({ id, ranking, createdDate, pdfData }: {
+function ValuesRankingExportPage({ id, ranking, createdDate, pdfData, userName }: {
   id: string
   ranking: RankingContent
   createdDate: string | null
   pdfData: PDFData
+  userName?: string
 }) {
   const groups = [
     { key: 'essential' as const, label: 'ESSENTIAL',      items: ranking.essential },
@@ -225,7 +293,7 @@ function ValuesRankingExportPage({ id, ranking, createdDate, pdfData }: {
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
           <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title="Values Ranking" />
+          <ExportHeader title="Values Ranking" userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Values Ranking</h1>
@@ -280,11 +348,12 @@ function ValuesRankingExportPage({ id, ranking, createdDate, pdfData }: {
 // Fears Ranking export
 // ---------------------------------------------------------------------------
 
-function FearsRankingExportPage({ id, ranking, createdDate, pdfData }: {
+function FearsRankingExportPage({ id, ranking, createdDate, pdfData, userName }: {
   id: string
   ranking: RankingContent
   createdDate: string | null
   pdfData: PDFData
+  userName?: string
 }) {
   const groups = [
     { key: 'essential' as const, label: 'MOST PRESSING',     items: ranking.essential },
@@ -298,7 +367,7 @@ function FearsRankingExportPage({ id, ranking, createdDate, pdfData }: {
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
           <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title="Fears Ranking" />
+          <ExportHeader title="Fears Ranking" userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Fears Ranking</h1>
@@ -353,118 +422,128 @@ function FearsRankingExportPage({ id, ranking, createdDate, pdfData }: {
 // Legacy Map export
 // ---------------------------------------------------------------------------
 
-function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, pdfData }: {
+function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userName, monthYear, pdfData }: {
   id: string
   mapContent: LegacyMapContent
   createdDate: string | null
   displayTitle: string
+  userName: string
+  monthYear: string
   pdfData: PDFData
 }) {
-  const hasReflection = mapContent.themes || mapContent.surprises || mapContent.valuesToPassOn || mapContent.legacyProjects
   const sorted = [...mapContent.moments].sort((a, b) => a.xPercent - b.xPercent)
+  const n = sorted.length
+  const reflection = mapContent.legacyProjects
 
   return (
     <>
-      <style>{PRINT_STYLES}</style>
-      <div className="bg-white min-h-screen">
-        <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title={displayTitle} />
+      <style>{PRINT_STYLES_LANDSCAPE}</style>
+      <div style={{ background: '#ffffff', minHeight: '100vh', padding: '40px 24px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center' }}>
+        {/* Back + Download — no-print */}
+        <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, width: '100%', maxWidth: 1000 }}>
+          <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>← Back</a>
+          <DownloadPDFButton data={pdfData} />
+        </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <h1 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>Legacy Map</h1>
-            {createdDate && (
-              <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Generated {createdDate}</p>
-            )}
-            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
-              This is a generated record of your responses. It is not a legal document.
-            </p>
+        {/* Landscape document card */}
+        <div
+          style={{
+            background: '#ffffff',
+            aspectRatio: '1.414 / 1',
+            maxWidth: 1000,
+            width: '100%',
+            padding: '40px 48px',
+            fontFamily: hv,
+            boxSizing: 'border-box' as const,
+            display: 'flex',
+            flexDirection: 'column' as const,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1.5px solid #2C3777', paddingBottom: 14, marginBottom: 18, flexShrink: 0 }}>
+            <span style={{ fontSize: 24, fontWeight: 300, color: '#130426' }}>{userName || 'Your Legacy Map'}</span>
+            <div style={{ textAlign: 'right' as const }}>
+              <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#F29836' }}>Legacy Map</div>
+            </div>
           </div>
-          <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
-            {LEGACY_MAP_INTRO}
-          </p>
-          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 20 }} />
 
-          {sorted.length > 0 && (
-            <div style={{ border: '1px solid #1A1A1A', borderRadius: 6, height: 130, marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
-              <svg
-                viewBox={`0 0 ${LM_VB_W} ${LM_VB_H}`}
-                preserveAspectRatio="none"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
-                aria-hidden="true"
-              >
-                <path d={LM_PATH_D} fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              {sorted.map((m, i) => {
-                const pt = lmPathPoint(m.xPercent)
-                return (
-                  <div
-                    key={m.id}
-                    style={{
-                      position: 'absolute',
-                      left: `${(pt.x / LM_VB_W) * 100}%`,
-                      top: `${(pt.y / LM_VB_H) * 100}%`,
-                      transform: 'translate(-50%, -50%)',
-                      width: 20,
-                      height: 20,
-                      borderRadius: '50%',
-                      background: '#F8F4EB',
-                      border: '1.5px solid #1A1A1A',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontFamily: hv,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: '#1A1A1A',
-                    }}
-                  >
-                    {i + 1}
-                  </div>
-                )
-              })}
-              <span style={{ position: 'absolute', bottom: 8, left: 12, fontFamily: hv, fontSize: 10, color: '#1A1A1A' }}>Birth</span>
-              <span style={{ position: 'absolute', bottom: 8, right: 12, fontFamily: hv, fontSize: 10, color: '#1A1A1A' }}>Now</span>
-            </div>
-          )}
+          {/* Body grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 28, alignItems: 'start', flex: 1, minHeight: 0 }}>
+            {/* Left column */}
+            <div style={{ display: 'flex', flexDirection: 'column' as const }}>
+              {/* Map SVG */}
+              {n > 0 && (
+                <svg viewBox="0 0 460 200" style={{ width: '100%', display: 'block', overflow: 'visible' }} aria-hidden="true">
+                  <defs>
+                    <linearGradient id="lm-export-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#BBABF4" />
+                      <stop offset="50%" stopColor="#F29836" />
+                      <stop offset="100%" stopColor="#DB5835" />
+                    </linearGradient>
+                  </defs>
+                  <text x="16" y="175" fontSize="9" fill="rgba(19,4,38,0.65)">Birth</text>
+                  <text x="444" y="175" fontSize="9" fill="rgba(19,4,38,0.65)" textAnchor="end">Now</text>
+                  <path d={LM_NEW_PATH_D} fill="none" stroke="url(#lm-export-grad)" strokeWidth="2.5" strokeLinecap="round" />
+                  {sorted.map((m, i) => {
+                    const pt = lmNewPoint(m.xPercent)
+                    const color = lmCircleColor(i, n)
+                    const labelW = Math.min(Math.max(m.title.length * 4 + 12, 28), 130)
+                    const charsPerLine = Math.floor((labelW - 8) / 4.2)
+                    const lines = lmWrapTitle(m.title, charsPerLine)
+                    const lineH = 9
+                    const rectH = lines.length * lineH + 4
+                    const isUpper = pt.y < LM_NEW_MID_Y
+                    const labelX = Math.min(Math.max(pt.x - labelW / 2, 8), 444 - labelW)
+                    const labelY = isUpper ? pt.y + 14 : pt.y - (rectH + 4)
+                    return (
+                      <g key={m.id}>
+                        <circle cx={pt.x} cy={pt.y} r={10} fill="#ffffff" stroke={color} strokeWidth="1.5" />
+                        <text x={pt.x} y={pt.y + 3.5} fontSize="10" fontWeight="600" fill="#2C3777" textAnchor="middle">{i + 1}</text>
+                        <rect x={labelX} y={labelY} width={labelW} height={rectH} rx={3} fill="#f8f4eb" />
+                        <text x={labelX + labelW / 2} y={labelY + 9} fontSize="7.5" fill="#130426" textAnchor="middle">
+                          {lines.map((line, li) => (
+                            <tspan key={li} x={labelX + labelW / 2} dy={li === 0 ? 0 : lineH}>{line}</tspan>
+                          ))}
+                        </text>
+                      </g>
+                    )
+                  })}
+                </svg>
+              )}
+              {n === 0 && <p style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B' }}>No moments added yet.</p>}
 
-          {sorted.length === 0 ? (
-            <p style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B' }}>No moments added yet.</p>
-          ) : (
-            <div>
-              {sorted.map((m, i) => (
-                <div key={m.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderBottom: i < sorted.length - 1 ? '1px solid rgba(0,0,0,0.10)' : 'none' }}>
-                  <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, color: '#1A1A1A', minWidth: 20, flexShrink: 0, paddingTop: 1 }}>{i + 1}</span>
-                  <div>
-                    <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.4 }}>{m.title}</p>
-                    {m.note && <p style={{ fontFamily: hv, fontSize: 12, color: '#666666', lineHeight: 1.5, marginTop: 2, whiteSpace: 'pre-wrap' }}>{m.note}</p>}
-                  </div>
+              {/* Reflections */}
+              {reflection?.trim() && (
+                <div style={{ borderTop: '0.5px solid #e8e4d8', paddingTop: 14, marginTop: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#7B6FC0', marginBottom: 8 }}>Reflections</div>
+                  <div style={{ fontSize: 11, fontStyle: 'italic', color: '#130426', lineHeight: 1.7 }}>{reflection}</div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {hasReflection && (
-            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.10)' }}>
-              {[
-                { field: mapContent.themes, label: 'THEMES THAT STOOD OUT' },
-                { field: mapContent.surprises, label: 'SURPRISES OR REALIZATIONS' },
-                { field: mapContent.valuesToPassOn, label: 'VALUES TO PASS ON' },
-                { field: mapContent.legacyProjects, label: 'LEGACY PROJECT IDEAS' },
-              ].map(({ field, label }) =>
-                field ? (
-                  <div key={label} style={{ marginBottom: 20 }}>
-                    <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 4 }}>
-                      {label}
-                    </p>
-                    <p style={{ fontFamily: hv, fontSize: 13, color: '#1A1A1A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{field}</p>
-                  </div>
-                ) : null
               )}
             </div>
-          )}
 
-          <ExportFooter />
+            {/* Right column — notes */}
+            <div style={{ borderLeft: '1px solid #e8e4d8', paddingLeft: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#7B6FC0', marginBottom: 12 }}>Moments</div>
+              {sorted.some(m => m.note?.trim()) ? sorted.map((m, i) =>
+                m.note?.trim() ? (
+                  <div key={m.id} style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#2C3777', marginBottom: 2 }}>{i + 1} · {m.title}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5 }}>{m.note}</div>
+                  </div>
+                ) : null
+              ) : (
+                <div style={{ fontSize: 10, color: 'rgba(19,4,38,0.35)', fontStyle: 'italic' }}>No notes added.</div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ borderTop: '0.5px solid #e8e4d8', paddingTop: 10, marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 14, filter: 'brightness(0) saturate(100%) invert(5%) sepia(60%) saturate(2000%) hue-rotate(240deg) brightness(40%)' }} />
+            <span style={{ fontSize: 10, color: 'rgba(19,4,38,0.55)' }}>Generated {monthYear}</span>
+          </div>
         </div>
       </div>
     </>
@@ -475,32 +554,36 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, pdfDat
 // Document export router
 // ---------------------------------------------------------------------------
 
-function DocumentExportPage({ id, entry, createdDate, displayTitle, filename }: {
+function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
+  userName?: string
 }) {
   if (entry.document_type === 'important_contacts') {
-    return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === 'keepsake_inventory') {
-    return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === 'financial_information') {
-    return <FinancialExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    return <FinancialExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === 'personal_admin_info') {
-    return <PersonalAdminExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    return <PersonalAdminExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === 'devices_and_accounts') {
-    return <DevicesAccountsExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    return <DevicesAccountsExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === 'advance_directive_supplement') {
-    return <AdvanceDirectiveExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+    return <AdvanceDirectiveExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} />
+  if (entry.document_type === 'funeral_wishes') {
+    return <FuneralWishesExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+  }
+  return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
 }
 
 // ---------------------------------------------------------------------------
@@ -516,19 +599,20 @@ const AD_FIELDS: { key: string; label: string }[] = [
   { key: 'caregiver',    label: 'What I want my caregiver/care team to know:' },
 ]
 
-function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, filename }: {
+function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
+  userName?: string
 }) {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, string | undefined>
   const fields = AD_FIELDS.filter(f => c[f.key]?.trim()).map(f => ({ label: f.label, value: c[f.key]! }))
 
   const AD_INTRO = 'This document helps you express your values, preferences, and what matters to you in your care. It is not a legal directive, but can be used alongside one to provide important context.'
 
-  const pdfData: PDFData = { kind: 'generic', displayTitle, createdDate, filename, fields, intro: AD_INTRO }
+  const pdfData: PDFData = { kind: 'generic', displayTitle, createdDate, filename, fields, intro: AD_INTRO, userName }
 
   return (
     <>
@@ -536,7 +620,7 @@ function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, file
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
           <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title={displayTitle} />
+          <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
@@ -573,15 +657,171 @@ function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, file
 }
 
 // ---------------------------------------------------------------------------
-// Generic document
+// Funeral Wishes
 // ---------------------------------------------------------------------------
 
-function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filename }: {
+const FW_EXPORT_SECTIONS: { title: string; fields: { key: string; label: string }[] }[] = [
+  { title: 'What Matters Most', fields: [
+    { key: 'whatMattersMost', label: 'What matters most to me' },
+  ]},
+  { title: 'Organ & Tissue Donation', fields: [
+    { key: 'organDonationWishes', label: 'My donation wishes' },
+    { key: 'organDonationSpecific', label: 'Specific organs or tissues' },
+    { key: 'organDonationNotes', label: 'Other notes' },
+  ]},
+  { title: 'Final Resting Place', fields: [
+    { key: 'dispositionTypes', label: 'How I want my body to be handled' },
+    { key: 'burialLocation', label: 'Burial: location' },
+    { key: 'burialCasket', label: 'Burial: casket preferences' },
+    { key: 'burialEmbalming', label: 'Burial: embalming preference' },
+    { key: 'burialOtherWishes', label: 'Burial: other wishes' },
+    { key: 'mausoleumLocation', label: 'Above-ground burial: location' },
+    { key: 'mausoleumOtherWishes', label: 'Above-ground burial: other wishes' },
+    { key: 'cremationDirect', label: 'Cremation: direct cremation' },
+    { key: 'cremationRemains', label: 'Cremation: what to do with my remains' },
+    { key: 'cremationLocation', label: 'Cremation: location for remains' },
+    { key: 'cremationOtherWishes', label: 'Cremation: other wishes' },
+    { key: 'aquamationDirect', label: 'Aquamation: direct aquamation' },
+    { key: 'aquamationRemains', label: 'Aquamation: what to do with my remains' },
+    { key: 'aquamationLocation', label: 'Aquamation: location for remains' },
+    { key: 'aquamationOtherWishes', label: 'Aquamation: other wishes' },
+    { key: 'homeFuneralWishes', label: 'Home funeral wishes' },
+    { key: 'bodyDonationPreregistered', label: 'Body donation: pre-registered' },
+    { key: 'bodyDonationDetails', label: 'Body donation: details' },
+    { key: 'bodyDonationAfterWishes', label: 'Body donation: wishes for remains afterward' },
+    { key: 'dispositionOtherText', label: 'Other disposition details' },
+    { key: 'memorialMarker', label: 'Memorial marker preference' },
+    { key: 'memorialMarkerText', label: 'Memorial marker: what it should say' },
+    { key: 'memorialMarkerLocation', label: 'Memorial marker: location' },
+    { key: 'memorialMarkerOtherWishes', label: 'Memorial marker: other wishes' },
+  ]},
+  { title: 'Ceremony', fields: [
+    { key: 'ceremonyCulturalTraditions', label: 'Cultural or religious traditions' },
+    { key: 'ceremonyOfficiant', label: 'Officiant preference' },
+    { key: 'ceremonyGatheringAlive', label: 'Gathering while I am still alive' },
+    { key: 'ceremonyGatheringAliveDetails', label: 'Gathering while alive: details' },
+    { key: 'ceremonyFuneralWants', label: 'Do I want a funeral or memorial service' },
+    { key: 'ceremonyFuneralPublicPrivate', label: 'Public or private' },
+    { key: 'ceremonyFuneralLocation', label: 'Where it should take place' },
+    { key: 'ceremonyFuneralCoordinator', label: 'Who should coordinate' },
+    { key: 'ceremonyFuneralPrearranged', label: 'Have I pre-arranged with a funeral home' },
+    { key: 'ceremonyFuneralPrearrangedDetails', label: 'Pre-arrangement details' },
+    { key: 'ceremonyFuneralSpeakers', label: 'Who should speak' },
+    { key: 'ceremonyFuneralMusic', label: 'Music' },
+    { key: 'ceremonyFuneralFlowers', label: 'Flowers preference' },
+    { key: 'ceremonyFuneralDonationCause', label: 'Charitable cause for donations' },
+    { key: 'ceremonyDoNotWant', label: 'Things I do not want' },
+    { key: 'ceremonyOtherWishes', label: 'Other ceremony wishes' },
+  ]},
+  { title: 'Obituary', fields: [
+    { key: 'obituaryWants', label: 'Do I want an obituary' },
+    { key: 'obituaryContent', label: 'What to include' },
+    { key: 'obituaryWriter', label: 'Who should write it' },
+    { key: 'obituaryPublications', label: 'Where to publish' },
+    { key: 'obituaryOnline', label: 'Online presence' },
+  ]},
+  { title: 'Note to Others', fields: [
+    { key: 'noteToOthers', label: 'My note to others' },
+  ]},
+]
+
+function FuneralWishesExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
+  userName?: string
+}) {
+  const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
+
+  // Flatten to { label, value } pairs for PDF
+  const allFields: { label: string; value: string }[] = []
+  for (const section of FW_EXPORT_SECTIONS) {
+    const sectionFields = section.fields.filter(f => {
+      if (f.key === 'dispositionTypes') return Array.isArray(c.dispositionTypes) && (c.dispositionTypes as string[]).length > 0
+      return typeof c[f.key] === 'string' && (c[f.key] as string).trim()
+    })
+    if (sectionFields.length === 0) continue
+    allFields.push({ label: `— ${section.title} —`, value: '' })
+    for (const f of sectionFields) {
+      const value = f.key === 'dispositionTypes'
+        ? (c.dispositionTypes as string[]).join(', ')
+        : c[f.key] as string
+      allFields.push({ label: f.label, value })
+    }
+  }
+
+  const FW_INTRO = 'This document captures your wishes for your body, funeral, memorial service, and how you want to be remembered. It is not a legal document, but can be an important guide for the people who care for you.'
+
+  const pdfData: PDFData = { kind: 'generic', displayTitle, createdDate, filename, fields: allFields.filter(f => f.value), intro: FW_INTRO, userName }
+
+  return (
+    <>
+      <style>{PRINT_STYLES}</style>
+      <div className="bg-white min-h-screen">
+        <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
+          <BackAndExport id={id} pdfData={pdfData} />
+          <ExportHeader title={displayTitle} userName={userName} />
+
+          <div style={{ marginBottom: 16 }}>
+            <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
+            {createdDate && <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Last saved {createdDate}</p>}
+            <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
+              This is a record of your responses at the time of your last save. It is not a legal document.
+            </p>
+          </div>
+          <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
+            {FW_INTRO}
+          </p>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 28 }} />
+
+          {FW_EXPORT_SECTIONS.map(section => {
+            const visibleFields = section.fields.filter(f => {
+              if (f.key === 'dispositionTypes') return Array.isArray(c.dispositionTypes) && (c.dispositionTypes as string[]).length > 0
+              return typeof c[f.key] === 'string' && (c[f.key] as string).trim()
+            })
+            if (visibleFields.length === 0) return null
+            return (
+              <div key={section.title} style={{ marginBottom: 32 }}>
+                <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: '#3A3A3A', textTransform: 'uppercase' as const, marginBottom: 16 }}>
+                  {section.title}
+                </p>
+                {visibleFields.map((f, i) => {
+                  const value = f.key === 'dispositionTypes'
+                    ? (c.dispositionTypes as string[]).join(', ')
+                    : c[f.key] as string
+                  return (
+                    <div key={f.key} style={{ marginBottom: i < visibleFields.length - 1 ? 20 : 0 }}>
+                      <p style={{ fontFamily: hv, fontSize: 10, fontWeight: 500, letterSpacing: '0.06em', color: '#6B6B6B', textTransform: 'uppercase' as const, marginBottom: 4 }}>
+                        {f.label}
+                      </p>
+                      <p style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{value}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+
+          <ExportFooter />
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Generic document
+// ---------------------------------------------------------------------------
+
+function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+  id: string
+  entry: EntryRow
+  createdDate: string | null
+  displayTitle: string
+  filename: string
+  userName?: string
 }) {
   const content = entry.content
   const rawFields = (content && typeof content === 'object'
@@ -595,6 +835,7 @@ function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filen
     createdDate,
     filename,
     fields: rawFields.map(([key, value]) => ({ label: camelCaseToLabel(key), value })),
+    userName,
   }
 
   return (
@@ -603,7 +844,7 @@ function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filen
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
           <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title={displayTitle} />
+          <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 20 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
@@ -645,6 +886,7 @@ function buildContactsPDFData(
   createdDate: string | null,
   displayTitle: string,
   filename: string,
+  userName?: string,
 ): PDFData {
   const content = entry.content as Record<string, unknown> | null
   const sections: { label: string; contacts: PDFContactEntry[] }[] = []
@@ -702,17 +944,18 @@ function buildContactsPDFData(
     }
   }
 
-  return { kind: 'important_contacts', displayTitle, createdDate, filename, sections }
+  return { kind: 'important_contacts', displayTitle, createdDate, filename, sections, userName }
 }
 
-function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, filename }: {
+function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
+  userName?: string
 }) {
-  const pdfData = buildContactsPDFData(entry, createdDate, displayTitle, filename)
+  const pdfData = buildContactsPDFData(entry, createdDate, displayTitle, filename, userName)
   const content = entry.content as Record<string, unknown> | null
   const isNewFormat = !!(content && (Array.isArray(content.healthcare) || Array.isArray(content.legal) || Array.isArray(content.relatives) || Array.isArray(content.friends)))
 
@@ -726,7 +969,7 @@ function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, fil
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
           <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title={displayTitle} />
+          <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 20 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
@@ -771,12 +1014,13 @@ function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, fil
 // Keepsake Inventory
 // ---------------------------------------------------------------------------
 
-function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, filename }: {
+function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
+  userName?: string
 }) {
   const content = entry.content as { entries?: KeepsakeItem[] } | null
   const items = content?.entries?.filter((e) => e.object?.trim()) ?? []
@@ -791,6 +1035,7 @@ function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, fil
       recipient: item.recipient?.trim() || undefined,
       meaning: item.meaning?.trim() || undefined,
     })),
+    userName,
   }
 
   return (
@@ -799,7 +1044,7 @@ function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, fil
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
           <BackAndExport id={id} pdfData={pdfData} />
-          <ExportHeader title={displayTitle} />
+          <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 20 }}>
             <h1 style={{ fontFamily: apfel, fontSize: 26, fontWeight: 400, color: '#1A1A1A', marginBottom: 6 }}>{displayTitle}</h1>
@@ -877,8 +1122,9 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
@@ -895,6 +1141,7 @@ function getExportFilename(entry: EntryRow): string {
     ? new Date(entry.created_at).toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10)
   if (entry.document_type === 'advance_directive_supplement') return `nightside-your-wishes-${date}`
+  if (entry.document_type === 'funeral_wishes') return `nightside-funeral-wishes-${date}`
   if (entry.document_type === 'personal_admin_info') return `nightside-personal-admin-${date}`
   if (entry.document_type === 'important_contacts') return `nightside-important-contacts-${date}`
   if (entry.document_type === 'financial_information') return `nightside-financial-information-${date}`

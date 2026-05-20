@@ -121,12 +121,6 @@ export const TRIVIA_CARDS: TriviaCard[] = [
     crumb: 'Hospice vs palliative care',
   },
   {
-    id: 20,
-    question: 'A Power of Attorney in Canada can make decisions about your financial matters after your death.\n\nTrue or False?',
-    answer: 'False.\n\nPower of Attorney ends upon death.',
-    crumb: 'Power of attorney after death',
-  },
-  {
     id: 21,
     question: 'In Canada, you can include your wishes for organ donation in your will.\n\nTrue or False?',
     answer: 'False.\n\nOrgan donation decisions should be registered with a provincial donor registry.',

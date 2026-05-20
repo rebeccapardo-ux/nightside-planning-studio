@@ -9,6 +9,7 @@ import {
   saveKeepsakeInventory,
   type KeepsakeEntry,
 } from '@/lib/keepsakes'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 const AUTOSAVE_DELAY = 1500
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -88,6 +89,9 @@ function EntryCard({
   onChange,
   onBlurCard,
   entryRef,
+  isSaving,
+  isSaved,
+  savedFading,
 }: {
   entry: KeepsakeEntry
   isOpen: boolean
@@ -96,6 +100,9 @@ function EntryCard({
   onChange: (field: keyof KeepsakeEntry, value: string) => void
   onBlurCard: () => void
   entryRef: (el: HTMLDivElement | null) => void
+  isSaving: boolean
+  isSaved: boolean
+  savedFading: boolean
 }) {
   const title = entry.object.trim()
   return (
@@ -150,7 +157,7 @@ function EntryCard({
             placeholder="Write here..."
             rows={3}
           />
-          <div style={{ paddingTop: 4 }}>
+          <div style={{ paddingTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <button
               type="button"
               onClick={onDelete}
@@ -158,6 +165,20 @@ function EntryCard({
             >
               Delete
             </button>
+            {isSaving && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+              </div>
+            )}
+            {isSaved && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: savedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
+                  <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -179,19 +200,35 @@ export default function KeepsakeDocumentPage() {
   const [statusNow, setStatusNow] = useState(Date.now())
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const docIdRef = useRef<string | null>(null)
+  const userIdRef = useRef<string | null>(null)
   const router = useRouter()
   const [savedDocId, setSavedDocId] = useState<string | null>(null)
   const entryRefs = useRef<(HTMLDivElement | null)[]>([])
 
+  const lastEditedEntryIdRef = useRef<string | null>(null)
+  const [savingEntryId, setSavingEntryId] = useState<string | null>(null)
+  const [savedIndicatorId, setSavedIndicatorId] = useState<string | null>(null)
+  const [savedIndicatorFading, setSavedIndicatorFading] = useState(false)
+  const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Keep ref in sync so callbacks don't close over stale state
+  useEffect(() => { window.scrollTo(0, 0) }, [])
   useEffect(() => { pendingIdRef.current = pendingId }, [pendingId])
 
   useEffect(() => {
-    fetchKeepsakeInventory().then((inv) => {
+    async function load() {
+      const supabase = createSupabaseBrowserClient()
+      const [inv, { data: { user } }] = await Promise.all([
+        fetchKeepsakeInventory(),
+        supabase.auth.getUser(),
+      ])
+      if (user) userIdRef.current = user.id
       if (inv) {
         docIdRef.current = inv.id
         setSavedDocId(inv.id)
-        if (inv.created_at) setLastSavedAt(new Date(inv.created_at))
+        const storedSave = user ? localStorage.getItem(`nightside.lastSaved.${user.id}.${inv.id}`) : null
+        const savedDate = storedSave ? new Date(storedSave) : inv.created_at ? new Date(inv.created_at) : null
+        if (savedDate) setLastSavedAt(savedDate)
         const loaded = inv.entries
           .map((e) => ({ why: '', ...e }))
           .filter((e) => !isEntryEmpty(e))
@@ -201,7 +238,8 @@ export default function KeepsakeDocumentPage() {
         }
       }
       setLoading(false)
-    })
+    }
+    load()
   }, [])
 
   useEffect(() => {
@@ -219,7 +257,7 @@ export default function KeepsakeDocumentPage() {
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24), w = Math.floor(d / 7)
-    if (s < 60) return 'Saved'
+    if (s < 60) return 'Saved just now'
     if (m < 60) return `Saved ${m}m ago`
     if (h < 24) return h === 1 ? 'Saved 1h ago' : `Saved ${h}h ago`
     if (d < 7) return d === 1 ? 'Saved 1 day ago' : `Saved ${d} days ago`
@@ -230,15 +268,28 @@ export default function KeepsakeDocumentPage() {
     const saveable = nextEntries.filter((e) => !isEntryEmpty(e))
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
+      const targetId = lastEditedEntryIdRef.current
+      setSavingEntryId(targetId)
       if (docIdRef.current) {
         await saveKeepsakeInventory(docIdRef.current, saveable)
       } else if (saveable.length > 0) {
         const inv = await createKeepsakeInventory(saveable)
         if (inv) { docIdRef.current = inv.id; setSavedDocId(inv.id) }
       }
+      setSavingEntryId(null)
       if (saveable.length > 0) {
+        if (docIdRef.current && userIdRef.current) localStorage.setItem(`nightside.lastSaved.${userIdRef.current}.${docIdRef.current}`, new Date().toISOString())
         setLastSavedAt(new Date())
         setStatusNow(Date.now())
+        if (targetId) {
+          if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current)
+          setSavedIndicatorId(targetId)
+          setSavedIndicatorFading(false)
+          savedFadeTimerRef.current = setTimeout(() => {
+            setSavedIndicatorFading(true)
+            setTimeout(() => setSavedIndicatorId(null), 400)
+          }, 2600)
+        }
       }
     }, AUTOSAVE_DELAY)
   }, [])
@@ -314,6 +365,7 @@ export default function KeepsakeDocumentPage() {
         setPendingId(null)
         pendingIdRef.current = null
       }
+      lastEditedEntryIdRef.current = updated?.id ?? null
       scheduleSave(next)
       return next
     })
@@ -341,7 +393,26 @@ export default function KeepsakeDocumentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#BBABF4]">
+    <div className="min-h-screen bg-[#BBABF4] relative">
+      {savedDocId && hasAnyContent && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <button
+            type="button"
+            onClick={handlePreviewExport}
+            className="hover:opacity-90 transition-opacity"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#F8F4EB', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            Preview &amp; Export
+          </button>
+          {saveStatusText && (
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+          )}
+        </div>
+      )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>
 
         <div style={{ marginBottom: 32 }}>
@@ -354,39 +425,16 @@ export default function KeepsakeDocumentPage() {
           />
         </div>
 
-        {/* Title row */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+        {/* Title */}
+        <div style={{ marginBottom: 20 }}>
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
             Keepsakes Inventory
           </h1>
-          {savedDocId && hasAnyContent && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 8 }}>
-              {saveStatusText && (
-                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777' }}>{saveStatusText}</span>
-              )}
-              <button
-                type="button"
-                onClick={handlePreviewExport}
-                style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '8px 12px', cursor: 'pointer' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#F8F4EB' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#2C3777' }}
-                onMouseDown={(e) => { e.currentTarget.style.borderColor = '#130426' }}
-                onMouseUp={(e) => { e.currentTarget.style.borderColor = '#2C3777' }}
-              >
-                Export
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Subtitle */}
-        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.5, fontWeight: 400, color: '#130426', maxWidth: 720, marginBottom: 12 }}>
-          Objects that matter to you, and any guidance you want to share about them.
-        </p>
-
-        {/* Legal disclaimer */}
-        <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: 'rgba(19,4,38,0.85)', maxWidth: 640, marginBottom: 40 }}>
-          This is not a legal document. For items of financial or legal importance, include them in your will or speak with a lawyer.
+        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.5, fontWeight: 400, color: '#130426', maxWidth: 720, marginBottom: 40 }}>
+          Objects that matter to you, and any guidance you want to share about them. <strong style={{ fontWeight: 700 }}>This is not a legal document.</strong> For items of financial or legal importance, include them in your will or speak with a lawyer.
         </p>
 
         {/* Section label — Reflection */}
@@ -439,6 +487,9 @@ export default function KeepsakeDocumentPage() {
                 onChange={(field, value) => updateEntry(idx, field, value)}
                 onBlurCard={discardEmptyPending}
                 entryRef={(el) => { entryRefs.current[idx] = el }}
+                isSaving={savingEntryId === entry.id}
+                isSaved={savedIndicatorId === entry.id}
+                savedFading={savedIndicatorFading}
               />
             )
           })}

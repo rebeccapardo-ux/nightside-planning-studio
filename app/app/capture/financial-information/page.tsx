@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 
@@ -34,11 +35,45 @@ type DebtEntry = {
   contactInfo: string
 }
 
+const TAX_SITUATIONS = [
+  'Self-employment or business income',
+  'Rental property income',
+  'Foreign assets requiring reporting (T1135)',
+  'Capital gains or losses carried forward',
+  'Quarterly tax installments',
+  'HST/GST returns',
+] as const
+
+type TaxInfo = {
+  preparerType: '' | 'self' | 'accountant' | 'other'
+  preparerName: string
+  preparerFirm: string
+  returnsLocation: string
+  hasCraAccount: boolean
+  taxSituations: string[]
+  taxSituationsOther: string
+  donationReceiptsLocation: string
+  otherNotes: string
+}
+
+const EMPTY_TAX_INFO: TaxInfo = {
+  preparerType: '',
+  preparerName: '',
+  preparerFirm: '',
+  returnsLocation: '',
+  hasCraAccount: false,
+  taxSituations: [],
+  taxSituationsOther: '',
+  donationReceiptsLocation: '',
+  otherNotes: '',
+}
+
 type FormState = {
   banking: AccountEntry[]
   investments: AccountEntry[]
   retirement: AccountEntry[]
   debts: DebtEntry[]
+  taxInfo: TaxInfo
 }
 
 const EMPTY_FORM: FormState = {
@@ -46,6 +81,7 @@ const EMPTY_FORM: FormState = {
   investments: [],
   retirement: [],
   debts: [],
+  taxInfo: EMPTY_TAX_INFO,
 }
 
 function isAccountEntryEmpty(e: AccountEntry) {
@@ -98,7 +134,7 @@ function migrateOldFormat(old: Record<string, string>): FormState {
       debts.push({ id: genId(), name, type: '', amount, contactInfo })
     }
   }
-  return { banking, investments: [], retirement, debts }
+  return { banking, investments: [], retirement, debts, taxInfo: EMPTY_TAX_INFO }
 }
 
 // ---------------------------------------------------------------------------
@@ -117,13 +153,21 @@ export default function FinancialInformationPage() {
   const router = useRouter()
   const [savedEntryId, setSavedEntryId] = useState<string | null>(null)
 
-  const [openSection, setOpenSection] = useState<number | null>(0)
+  const lastEditedEntryIdRef = useRef<string | null>(null)
+  const [savingEntryId, setSavingEntryId] = useState<string | null>(null)
+  const [savedIndicatorId, setSavedIndicatorId] = useState<string | null>(null)
+  const [savedIndicatorFading, setSavedIndicatorFading] = useState(false)
+  const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const [openSection, setOpenSection] = useState<number | null>(null)
   const [openBankingIds, setOpenBankingIds] = useState<Set<string>>(new Set())
   const [openInvestmentsIds, setOpenInvestmentsIds] = useState<Set<string>>(new Set())
   const [openRetirementIds, setOpenRetirementIds] = useState<Set<string>>(new Set())
   const [openDebtsIds, setOpenDebtsIds] = useState<Set<string>>(new Set())
   const [pendingFocusId, setPendingFocusId] = useState<string | null>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  useEffect(() => { window.scrollTo(0, 0) }, [])
 
   useEffect(() => {
     async function load() {
@@ -140,7 +184,9 @@ export default function FinancialInformationPage() {
         if (existing) {
           entryIdRef.current = existing.id
           setSavedEntryId(existing.id)
-          if (existing.created_at) setLastSavedAt(new Date(existing.created_at))
+          const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${existing.id}`)
+          const savedDate = storedSave ? new Date(storedSave) : existing.created_at ? new Date(existing.created_at) : null
+          if (savedDate) setLastSavedAt(savedDate)
           const raw = existing.content as Record<string, unknown>
           let loaded: FormState
           if (isOldFormat(raw)) {
@@ -151,6 +197,7 @@ export default function FinancialInformationPage() {
               investments: (raw.investments as AccountEntry[]) ?? [],
               retirement: (raw.retirement as AccountEntry[]) ?? [],
               debts: (raw.debts as DebtEntry[]) ?? [],
+              taxInfo: { ...EMPTY_TAX_INFO, ...(typeof raw.taxInfo === 'object' && raw.taxInfo !== null ? raw.taxInfo as Partial<TaxInfo> : {}) },
             }
           }
           const cleaned: FormState = {
@@ -158,6 +205,7 @@ export default function FinancialInformationPage() {
             investments: loaded.investments.filter(e => !isAccountEntryEmpty(e)),
             retirement: loaded.retirement.filter(e => !isAccountEntryEmpty(e)),
             debts: loaded.debts.filter(e => !isDebtEntryEmpty(e)),
+            taxInfo: loaded.taxInfo,
           }
           formRef.current = cleaned
           setForm(cleaned)
@@ -184,31 +232,47 @@ export default function FinancialInformationPage() {
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; performAutosave() }
   }
 
+  function triggerSavedIndicator(id: string | null) {
+    if (!id) return
+    if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current)
+    setSavedIndicatorId(id)
+    setSavedIndicatorFading(false)
+    savedFadeTimerRef.current = setTimeout(() => {
+      setSavedIndicatorFading(true)
+      setTimeout(() => setSavedIndicatorId(null), 400)
+    }, 2600)
+  }
+
   async function performAutosave() {
+    const targetId = lastEditedEntryIdRef.current
     const currentForm = formRef.current
     const saveableForm = {
       banking: currentForm.banking.filter(e => !isAccountEntryEmpty(e)).map(toSaveable),
       investments: currentForm.investments.filter(e => !isAccountEntryEmpty(e)).map(toSaveable),
       retirement: currentForm.retirement.filter(e => !isAccountEntryEmpty(e)).map(toSaveable),
       debts: currentForm.debts.filter(e => !isDebtEntryEmpty(e)),
+      taxInfo: currentForm.taxInfo,
     }
     setSaveStatus('saving')
+    setSavingEntryId(targetId)
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError || !user) { setSaveStatus('error'); return }
+      if (userError || !user) { setSaveStatus('error'); setSavingEntryId(null); return }
       if (!entryIdRef.current) {
         const { data: created, error } = await supabase.from('entries')
           .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: saveableForm })
           .select('id').single()
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingEntryId(null); return }
         if (created) { entryIdRef.current = created.id; setSavedEntryId(created.id) }
       } else {
         const { error } = await supabase.from('entries').update({ content: saveableForm }).eq('id', entryIdRef.current)
-        if (error) { setSaveStatus('error'); return }
+        if (error) { setSaveStatus('error'); setSavingEntryId(null); return }
       }
+      if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
       setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveStatus('saved')
-    } catch { setSaveStatus('error') }
+      setSavingEntryId(null); triggerSavedIndicator(targetId)
+    } catch { setSaveStatus('error'); setSavingEntryId(null) }
   }
 
   async function handlePreviewExport() {
@@ -224,7 +288,7 @@ export default function FinancialInformationPage() {
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24), w = Math.floor(d / 7)
-    if (s < 60) return 'Saved'
+    if (s < 60) return 'Saved just now'
     if (m < 60) return `Saved ${m}m ago`
     if (h < 24) return h === 1 ? 'Saved 1h ago' : `Saved ${h}h ago`
     if (d < 7) return d === 1 ? 'Saved 1 day ago' : `Saved ${d} days ago`
@@ -255,6 +319,7 @@ export default function FinancialInformationPage() {
     }
     formRef.current = updated
     setForm(updated)
+    lastEditedEntryIdRef.current = id
     scheduleAutosave()
   }
 
@@ -288,6 +353,7 @@ export default function FinancialInformationPage() {
     }
     formRef.current = updated
     setForm(updated)
+    lastEditedEntryIdRef.current = id
     scheduleAutosave()
   }
 
@@ -309,6 +375,15 @@ export default function FinancialInformationPage() {
     scheduleAutosave()
   }
 
+  // ── Tax helpers ──
+
+  function updateTaxField<K extends keyof TaxInfo>(field: K, value: TaxInfo[K]) {
+    const updated = { ...formRef.current, taxInfo: { ...formRef.current.taxInfo, [field]: value } }
+    formRef.current = updated
+    setForm(updated)
+    scheduleAutosave()
+  }
+
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px', fontFamily: hv, color: '#130426' }}>Loading…</div>
@@ -316,32 +391,57 @@ export default function FinancialInformationPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
+    <div style={{ minHeight: '100vh', background: '#F8F4EB', position: 'relative' }}>
+      {savedEntryId && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <button
+            type="button"
+            onClick={handlePreviewExport}
+            disabled={saveStatus === 'saving'}
+            className="hover:opacity-90 transition-opacity"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            {saveStatus === 'saving' ? 'Preparing…' : 'Finalize & Export'}
+          </button>
+          {saveStatusText && (
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+          )}
+        </div>
+      )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Financial Information' }]} />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
+        <div style={{ marginBottom: 48 }}>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
             Financial Information
           </h1>
-          {savedEntryId && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, paddingTop: 8 }}>
-              {saveStatusText && (
-                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777' }}>{saveStatusText}</span>
-              )}
-              <button type="button" onClick={handlePreviewExport} disabled={saveStatus === 'saving'}
-                style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '8px 12px', cursor: saveStatus === 'saving' ? 'default' : 'pointer' }}
-                onMouseEnter={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.background = '#F8F4EB' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#2C3777' }}
-                onMouseDown={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#130426' }}
-                onMouseUp={(e) => { if (!(e.currentTarget as HTMLButtonElement).disabled) e.currentTarget.style.borderColor = '#2C3777' }}>
-                {saveStatus === 'saving' ? 'Preparing…' : 'Finalize & Export →'}
-              </button>
-            </div>
-          )}
+          <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            A place to capture the financial picture your executor will need.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+            The content here is for planning and organizing. For financial decisions or estate planning, consult a financial advisor or lawyer in your province.
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
+            Account numbers are designed to be added at the moment of export rather than saved to your plan. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
+            <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Expand a section to fill it in', 'Update anytime as your finances change', 'Add account numbers at the moment of export'].map((text) => (
+              <span key={text} style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
+                {text}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -351,6 +451,7 @@ export default function FinancialInformationPage() {
             idx={0} open={openSection === 0} onToggle={toggleSection}
             title="Banking & Credit"
             description="Everyday accounts, credit cards, and lines of credit."
+            note={<>Online banking login details can be added in <Link href="/app/capture/devices-and-accounts" style={{ color: 'rgba(19,4,38,0.70)', textDecoration: 'underline' }}>Devices &amp; Accounts</Link>.</>}
             sectionRef={(el) => { sectionRefs.current[0] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -363,6 +464,9 @@ export default function FinancialInformationPage() {
                   onDelete={() => deleteAccountEntry('banking', entry.id, setOpenBankingIds)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
+                  isSaving={savingEntryId === entry.id}
+                  isSaved={savedIndicatorId === entry.id}
+                  savedFading={savedIndicatorFading}
                 >
                   <Field label="Institution Name:" value={entry.name} onChange={(v) => updateAccountField('banking', entry.id, 'name', v)} onBlur={handleBlur} rows={1} />
                   <Field label="Type of account:" value={entry.typeOfAccount} onChange={(v) => updateAccountField('banking', entry.id, 'typeOfAccount', v)} onBlur={handleBlur} rows={1} />
@@ -382,6 +486,7 @@ export default function FinancialInformationPage() {
             idx={1} open={openSection === 1} onToggle={toggleSection}
             title="Investments"
             description="Brokerage accounts, managed portfolios, and other investments."
+            note={<>Online brokerage login details can be added in <Link href="/app/capture/devices-and-accounts" style={{ color: 'rgba(19,4,38,0.70)', textDecoration: 'underline' }}>Devices &amp; Accounts</Link>.</>}
             sectionRef={(el) => { sectionRefs.current[1] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -394,6 +499,9 @@ export default function FinancialInformationPage() {
                   onDelete={() => deleteAccountEntry('investments', entry.id, setOpenInvestmentsIds)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
+                  isSaving={savingEntryId === entry.id}
+                  isSaved={savedIndicatorId === entry.id}
+                  savedFading={savedIndicatorFading}
                 >
                   <Field label="Institution Name:" value={entry.name} onChange={(v) => updateAccountField('investments', entry.id, 'name', v)} onBlur={handleBlur} rows={1} />
                   <Field label="Type of account:" value={entry.typeOfAccount} onChange={(v) => updateAccountField('investments', entry.id, 'typeOfAccount', v)} onBlur={handleBlur} rows={1} />
@@ -413,6 +521,7 @@ export default function FinancialInformationPage() {
             idx={2} open={openSection === 2} onToggle={toggleSection}
             title="Retirement & Income"
             description="Pensions, retirement accounts, annuities, and income sources."
+            note={<>Online retirement account login details can be added in <Link href="/app/capture/devices-and-accounts" style={{ color: 'rgba(19,4,38,0.70)', textDecoration: 'underline' }}>Devices &amp; Accounts</Link>.</>}
             sectionRef={(el) => { sectionRefs.current[2] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -425,6 +534,9 @@ export default function FinancialInformationPage() {
                   onDelete={() => deleteAccountEntry('retirement', entry.id, setOpenRetirementIds)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
+                  isSaving={savingEntryId === entry.id}
+                  isSaved={savedIndicatorId === entry.id}
+                  savedFading={savedIndicatorFading}
                 >
                   <Field label="Institution Name:" value={entry.name} onChange={(v) => updateAccountField('retirement', entry.id, 'name', v)} onBlur={handleBlur} rows={1} />
                   <Field label="Type of account:" value={entry.typeOfAccount} onChange={(v) => updateAccountField('retirement', entry.id, 'typeOfAccount', v)} onBlur={handleBlur} rows={1} />
@@ -444,6 +556,7 @@ export default function FinancialInformationPage() {
             idx={3} open={openSection === 3} onToggle={toggleSection}
             title="Debts & Loans"
             description="Mortgages, loans, lines of credit, and other debts."
+            note={<>Online lender login details can be added in <Link href="/app/capture/devices-and-accounts" style={{ color: 'rgba(19,4,38,0.70)', textDecoration: 'underline' }}>Devices &amp; Accounts</Link>.</>}
             sectionRef={(el) => { sectionRefs.current[3] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -456,6 +569,9 @@ export default function FinancialInformationPage() {
                   onDelete={() => deleteDebtEntry(entry.id)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
+                  isSaving={savingEntryId === entry.id}
+                  isSaved={savedIndicatorId === entry.id}
+                  savedFading={savedIndicatorFading}
                 >
                   <Field label="Institution Name:" value={entry.name} onChange={(v) => updateDebtField(entry.id, 'name', v)} onBlur={handleBlur} rows={1} />
                   <Field label="Type:" value={entry.type} onChange={(v) => updateDebtField(entry.id, 'type', v)} onBlur={handleBlur} rows={1} />
@@ -471,6 +587,21 @@ export default function FinancialInformationPage() {
             </div>
           </AccordionSection>
 
+          {/* ── Tax Information ── */}
+          <AccordionSection
+            idx={4} open={openSection === 4} onToggle={toggleSection}
+            title="Tax Information"
+            description="Past returns, preparation, and recurring tax matters your executor will need to know about."
+            note={<>Login details for CRA My Account and tax software (TurboTax, Wealthsimple Tax, etc.) can be added in <Link href="/app/capture/devices-and-accounts" style={{ color: 'rgba(19,4,38,0.70)', textDecoration: 'underline' }}>Devices &amp; Accounts</Link>.</>}
+            sectionRef={(el) => { sectionRefs.current[4] = el }}
+          >
+            <TaxSectionContent
+              taxInfo={form.taxInfo}
+              onUpdate={updateTaxField}
+              onBlur={handleBlur}
+            />
+          </AccordionSection>
+
         </div>
       </div>
     </div>
@@ -481,12 +612,13 @@ export default function FinancialInformationPage() {
 // AccordionSection
 // ---------------------------------------------------------------------------
 
-function AccordionSection({ idx, open, onToggle, title, description, sectionRef, children }: {
+function AccordionSection({ idx, open, onToggle, title, description, note, sectionRef, children }: {
   idx: number
   open: boolean
   onToggle: (idx: number) => void
   title: string
   description: string
+  note?: React.ReactNode
   sectionRef: (el: HTMLDivElement | null) => void
   children: React.ReactNode
 }) {
@@ -517,6 +649,11 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
           </button>
           {open && (
             <div style={{ padding: '0 24px 28px' }}>
+              {note && (
+                <p style={{ fontFamily: hv, fontSize: 15, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: '0 0 20px' }}>
+                  {note}
+                </p>
+              )}
               {children}
             </div>
           )}
@@ -530,7 +667,7 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
 // EntryCard
 // ---------------------------------------------------------------------------
 
-function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFocused, children }: {
+function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
   id: string
   title: string
   isOpen: boolean
@@ -538,6 +675,9 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
   onDelete: () => void
   pendingFocusId: string | null
   onFocused: () => void
+  isSaving: boolean
+  isSaved: boolean
+  savedFading: boolean
   children: React.ReactNode
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -570,7 +710,7 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
         <div style={{ padding: '0 16px 16px', borderTop: '1px solid #2C3777', display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ height: 16 }} />
           {children}
-          <div style={{ paddingTop: 4 }}>
+          <div style={{ paddingTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <button
               type="button"
               onClick={onDelete}
@@ -578,6 +718,20 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
             >
               Delete
             </button>
+            {isSaving && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+              </div>
+            )}
+            {isSaved && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: savedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
+                  <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -639,7 +793,7 @@ function Field({ label, value, onChange, onBlur, rows = 2, placeholder }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginBottom: 8 }}>{label}</label>
+      {label && <label style={{ display: 'block', fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginBottom: 8 }}>{label}</label>}
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -648,6 +802,181 @@ function Field({ label, value, onChange, onBlur, rows = 2, placeholder }: {
         placeholder={placeholder}
         style={{ width: '100%', background: '#FFFFFF', color: '#1A1A1A', border: '1px solid #2C3777', borderRadius: 10, padding: 12, fontFamily: hv, fontSize: 15, lineHeight: 1.5, resize: 'none', outline: 'none', boxSizing: 'border-box' }}
       />
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// TaxSectionContent
+// ---------------------------------------------------------------------------
+
+function TaxSectionContent({ taxInfo, onUpdate, onBlur }: {
+  taxInfo: TaxInfo
+  onUpdate: <K extends keyof TaxInfo>(field: K, value: TaxInfo[K]) => void
+  onBlur: () => void
+}) {
+  const labelStyle: React.CSSProperties = { display: 'block', fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginBottom: 10 }
+  const helperStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.5)', marginTop: 8, lineHeight: 1.5 }
+  const radioLabelStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontFamily: hv, fontSize: 15, color: '#1A1A1A', padding: '5px 0' }
+  const checkLabelStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontFamily: hv, fontSize: 15, color: '#1A1A1A', padding: '4px 0' }
+  const inputStyle: React.CSSProperties = { width: 16, height: 16, cursor: 'pointer', flexShrink: 0, accentColor: '#2C3777' }
+
+  function toggleSituation(situation: string, checked: boolean) {
+    const updated = checked
+      ? [...taxInfo.taxSituations, situation]
+      : taxInfo.taxSituations.filter(s => s !== situation)
+    onUpdate('taxSituations', updated)
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+      <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
+        For tax decisions or filing questions, consult a tax professional.
+      </p>
+
+      {/* 1. Who prepares your tax returns */}
+      <div>
+        <label style={labelStyle}>Who prepares your tax returns:</label>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {([
+            { value: 'self', label: 'I prepare my own' },
+            { value: 'accountant', label: 'I use a tax preparer or accountant' },
+            { value: 'other', label: 'Other' },
+          ] as const).map(({ value, label }) => (
+            <label key={value} style={radioLabelStyle}>
+              <input
+                type="radio"
+                name="preparerType"
+                value={value}
+                checked={taxInfo.preparerType === value}
+                onChange={() => onUpdate('preparerType', value)}
+                onBlur={onBlur}
+                style={inputStyle}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        {taxInfo.preparerType === 'accountant' && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Field
+              label="Name of preparer or accountant:"
+              value={taxInfo.preparerName}
+              onChange={(v) => onUpdate('preparerName', v)}
+              onBlur={onBlur}
+              rows={1}
+            />
+            <Field
+              label="Firm or company name:"
+              value={taxInfo.preparerFirm}
+              onChange={(v) => onUpdate('preparerFirm', v)}
+              onBlur={onBlur}
+              rows={1}
+            />
+            <p style={{ ...helperStyle, marginTop: 0 }}>
+              Full contact details can be added in{' '}
+              <Link href="/app/capture/important-contacts" style={{ color: 'rgba(26,26,26,0.5)', textDecoration: 'underline' }}>
+                Important Contacts
+              </Link>
+              {' '}under Financial &amp; Professional Services.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Location of past tax returns */}
+      <div>
+        <Field
+          label="Where past returns are kept:"
+          value={taxInfo.returnsLocation}
+          onChange={(v) => onUpdate('returnsLocation', v)}
+          onBlur={onBlur}
+          rows={2}
+          placeholder=""
+        />
+        <p style={helperStyle}>For example: filing cabinet at home, cloud storage, with my accountant. Indicate how many years of returns are kept.</p>
+      </div>
+
+      {/* 3. CRA My Account */}
+      <div>
+        <label style={checkLabelStyle}>
+          <input
+            type="checkbox"
+            checked={taxInfo.hasCraAccount}
+            onChange={(e) => onUpdate('hasCraAccount', e.target.checked)}
+            onBlur={onBlur}
+            style={inputStyle}
+          />
+          I have a CRA My Account
+        </label>
+      </div>
+
+      {/* 4. Notable tax situations */}
+      <div>
+        <label style={labelStyle}>Tax situations that apply:</label>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {TAX_SITUATIONS.map((situation) => (
+            <label key={situation} style={checkLabelStyle}>
+              <input
+                type="checkbox"
+                checked={taxInfo.taxSituations.includes(situation)}
+                onChange={(e) => toggleSituation(situation, e.target.checked)}
+                onBlur={onBlur}
+                style={inputStyle}
+              />
+              {situation}
+            </label>
+          ))}
+          <label style={checkLabelStyle}>
+            <input
+              type="checkbox"
+              checked={taxInfo.taxSituations.includes('Other')}
+              onChange={(e) => toggleSituation('Other', e.target.checked)}
+              onBlur={onBlur}
+              style={inputStyle}
+            />
+            Other (describe)
+          </label>
+        </div>
+        {taxInfo.taxSituations.includes('Other') && (
+          <div style={{ marginTop: 12 }}>
+            <Field
+              label=""
+              value={taxInfo.taxSituationsOther}
+              onChange={(v) => onUpdate('taxSituationsOther', v)}
+              onBlur={onBlur}
+              rows={2}
+              placeholder="Describe your situation..."
+            />
+          </div>
+        )}
+      </div>
+
+      {/* 5. Charitable donation receipts */}
+      <div>
+        <Field
+          label="Where charitable donation receipts are kept:"
+          value={taxInfo.donationReceiptsLocation}
+          onChange={(v) => onUpdate('donationReceiptsLocation', v)}
+          onBlur={onBlur}
+          rows={2}
+        />
+        <p style={helperStyle}>Where past donation receipts are stored.</p>
+      </div>
+
+      {/* 6. Other tax-related notes */}
+      <div>
+        <Field
+          label="Other tax-related notes:"
+          value={taxInfo.otherNotes}
+          onChange={(v) => onUpdate('otherNotes', v)}
+          onBlur={onBlur}
+          rows={3}
+        />
+        <p style={helperStyle}>Anything specific to your tax situation an executor should know.</p>
+      </div>
+
     </div>
   )
 }

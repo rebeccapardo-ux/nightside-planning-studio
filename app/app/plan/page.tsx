@@ -1,8 +1,10 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DomainStateCard from '@/app/components/DomainStateCard'
 import DomainNullStateBanner from '@/app/components/DomainNullStateBanner'
-import PlanNotesGrid from '@/app/components/PlanNotesGrid'
+import PlanOverview from '@/app/components/PlanOverview'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
+import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
+import PlanTour from '@/app/components/PlanTour'
 import Link from 'next/link'
 
 type EntryRow = {
@@ -20,12 +22,13 @@ type EntryRow = {
 // ---------------------------------------------------------------------------
 
 const KNOWN_DOCUMENTS = [
-  { type: 'advance_directive_supplement', label: 'Your Wishes',         href: '/app/capture/advance-directive'     },
-  { type: 'personal_admin_info',          label: 'Personal Admin Info',  href: '/app/capture/personal-admin'        },
-  { type: 'important_contacts',           label: 'Important Contacts',   href: '/app/capture/important-contacts'    },
-  { type: 'financial_information',        label: 'Financial Information', href: '/app/capture/financial-information' },
-  { type: 'devices_and_accounts',         label: 'Devices & Accounts',   href: '/app/capture/devices-and-accounts'  },
-  { type: 'keepsake_inventory',           label: 'Keepsakes Inventory',  href: '/app/capture/keepsake-inventory'    },
+  { type: 'advance_directive_supplement', label: 'My Care Wishes',                          href: '/app/capture/advance-directive'  },
+  { type: 'funeral_wishes',              label: 'Wishes for My Body, Funeral & Ceremony', href: '/app/capture/funeral-wishes'     },
+  { type: 'personal_admin_info',          label: 'Personal Admin Information',                    href: '/app/capture/personal-admin'     },
+  { type: 'important_contacts',           label: 'Important Contacts',                     href: '/app/capture/important-contacts' },
+  { type: 'financial_information',        label: 'Financial Information',                  href: '/app/capture/financial-information' },
+  { type: 'devices_and_accounts',         label: 'Devices & Accounts',                    href: '/app/capture/devices-and-accounts'  },
+  { type: 'keepsake_inventory',           label: 'Keepsakes Inventory',                   href: '/app/capture/keepsake-inventory'    },
 ]
 
 const KNOWN_ACTIVITIES = [
@@ -42,18 +45,28 @@ export default async function PlanPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return <div>Not authenticated</div>
 
-  // Ensure Personal Admin domain exists
-  const { data: existingPA } = await supabase
-    .from('containers')
-    .select('id')
-    .eq('type', 'domain')
-    .ilike('title', '%personal%')
-    .limit(1)
+  // Ensure all six canonical domains exist for this user, with no duplicates
+  const CANONICAL_DOMAINS = [
+    'Deathcare',
+    'Healthcare Wishes',
+    'Legacy',
+    'Personal Admin',
+    'Ritual & Ceremony',
+    'Wills & Estates',
+  ]
 
-  if (!existingPA || existingPA.length === 0) {
+  const { data: existingDomains } = await supabase
+    .from('containers')
+    .select('title')
+    .eq('type', 'domain')
+    .eq('user_id', user.id)
+
+  const existingTitles = new Set((existingDomains ?? []).map((d) => d.title))
+  const toInsert = CANONICAL_DOMAINS.filter((title) => !existingTitles.has(title))
+  if (toInsert.length > 0) {
     await supabase
       .from('containers')
-      .insert({ user_id: user.id, type: 'domain', title: 'Personal Admin' })
+      .insert(toInsert.map((title) => ({ user_id: user.id, type: 'domain', title })))
   }
 
   const [
@@ -75,11 +88,19 @@ export default async function PlanPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
+      .eq('user_id', user.id)
       .order('title'),
   ])
 
   const allNotes = allNotesRaw ?? []
-  const allDomains = domainContainers ?? []
+
+  // Deduplicate domains by title — handles any duplicate rows already in DB
+  const _seenTitles = new Set<string>()
+  const allDomains = (domainContainers ?? []).filter((d) => {
+    if (_seenTitles.has(d.title)) return false
+    _seenTitles.add(d.title)
+    return true
+  })
 
   // --- Documents: split into in-progress / not-started ---
   type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId: string }
@@ -115,38 +136,38 @@ export default async function PlanPage() {
   const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   const sectionHeader: React.CSSProperties = {
-    fontFamily: apfel,
-    fontSize: 30,
-    fontWeight: 500,
-    color: '#FFFFFF',
-    marginBottom: 24,
+    fontFamily: inter,
+    fontSize: 20,
+    fontWeight: 600,
+    color: '#130426',
+    marginBottom: 16,
     marginTop: 0,
   }
 
   const groupPanel: React.CSSProperties = {
-    background: 'rgba(19,4,38,0.45)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 44,
+    background: '#ede9f8',
+    border: '1px solid rgba(19,4,38,0.08)',
+    borderRadius: 12,
+    padding: '20px 24px',
+    marginBottom: 16,
   }
 
   const groupHeader: React.CSSProperties = {
-    fontFamily: apfel,
-    fontSize: 22,
+    fontFamily: inter,
+    fontSize: 16,
     fontWeight: 600,
-    color: '#FFFFFF',
+    color: '#130426',
     marginBottom: 16,
     marginTop: 0,
   }
 
   const columnHeader: React.CSSProperties = {
     fontFamily: inter,
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: 600,
-    color: '#F29836',
+    color: '#DB5835',
     textTransform: 'uppercase',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.06em',
     marginBottom: 16,
     marginTop: 0,
   }
@@ -154,7 +175,8 @@ export default async function PlanPage() {
   const docButton: React.CSSProperties = {
     position: 'relative',
     width: '100%',
-    background: '#F8F4EB',
+    background: '#ffffff',
+    border: '1px solid rgba(19,4,38,0.1)',
     borderRadius: 22,
     padding: '14px 16px',
     display: 'flex',
@@ -168,7 +190,8 @@ export default async function PlanPage() {
   const outputButton: React.CSSProperties = {
     width: 220,
     minHeight: 36,
-    background: '#FFFFFF',
+    background: '#ffffff',
+    border: '1px solid rgba(19,4,38,0.1)',
     borderRadius: 22,
     padding: '8px 14px',
     display: 'inline-flex',
@@ -188,184 +211,96 @@ export default async function PlanPage() {
       style={{ background: '#F8F4EB' }}
     >
       <style>{`
-        .plan-pill-doc:hover { background: #EDE7D9 !important; }
-        .plan-primary-btn:hover { background: rgba(44,55,119,0.06) !important; }
+        .plan-pill-doc:hover { background: #f5f5f5 !important; }
+        .plan-primary-btn:hover { background: rgba(19,4,38,0.06) !important; }
         .plan-export-link:hover { text-decoration: underline !important; }
-        .plan-pill-out:hover { background: #EDEDED !important; }
+        .plan-pill-out:hover { background: #f5f5f5 !important; }
+        .plan-export-btn:hover { background: #C04828 !important; }
       `}</style>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px 80px' }}>
-
-        {/* Page header */}
-        <div style={{ marginBottom: 48 }}>
+      {/* ── Page header ── */}
+      <div style={{ position: 'relative', paddingTop: 64 }}>
+        {/* Title — centered with same max-width as content */}
+        <div style={{ maxWidth: 1100, margin: '0 auto', paddingLeft: 24, paddingRight: 24 }}>
           <SectionTitleReveal title="Your Plan" color="#130426" size={64} />
         </div>
+        {/* Export button — absolutely positioned so it stays a fixed distance from the notepad */}
+        <div style={{ position: 'absolute', top: 20, right: 148 }}>
+          <Link
+            href="/app/plan/export"
+            className="plan-export-btn"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              borderRadius: 999, padding: '10px 20px',
+              fontFamily: inter, fontSize: 14, fontWeight: 600,
+              background: '#DB5835', color: '#f8f4eb',
+              textDecoration: 'none', border: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#f8f4eb" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#f8f4eb" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            Preview &amp; Export
+          </Link>
+        </div>
+      </div>
 
-        {/* ── Areas of planning ── */}
-        <section style={{ marginBottom: 64 }}>
-          <h2 style={{ ...sectionHeader, color: '#130426', marginBottom: 12 }}>Areas of planning</h2>
-          <p style={{ fontFamily: inter, fontSize: 17, color: 'rgba(19,4,38,0.85)', maxWidth: 600, marginBottom: 24, marginTop: 0, lineHeight: 1.6 }}>
-            Click into an area to work through topics, organize your thinking,<br/>and see related documents, notes, and activity work.
-          </p>
-          {allDomains.length > 0 ? (
-            <>
-            <DomainNullStateBanner domains={allDomains} />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 20 }}>
-              {allDomains.map((domain, i) => (
-                <DomainStateCard
-                  key={domain.id}
-                  domain={domain}
-                  colorIndex={i}
-                />
-              ))}
-            </div>
-            </>
-          ) : (
-            <p style={{ fontFamily: inter, fontSize: 16, color: 'rgba(19,4,38,0.45)', margin: 0 }}>
-              No areas yet.
-            </p>
-          )}
-        </section>
+      {/* ── Main content ── */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 80px' }}>
+
+        {/* ── Areas heading ── */}
+        <h2 style={{ fontFamily: apfel, fontSize: 24, fontWeight: 400, color: '#130426', marginBottom: 12, marginTop: 0 }}>Areas of planning</h2>
+        <p style={{ fontFamily: inter, fontSize: 17, color: 'rgba(19,4,38,0.85)', maxWidth: 600, marginBottom: 24, marginTop: 0, lineHeight: 1.6 }}>
+          Click into an area to track your progress, view key tasks, and access related materials.
+        </p>
+
+        {/* ── Null state banner (above grid so it doesn't offset card alignment) ── */}
+        {allDomains.length > 0 && <DomainNullStateBanner domains={allDomains} />}
+
+        {/* ── Domain cards + Key details grid ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0 40px', alignItems: 'stretch', marginBottom: 64 }}>
+
+          {/* Left: domain cards */}
+          <div id="tour-areas">
+            {allDomains.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 20 }}>
+                {allDomains.map((domain, i) => (
+                  <DomainStateCard
+                    key={domain.id}
+                    domain={domain}
+                    colorIndex={i}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontFamily: inter, fontSize: 16, color: 'rgba(19,4,38,0.45)', margin: 0 }}>
+                No areas yet.
+              </p>
+            )}
+          </div>
+
+          {/* Right: Key details */}
+          <div id="tour-key-details">
+            <PlanOverview domains={allDomains} />
+          </div>
+
+        </div>
 
         {/* ── Your materials ── */}
-        <div>
-        <div style={{ background: 'rgba(44,55,119,0.85)', borderRadius: 20, padding: 28 }}>
-          <h2 style={sectionHeader}>Your materials</h2>
-
-          {/* Documents group */}
-          <div style={groupPanel}>
-            <h3 style={groupHeader}>Documents</h3>
-            <p style={{ fontFamily: inter, fontSize: 15, fontWeight: 400, color: '#FFFFFF', maxWidth: 480, marginBottom: 36, marginTop: 0, lineHeight: 1.55 }}>
-              Templates to help you document what matters and stay organized.<br />
-              For legal requirements, see guidance in the <Link href="/app/learn" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'underline' }}>Learn</Link> section.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
-
-              {/* In progress */}
-              <div style={{ paddingRight: 10 }}>
-                <p style={columnHeader}>In progress</p>
-                {inProgressDocs.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {inProgressDocs.map((doc) => (
-                      <div key={doc.type} className="plan-pill-doc" style={docButton}>
-                        <Link href={doc.href} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} aria-hidden="true" tabIndex={-1} />
-                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <DocIcon />
-                          <span style={{ fontFamily: inter, fontSize: 16, fontWeight: 600, color: '#1A1A1A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.label}</span>
-                        </div>
-                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 14, marginLeft: 24 }}>
-                          <Link href={doc.href} className="plan-primary-btn" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
-                            Continue
-                          </Link>
-                          <Link href={`/app/entries/${doc.entryId}`} className="plan-export-link" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                            Export
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontFamily: inter, fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>None yet</p>
-                )}
-              </div>
-
-              {/* Not started */}
-              <div style={{ paddingRight: 10 }}>
-                <p style={columnHeader}>Not started</p>
-                {notStartedDocs.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {notStartedDocs.map((doc) => (
-                      <div key={doc.type} className="plan-pill-doc" style={docButton}>
-                        <Link href={doc.href} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} aria-hidden="true" tabIndex={-1} />
-                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <DocIcon />
-                          <span style={{ fontFamily: inter, fontSize: 16, fontWeight: 600, color: '#1A1A1A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.label}</span>
-                        </div>
-                        <div style={{ position: 'relative', zIndex: 1, marginLeft: 24 }}>
-                          <Link href={doc.href} className="plan-primary-btn" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
-                            Start
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontFamily: inter, fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>All started</p>
-                )}
-              </div>
-
-            </div>
-          </div>
-
-          {/* Activity outputs group */}
-          <div style={groupPanel}>
-            <h3 style={groupHeader}>Activity outputs</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
-
-              {/* In progress */}
-              <div style={{ paddingRight: 10 }}>
-                <p style={columnHeader}>In progress</p>
-                {inProgressActivities.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {inProgressActivities.map((act) => (
-                      <div key={act.activity} className="plan-pill-out" style={{ ...outputButton, position: 'relative', width: '100%', borderRadius: 22, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 10, padding: '14px 16px', boxSizing: 'border-box' }}>
-                        <Link href={act.href} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} aria-hidden="true" tabIndex={-1} />
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          <span style={{ fontFamily: inter, fontSize: 16, fontWeight: 600, color: '#1A1A1A' }}>{act.label}</span>
-                        </div>
-                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 14 }}>
-                          <Link href={act.href} className="plan-primary-btn" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
-                            Continue
-                          </Link>
-                          <Link href={`/app/entries/${act.entryId}`} className="plan-export-link" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-                            Export
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontFamily: inter, fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>None yet</p>
-                )}
-              </div>
-
-              {/* Not started */}
-              <div style={{ paddingRight: 10 }}>
-                <p style={columnHeader}>Not started</p>
-                {notStartedActivities.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {notStartedActivities.map((act) => (
-                      <div key={act.activity} className="plan-pill-out" style={{ ...outputButton, position: 'relative', width: '100%', borderRadius: 22, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'flex-start', gap: 10, padding: '14px 16px', boxSizing: 'border-box' }}>
-                        <Link href={act.href} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} aria-hidden="true" tabIndex={-1} />
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          <span style={{ fontFamily: inter, fontSize: 16, fontWeight: 600, color: '#1A1A1A' }}>{act.label}</span>
-                        </div>
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          <Link href={act.href} className="plan-primary-btn" style={{ fontFamily: inter, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
-                            Start
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontFamily: inter, fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>All started</p>
-                )}
-              </div>
-
-            </div>
-          </div>
-
-          {/* Notes group */}
-          {allNotes.length > 0 && (
-            <div style={{ ...groupPanel, marginBottom: 0 }}>
-              <h3 style={groupHeader}>Notes</h3>
-              <PlanNotesGrid notes={allNotes} allDomains={allDomains} />
-            </div>
-          )}
-
+        <div id="tour-materials">
+          <YourMaterialsPanel
+            inProgressDocs={inProgressDocs}
+            notStartedDocs={notStartedDocs}
+            inProgressActivities={inProgressActivities}
+            notStartedActivities={notStartedActivities}
+            allNotes={allNotes}
+            allDomains={allDomains}
+            userId={user.id}
+          />
         </div>
-        </div>
+
+        <PlanTour userId={user.id} />
       </div>
     </div>
   )
@@ -399,8 +334,9 @@ function hasAnyStringContent(value: unknown): boolean {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'Your Wishes'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Info'
+  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
+  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'

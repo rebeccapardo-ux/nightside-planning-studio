@@ -19,14 +19,23 @@ export type Domain =
   | 'wills_estates'
   | 'personal_admin'
 
-// The six fields in the Your Wishes document:
+// The six fields in the My Care Wishes (advance directive) document:
 //   q1 = "My perfect death would involve:"           (field: perfectDeath)
 //   q2 = "At the end of my life, this is what matters most:" (field: whatMatters)
 //   q3 = "My most important personal values:"        (field: values)
 //   q4 = "What would make prolonging life unacceptable for me:" (field: unacceptable)
 //   q5 = "When I think about death, this is what I worry about:" (field: worries)
 //   q6 = "What I want my caregiver/care team to know:" (field: caregiver)
+//
+// The six sections in the Wishes for My Body, Funeral & Ceremony document:
+//   fw_s1 = "What matters most to me"
+//   fw_s2 = "Organ and tissue donation"
+//   fw_s3 = "Final resting place"
+//   fw_s4 = "Ceremony and gathering"
+//   fw_s5 = "Obituary and announcement"
+//   (fw_s6 = "Note to others" — no surfacing, no question ID needed)
 export type SupplementaryDocQuestion = 'q1' | 'q2' | 'q3' | 'q4' | 'q5' | 'q6'
+  | 'fw_s1' | 'fw_s2' | 'fw_s3' | 'fw_s4' | 'fw_s5'
 
 export type Relevance = 'primary' | 'secondary'
 
@@ -97,6 +106,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_4',
     label: 'What was your earliest experience with death? What do you remember about it?',
     domainRelevance: ['deathcare', 'legacy'],
+    supplementaryDocumentRelevance: { fw_s3: 'secondary' },
   },
   {
     id: 'prompt_5',
@@ -114,32 +124,37 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_7',
     label: 'What are a few of your favorite rituals or special traditions?',
     domainRelevance: ['deathcare', 'legacy'],
+    supplementaryDocumentRelevance: { fw_s4: 'primary' },
   },
   {
     id: 'prompt_8',
     label: 'What do you believe happens when we die? How does this influence your relationship to death?',
     domainRelevance: ['deathcare', 'legacy', 'healthcare'],
+    supplementaryDocumentRelevance: { fw_s3: 'secondary' },
   },
   {
     id: 'prompt_9',
     label: 'How would you want your body to be handled after death, and why?',
     domainRelevance: ['deathcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'primary', fw_s3: 'primary' },
   },
   {
     id: 'prompt_10',
     label: 'If you could leave behind a time capsule for future generations of your family, what 3 items would you include and why?',
     domainRelevance: ['legacy'],
+    supplementaryDocumentRelevance: { fw_s5: 'primary' },
   },
   {
     id: 'prompt_11',
     label: 'Have you ever witnessed someone have a "good death"? What made it good?',
     domainRelevance: ['deathcare', 'healthcare'],
-    supplementaryDocumentRelevance: { q1: 'secondary' },
+    supplementaryDocumentRelevance: { q1: 'secondary', fw_s3: 'secondary' },
   },
   {
     id: 'prompt_12',
     label: 'If you could write your own obituary, what key elements would you include?',
     domainRelevance: ['deathcare', 'legacy'],
+    supplementaryDocumentRelevance: { fw_s5: 'primary' },
   },
   {
     id: 'prompt_13',
@@ -161,6 +176,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_16',
     label: "What's one book, movie, or piece of art that has deeply influenced how you think about life or death?",
     domainRelevance: ['legacy', 'deathcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s4: 'secondary', fw_s5: 'secondary' },
     primaryTag: 'identity_life_story',
     secondaryTags: ['values'],
   },
@@ -168,6 +184,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_17',
     label: "What's one thing you've been holding back from doing or saying that would bring you peace if you acted on it?",
     domainRelevance: ['legacy', 'healthcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s4: 'secondary' },
     primaryTag: 'relationships',
     secondaryTags: ['values'],
   },
@@ -175,7 +192,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_18',
     label: 'If you found out you had a few months left, what would you change about your life?',
     domainRelevance: ['healthcare', 'deathcare', 'legacy'],
-    supplementaryDocumentRelevance: { q1: 'secondary', q4: 'secondary' },
+    supplementaryDocumentRelevance: { q1: 'secondary', q4: 'secondary', fw_s1: 'secondary', fw_s5: 'secondary' },
     primaryTag: 'values',
     secondaryTags: ['identity_life_story'],
   },
@@ -183,7 +200,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_19',
     label: 'If you needed help going to the bathroom or bathing, who would you feel most comfortable asking?',
     domainRelevance: ['healthcare'],
-    supplementaryDocumentRelevance: { q6: 'primary' },
+    supplementaryDocumentRelevance: { q6: 'primary', fw_s2: 'secondary' },
     primaryTag: 'care_preferences',
     secondaryTags: ['relationships'],
   },
@@ -191,7 +208,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_20',
     label: 'What do you worry most about when thinking about your future health and care?',
     domainRelevance: ['healthcare'],
-    supplementaryDocumentRelevance: { q5: 'primary' },
+    supplementaryDocumentRelevance: { q5: 'primary', fw_s2: 'secondary' },
     primaryTag: 'fears',
     secondaryTags: ['care_preferences'],
   },
@@ -215,7 +232,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_23',
     label: 'What situations do you find stressful or difficult?',
     domainRelevance: ['healthcare'],
-    supplementaryDocumentRelevance: { q5: 'secondary' },
+    supplementaryDocumentRelevance: { q5: 'secondary', fw_s2: 'secondary' },
     primaryTag: 'care_preferences',
   },
   {
@@ -229,7 +246,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_25',
     label: 'Fill in the blank: I want to live in my body as long as…',
     domainRelevance: ['healthcare'],
-    supplementaryDocumentRelevance: { q4: 'primary' },
+    supplementaryDocumentRelevance: { q4: 'primary', fw_s2: 'secondary' },
     primaryTag: 'care_preferences',
     secondaryTags: ['values'],
   },
@@ -237,7 +254,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_26',
     label: 'What does quality of life mean to you?',
     domainRelevance: ['healthcare'],
-    supplementaryDocumentRelevance: { q2: 'primary', q4: 'primary' },
+    supplementaryDocumentRelevance: { q2: 'primary', q4: 'primary', fw_s2: 'secondary' },
     primaryTag: 'values',
     secondaryTags: ['care_preferences', 'environment'],
   },
@@ -245,6 +262,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_27',
     label: 'Is there anything you would want to be forgiven for before you die?',
     domainRelevance: ['legacy', 'deathcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s4: 'primary' },
     primaryTag: 'relationships',
     secondaryTags: ['identity_life_story'],
   },
@@ -252,6 +270,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_28',
     label: 'Is there anyone or anything you would want to forgive before you die?',
     domainRelevance: ['legacy', 'deathcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s4: 'primary' },
     primaryTag: 'relationships',
     secondaryTags: ['identity_life_story'],
   },
@@ -259,6 +278,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_29',
     label: 'If you had one year to live, what would you give yourself permission to do?',
     domainRelevance: ['legacy', 'healthcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s5: 'secondary' },
     primaryTag: 'values',
     secondaryTags: ['identity_life_story'],
   },
@@ -266,7 +286,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_30',
     label: 'If you could control one aspect of your death, what would it be?',
     domainRelevance: ['deathcare', 'healthcare'],
-    supplementaryDocumentRelevance: { q1: 'secondary' },
+    supplementaryDocumentRelevance: { q1: 'secondary', fw_s3: 'primary' },
     primaryTag: 'care_preferences',
     secondaryTags: ['environment'],
   },
@@ -274,6 +294,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_31',
     label: 'Who knows the best stories about you?',
     domainRelevance: ['legacy'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s4: 'secondary', fw_s5: 'secondary' },
     primaryTag: 'identity_life_story',
     secondaryTags: ['relationships'],
   },
@@ -288,6 +309,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_33',
     label: 'What were your childhood experiences of funerals or memorials? What impressions did they leave on you?',
     domainRelevance: ['deathcare'],
+    supplementaryDocumentRelevance: { fw_s3: 'secondary' },
     primaryTag: 'identity_life_story',
   },
   {
@@ -302,13 +324,14 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_35',
     label: 'What are three things that bring you the most joy in life?',
     domainRelevance: ['legacy', 'healthcare'],
-    supplementaryDocumentRelevance: { q3: 'secondary' },
+    supplementaryDocumentRelevance: { q3: 'secondary', fw_s4: 'secondary', fw_s5: 'secondary' },
     primaryTag: 'values',
   },
   {
     id: 'prompt_36',
     label: "Think of a mentor or role model who has passed. What's the most valuable lesson they left you with?",
     domainRelevance: ['legacy'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s5: 'secondary' },
     primaryTag: 'identity_life_story',
     secondaryTags: ['values'],
   },
@@ -321,17 +344,19 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_38',
     label: "If you had the chance to write a letter to your younger self about life's most important lessons, what would you include?",
     domainRelevance: ['legacy'],
+    supplementaryDocumentRelevance: { fw_s5: 'secondary' },
   },
   {
     id: 'prompt_39',
     label: "What's one thing you hope people will always remember about you, no matter how much time has passed?",
     domainRelevance: ['legacy', 'deathcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'primary', fw_s5: 'primary' },
   },
   {
     id: 'prompt_40',
     label: 'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
     domainRelevance: ['deathcare', 'legacy', 'healthcare'],
-    supplementaryDocumentRelevance: { q1: 'secondary' },
+    supplementaryDocumentRelevance: { q1: 'secondary', fw_s4: 'primary' },
     primaryTag: 'environment',
     secondaryTags: ['identity_life_story', 'values'],
   },
@@ -339,16 +364,19 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
     id: 'prompt_41',
     label: 'If you could choose one personal item to be included in your final resting place, what would it be?',
     domainRelevance: ['deathcare'],
+    supplementaryDocumentRelevance: { fw_s3: 'primary' },
   },
   {
     id: 'prompt_42',
     label: 'If you could be remembered for one specific contribution to your community, family, or loved ones, what would it be?',
     domainRelevance: ['legacy'],
+    supplementaryDocumentRelevance: { fw_s1: 'primary', fw_s5: 'secondary' },
   },
   {
     id: 'prompt_43',
     label: "You have the opportunity to donate to one cause in your will. What's the focus of your legacy gift?",
     domainRelevance: ['wills_estates', 'legacy'],
+    supplementaryDocumentRelevance: { fw_s5: 'primary' },
   },
 ]
 
@@ -364,7 +392,7 @@ export const ACTIVITY_META: ActivityMeta[] = [
   {
     id: 'values_ranking',
     domainRelevance: ['healthcare', 'deathcare', 'legacy', 'wills_estates', 'personal_admin'],
-    supplementaryDocumentRelevance: { q3: 'primary', q2: 'secondary' },
+    supplementaryDocumentRelevance: { q3: 'primary', q2: 'secondary', fw_s1: 'secondary', fw_s4: 'secondary', fw_s5: 'secondary' },
     insertionBehavior: 'insertable',
   },
   {
@@ -378,6 +406,7 @@ export const ACTIVITY_META: ActivityMeta[] = [
   {
     id: 'legacy_map',
     domainRelevance: ['legacy', 'deathcare'],
+    supplementaryDocumentRelevance: { fw_s1: 'secondary', fw_s5: 'secondary' },
     insertionBehavior: 'view_only',
   },
   {

@@ -14,20 +14,18 @@ type Props = {
   onCancel: () => void
   // Post-save status injected by VoiceNoteButton
   saveStatus?: SaveStatus
-  // Called when user wants to re-record (parent should reset its phase)
-  onReRecord?: () => void
   // Called when user deletes the saved note
   onDelete?: () => void
   theme?: 'light' | 'dark'
 }
 
-export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRecord, onDelete, theme = 'light' }: Props) {
+export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDelete, theme = 'light' }: Props) {
   const isDark = theme === 'dark'
   const c = {
     primary:   isDark ? '#f8f4eb'               : '#130426',
     secondary: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)',
     muted:     isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.40)',
-    status:    isDark ? 'rgba(255,255,255,0.60)' : '#6B7280',
+    status:    isDark ? 'rgba(255,255,255,0.88)' : '#374151',
     border:    isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.18)',
     error:     '#DB5835',
   }
@@ -126,54 +124,6 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
     }
   }
 
-  function handleReRecord() {
-    if (reviewUrl) URL.revokeObjectURL(reviewUrl)
-    setReviewUrl(null)
-    blobRef.current = null
-    autoSavedRef.current = false
-    setElapsed(0)
-    setLimitReached(false)
-    setPhase('recording')
-    elapsedRef.current = 0
-    onReRecord?.()
-
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      const mimeType = mimeTypeRef.current
-      const options = mimeType ? { mimeType } : {}
-      const recorder = new MediaRecorder(stream, options)
-      mediaRecorderRef.current = recorder
-      chunksRef.current = []
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data)
-      }
-
-      recorder.onstop = () => {
-        stream.getTracks().forEach((t) => t.stop())
-        const blob = new Blob(chunksRef.current, { type: mimeType || 'audio/webm' })
-        blobRef.current = blob
-        const url = URL.createObjectURL(blob)
-        setReviewUrl(url)
-        setReviewDuration(elapsedRef.current)
-        setPhase('review')
-      }
-
-      recorder.start(100)
-
-      timerRef.current = setInterval(() => {
-        elapsedRef.current += 1
-        setElapsed(elapsedRef.current)
-        if (elapsedRef.current >= MAX_RECORDING_SECONDS) {
-          setLimitReached(true)
-          if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
-          if (mediaRecorderRef.current?.state !== 'inactive') mediaRecorderRef.current?.stop()
-        }
-      }, 1000)
-    }).catch(() => {
-      setMicError('Microphone access was denied.')
-    })
-  }
-
   const remaining = MAX_RECORDING_SECONDS - elapsed
 
   if (micError) {
@@ -257,9 +207,9 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
   const statusText = !saveStatus || saveStatus === 'saving'
     ? 'Saving…'
     : saveStatus === 'transcribing'
-    ? 'Saved · Transcribing…'
+    ? 'Transcribing…'
     : saveStatus === 'saved'
-    ? 'Saved'
+    ? ''
     : "Couldn't save — try again"
 
   return (
@@ -284,23 +234,38 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onReRe
         </p>
       )}
 
-      {/* Save status */}
-      <p style={{ fontSize: 13, fontWeight: 500, color: c.status, margin: 0 }}>
-        {statusText}
-      </p>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <button
-          onClick={handleReRecord}
-          style={{ fontSize: 13, fontWeight: 500, color: c.secondary, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
-          Re-record
-        </button>
+      {/* Save status + delete in a single row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        {saveStatus === 'saved' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+              <circle cx="7" cy="7" r="6" stroke={c.status} strokeWidth="1.3" />
+              <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke={c.status} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{ fontSize: 13, fontWeight: 500, color: c.status }}>Saved to Your Plan</span>
+          </div>
+        ) : (
+          <p style={{ fontSize: 13, fontWeight: 500, color: c.status, margin: 0 }}>
+            {statusText}
+          </p>
+        )}
         {onDelete && (
           <button
             onClick={onDelete}
-            style={{ fontSize: 13, fontWeight: 500, color: '#DB5835', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '1' }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = isDark ? '0.88' : '0.75' }}
+            style={{
+              fontSize: 13,
+              fontWeight: 400,
+              color: isDark ? '#F8F4EB' : 'rgba(19,4,38,0.85)',
+              opacity: isDark ? 0.88 : 0.75,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              flexShrink: 0,
+              transition: 'opacity 0.15s ease',
+            }}
           >
             Delete
           </button>

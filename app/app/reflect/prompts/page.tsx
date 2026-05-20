@@ -82,8 +82,10 @@ function ReflectPromptsInner() {
   const [preparingVoice, setPreparingVoice] = useState(false)
   const [hasVoiceNote, setHasVoiceNote] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedEntryIdRef = useRef<string | null>(null)
   const savedNoteIdRef = useRef<string | null>(null)
+  const userIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (initialIndex < 0) {
@@ -94,20 +96,8 @@ function ReflectPromptsInner() {
     setSaveStatus('idle')
   }, [initialIndex, router])
 
-  // Mark prompt as reviewed in localStorage
-  useEffect(() => {
-    if (currentIndex < 0) return
-    const currentPrompt = PROMPTS[currentIndex]
-    if (!currentPrompt) return
-    const stored = window.localStorage.getItem(REVIEWED_PROMPTS_STORAGE_KEY)
-    let reviewedPromptIds: string[] = []
-    try { reviewedPromptIds = stored ? JSON.parse(stored) : [] } catch { reviewedPromptIds = [] }
-    if (!reviewedPromptIds.includes(currentPrompt.id)) {
-      window.localStorage.setItem(REVIEWED_PROMPTS_STORAGE_KEY, JSON.stringify([...reviewedPromptIds, currentPrompt.id]))
-    }
-  }, [currentIndex])
-
   // Load existing entry/note for current prompt — enables upsert on save
+  // Also marks the prompt as reviewed (user-scoped) once user is confirmed
   useEffect(() => {
     if (currentIndex < 0) return
     const currentPrompt = PROMPTS[currentIndex]
@@ -120,6 +110,16 @@ function ReflectPromptsInner() {
       const supabase = createSupabaseBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      userIdRef.current = user.id
+
+      // Mark prompt as reviewed (user-scoped)
+      const reviewedKey = `${REVIEWED_PROMPTS_STORAGE_KEY}:${user.id}`
+      const stored = window.localStorage.getItem(reviewedKey)
+      let reviewedPromptIds: string[] = []
+      try { reviewedPromptIds = stored ? JSON.parse(stored) : [] } catch { reviewedPromptIds = [] }
+      if (!reviewedPromptIds.includes(currentPrompt.id)) {
+        window.localStorage.setItem(reviewedKey, JSON.stringify([...reviewedPromptIds, currentPrompt.id]))
+      }
 
       const { data: existingEntry } = await supabase
         .from('entries')
@@ -204,6 +204,8 @@ function ReflectPromptsInner() {
       }
 
       setSaveStatus('saved')
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+      savedTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000)
     } catch {
       setSaveStatus('error')
     }
@@ -225,6 +227,7 @@ function ReflectPromptsInner() {
     setSaveStatus('pending')
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
+      debounceRef.current = null
       saveText(currentPrompt.id, value, currentPrompt.label)
     }, AUTOSAVE_DELAY_MS)
   }
@@ -233,6 +236,7 @@ function ReflectPromptsInner() {
     const prompt = PROMPTS[index]
     if (!prompt) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     setCurrentIndex(index)
     setSaveStatus('idle')
     setVoiceSaveMode(null)
@@ -308,9 +312,12 @@ function ReflectPromptsInner() {
               onFocus={() => setInputFocused(true)}
               onBlur={() => {
                 setInputFocused(false)
-                if (debounceRef.current) clearTimeout(debounceRef.current)
-                const text = texts[currentPrompt.id] || ''
-                if (text.trim()) saveText(currentPrompt.id, text, currentPrompt.label)
+                if (debounceRef.current) {
+                  clearTimeout(debounceRef.current)
+                  debounceRef.current = null
+                  const text = texts[currentPrompt.id] || ''
+                  if (text.trim()) saveText(currentPrompt.id, text, currentPrompt.label)
+                }
               }}
               placeholder="Capture anything that comes up…"
               style={{
@@ -332,9 +339,23 @@ function ReflectPromptsInner() {
             />
 
             {/* Save status */}
-            <p style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)', margin: '6px 0 0 0', minHeight: '18px' }}>
-              {saveLabel ?? ''}
-            </p>
+            <div style={{ minHeight: '18px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              {saveStatus === 'saved' && (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                    <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.85)" strokeWidth="1.3" />
+                    <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Saved to Your Plan</span>
+                </>
+              )}
+              {(saveStatus === 'pending' || saveStatus === 'saving') && (
+                <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Saving…</span>
+              )}
+              {saveStatus === 'error' && (
+                <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Couldn&apos;t save — check your connection</span>
+              )}
+            </div>
 
             {/* Voice note */}
             <div style={{ marginTop: '10px' }}>
@@ -343,8 +364,11 @@ function ReflectPromptsInner() {
                   saveMode={voiceSaveMode}
                   theme="dark"
                   autoStart
-                  onSaved={() => { setSaveStatus('saved'); setHasVoiceNote(true) }}
-                  onDelete={() => { setVoiceSaveMode(null); setHasVoiceNote(false) }}
+                  onSaved={() => { setHasVoiceNote(true) }}
+                  onDelete={() => {
+                    setVoiceSaveMode(null)
+                    setHasVoiceNote(false)
+                  }}
                 />
               ) : (
                 <button

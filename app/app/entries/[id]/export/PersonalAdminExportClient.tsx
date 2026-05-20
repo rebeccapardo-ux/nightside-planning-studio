@@ -7,7 +7,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'Apfel Grotezk', sans-serif"
 const MUTED = 'rgba(26,26,26,0.38)'
 
-type PAContent = Record<string, string | undefined>
+type PAContent = Record<string, string | boolean | undefined>
 
 const BIO_FIELDS: { key: string; label: string }[] = [
   { key: 'fullLegalName',    label: 'Full legal name' },
@@ -34,15 +34,43 @@ const FAMILY_FIELDS: { key: string; label: string }[] = [
   { key: 'otherFamily',              label: 'Other family, chosen family, or important relationships' },
 ]
 
-const LEGAL_FIELDS: { key: string; label: string }[] = [
-  { key: 'willLocation',                     label: 'My will is located' },
-  { key: 'hasCareDecisionMaker',             label: 'Formally designated decision-maker/s for care' },
-  { key: 'careDecisionMakerDocLocation',     label: 'Care decision-maker document is located' },
-  { key: 'hasEndOfLifeWishesDoc',            label: 'End-of-life care wishes captured in writing' },
-  { key: 'endOfLifeWishesDocLocation',       label: 'End-of-life wishes document is located' },
-  { key: 'hasPropertyDecisionMaker',         label: 'Formally designated decision-maker/s for property/finances' },
-  { key: 'propertyDecisionMakerDocLocation', label: 'Property decision-maker document is located' },
-]
+function buildLegalFields(c: PAContent): { label: string; value: string }[] {
+  const fields: { label: string; value: string }[] = []
+  const str = (v: unknown) => (typeof v === 'string' && v.trim()) ? v.trim() : null
+
+  if (c.hasWill === true)       fields.push({ label: 'I have a legal will', value: 'Yes' })
+  const willLoc = str(c.willLocation)
+  if (willLoc)                  fields.push({ label: 'My will is located', value: willLoc })
+
+  if (c.hasCareDecisionMaker === true)
+    fields.push({ label: 'Formally designated decision-maker/s for care', value: 'Yes' })
+  const cdmDoc = str(c.careDecisionMakerDocLocation)
+  if (cdmDoc)                   fields.push({ label: 'Document location', value: cdmDoc })
+  const cdm1Name = str(c.careDecisionMaker1Name)
+  if (cdm1Name)                 fields.push({ label: 'Care decision-maker name', value: cdm1Name })
+  const cdm1Phone = str(c.careDecisionMaker1Phone)
+  if (cdm1Phone)                fields.push({ label: 'Care decision-maker phone', value: cdm1Phone })
+  const cdm1Email = str(c.careDecisionMaker1Email)
+  if (cdm1Email)                fields.push({ label: 'Care decision-maker email', value: cdm1Email })
+  const cdm2Name = str(c.careDecisionMaker2Name)
+  if (cdm2Name)                 fields.push({ label: 'Second care decision-maker name', value: cdm2Name })
+  const cdm2Phone = str(c.careDecisionMaker2Phone)
+  if (cdm2Phone)                fields.push({ label: 'Second care decision-maker phone', value: cdm2Phone })
+  const cdm2Email = str(c.careDecisionMaker2Email)
+  if (cdm2Email)                fields.push({ label: 'Second care decision-maker email', value: cdm2Email })
+
+  if (c.hasEndOfLifeWishesDoc === true)
+    fields.push({ label: 'End-of-life care wishes captured in writing', value: 'Yes' })
+  const eolDoc = str(c.endOfLifeWishesDocLocation)
+  if (eolDoc)                   fields.push({ label: 'End-of-life wishes document is located', value: eolDoc })
+
+  if (c.hasPropertyDecisionMaker === true)
+    fields.push({ label: 'Formally designated decision-maker/s for property/finances', value: 'Yes' })
+  const pdmDoc = str(c.propertyDecisionMakerDocLocation)
+  if (pdmDoc)                   fields.push({ label: 'Property decision-maker document is located', value: pdmDoc })
+
+  return fields
+}
 
 const DOC_NUMS = [1, 2, 3, 4, 5] as const
 
@@ -143,9 +171,9 @@ function SensitiveInput({
 // ---------------------------------------------------------------------------
 
 export default function PersonalAdminExportClient({
-  id, content, createdDate, displayTitle, filename,
+  id, content, createdDate, displayTitle, filename, userName,
 }: {
-  id: string; content: unknown; createdDate: string | null; displayTitle: string; filename: string
+  id: string; content: unknown; createdDate: string | null; displayTitle: string; filename: string; userName?: string
 }) {
   const [sensitive, setSensitive] = useState({ sin: '', healthCard: '' })
   const [sinMasked, setSinMasked] = useState(false)
@@ -166,14 +194,14 @@ export default function PersonalAdminExportClient({
 
   const c = (content && typeof content === 'object' ? content : {}) as PAContent
 
-  const bioFields   = BIO_FIELDS.filter(f => c[f.key]?.trim())
-  const famFields   = FAMILY_FIELDS.filter(f => c[f.key]?.trim())
-  const legalFields = LEGAL_FIELDS.filter(f => c[f.key]?.trim())
+  const bioFields   = BIO_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
+  const famFields   = FAMILY_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
+  const legalFields = buildLegalFields(c)
   const otherDocs   = DOC_NUMS
     .map(n => ({
-      name:         c[`otherDoc${n}Name`],
-      location:     c[`otherDoc${n}Location`],
-      instructions: c[`otherDoc${n}Instructions`],
+      name:         c[`otherDoc${n}Name`] as string | undefined,
+      location:     c[`otherDoc${n}Location`] as string | undefined,
+      instructions: c[`otherDoc${n}Instructions`] as string | undefined,
     }))
     .filter(d => d.name?.trim() || d.location?.trim() || d.instructions?.trim())
 
@@ -189,13 +217,13 @@ export default function PersonalAdminExportClient({
     if (bioFields.length > 0) {
       sections.push({
         label: 'Biographical Details',
-        fields: bioFields.map(f => ({ label: f.label, value: c[f.key]! })),
+        fields: bioFields.map(f => ({ label: f.label, value: c[f.key] as string })),
       })
     }
     if (famFields.length > 0) {
       sections.push({
         label: 'Family Information',
-        fields: famFields.map(f => ({ label: f.label, value: c[f.key]! })),
+        fields: famFields.map(f => ({ label: f.label, value: c[f.key] as string })),
       })
     }
     const idFields: { label: string; value: string }[] = []
@@ -207,7 +235,7 @@ export default function PersonalAdminExportClient({
     if (legalFields.length > 0) {
       sections.push({
         label: 'Legal & Decision-Making',
-        fields: legalFields.map(f => ({ label: f.label, value: c[f.key]! })),
+        fields: legalFields,
       })
     }
     if (otherDocs.length > 0) {
@@ -285,9 +313,10 @@ export default function PersonalAdminExportClient({
 
         {/* Header */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 22 }} />
+            {userName && <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.5)' }}>{userName}</span>}
           </div>
           <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 16 }} />
         </div>
@@ -310,14 +339,14 @@ export default function PersonalAdminExportClient({
             {bioFields.length > 0 && (
               <div>
                 <ExportSectionHeader>Biographical Details</ExportSectionHeader>
-                {bioFields.map(f => <FieldRow key={f.key} label={f.label} value={c[f.key]} />)}
+                {bioFields.map(f => <FieldRow key={f.key} label={f.label} value={c[f.key] as string | undefined} />)}
               </div>
             )}
 
             {famFields.length > 0 && (
               <div>
                 <ExportSectionHeader>Family Information</ExportSectionHeader>
-                {famFields.map(f => <FieldRow key={f.key} label={f.label} value={c[f.key]} />)}
+                {famFields.map(f => <FieldRow key={f.key} label={f.label} value={c[f.key] as string | undefined} />)}
               </div>
             )}
 
@@ -344,7 +373,7 @@ export default function PersonalAdminExportClient({
             {legalFields.length > 0 && (
               <div>
                 <ExportSectionHeader>Legal &amp; Decision-Making</ExportSectionHeader>
-                {legalFields.map(f => <FieldRow key={f.key} label={f.label} value={c[f.key]} />)}
+                {legalFields.map((f, i) => <FieldRow key={i} label={f.label} value={f.value} />)}
               </div>
             )}
 

@@ -123,6 +123,15 @@ export default async function DeathcareLearnPage() {
           </div>
         </section>
 
+        {/* ── Disclaimer ── */}
+        <div style={{ width: '100%', background: '#F8F4EB', paddingTop: '32px', paddingBottom: '0' }}>
+          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
+              The information here is for understanding. For medical, legal, or end-of-life care decisions, consult a qualified professional in your province.
+            </p>
+          </div>
+        </div>
+
         {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
           <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>

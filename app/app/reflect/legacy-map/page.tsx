@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import VoiceNoteButton from "@/app/components/VoiceNoteButton";
+import type { Note } from "@/lib/notes";
 import Breadcrumbs from "@/app/components/navigation/Breadcrumbs";
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
@@ -141,11 +142,10 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 const apfel = "'Apfel Grotezk', sans-serif";
 
 const TIPS = [
-  'Choose moments that feel meaningful to you, even if they would seem small to someone else',
-  'You might include challenges, relationships, places, achievements, losses, changes, or turning points',
-  'Look for patterns: what keeps showing up across different parts of your life?',
-  'You can use the map to think about stories, values, lessons, or traditions you may want to pass on',
-  'You can revisit this anytime — your map does not need to be finished in one sitting',
+  'Choose moments that feel meaningful to you, even if they would seem small to someone else.',
+  'You might include challenges, relationships, places, achievements, losses, changes, or turning points.',
+  'As you map, look for patterns: what keeps showing up across different parts of your life?',
+  'You can revisit this anytime. Your map doesn\'t need to be finished in one sitting.',
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -181,6 +181,7 @@ export default function LegacyMapPage() {
   const [supabaseEntryId, setSupabaseEntryId] = useState<string | null>(null);
   const supabaseEntryIdRef = useRef<string | null>(null);
   supabaseEntryIdRef.current = supabaseEntryId;
+  const userIdRef = useRef<string | null>(null);
 
   // Reflection
   const [reflectionMounted, setReflectionMounted] = useState(false);
@@ -189,7 +190,6 @@ export default function LegacyMapPage() {
   const [reflectionSavedShowing, setReflectionSavedShowing] = useState(false);
   const [reflectionSavedFading, setReflectionSavedFading] = useState(false);
   const reflectionFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [voiceActive, setVoiceActive] = useState(false);
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const realMoments = useMemo(() => state.moments, [state.moments]);
@@ -199,8 +199,15 @@ export default function LegacyMapPage() {
 
   useEffect(() => {
     async function init() {
+      // Fetch user first so all storage operations are user-scoped
+      const supabase = createSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) userIdRef.current = user.id;
+      const storageKey = user ? `${STORAGE_KEY}:${user.id}` : STORAGE_KEY;
+      const entryIdKey = user ? `${ENTRY_ID_KEY}:${user.id}` : ENTRY_ID_KEY;
+
       try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const raw = window.localStorage.getItem(storageKey);
         if (raw) {
           const parsed = JSON.parse(raw) as Partial<LegacyMapState>;
           const nextState: LegacyMapState = {
@@ -227,38 +234,42 @@ export default function LegacyMapPage() {
         // silently ignore
       }
 
-      try {
-        const stored = window.localStorage.getItem(ENTRY_ID_KEY);
-        const supabase = createSupabaseBrowserClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (stored) {
-          setSupabaseEntryId(stored);
-          supabaseEntryIdRef.current = stored;
-          if (user) {
+      if (user) {
+        try {
+          const stored = window.localStorage.getItem(entryIdKey);
+          if (stored) {
+            setSupabaseEntryId(stored);
+            supabaseEntryIdRef.current = stored;
             const { data } = await supabase
               .from("entries")
               .select("created_at")
               .eq("id", stored)
               .single();
-            if (data?.created_at) setLastSavedAt(new Date(data.created_at));
+            const storedSaveTime = window.localStorage.getItem(`nightside.lastSaved.${user.id}.${stored}`);
+            if (storedSaveTime) setLastSavedAt(new Date(storedSaveTime));
+            else if (data?.created_at) setLastSavedAt(new Date(data.created_at));
+            associateEntryWithLegacyDomain(stored);
+          } else {
+            const { data } = await supabase
+              .from("entries")
+              .select("id, created_at")
+              .eq("user_id", user.id)
+              .eq("activity", "legacy_map")
+              .order("created_at", { ascending: false })
+              .limit(1);
+            if (data?.[0]?.id) {
+              window.localStorage.setItem(entryIdKey, data[0].id);
+              setSupabaseEntryId(data[0].id);
+              supabaseEntryIdRef.current = data[0].id;
+              const storedSaveTime2 = window.localStorage.getItem(`nightside.lastSaved.${user.id}.${data[0].id}`);
+              if (storedSaveTime2) setLastSavedAt(new Date(storedSaveTime2));
+              else if (data[0].created_at) setLastSavedAt(new Date(data[0].created_at));
+              associateEntryWithLegacyDomain(data[0].id);
+            }
           }
-        } else if (user) {
-          const { data } = await supabase
-            .from("entries")
-            .select("id, created_at")
-            .eq("user_id", user.id)
-            .eq("activity", "legacy_map")
-            .order("created_at", { ascending: false })
-            .limit(1);
-          if (data?.[0]?.id) {
-            window.localStorage.setItem(ENTRY_ID_KEY, data[0].id);
-            setSupabaseEntryId(data[0].id);
-            supabaseEntryIdRef.current = data[0].id;
-            if (data[0].created_at) setLastSavedAt(new Date(data[0].created_at));
-          }
+        } catch {
+          // silently ignore
         }
-      } catch {
-        // silently ignore
       }
 
       setIsLoaded(true);
@@ -272,10 +283,13 @@ export default function LegacyMapPage() {
     if (dirtyCount === 0 || !isLoaded) return;
     const timer = setTimeout(async () => {
       const toSave = { ...stateRef.current, updatedAt: new Date().toISOString() };
+      const uid = userIdRef.current;
       try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+        const sk = uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
+        window.localStorage.setItem(sk, JSON.stringify(toSave));
         setState(toSave);
         stateRef.current = toSave;
+        if (supabaseEntryIdRef.current && uid) window.localStorage.setItem(`nightside.lastSaved.${uid}.${supabaseEntryIdRef.current}`, new Date().toISOString());
         setLastSavedAt(new Date());
       } catch {
         // ignore storage errors
@@ -302,11 +316,12 @@ export default function LegacyMapPage() {
               .select("id")
               .single();
             if (created?.id) {
-              window.localStorage.setItem(ENTRY_ID_KEY, created.id);
+              window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
               setSupabaseEntryId(created.id);
               supabaseEntryIdRef.current = created.id;
             }
           }
+          if (supabaseEntryIdRef.current) associateEntryWithLegacyDomain(supabaseEntryIdRef.current);
         }
       } catch {
         // silently ignore
@@ -352,6 +367,45 @@ export default function LegacyMapPage() {
     setDirtyCount((c) => c + 1);
   }
 
+  // ── Domain association helpers ────────────────────────────────────────────
+
+  async function getLegacyDomainId(): Promise<string | null> {
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { data } = await supabase
+        .from('containers').select('id').eq('type', 'domain').ilike('title', '%legacy%').limit(1)
+      return data?.[0]?.id ?? null
+    } catch { return null }
+  }
+
+  async function associateEntryWithLegacyDomain(entryId: string) {
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const containerId = await getLegacyDomainId()
+      if (!containerId) return
+      const { error } = await supabase
+        .from('container_entries')
+        .insert({ user_id: user.id, container_id: containerId, entry_id: entryId })
+      if (error && error.code !== '23505') console.error('associateEntryWithLegacyDomain:', error.message)
+    } catch (e) { console.error('associateEntryWithLegacyDomain error:', e) }
+  }
+
+  async function associateNoteWithLegacyDomain(noteId: string) {
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const containerId = await getLegacyDomainId()
+      if (!containerId) return
+      const { error } = await supabase
+        .from('container_notes')
+        .insert({ user_id: user.id, container_id: containerId, note_id: noteId })
+      if (error && error.code !== '23505') console.error('associateNoteWithLegacyDomain:', error.message)
+    } catch (e) { console.error('associateNoteWithLegacyDomain error:', e) }
+  }
+
   // ── Supabase persistence helpers ────────────────────────────────────────────
 
   async function persistStateToSupabase(stateToSave: LegacyMapState) {
@@ -378,10 +432,14 @@ export default function LegacyMapPage() {
           .insert({ user_id: user.id, title: "Legacy Map", section: "explore", activity: "legacy_map", content })
           .select("id").single();
         if (created?.id) {
-          window.localStorage.setItem(ENTRY_ID_KEY, created.id);
+          window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
           setSupabaseEntryId(created.id);
           supabaseEntryIdRef.current = created.id;
         }
+      }
+      if (supabaseEntryIdRef.current) {
+        associateEntryWithLegacyDomain(supabaseEntryIdRef.current)
+        window.localStorage.setItem(`nightside.lastSaved.${user.id}.${supabaseEntryIdRef.current}`, new Date().toISOString());
       }
       setLastSavedAt(new Date());
     } catch {
@@ -394,7 +452,9 @@ export default function LegacyMapPage() {
     const toSave = { ...current, updatedAt: new Date().toISOString() };
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      const uid = userIdRef.current;
+      const sk = uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
+      window.localStorage.setItem(sk, JSON.stringify(toSave));
       setState(toSave);
       stateRef.current = toSave;
     } catch { /* ignore */ }
@@ -422,13 +482,17 @@ export default function LegacyMapPage() {
           .insert({ user_id: user.id, title: "Legacy Map", section: "explore", activity: "legacy_map", content })
           .select("id").single();
         if (created?.id) {
-          window.localStorage.setItem(ENTRY_ID_KEY, created.id);
+          window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
           setSupabaseEntryId(created.id);
           supabaseEntryIdRef.current = created.id;
         }
       }
 
       setReflectionSaveStatus('saved');
+      if (supabaseEntryIdRef.current) {
+        associateEntryWithLegacyDomain(supabaseEntryIdRef.current)
+        window.localStorage.setItem(`nightside.lastSaved.${user.id}.${supabaseEntryIdRef.current}`, new Date().toISOString());
+      }
       setLastSavedAt(new Date());
 
       // Show fade-out saved indicator
@@ -453,7 +517,7 @@ export default function LegacyMapPage() {
     const next = { ...stateRef.current, [field]: value };
     setState(next);
     stateRef.current = next;
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+    try { const _uid = userIdRef.current; window.localStorage.setItem(_uid ? `${STORAGE_KEY}:${_uid}` : STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
 
     setReflectionSaveStatus('saving');
     if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current);
@@ -531,7 +595,7 @@ export default function LegacyMapPage() {
 
     setState(nextState);
     stateRef.current = nextState;
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState)); } catch { /* ignore */ }
+    try { const _uid = userIdRef.current; window.localStorage.setItem(_uid ? `${STORAGE_KEY}:${_uid}` : STORAGE_KEY, JSON.stringify(nextState)); } catch { /* ignore */ }
 
     setSelectedId(nextSelectedId);
     persistStateToSupabase(nextState);
@@ -547,7 +611,7 @@ export default function LegacyMapPage() {
     };
     setState(nextState);
     stateRef.current = nextState;
-    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState)); } catch { /* ignore */ }
+    try { const _uid = userIdRef.current; window.localStorage.setItem(_uid ? `${STORAGE_KEY}:${_uid}` : STORAGE_KEY, JSON.stringify(nextState)); } catch { /* ignore */ }
     setSelectedId((current) => (current === draftMoment.id ? null : current));
     persistStateToSupabase(nextState);
     closeModal();
@@ -620,8 +684,12 @@ export default function LegacyMapPage() {
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
             Legacy Map
           </h1>
-          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
-            Map meaningful moments from your life to notice patterns, turning points, and values you may want to carry forward.
+          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 14, lineHeight: 1.5 }}>
+            Life review is the practice of looking back at your life as a whole and noticing what has shaped you. People who engage in structured life review report reduced anxiety and depression, a strengthened sense of identity, and increased life satisfaction.{' '}
+            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2664509/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'underline' }}>(source)</a>
+          </p>
+          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 0, marginBottom: 0, lineHeight: 1.5 }}>
+            The map works alone or as a prompt for conversation. This activity tends to open exchanges that wouldn&apos;t happen otherwise, and helps you identify the lessons and values you most want to pass on.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
             {['Add moments', 'Drag to reposition on timeline', 'Edits save automatically'].map((text) => (
@@ -645,7 +713,7 @@ export default function LegacyMapPage() {
         </div>
 
         {/* Right: export + saved status (not sticky) */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -32, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -44, flexShrink: 0 }}>
           {supabaseEntryId && (
             <button
               type="button"
@@ -964,14 +1032,19 @@ export default function LegacyMapPage() {
                 }}
               />
 
-              {/* Reflection saved indicator — right-aligned, fades out */}
-              {reflectionSavedShowing && (
+              {/* Reflection save status — right-aligned */}
+              {reflectionSaveStatus === 'saving' && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 6 }}>
+                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: '#333333' }}>Saving…</span>
+                </div>
+              )}
+              {reflectionSavedShowing && reflectionSaveStatus !== 'saving' && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 6, opacity: reflectionSavedFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
                     <circle cx="7" cy="7" r="6" stroke="#333333" strokeWidth="1.3" />
                     <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="#333333" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: '#333333' }}>Saved</span>
+                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: '#333333' }}>Saved to Your Plan</span>
                 </div>
               )}
 
@@ -983,42 +1056,11 @@ export default function LegacyMapPage() {
               )}
 
               <div style={{ marginTop: 8 }}>
-                {voiceActive ? (
-                  <VoiceNoteButton
-                    saveMode={{ kind: 'freeform' }}
-                    theme="light"
-                    autoStart
-                    onSaved={() => {}}
-                    onDelete={() => setVoiceActive(false)}
-                    buttonLabel="Record a voice note"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setVoiceActive(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      width: '100%',
-                      padding: '11px 16px',
-                      borderRadius: 10,
-                      cursor: 'pointer',
-                      background: 'rgba(44,55,119,0.06)',
-                      border: '1.5px solid rgba(44,55,119,0.2)',
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                      <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
-                      <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                      <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                      <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
-                    <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
-                  </button>
-                )}
+                <VoiceNoteButton
+                  saveMode={{ kind: 'freeform' }}
+                  theme="light"
+                  onSaved={(note: Note) => { associateNoteWithLegacyDomain(note.id) }}
+                />
               </div>
             </div>
           </section>

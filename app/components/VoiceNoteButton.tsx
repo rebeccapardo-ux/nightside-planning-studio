@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { createVoiceNote, createVoicePromptNote, updateNoteAudioUrl, deleteNote, resetVoiceNote } from '@/lib/notes'
 import { uploadAudioBlob } from '@/lib/voice-notes'
@@ -53,6 +53,12 @@ export default function VoiceNoteButton({
   const prevNoteRef = useRef<Note | null>(null)
 
   const isDark = theme === 'dark'
+
+  useEffect(() => {
+    if (phase !== 'saved') return
+    const timer = setTimeout(() => setPhase('idle'), 3000)
+    return () => clearTimeout(timer)
+  }, [phase])
 
   async function handleRecorderSave(blob: Blob, durationSeconds: number) {
     setPhase('uploading')
@@ -144,19 +150,17 @@ export default function VoiceNoteButton({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
           gap: 10,
-          padding: '11px 16px',
+          padding: '8px 14px',
           borderRadius: 10,
           cursor: 'pointer',
           background: isHovered
-            ? (isDark ? 'rgba(255,255,255,0.16)' : 'rgba(44,55,119,0.1)')
-            : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(44,55,119,0.06)'),
+            ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,55,119,0.06)')
+            : 'transparent',
           border: isDark ? '1.5px solid rgba(255,255,255,0.22)' : '1.5px solid rgba(44,55,119,0.2)',
           transition: 'background 0.15s ease',
-          width: '100%',
-          boxSizing: 'border-box' as const,
           fontFamily: hv,
         }}
       >
@@ -191,7 +195,6 @@ export default function VoiceNoteButton({
         onSave={handleRecorderSave}
         onCancel={() => setPhase('idle')}
         saveStatus={deriveSaveStatus()}
-        onReRecord={() => { setSavedNote(null); setPhase('recording') }}
         onDelete={phase === 'saved' ? handleDelete : undefined}
         theme={theme}
       />

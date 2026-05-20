@@ -25,6 +25,7 @@ type PDFBase = {
   displayTitle: string
   createdDate: string | null
   filename: string
+  userName?: string
 }
 
 export type PDFData = PDFBase &
@@ -70,6 +71,8 @@ export type PDFData = PDFBase &
         valuesToPassOn?: string
         legacyProjects?: string
         intro?: string
+        userName?: string
+        monthYear?: string
       }
     | {
         kind: 'devices_accounts'

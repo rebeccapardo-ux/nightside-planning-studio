@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 const PROMPTS = [
   { id: 'prompt_1',  label: 'What matters most to you right now?' },
@@ -60,12 +61,18 @@ export default function ReflectPage() {
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(REVIEWED_PROMPTS_STORAGE_KEY)
-    if (!stored) return
-    try {
-      const parsed: string[] = JSON.parse(stored)
-      setReviewedIds(new Set(parsed))
-    } catch { /* ignore */ }
+    async function load() {
+      const supabase = createSupabaseBrowserClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const stored = window.localStorage.getItem(`${REVIEWED_PROMPTS_STORAGE_KEY}:${user.id}`)
+      if (!stored) return
+      try {
+        const parsed: string[] = JSON.parse(stored)
+        setReviewedIds(new Set(parsed))
+      } catch { /* ignore */ }
+    }
+    load()
   }, [])
 
   useEffect(() => {
@@ -149,7 +156,7 @@ export default function ReflectPage() {
           Together, they help surface the connections between what matters to you in life and what may matter most in times of illness or at the end of life.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-          {['Explore prompts in any order', 'Capture thoughts, notes, or voice reflections', 'Return to prompts anytime'].map((text) => (
+          {['Explore prompts in any order', 'Spark a conversation', 'Capture thoughts, notes, or voice reflections'].map((text) => (
             <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: fontHelvetica, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
               {text}
             </span>
@@ -169,28 +176,29 @@ export default function ReflectPage() {
       {/* Tips modal */}
       {tipsOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+          <div className="w-full max-w-xl rounded-2xl p-6 shadow-2xl" style={{ background: '#F8F4EB' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using these prompts</h2>
+              <h2 className="text-xl font-semibold" style={{ color: '#130426' }}>Tips for using these prompts</h2>
               <button
                 onClick={() => setTipsOpen(false)}
-                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+                className="transition-opacity hover:opacity-60 text-xl leading-none"
+                style={{ color: '#130426' }}
               >
                 ×
               </button>
             </div>
             <div style={{ fontFamily: fontHelvetica }}>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 Some prompts may feel immediately relevant, while others may not resonate right now. Follow what feels interesting, difficult, surprising, or important to you.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 You may notice connections to personal experiences, relationships, caregiving, loss, or conversations you've had over time.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
-                You can respond briefly, write at length, record a voice note, discuss prompts with someone else, or revisit them as your thoughts and circumstances change.
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
+                You can respond briefly, write at length, record a voice note, or revisit them as your thoughts and circumstances change.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
-                These prompts can also be meaningful to explore with others. Conversations may deepen understanding, strengthen connection, or surface things that surprise you about each other.
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
+                Exploring prompts with others can deepen understanding, strengthen connection, or surface things that surprise you about each other.
               </p>
             </div>
           </div>

@@ -9,6 +9,11 @@ import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 
 type Bucket = 'essential' | 'important' | 'less_central'
 
+const CARD_RENAMES: Record<string, string> = {
+  'Feeling unprepared for changes to body, mind, or spirit that come with dying': 'Feeling unprepared for changes that come with dying',
+}
+const normalizeCard = (s: string) => CARD_RENAMES[s] ?? s
+
 const FEARS = [
   'Being in unmanageable pain',
   'Not being able to make my own decisions',
@@ -43,7 +48,7 @@ const FEARS = [
   "Feeling pressured into making choices I don't want",
   'Feeling emotionally abandoned',
   'Not being able to express emotions',
-  'Feeling unprepared for changes to body, mind, or spirit that come with dying',
+  'Feeling unprepared for changes that come with dying',
   'Having a diminished sense of humor or joy',
   'Losing mobility',
   'Having a slow death',
@@ -58,13 +63,7 @@ const EMPTY: Assignments = {
 }
 
 const ESSENTIAL_SLOTS = 5
-const MIN_OTHER_SLOTS = 8
-
-const CARD_W = 'w-[112px]'
-const CARD_H = 'h-[152px]'
-const CARD_SIZE = `${CARD_W} ${CARD_H}`
-
-const HERO_CARD_SIZE = 'w-[124px] h-[168px]'
+const MIN_COL_SLOTS = 6
 
 type MoveMode =
   | { type: 'none' }
@@ -85,6 +84,22 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
+function getCardFontStyle(value: string): { fontSize: string | number } {
+  const words = value.split(/[\s/]+/)
+  const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '')
+  const len = longestWord.length
+  if (len <= 10) return { fontSize: 16 }
+  const factor = +(92 / (len * 0.5)).toFixed(1)
+  return { fontSize: `clamp(10px, ${factor}cqw, 16px)` }
+}
+
+function getFixedCardFontSize(value: string, textAreaPx: number): number {
+  const words = value.split(/[\s/]+/)
+  const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '')
+  const len = longestWord.length
+  return Math.max(10, Math.min(16, Math.floor((textAreaPx * 0.92) / (len * 0.5))))
+}
+
 export default function FearsRankingPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -103,12 +118,15 @@ export default function FearsRankingPage() {
   const [statusNow, setStatusNow] = useState(Date.now())
   const [reflectionSaveStatus, setReflectionSaveStatus] = useState<SaveStatus>('idle')
   const [resetConfirm, setResetConfirm] = useState(false)
-  const [voiceActive, setVoiceActive] = useState(false)
   const [tipsOpen, setTipsOpen] = useState(false)
+  const [cardRevealed, setCardRevealed] = useState(false)
+  const [deckModuleVisible, setDeckModuleVisible] = useState(true)
 
   const cardSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reflectionSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedEntryIdRef = useRef<string | null>(null)
+  const deckModuleRef = useRef<HTMLDivElement>(null)
 
   const current = FEARS[index] ?? null
   const sortedCount =
@@ -119,13 +137,10 @@ export default function FearsRankingPage() {
   const remainingCount = FEARS.length - sortedCount
   const isDone = index >= FEARS.length
 
-  const importantSlots = Math.max(assignments.important.length + 4, MIN_OTHER_SLOTS)
-  const lessCentralSlots = Math.max(
-    assignments.less_central.length + 4,
-    MIN_OTHER_SLOTS
-  )
+  const importantSlots = Math.max(assignments.important.length + 2, MIN_COL_SLOTS)
+  const lessCentralSlots = Math.max(assignments.less_central.length + 2, MIN_COL_SLOTS)
 
-  const currentCardIsActive = moveMode.type === 'none' && !!current
+  const currentCardIsActive = moveMode.type === 'none' && cardRevealed && !!current
 
   useEffect(() => {
     async function loadSavedEntry() {
@@ -156,14 +171,16 @@ export default function FearsRankingPage() {
 
       if (data) {
         const content = (data.content ?? {}) as SavedRankingContent
-        const essential = Array.isArray(content.essential) ? content.essential : []
-        const important = Array.isArray(content.important) ? content.important : []
-        const less_central = Array.isArray(content.less_central) ? content.less_central : []
+        const essential = (Array.isArray(content.essential) ? content.essential : []).map(normalizeCard)
+        const important = (Array.isArray(content.important) ? content.important : []).map(normalizeCard)
+        const less_central = (Array.isArray(content.less_central) ? content.less_central : []).map(normalizeCard)
         setAssignments({ essential, important, less_central })
         setReflection(typeof content.reflection === 'string' ? content.reflection : '')
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
-        if (data.created_at) { setLastSavedAt(new Date(data.created_at)); setSaveStatus('saved') }
+        const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${data.id}`)
+        if (storedSave) { setLastSavedAt(new Date(storedSave)); setSaveStatus('saved') }
+        else if (data.created_at) { setLastSavedAt(new Date(data.created_at)); setSaveStatus('saved') }
         const restoredCount = typeof content.sorted_count === 'number'
           ? content.sorted_count
           : essential.length + important.length + less_central.length
@@ -187,6 +204,17 @@ export default function FearsRankingPage() {
     const interval = setInterval(() => setStatusNow(Date.now()), 60000)
     return () => clearInterval(interval)
   }, [lastSavedAt])
+
+  useEffect(() => {
+    const el = deckModuleRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setDeckModuleVisible(entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   async function autoSaveCardState() {
     const supabase = createSupabaseBrowserClient()
@@ -224,6 +252,7 @@ export default function FearsRankingPage() {
       setIsDirty(false)
       setSaveStatus('saved')
       const now = new Date()
+      if (savedEntryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${savedEntryIdRef.current}`, now.toISOString())
       setLastSavedAt(now)
       setStatusNow(now.getTime())
     } catch {
@@ -236,7 +265,7 @@ export default function FearsRankingPage() {
     setReflectionSaveStatus('idle')
     if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current)
     if (value.trim()) {
-      reflectionDebounceRef.current = setTimeout(() => autoSaveReflection(value), 1500)
+      reflectionDebounceRef.current = setTimeout(() => { reflectionDebounceRef.current = null; autoSaveReflection(value) }, 1500)
     }
   }
 
@@ -290,6 +319,8 @@ export default function FearsRankingPage() {
         savedEntryIdRef.current = data.id
       }
       setReflectionSaveStatus('saved')
+      if (reflectionSavedTimerRef.current) clearTimeout(reflectionSavedTimerRef.current)
+      reflectionSavedTimerRef.current = setTimeout(() => setReflectionSaveStatus('idle'), 3000)
     } catch {
       setReflectionSaveStatus('error')
     }
@@ -300,6 +331,7 @@ export default function FearsRankingPage() {
     const entryToDelete = savedEntryIdRef.current
     setAssignments(EMPTY)
     setIndex(0)
+    setCardRevealed(false)
     setReflection('')
     setIsDirty(false)
     setSavedEntryId(null)
@@ -312,21 +344,15 @@ export default function FearsRankingPage() {
     }
   }
 
+  // liveInstruction kept for error/move state text only
   const liveInstruction = useMemo(() => {
-    if (!current && moveMode.type === 'none') {
-      return 'All fears have been placed.'
-    }
-    if (moveMode.type === 'moving_existing') {
-      return 'Place this card in a new slot.'
-    }
+    if (moveMode.type === 'moving_existing') return 'Place this card in a new slot.'
     if (moveMode.type === 'making_room_for_incoming') {
-      if (!moveMode.selected) {
-        return 'Choose a card in Most pressing to move out.'
-      }
+      if (!moveMode.selected) return 'Choose a card in Most pressing to move out.'
       return 'Choose a new slot for this card.'
     }
-    return 'Select a slot below to place this card.'
-  }, [moveMode, current])
+    return null
+  }, [moveMode])
 
   function advance() {
     setIndex((prev) => prev + 1)
@@ -349,6 +375,8 @@ export default function FearsRankingPage() {
 
   function handleEmptySlotClick(bucket: Bucket) {
     setErrorMessage(null)
+
+    if (moveMode.type === 'none' && !cardRevealed) return
 
     if (moveMode.type === 'moving_existing') {
       if (bucket === moveMode.from) {
@@ -376,16 +404,18 @@ export default function FearsRankingPage() {
         setErrorMessage('No incoming card to place.')
         return
       }
+      const evicted = moveMode.selected!
       setAssignments((prev) => ({
-        essential: [...prev.essential.filter((v) => v !== moveMode.selected), current],
+        essential: [...prev.essential.filter((v) => v !== evicted), current],
         important: bucket === 'important'
-          ? [...prev.important, moveMode.selected]
-          : prev.important.filter((v) => v !== moveMode.selected),
+          ? [...prev.important, evicted]
+          : prev.important.filter((v) => v !== evicted),
         less_central: bucket === 'less_central'
-          ? [...prev.less_central, moveMode.selected]
-          : prev.less_central.filter((v) => v !== moveMode.selected),
+          ? [...prev.less_central, evicted]
+          : prev.less_central.filter((v) => v !== evicted),
       }))
       setMoveMode({ type: 'none' })
+      setCardRevealed(false)
       advance()
       return
     }
@@ -396,6 +426,7 @@ export default function FearsRankingPage() {
       return
     }
     setAssignments((prev) => ({ ...prev, [bucket]: [...prev[bucket], current] }))
+    setCardRevealed(false)
     advance()
   }
 
@@ -441,7 +472,7 @@ export default function FearsRankingPage() {
     : saveStatus === 'saved' && lastSavedAt
       ? (() => {
           const diff = Math.floor((statusNow - lastSavedAt.getTime()) / 1000)
-          if (diff < 60) return 'Saved'
+          if (diff < 60) return 'Saved just now'
           const mins = Math.floor(diff / 60)
           if (mins < 60) return `Saved ${mins}m ago`
           const hours = Math.floor(mins / 60)
@@ -462,14 +493,14 @@ export default function FearsRankingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2f3f8f] text-white">
+    <div className="min-h-screen" style={{ background: '#2C3777' }}>
 
-      {/* Midnight banner — full width */}
+      {/* Dark editorial banner */}
       <div style={{ background: '#130426', padding: '64px 148px 60px 96px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
-        {/* Left: breadcrumbs + title + description + pills */}
+        {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 18 }}>
             <Breadcrumbs
               theme="navy"
               items={[
@@ -479,35 +510,26 @@ export default function FearsRankingPage() {
               ]}
             />
           </div>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
+          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 16 }}>
             Fears Ranking
           </h1>
-          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
-            Many fears can feel equally present in the abstract. Forced ranking helps clarify which concerns feel most pressing or emotionally charged.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>
+            Many fears can feel equally present in the abstract. Forced ranking helps clarify which concerns feel most pressing or emotionally charged.<br />
             These reactions can help clarify what matters most to you, guide planning decisions, and make it easier to communicate the kinds of care and support you would want from others.
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-            {['Sort cards into 3 groups', 'Place up to 5 cards in Most pressing', 'To move a card: select it, then select the new slot'].map((text) => (
-              <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
-                {text}
-              </span>
-            ))}
-            <button
-              type="button"
-              onClick={() => setTipsOpen(true)}
-              style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
-              onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
-              onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
-            >
-              More tips ›
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setTipsOpen(true)}
+            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.82)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.82)' }}
+          >
+            Tips for using this activity ›
+          </button>
         </div>
 
-        {/* Right: export + saved status (not sticky) */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -32, flexShrink: 0 }}>
+        {/* Right: export + saved status */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -44, flexShrink: 0 }}>
           {savedEntryId && (
             <button
               type="button"
@@ -516,7 +538,7 @@ export default function FearsRankingPage() {
               onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
               onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
             >
-              <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
+              <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
                 <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
@@ -525,7 +547,7 @@ export default function FearsRankingPage() {
           )}
           {saveStatusText && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
                 <circle cx="7" cy="7" r="6" stroke="#ffffff" strokeWidth="1.3" />
                 <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -536,24 +558,299 @@ export default function FearsRankingPage() {
 
       </div>
 
+      {/* Blue activity workspace */}
+      <div style={{ background: '#2C3777' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', paddingTop: 28, paddingLeft: 32, paddingRight: 32, paddingBottom: 48 }}>
+
+          {/* Deck / card module */}
+          <div ref={deckModuleRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 28 }}>
+
+              {/* Deck + current card */}
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexShrink: 0 }}>
+
+                {/* Deck + count */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                  <div style={{ position: 'relative', width: 120, height: 168, flexShrink: 0 }}>
+                    {isDone ? (
+                      <div style={{ position: 'absolute', inset: 0, borderRadius: 20, border: '2px solid rgba(23,3,39,0.2)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#170327' }}>Done</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ position: 'absolute', left: 7, top: 6, width: 120, height: 168, borderRadius: 20, background: '#ddd8cf', border: '1.5px solid rgba(19,4,38,0.45)' }} />
+                        <div style={{ position: 'absolute', left: 4, top: 3, width: 120, height: 168, borderRadius: 20, background: '#eae5dc', border: '1.5px solid rgba(19,4,38,0.45)' }} />
+                        <div
+                          style={{
+                            position: 'absolute', inset: 0, borderRadius: 20,
+                            border: '1.5px solid rgba(248,244,235,0.20)',
+                            background: 'rgba(19,4,38,0.96)',
+                          }}
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Count — below deck */}
+                  <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)', margin: 0, textAlign: 'center' }}>
+                    {Math.max(remainingCount, 0)} cards left
+                  </p>
+                </div>
+
+                {/* Current card slot */}
+                <div style={{ width: 120, height: 168, position: 'relative', flexShrink: 0 }}>
+                    {cardRevealed && current ? (
+                      <button
+                        type="button"
+                        onClick={handleCurrentCardClick}
+                        style={{
+                          position: 'absolute', inset: 0, borderRadius: 20,
+                          background: '#F8F4EB',
+                          color: '#130426',
+                          border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.10)',
+                          boxShadow: currentCardIsActive
+                            ? '0 0 18px rgba(219,88,53,0.22), 0 2px 6px rgba(0,0,0,0.05)'
+                            : '0 2px 6px rgba(0,0,0,0.05)',
+                          transform: currentCardIsActive ? 'translateY(-2px)' : 'none',
+                          cursor: moveMode.type !== 'none' ? 'pointer' : 'default',
+                          opacity: moveMode.type !== 'none' ? 0.5 : 1,
+                          transition: 'opacity 200ms, box-shadow 200ms, border-color 200ms, transform 200ms',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14,
+                        }}
+                      >
+                        <span style={{
+                          maxWidth: 92, textAlign: 'center', lineHeight: 1.25,
+                          fontFamily: hv, fontWeight: 500, fontSize: getFixedCardFontSize(current, 92), color: '#130426',
+                        }}>
+                          {current.replace(/\//g, '/​')}
+                        </span>
+                      </button>
+                    ) : !isDone ? (
+                      <button
+                        type="button"
+                        onClick={() => setCardRevealed(true)}
+                        style={{
+                          position: 'absolute', inset: 0, borderRadius: 20,
+                          border: '2px solid #DB5835',
+                          background: 'rgba(255,255,255,0.08)',
+                          boxShadow: '0 0 18px rgba(219,88,53,0.28)',
+                          transform: 'translateY(-2px)',
+                          cursor: 'pointer',
+                          transition: 'opacity 200ms, box-shadow 200ms, transform 200ms',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: 'rgba(248,244,235,0.85)' }}>Draw</span>
+                      </button>
+                    ) : (
+                      <div style={{
+                        position: 'absolute', inset: 0, borderRadius: 20,
+                        border: '1.5px dashed rgba(255,255,255,0.45)',
+                        background: 'rgba(255,255,255,0.08)',
+                      }} />
+                    )}
+                </div>
+
+              </div>
+
+              {/* Text + controls */}
+              <div style={{ paddingTop: 14, minWidth: 220 }}>
+
+                {/* Instructions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                  {[
+                    'Draw a card',
+                    'Place it in the column that feels right',
+                    'Click any placed card to move it',
+                  ].map((line) => (
+                    <div key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <span style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.45)', lineHeight: 1.45, flexShrink: 0 }}>•</span>
+                      <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.45, color: 'rgba(255,255,255,0.82)' }}>{line}</span>
+                    </div>
+                  ))}
+                  {isDone && (
+                    <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>
+                      All fears have been placed.
+                    </p>
+                  )}
+                </div>
+
+                {/* Move-mode instruction */}
+                {liveInstruction && (
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.75)', margin: '-8px 0 16px' }}>
+                    {liveInstruction}
+                  </p>
+                )}
+
+                {/* Error */}
+                {errorMessage && (
+                  <p style={{ fontFamily: hv, fontSize: 13, color: '#ffd2a6', margin: '-12px 0 16px' }}>
+                    {errorMessage}
+                  </p>
+                )}
+
+                {/* Reset */}
+                {resetConfirm ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+                      This will clear your saved ranking.
+                    </p>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={handleReset}
+                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        Confirm reset
+                      </button>
+                      <button
+                        onClick={() => setResetConfirm(false)}
+                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={sortedCount === 0}
+                    onClick={() => setResetConfirm(true)}
+                    style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 13, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, transition: 'opacity 200ms' }}
+                    onMouseEnter={(e) => { if (sortedCount > 0) e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    Reset all cards
+                  </button>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+          {/* 3-column sorting grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 20, alignItems: 'start' }}>
+            <ColumnSection
+              title="Most pressing"
+              bucket="essential"
+              values={assignments.essential}
+              slotCount={ESSENTIAL_SLOTS}
+              maxCards={ESSENTIAL_SLOTS}
+              moveMode={moveMode}
+              cardRevealed={cardRevealed}
+              onEmptySlotClick={handleEmptySlotClick}
+              onFilledCardClick={handleFilledCardClick}
+              sectionBg="#EE9732"
+              emptySlotBg="rgba(255,255,255,0.32)"
+              emptySlotBorder="1.5px dashed rgba(255,255,255,0.65)"
+              centeredPartialRows
+            />
+            <ColumnSection
+              title="Somewhat pressing"
+              bucket="important"
+              values={assignments.important}
+              slotCount={importantSlots}
+              moveMode={moveMode}
+              cardRevealed={cardRevealed}
+              onEmptySlotClick={handleEmptySlotClick}
+              onFilledCardClick={handleFilledCardClick}
+              sectionBg="#BBABF4"
+              emptySlotBg="rgba(255,255,255,0.20)"
+              emptySlotBorder="1.5px dashed rgba(255,255,255,0.54)"
+            />
+            <ColumnSection
+              title="Less pressing"
+              bucket="less_central"
+              values={assignments.less_central}
+              slotCount={lessCentralSlots}
+              moveMode={moveMode}
+              cardRevealed={cardRevealed}
+              onEmptySlotClick={handleEmptySlotClick}
+              onFilledCardClick={handleFilledCardClick}
+              sectionBg="#F8F4EB"
+              emptySlotBg="rgba(19,4,38,0.09)"
+              emptySlotBorder="1.5px dashed rgba(19,4,38,0.22)"
+            />
+          </div>
+
+          {/* Reflection */}
+          <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#170327] md:px-8 md:py-6">
+            <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
+              Once you've placed a few cards, you might start to notice patterns.
+            </p>
+            <p className="text-[18px] font-semibold leading-snug tracking-[-0.01em] text-[#1A1A1A]" style={{ marginBottom: 12 }}>
+              What patterns, reactions, or connections to past experiences do you notice as you look at your ranking?
+            </p>
+            <textarea
+              value={reflection}
+              onChange={(e) => handleReflectionChange(e.target.value)}
+              onBlur={() => {
+                if (reflectionDebounceRef.current) {
+                  clearTimeout(reflectionDebounceRef.current)
+                  reflectionDebounceRef.current = null
+                  if (reflection.trim()) autoSaveReflection(reflection)
+                }
+              }}
+              placeholder="Share your thoughts…"
+              className="min-h-[120px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2C3777]/35 focus:outline-none"
+            />
+            <div style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
+              {reflectionSaveStatus === 'saving' && <span>Saving…</span>}
+              {reflectionSaveStatus === 'saved' && (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                    <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
+                    <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>Saved to Your Plan</span>
+                </>
+              )}
+              {reflectionSaveStatus === 'error' && <span style={{ color: '#DB5835' }}>Couldn't save — check your connection</span>}
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <VoiceNoteButton
+                saveMode={{ kind: 'freeform' }}
+                theme="light"
+                onSaved={() => {}}
+              />
+            </div>
+          </section>
+
+          {/* Navigation links */}
+          <div style={{ marginTop: 16 }}>
+            <Link
+              href="/app/reflect/values-ranking"
+              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+            >
+              Go to Values Ranking
+            </Link>
+          </div>
+
+        </div>
+      </div>
+
       {/* Tips modal */}
       {tipsOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
-          <div className="w-full max-w-xl rounded-2xl border border-[#f8f4eb]/10 bg-[#16120f] p-6 shadow-2xl">
+          <div className="w-full max-w-xl rounded-2xl p-6 shadow-2xl" style={{ background: '#F8F4EB' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-[#f8f4eb]">Tips for using this activity</h2>
+              <h2 className="text-xl font-semibold" style={{ color: '#130426' }}>Tips for using this activity</h2>
               <button
                 onClick={() => setTipsOpen(false)}
-                className="text-[#f8f4eb]/60 hover:text-[#f8f4eb] transition-colors text-xl leading-none"
+                className="transition-opacity hover:opacity-60 text-xl leading-none"
+                style={{ color: '#130426' }}
               >
                 ×
               </button>
             </div>
             <div style={{ fontFamily: hv }}>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 You can approach this in different ways. Some people move quickly and follow instinctive reactions, while others prefer to sit with each fear before placing it.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 8 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 8 }}>
                 If something feels difficult to place, try asking:
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}>
@@ -562,16 +859,16 @@ export default function FearsRankingPage() {
                   'Which fear feels most persistent or emotionally present?',
                   'What might this fear be pointing to underneath?',
                 ].map((item, i, arr) => (
-                  <li key={i} style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: i < arr.length - 1 ? 8 : 0, display: 'flex', gap: 8 }}>
-                    <span style={{ flexShrink: 0, color: 'rgba(248,244,235,0.4)' }}>—</span>
+                  <li key={i} style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: i < arr.length - 1 ? 8 : 0, display: 'flex', gap: 8 }}>
+                    <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.35)' }}>—</span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)', marginBottom: 12 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 You can revisit this activity over time. Your responses may shift as your experiences, relationships, or circumstances change.
               </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(248,244,235,0.75)' }}>
+              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
                 This activity can also be useful to do with others. Comparing rankings may help surface differences in priorities, assumptions, or unspoken concerns.
               </p>
             </div>
@@ -579,320 +876,219 @@ export default function FearsRankingPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
-
-        {/* Interaction cluster — centered */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 40 }}>
-
-          {/* Card area */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: 24, marginBottom: 6 }}>
-            <div className="flex flex-col items-center">
-              <div className={`relative ${HERO_CARD_SIZE}`}>
-                <div className={`absolute left-2 top-2 rounded-[18px] border-2 border-[#170327] bg-[#ece5f7] ${HERO_CARD_SIZE}`} />
-                <div className={`absolute left-1 top-1 rounded-[18px] border-2 border-[#170327] bg-[#f3ecfb] ${HERO_CARD_SIZE}`} />
-                <div className={`absolute left-0 top-0 flex items-center justify-center rounded-[18px] border-2 border-[#170327] bg-[#f8f4eb] ${HERO_CARD_SIZE}`}>
-                  <span className="text-[11px] uppercase tracking-[0.14em] text-[#170327]/62">
-                    Deck
-                  </span>
-                </div>
-              </div>
-              <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
-                {Math.max(remainingCount, 0)} left
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center">
-              <button
-                type="button"
-                onClick={handleCurrentCardClick}
-                className={`rounded-[18px] border-2 p-3 text-left transition ${HERO_CARD_SIZE} ${
-                  currentCardIsActive
-                    ? 'border-[#f29836] bg-[#170327] text-[#f8f4eb] shadow-[0_0_0_2px_rgba(242,152,54,0.22)]'
-                    : 'border-[#170327] bg-[#170327]/94 text-[#f8f4eb] hover:bg-[#170327]'
-                }`}
-              >
-                <div className="flex h-full items-center justify-center px-2">
-                  <span className="max-w-[92px] text-center text-[15px] leading-[1.2] tracking-[-0.01em]">
-                    {current ?? 'Done'}
-                  </span>
-                </div>
-              </button>
-              <p style={{ marginTop: 8, marginBottom: 12, fontSize: 14, color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontFamily: hv }}>
-                {sortedCount} sorted
-              </p>
-            </div>
-          </div>
-
-          {/* Instruction text */}
-          <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.9)', marginTop: 12, marginBottom: 12 }}>
-            {liveInstruction}
-          </p>
-
-          {errorMessage && (
-            <p style={{ textAlign: 'center', fontFamily: hv, fontSize: 14, color: '#ffd2a6', marginBottom: 8 }}>
-              {errorMessage}
-            </p>
-          )}
-
-          {/* Reset button */}
-          {resetConfirm ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 24 }}>
-              <p style={{ fontFamily: hv, fontSize: 15, lineHeight: '22px', color: 'rgba(255,255,255,0.75)', margin: 0 }}>
-                This will clear your saved ranking.
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <button
-                  onClick={handleReset}
-                  style={{ background: '#F29836', color: '#130426', border: 'none', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 600, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-                >
-                  Reset cards
-                </button>
-                <button
-                  onClick={() => setResetConfirm(false)}
-                  style={{ background: 'transparent', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.35)', borderRadius: 999, padding: '8px 16px', fontFamily: hv, fontWeight: 500, fontSize: 14, lineHeight: '18px', cursor: 'pointer' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)' }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            sortedCount > 0 && (
-              <button
-                type="button"
-                onClick={() => setResetConfirm(true)}
-                style={{ background: 'rgba(255,255,255,0.12)', border: 'none', color: '#FFFFFF', padding: '8px 14px', borderRadius: 999, fontFamily: hv, fontSize: 13, cursor: 'pointer', margin: '0 auto 24px auto' }}
-                className="hover:bg-white/20 transition-colors"
-              >
-                Reset all cards
-              </button>
-            )
-          )}
-
+      {/* Sticky active card — only visible once deck module scrolls out of view */}
+      {cardRevealed && current && (
+        <div style={{
+          position: 'fixed', top: 152, right: 24, zIndex: 55,
+          width: 104, height: 146, borderRadius: 18,
+          background: '#F8F4EB',
+          border: '2px solid #DB5835',
+          boxShadow: '0 0 12px rgba(219,88,53,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 12, cursor: 'default', pointerEvents: 'none',
+          opacity: deckModuleVisible ? 0 : 1,
+          transition: 'opacity 200ms ease',
+        }}>
+          <span style={{
+            maxWidth: 80, textAlign: 'center', lineHeight: 1.25,
+            fontFamily: hv, fontWeight: 500, fontSize: getFixedCardFontSize(current, 80), color: '#130426',
+          }}>
+            {current.replace(/\//g, '/​')}
+          </span>
         </div>
+      )}
 
-        <div className="mt-3 space-y-2.5">
-          <BucketSection
-            title="Most pressing"
-            bucket="essential"
-            values={assignments.essential}
-            slotCount={ESSENTIAL_SLOTS}
-            moveMode={moveMode}
-            onEmptySlotClick={handleEmptySlotClick}
-            onFilledCardClick={handleFilledCardClick}
-            sectionBg="bg-[#b8a7ea]"
-            titleColor="text-[#170327]"
-            cardFilled="bg-[#170327] text-[#f8f4eb] border-[#170327]"
-            cardEmpty="bg-[#efe8ff] border-[#170327]/18"
-            cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.18)]"
-          />
-          <BucketSection
-            title="Somewhat pressing"
-            bucket="important"
-            values={assignments.important}
-            slotCount={importantSlots}
-            moveMode={moveMode}
-            onEmptySlotClick={handleEmptySlotClick}
-            onFilledCardClick={handleFilledCardClick}
-            sectionBg="bg-[#f4efe4]"
-            titleColor="text-[#170327]"
-            cardFilled="bg-[#170327] text-[#f8f4eb] border-[#170327]"
-            cardEmpty="bg-white border-[#170327]/16"
-            cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.12)]"
-          />
-          <BucketSection
-            title="Less pressing"
-            bucket="less_central"
-            values={assignments.less_central}
-            slotCount={lessCentralSlots}
-            moveMode={moveMode}
-            onEmptySlotClick={handleEmptySlotClick}
-            onFilledCardClick={handleFilledCardClick}
-            sectionBg="bg-[#1a2d6e]"
-            titleColor="text-[#f8f4eb]"
-            cardFilled="bg-[#170327] text-[#f8f4eb] border-[#170327]"
-            cardEmpty="bg-[#243b8a] border-[#f8f4eb]/18"
-            cardHighlight="border-[#f29836] bg-[#f29836] text-[#170327] shadow-[0_0_0_2px_rgba(242,152,54,0.18)]"
-          />
-        </div>
-
-        {/* Reflection */}
-        <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#170327] md:px-8 md:py-6">
-          <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
-            Once you've placed a few cards, you might start to notice patterns.
-          </p>
-          <p className="text-[18px] font-semibold leading-snug tracking-[-0.01em] text-[#1A1A1A]" style={{ marginBottom: 12 }}>
-            What patterns, reactions, or connections to past experiences do you notice as you look at your ranking?
-          </p>
-          <textarea
-            value={reflection}
-            onChange={(e) => handleReflectionChange(e.target.value)}
-            onBlur={() => {
-              if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current)
-              if (reflection.trim()) autoSaveReflection(reflection)
-            }}
-            placeholder="Share your thoughts…"
-            className="min-h-[120px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2f3f8f]/35 focus:outline-none"
-          />
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18 }}>
-            {reflectionSaveStatus === 'saving' ? 'Saving…'
-              : reflectionSaveStatus === 'saved' ? 'Saved'
-              : reflectionSaveStatus === 'error' ? "Couldn't save — check your connection"
-              : ''}
-          </p>
-          <div style={{ marginTop: 8 }}>
-            {voiceActive ? (
-              <VoiceNoteButton
-                saveMode={{ kind: 'freeform' }}
-                theme="light"
-                autoStart
-                onSaved={() => {}}
-                onDelete={() => setVoiceActive(false)}
-                buttonLabel="Record a voice note"
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setVoiceActive(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  width: '100%',
-                  padding: '11px 16px',
-                  borderRadius: 10,
-                  cursor: 'pointer',
-                  background: 'rgba(44,55,119,0.06)',
-                  border: '1.5px solid rgba(44,55,119,0.2)',
-                  boxSizing: 'border-box' as const,
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 12 16" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-                  <rect x="2.5" y="0.5" width="7" height="9" rx="3.5" fill="#2d3a6b" />
-                  <path d="M0.5 8c0 2.76 2.24 5 5.5 5s5.5-2.24 5.5-5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                  <line x1="6" y1="13" x2="6" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                  <line x1="3.5" y1="15.5" x2="8.5" y2="15.5" stroke="#2d3a6b" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#2d3a6b' }}>Record a voice note</span>
-                <span style={{ fontFamily: hv, fontSize: 11, fontWeight: 600, borderRadius: 100, padding: '3px 10px', background: 'rgba(44,55,119,0.12)', color: '#2d3a6b', border: '1px solid rgba(44,55,119,0.25)' }}>auto-transcribed</span>
-              </button>
-            )}
-          </div>
-        </section>
-
-        {/* Navigation links */}
-        <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
-          <a
-            href="/app/plan"
-            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
-          >
-            Go to Your Plan
-          </a>
-          <Link
-            href="/app/reflect/values-ranking"
-            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
-          >
-            Go to Values Ranking
-          </Link>
-        </div>
-
-      </div>
     </div>
   )
 }
 
-function BucketSection({
+function ColumnSection({
   title,
   bucket,
   values,
   slotCount,
+  maxCards,
   moveMode,
+  cardRevealed,
   onEmptySlotClick,
   onFilledCardClick,
   sectionBg,
-  titleColor,
-  cardFilled,
-  cardEmpty,
-  cardHighlight,
+  emptySlotBg,
+  emptySlotBorder,
+  centeredPartialRows,
 }: {
   title: string
   bucket: Bucket
   values: string[]
   slotCount: number
+  maxCards?: number
   moveMode: MoveMode
+  cardRevealed: boolean
   onEmptySlotClick: (bucket: Bucket) => void
   onFilledCardClick: (bucket: Bucket, value: string) => void
   sectionBg: string
-  titleColor: string
-  cardFilled: string
-  cardEmpty: string
-  cardHighlight: string
+  emptySlotBg: string
+  emptySlotBorder: string
+  centeredPartialRows?: boolean
 }) {
-  const slots = Array.from({ length: slotCount })
+  const slots = Array.from({ length: Math.max(slotCount, values.length) })
+
+  const isAvailableForPlacement =
+    (cardRevealed && moveMode.type === 'none') ||
+    (moveMode.type === 'moving_existing' && bucket !== moveMode.from) ||
+    (moveMode.type === 'making_room_for_incoming' &&
+      !!moveMode.selected &&
+      bucket !== 'essential')
+
+  function renderSlotAt(i: number) {
+    const value = values[i]
+
+    if (value) {
+      const isSelectedForMove =
+        moveMode.type === 'moving_existing' &&
+        moveMode.value === value &&
+        moveMode.from === bucket
+
+      const isSelectedForEssentialSwap =
+        moveMode.type === 'making_room_for_incoming' &&
+        moveMode.selected === value &&
+        bucket === 'essential'
+
+      const isHighlighted = isSelectedForMove || isSelectedForEssentialSwap
+
+      return (
+        <button
+          key={`${bucket}-${value}`}
+          type="button"
+          onClick={() => onFilledCardClick(bucket, value)}
+          style={{
+            width: '100%',
+            maxWidth: 128,
+            height: 152,
+            borderRadius: 14,
+            border: isHighlighted ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.10)',
+            background: '#F8F4EB',
+            color: '#130426',
+            boxShadow: isHighlighted
+              ? '0 0 18px rgba(219,88,53,0.22), 0 2px 8px rgba(0,0,0,0.06)'
+              : '0 2px 8px rgba(0,0,0,0.06)',
+            transform: isHighlighted ? 'translateY(-2px)' : 'none',
+            padding: '10px 6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'border-color 160ms, box-shadow 160ms, transform 160ms',
+            containerType: 'inline-size',
+          } as React.CSSProperties}
+        >
+          <span style={{
+            textAlign: 'center',
+            lineHeight: 1.25,
+            fontFamily: hv,
+            fontWeight: 500,
+            ...getCardFontStyle(value),
+            color: '#130426',
+            width: '100%',
+          }}>
+            {value.replace(/\//g, '/​')}
+          </span>
+        </button>
+      )
+    }
+
+    if (isAvailableForPlacement) {
+      return (
+        <button
+          key={`${bucket}-empty-${i}`}
+          type="button"
+          onClick={() => onEmptySlotClick(bucket)}
+          style={{
+            width: '100%',
+            maxWidth: 128,
+            height: 152,
+            borderRadius: 14,
+            border: '2px solid #DB5835',
+            boxShadow: '0 0 0 2px rgba(219,88,53,0.12)',
+            background: emptySlotBg,
+            flexShrink: 0,
+            cursor: 'pointer',
+            transition: 'border-color 160ms ease, box-shadow 160ms ease',
+          }}
+          aria-label={`Empty ${title} slot`}
+        />
+      )
+    }
+
+    return (
+      <button
+        key={`${bucket}-empty-${i}`}
+        type="button"
+        onClick={() => onEmptySlotClick(bucket)}
+        style={{
+          width: '100%',
+          maxWidth: 128,
+          height: 152,
+          borderRadius: 14,
+          border: emptySlotBorder,
+          background: emptySlotBg,
+          flexShrink: 0,
+          cursor: 'default',
+        }}
+        aria-label={`Empty ${title} slot`}
+      />
+    )
+  }
+
+  const COLS = 3
+  const cardGrid = centeredPartialRows ? (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
+      {slots.map((_, i) => {
+        const row = Math.floor(i / COLS)
+        const col = i % COLS
+        const fullRows = Math.floor(slots.length / COLS)
+        const remainder = slots.length % COLS
+        const isPartialRow = row === fullRows && remainder > 0
+
+        let gridColumn: string
+        if (isPartialRow && remainder === 1) {
+          gridColumn = '3 / 5'
+        } else if (isPartialRow) {
+          gridColumn = `${col * 2 + 2} / ${col * 2 + 4}`
+        } else {
+          gridColumn = `${col * 2 + 1} / ${col * 2 + 3}`
+        }
+
+        return (
+          <div key={i} style={{ gridColumn, display: 'flex', justifyContent: 'center' }}>
+            {renderSlotAt(i)}
+          </div>
+        )
+      })}
+    </div>
+  ) : (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, alignItems: 'start', justifyItems: 'center', width: '100%' }}>
+      {slots.map((_, i) => renderSlotAt(i))}
+    </div>
+  )
 
   return (
-    <section className={`rounded-[24px] ${sectionBg} px-4 py-3 md:px-5 md:py-3.5`}>
-      <div className="mb-2">
-        <h2 className={`text-[20px] font-semibold leading-tight tracking-[-0.02em] ${titleColor}`}>
+    <section style={{ background: sectionBg, borderRadius: 18, padding: '28px 10px 32px' }}>
+
+      {/* Column header */}
+      <div style={{ marginBottom: 18, display: 'flex', alignItems: 'baseline', gap: 10 }}>
+        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#170327', margin: 0 }}>
           {title}
         </h2>
+        {maxCards && (
+          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.78)', whiteSpace: 'nowrap' }}>
+            Max {maxCards}
+          </span>
+        )}
       </div>
 
-      <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 2xl:grid-cols-10">
-        {slots.map((_, i) => {
-          const value = values[i]
-
-          if (value) {
-            const isSelectedForMove =
-              moveMode.type === 'moving_existing' &&
-              moveMode.value === value &&
-              moveMode.from === bucket
-
-            const isSelectedForEssentialSwap =
-              moveMode.type === 'making_room_for_incoming' &&
-              moveMode.selected === value &&
-              bucket === 'essential'
-
-            return (
-              <button
-                key={`${bucket}-${value}`}
-                type="button"
-                onClick={() => onFilledCardClick(bucket, value)}
-                className={`rounded-[18px] border-2 p-2 text-left transition ${CARD_SIZE} ${
-                  isSelectedForMove || isSelectedForEssentialSwap ? cardHighlight : cardFilled
-                }`}
-              >
-                <div className="flex h-full items-center justify-center px-1.5">
-                  <span className="max-w-[92px] text-center text-[14px] leading-[1.22]">
-                    {value}
-                  </span>
-                </div>
-              </button>
-            )
-          }
-
-          const highlightedEmpty =
-            (moveMode.type === 'moving_existing' && bucket !== moveMode.from) ||
-            (moveMode.type === 'making_room_for_incoming' &&
-              !!moveMode.selected &&
-              bucket !== 'essential')
-
-          return (
-            <button
-              key={`${bucket}-empty-${i}`}
-              type="button"
-              onClick={() => onEmptySlotClick(bucket)}
-              className={`rounded-[18px] border-2 border-dashed transition ${CARD_SIZE} ${
-                highlightedEmpty ? cardHighlight : cardEmpty
-              }`}
-              aria-label={`Empty ${title} slot`}
-            />
-          )
-        })}
-      </div>
+      {cardGrid}
     </section>
   )
 }
