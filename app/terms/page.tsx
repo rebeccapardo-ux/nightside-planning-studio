@@ -203,7 +203,7 @@ export default function TermsPage() {
           </p>
           <p style={{ ...p, margin: 0 }}>
             Full details of how this works — what gets released, how the Legacy Contact verifies your death, what you can choose to include — are in our{' '}
-            <a href="/app/privacy" style={a}>Privacy Policy</a>.
+            <a href="/privacy" style={a}>Privacy Policy</a>.
           </p>
         </StaticSection>
 
@@ -290,7 +290,7 @@ export default function TermsPage() {
           </p>
           <p style={{ ...p, margin: 0 }}>
             The current version of these Terms is always available at{' '}
-            <a href="/app/terms" style={a}>thenightside.net/app/terms</a>{' '}
+            <a href="/terms" style={a}>thenightside.net/terms</a>{' '}
             <span style={{ color: 'rgba(19,4,38,0.45)', fontSize: 14 }}>[URL to be confirmed at production launch]</span>.
           </p>
         </StaticSection>

@@ -364,9 +364,9 @@ export default function SignUpPage() {
                       />
                       <span style={{ fontFamily: hv, fontSize: '13px', color: '#3a3a3a', lineHeight: 1.5 }}>
                         I agree to The Nightside&apos;s{' '}
-                        <a href="/app/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#2d3a6b', textDecoration: 'underline' }}>Terms of Service</a>
+                        <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#2d3a6b', textDecoration: 'underline' }}>Terms of Service</a>
                         {' '}and{' '}
-                        <a href="/app/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#2d3a6b', textDecoration: 'underline' }}>Privacy Policy</a>.
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#2d3a6b', textDecoration: 'underline' }}>Privacy Policy</a>.
                       </span>
                     </label>
                     {fieldErrors.terms && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '6px 0 0 26px' }}>{fieldErrors.terms}</p>}

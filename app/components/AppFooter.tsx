@@ -56,8 +56,8 @@ export default function AppFooter() {
             ))}
             <span style={{ color: dot, fontSize: 13 }}>·</span>
             {[
-              { href: '/app/privacy', label: 'Privacy' },
-              { href: '/app/terms',   label: 'Terms'   },
+              { href: '/privacy', label: 'Privacy' },
+              { href: '/terms',   label: 'Terms'   },
             ].map(({ href, label }) => (
               <Link key={href} href={href} style={{ fontFamily: inter, fontSize: 13, color: textMuted, textDecoration: 'none' }} className="footer-link">
                 {label}
@@ -67,7 +67,7 @@ export default function AppFooter() {
         </div>
         <p style={{ fontFamily: inter, fontSize: 11, fontStyle: 'italic', color: disclaimer, lineHeight: 1.6, textAlign: 'center', margin: 0 }}>
           The Nightside Planning Studio is a planning tool and educational resource.<br />It is not a substitute for legal, medical, or financial advice. For binding decisions, consult a qualified professional in your province.<br />See{' '}
-          <Link href="/app/terms" style={{ color: disclaimer, textDecoration: 'underline' }}>Terms of Service</Link>
+          <Link href="/terms" style={{ color: disclaimer, textDecoration: 'underline' }}>Terms of Service</Link>
           {' '}for details.
         </p>
       </div>

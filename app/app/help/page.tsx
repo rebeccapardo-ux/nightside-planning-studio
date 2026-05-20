@@ -27,7 +27,7 @@ const PRIVACY_ANSWER = (
     <p style={subHead}>Your role.</p>
     <p style={{ margin: '0 0 14px' }}>You decide what to fill in and when. Some users prefer to keep certain information off the platform and add it only at export — the platform is designed to support that choice.</p>
 
-    <p style={{ margin: 0 }}>For full details, see our <Link href="/app/privacy" style={{ color: 'rgba(19,4,38,0.75)', textDecoration: 'underline' }}>Privacy Policy →</Link></p>
+    <p style={{ margin: 0 }}>For full details, see our <Link href="/privacy" style={{ color: 'rgba(19,4,38,0.75)', textDecoration: 'underline' }}>Privacy Policy →</Link></p>
   </div>
 )
 
@@ -51,7 +51,7 @@ const LEGACY_AFTER_ANSWER = (
     <p style={{ margin: '0 0 14px' }}>If your Legacy Contact contacts us after your death, we work with them to verify what has happened and release your designated planning materials. Verification may include a death certificate, a Statement of Death from a funeral director, or other comparable documentation.</p>
     <p style={{ margin: 0 }}>
       For full details, see the &ldquo;What happens if you die&rdquo; section of our{' '}
-      <Link href="/app/privacy" style={{ color: 'rgba(19,4,38,0.75)', textDecoration: 'underline' }}>Privacy Policy →</Link>
+      <Link href="/privacy" style={{ color: 'rgba(19,4,38,0.75)', textDecoration: 'underline' }}>Privacy Policy →</Link>
     </p>
   </div>
 )
