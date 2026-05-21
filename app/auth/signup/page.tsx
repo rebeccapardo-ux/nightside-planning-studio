@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -53,8 +52,6 @@ export default function SignUpPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [serverError, setServerError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [confirmationSent, setConfirmationSent] = useState(false)
-
   function clearFieldError(field: string) {
     if (fieldErrors[field]) setFieldErrors(prev => { const n = { ...prev }; delete n[field]; return n })
   }
@@ -79,36 +76,36 @@ export default function SignUpPage() {
     setFieldErrors({})
     setLoading(true)
 
-    const supabase = createSupabaseBrowserClient()
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          full_name: `${firstName.trim()} ${lastName.trim()}`,
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          password,
           province,
-          terms_accepted_at: new Date().toISOString(),
-        },
-      },
-    })
+          termsAcceptedAt: new Date().toISOString(),
+        }),
+      })
 
-    if (error) {
-      setPassword('')
-      if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
-        setServerError('An account with this email already exists.')
-      } else if (error.message.toLowerCase().includes('invalid email')) {
-        setServerError('Please enter a valid email address.')
-      } else {
-        setServerError('Something went wrong. Please try again.')
+      const json = await res.json()
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          setServerError('An account with this email already exists.')
+        } else {
+          setServerError(json.error ?? 'Something went wrong. Please try again.')
+        }
+        setLoading(false)
+        return
       }
-      setLoading(false)
-    } else if (data.session) {
-      window.location.href = '/app'
-    } else {
-      setConfirmationSent(true)
+
+      // Redirect to Stripe Checkout.
+      window.location.href = json.url
+    } catch {
+      setServerError('Something went wrong. Please try again.')
       setLoading(false)
     }
   }
@@ -213,28 +210,7 @@ export default function SignUpPage() {
             boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
           }}>
 
-            {confirmationSent ? (
-              /* Email confirmation state */
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ marginBottom: '32px' }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'inline-block' }} />
-                </div>
-                <h1 style={{ fontFamily: apfel, fontSize: '24px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px 0' }}>
-                  Check your email
-                </h1>
-                <p style={{ fontFamily: hv, fontSize: '15px', lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 8px 0' }}>
-                  We sent a confirmation link to <strong>{email}</strong>. For security, you&apos;ll need to click it to activate your account.
-                </p>
-                <p style={{ fontFamily: hv, fontSize: '13px', lineHeight: 1.5, color: '#6b6b6b', margin: '0 0 24px 0' }}>
-                  Don&apos;t see it? Check your spam folder.
-                </p>
-                <Link href="/auth/signin" className="auth-footer-link" style={{ fontSize: '14px' }}>
-                  Back to sign in →
-                </Link>
-              </div>
-            ) : (
-              <>
+            <>
                 {/* Wordmark */}
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -381,7 +357,7 @@ export default function SignUpPage() {
 
                   {/* Submit */}
                   <button type="submit" className="auth-btn" disabled={loading || !termsAccepted} style={{ marginTop: '20px' }}>
-                    {loading ? 'Creating account…' : 'Create account →'}
+                    {loading ? 'Preparing payment…' : 'Continue to payment →'}
                   </button>
 
                 </form>
@@ -393,8 +369,7 @@ export default function SignUpPage() {
                     Sign in →
                   </Link>
                 </p>
-              </>
-            )}
+            </>
 
           </div>
         </div>
