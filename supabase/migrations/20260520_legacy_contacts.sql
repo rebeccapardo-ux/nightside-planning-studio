@@ -79,17 +79,25 @@ CREATE TRIGGER trg_legacy_contacts_updated_at
 -- ─── Audit log trigger ─────────────────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION log_legacy_contact_change()
-RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
-  IF TG_OP = 'INSERT' THEN
-    INSERT INTO legacy_contact_audit_log (user_id, action, contact_type, new_data)
-    VALUES (NEW.user_id, 'designated', NEW.contact_type, to_jsonb(NEW));
-  ELSIF TG_OP = 'UPDATE' THEN
-    INSERT INTO legacy_contact_audit_log (user_id, action, contact_type, previous_data, new_data)
-    VALUES (NEW.user_id, 'updated', NEW.contact_type, to_jsonb(OLD), to_jsonb(NEW));
-  ELSIF TG_OP = 'DELETE' THEN
-    INSERT INTO legacy_contact_audit_log (user_id, action, contact_type, previous_data)
+  IF TG_OP = 'DELETE' THEN
+    -- Skip logging when the user no longer exists (i.e., CASCADE deletion from auth.users).
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = OLD.user_id) THEN
+      RETURN OLD;
+    END IF;
+    INSERT INTO public.legacy_contact_audit_log (user_id, action, contact_type, previous_data)
     VALUES (OLD.user_id, 'removed', OLD.contact_type, to_jsonb(OLD));
+  ELSIF TG_OP = 'INSERT' THEN
+    INSERT INTO public.legacy_contact_audit_log (user_id, action, contact_type, new_data)
+    VALUES (NEW.user_id, 'designated', NEW.contact_type, to_jsonb(NEW));
+    RETURN NEW;
+  ELSIF TG_OP = 'UPDATE' THEN
+    INSERT INTO public.legacy_contact_audit_log (user_id, action, contact_type, previous_data, new_data)
+    VALUES (NEW.user_id, 'updated', NEW.contact_type, to_jsonb(OLD), to_jsonb(NEW));
+    RETURN NEW;
   END IF;
   RETURN NULL;
 END;
