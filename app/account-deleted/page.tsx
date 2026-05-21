@@ -18,7 +18,7 @@ export default function AccountDeletedPage() {
           Account deleted
         </h1>
         <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.65)', lineHeight: 1.7, margin: '0 0 36px' }}>
-          Your account and all associated data have been permanently deleted. Thank you for using the Planning Studio.
+          Your account and all associated data have been permanently deleted. Thank you for using The Nightside Planning Studio.
         </p>
 
         <Link
