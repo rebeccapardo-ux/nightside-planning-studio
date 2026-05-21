@@ -999,7 +999,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       )}
 
       {/* ── Materials canvas (suppressed for all active domains) ── */}
-      {!isHealthcare && !isLegacy && !isDeathcare && !isWills && !isRitual && !isPersonalAdmin && (
+      {!loading && !isHealthcare && !isLegacy && !isDeathcare && !isWills && !isRitual && !isPersonalAdmin && (
         <div style={{ background: '#f8f4eb', marginTop: '64px' }}>
           <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: '72px', paddingBottom: '88px' }}>
 
