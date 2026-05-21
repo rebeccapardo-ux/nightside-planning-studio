@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -100,7 +101,7 @@ function getFixedCardFontSize(value: string, textAreaPx: number): number {
   return Math.max(10, Math.min(16, Math.floor((textAreaPx * 0.92) / (len * 0.5))))
 }
 
-export default function FearsRankingPage() {
+function FearsRankingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const entryIdFromUrl = searchParams.get('entry')
@@ -1090,5 +1091,13 @@ function ColumnSection({
 
       {cardGrid}
     </section>
+  )
+}
+
+export default function FearsRankingPage() {
+  return (
+    <Suspense>
+      <FearsRankingContent />
+    </Suspense>
   )
 }
