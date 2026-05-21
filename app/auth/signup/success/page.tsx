@@ -59,8 +59,11 @@ export default async function SignupSuccessPage({
           <h1 style={{ fontFamily: apfel, fontSize: '24px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px 0' }}>
             Payment received
           </h1>
+          <p style={{ fontFamily: hv, fontSize: '15px', lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 8px 0' }}>
+            Your payment was received and your account is ready.
+          </p>
           <p style={{ fontFamily: hv, fontSize: '15px', lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 28px 0' }}>
-            Your account is ready. The next step is to designate a Legacy Contact — the person who can access your planning materials if you pass away.
+            One more step: designate your Legacy Contact. This is the person who can access your planning materials if you pass away. It will take about 3–5 minutes.
           </p>
           <Link
             href="/app/onboarding/legacy-contact"
@@ -76,7 +79,7 @@ export default async function SignupSuccessPage({
               textDecoration: 'none',
             }}
           >
-            Continue →
+            Designate Legacy Contact →
           </Link>
         </div>
       </div>

@@ -71,12 +71,17 @@ export default async function PaymentPage() {
                   <span style={{ fontFamily: hv, fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>
                     Nightside Planning Studio
                   </span>
-                  <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>
-                    $179 CAD
-                  </span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontFamily: hv, fontSize: '18px', fontWeight: 700, color: '#1a1a1a' }}>
+                      $179 CAD
+                    </div>
+                    <div style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', marginTop: '2px' }}>
+                      + applicable HST/GST
+                    </div>
+                  </div>
                 </div>
-                <p style={{ fontFamily: hv, fontSize: '13px', color: '#6b6b6b', margin: '6px 0 0 0', lineHeight: 1.4 }}>
-                  One-time payment · Lifetime access · + applicable HST/GST
+                <p style={{ fontFamily: hv, fontSize: '13px', color: '#6b6b6b', margin: '10px 0 0 0', lineHeight: 1.4 }}>
+                  One-time payment · Lifetime access
                 </p>
               </div>
 

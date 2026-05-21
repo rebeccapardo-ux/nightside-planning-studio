@@ -251,7 +251,7 @@ export default function LegacyContactForm() {
         setSubmitError(data.error ?? 'Something went wrong. Please try again.')
         return
       }
-      router.push('/app/plan')
+      router.push('/app')
     } catch {
       setSubmitError('Something went wrong. Please check your connection and try again.')
     } finally {
