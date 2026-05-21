@@ -1,0 +1,58 @@
+'use client'
+
+import { useState } from 'react'
+
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+export default function PaymentButton() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleClick() {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error ?? 'Something went wrong. Please try again.')
+        setLoading(false)
+        return
+      }
+      window.location.href = json.url
+    } catch {
+      setError('Something went wrong. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <style>{`
+        .payment-btn {
+          width: 100%;
+          padding: 14px;
+          background: #2d3a6b;
+          color: #ffffff;
+          border: none;
+          border-radius: 100px;
+          font-size: 15px;
+          font-weight: 500;
+          font-family: ${hv};
+          cursor: pointer;
+          transition: background 200ms ease;
+        }
+        .payment-btn:hover:not(:disabled) { background: #3d4e8f; }
+        .payment-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+      `}</style>
+      {error && (
+        <p style={{ fontFamily: hv, fontSize: '13px', color: '#c0392b', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+          {error}
+        </p>
+      )}
+      <button className="payment-btn" onClick={handleClick} disabled={loading}>
+        {loading ? 'Preparing payment…' : 'Continue to payment →'}
+      </button>
+    </>
+  )
+}

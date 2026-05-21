@@ -16,5 +16,15 @@ export default async function AppLayout({
     redirect('/auth/signin')
   }
 
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('paid_at')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!profile?.paid_at) {
+    redirect('/auth/signup/payment')
+  }
+
   return <LayoutShell>{children}</LayoutShell>
 }

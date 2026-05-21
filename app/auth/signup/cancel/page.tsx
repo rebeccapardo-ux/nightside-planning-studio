@@ -46,8 +46,8 @@ export default function SignupCancelPage() {
             <p style={{ fontFamily: hv, fontSize: '15px', lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 28px 0' }}>
               No charge was made. You can return to the signup form whenever you&apos;re ready.
             </p>
-            <Link href="/auth/signup" className="retry-btn">
-              Return to signup
+            <Link href="/auth/signup/payment" className="retry-btn">
+              Return to payment
             </Link>
           </div>
         </div>

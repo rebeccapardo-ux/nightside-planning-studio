@@ -11,8 +11,6 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://studio.thenightside.net'
-
 export async function POST(request: NextRequest) {
   const sig = request.headers.get('stripe-signature')
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -43,78 +41,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    const pendingId = session.metadata?.pending_signup_id
-    if (!pendingId) {
-      console.error('checkout.session.completed missing pending_signup_id metadata', session.id)
+    const userId = session.metadata?.supabase_user_id
+    if (!userId) {
+      console.error('checkout.session.completed missing supabase_user_id metadata', session.id)
+      await alertAdmin(session.id, 'missing supabase_user_id in session metadata')
       return NextResponse.json({ received: true })
     }
 
-    const { data: pending, error: fetchError } = await supabaseAdmin
-      .from('pending_signups')
-      .select('*')
-      .eq('id', pendingId)
-      .single()
+    const { error } = await supabaseAdmin
+      .from('user_profiles')
+      .update({ paid_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .is('paid_at', null) // idempotent — don't overwrite if already set
 
-    if (fetchError || !pending) {
-      console.error('Could not find pending signup:', pendingId, fetchError)
-      await alertAdmin(session.id, pendingId, 'pending signup record not found')
-      return NextResponse.json({ received: true })
-    }
-
-    if (new Date(pending.expires_at) < new Date()) {
-      console.error('Pending signup expired:', pendingId)
-      await alertAdmin(session.id, pendingId, 'pending signup record expired')
-      return NextResponse.json({ received: true })
-    }
-
-    try {
-      // Confirm the user's email so they can sign in immediately.
-      // The payment itself validates email ownership for this use case.
-      const { error: confirmError } = await supabaseAdmin.auth.admin.updateUserById(
-        pending.supabase_user_id,
-        { email_confirm: true }
-      )
-      if (confirmError) throw confirmError
-
-      // Send a welcome email with a link to sign in.
-      const emailRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'The Nightside <noreply@thenightside.net>',
-          to: pending.email,
-          subject: 'Your Nightside account is ready',
-          html: `
-            <p>Hi,</p>
-            <p>Your payment was received and your Nightside Planning Studio account is ready.</p>
-            <p><a href="${SITE_URL}/auth/signin">Sign in to get started →</a></p>
-            <p>If you have any questions, reach out at <a href="mailto:contact@thenightside.net">contact@thenightside.net</a>.</p>
-          `,
-        }),
-      })
-
-      if (!emailRes.ok) {
-        const emailErr = await emailRes.text()
-        throw new Error(`Resend error: ${emailErr}`)
-      }
-
-      // Clean up the consumed pending record.
-      await supabaseAdmin.from('pending_signups').delete().eq('id', pendingId)
-
-      console.log('Account activated and welcome email sent for:', pending.email)
-    } catch (err) {
-      console.error('Post-payment account activation failed:', err)
-      await alertAdmin(session.id, pendingId, String(err))
+    if (error) {
+      console.error('Failed to set paid_at for user:', userId, error)
+      await alertAdmin(session.id, `DB update failed for user ${userId}: ${error.message}`)
+    } else {
+      console.log('paid_at set for user:', userId, 'session:', session.id)
     }
   }
 
   return NextResponse.json({ received: true })
 }
 
-async function alertAdmin(sessionId: string, pendingId: string, reason: string) {
+async function alertAdmin(sessionId: string, reason: string) {
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -125,15 +76,14 @@ async function alertAdmin(sessionId: string, pendingId: string, reason: string) 
       body: JSON.stringify({
         from: 'The Nightside <noreply@thenightside.net>',
         to: 'contact@thenightside.net',
-        subject: '[ACTION REQUIRED] Payment succeeded but account activation failed',
+        subject: '[ACTION REQUIRED] Stripe webhook — payment not activated',
         text: [
-          'A Stripe payment was received but the account confirmation email could not be sent.',
+          'A Stripe payment completed but the account was not activated.',
           '',
           `Stripe session ID: ${sessionId}`,
-          `Pending signup ID: ${pendingId}`,
           `Reason: ${reason}`,
           '',
-          'The customer has paid and needs their account activated manually.',
+          'Check the Supabase dashboard and activate the account manually if needed.',
         ].join('\n'),
       }),
     })

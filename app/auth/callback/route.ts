@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const supabase = await createSupabaseServerClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}/app?confirmed=true`)
+      return NextResponse.redirect(`${origin}/auth/signup/payment`)
     }
   }
 

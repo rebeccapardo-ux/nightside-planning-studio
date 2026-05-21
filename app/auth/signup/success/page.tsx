@@ -1,12 +1,44 @@
-'use client'
-
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
+import Stripe from 'stripe'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-export default function SignupSuccessPage() {
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2026-04-22.dahlia',
+})
+
+export default async function SignupSuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>
+}) {
+  const { session_id: sessionId } = await searchParams
+
+  // Verify payment with Stripe and mark the account as paid immediately.
+  // The webhook also does this, but may lag behind the page redirect.
+  if (sessionId) {
+    try {
+      const session = await stripe.checkout.sessions.retrieve(sessionId)
+      if (session.payment_status === 'paid' && session.metadata?.supabase_user_id) {
+        await supabaseAdmin
+          .from('user_profiles')
+          .update({ paid_at: new Date().toISOString() })
+          .eq('user_id', session.metadata.supabase_user_id)
+          .is('paid_at', null) // idempotent
+      }
+    } catch (err) {
+      console.error('Success page Stripe verification failed:', err)
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#f7f3e8', display: 'flex', flexDirection: 'column' }}>
       <AuthNav />
@@ -27,17 +59,24 @@ export default function SignupSuccessPage() {
           <h1 style={{ fontFamily: apfel, fontSize: '24px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px 0' }}>
             Payment received
           </h1>
-          <p style={{ fontFamily: hv, fontSize: '15px', lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 8px 0' }}>
-            Check your email for a confirmation link to activate your account.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: '13px', lineHeight: 1.5, color: '#6b6b6b', margin: '0 0 28px 0' }}>
-            Don&apos;t see it? Check your spam folder. It may take a minute or two to arrive.
+          <p style={{ fontFamily: hv, fontSize: '15px', lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 28px 0' }}>
+            Your account is ready. The next step is to designate a Legacy Contact — the person who can access your planning materials if you pass away.
           </p>
           <Link
-            href="/auth/signin"
-            style={{ fontFamily: hv, fontSize: '14px', fontWeight: 500, color: '#2d3a6b', textDecoration: 'none' }}
+            href="/app/onboarding/legacy-contact"
+            style={{
+              display: 'inline-block',
+              padding: '12px 28px',
+              background: '#2d3a6b',
+              color: '#ffffff',
+              borderRadius: '100px',
+              fontFamily: hv,
+              fontSize: '15px',
+              fontWeight: 500,
+              textDecoration: 'none',
+            }}
           >
-            Go to sign in →
+            Continue →
           </Link>
         </div>
       </div>
