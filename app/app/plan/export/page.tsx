@@ -80,7 +80,7 @@ const DOMAIN_SEGMENT_CONFIGS: { match: string; displayName: string; segments: Se
   ]},
   { match: 'personal', displayName: 'Personal Admin', segments: [
     { key: 'understand_personal_admin',   type: 'orient', label: 'Understand personal admin involved in death planning' },
-    { key: 'personal_information',        type: 'ready',  label: 'Personal information', checkboxes: [
+    { key: 'personal_information',        type: 'ready',  label: 'Personal records', checkboxes: [
       'I have documented my personal identification, legal designations, and important documents',
     ]},
     { key: 'important_contacts',          type: 'ready',  label: 'Important contacts', checkboxes: [

@@ -375,7 +375,7 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
       readiness: [
         {
           key: 'personal_information',
-          title: 'Personal information',
+          title: 'Personal records',
           explanation: '',
           checkboxes: ['I have documented my personal identification, legal designations, and important documents'],
           staticLinks: [{ href: '/app/capture/personal-admin', label: 'Personal Admin Information' }],
