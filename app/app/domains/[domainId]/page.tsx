@@ -783,21 +783,15 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
         </div>
       </div>
 
-      {/* ── Wills disclaimer ── */}
-      {isWills && (
-        <div style={{ background: '#F8F4EB', padding: '20px 40px' }}>
-          <div className="max-w-6xl mx-auto">
-            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
-              The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating decision-makers, consult a lawyer in your province.
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* ── Section 1: Status ── */}
       {domainStructure && (
         <div style={{ background: '#EDE7FF' }}>
           <div className="max-w-6xl mx-auto px-6 py-12">
+            {isWills && (
+              <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 28px 0' }}>
+                The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating decision-makers, consult a lawyer in your province.
+              </p>
+            )}
             <PlanningStatusSection
               domainId={domainId}
               structure={domainStructure}

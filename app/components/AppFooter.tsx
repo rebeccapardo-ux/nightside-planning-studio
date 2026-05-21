@@ -5,13 +5,6 @@ import { usePathname } from 'next/navigation'
 
 const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-function getEffectiveBg(el: Element | null): string | null {
-  if (!el || el.tagName === 'BODY') return null
-  const bg = window.getComputedStyle(el).backgroundColor
-  if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg
-  return getEffectiveBg(el.parentElement)
-}
-
 function isColorDark(color: string): boolean {
   const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
   if (!match) return true
@@ -25,9 +18,29 @@ export default function AppFooter() {
 
   useEffect(() => {
     const main = document.querySelector('main')
-    const lastEl = main?.lastElementChild ?? null
-    const bg = getEffectiveBg(lastEl)
-    setLight(bg ? isColorDark(bg) : false)
+    if (!main) { setLight(false); return }
+    const pageRoot = main.lastElementChild
+    if (!pageRoot) { setLight(false); return }
+
+    // Walk backwards through the page root's direct children to find the last
+    // section that has an explicit background. This avoids escaping <main> and
+    // reading the outer dark wrapper, which was causing all pages to appear dark.
+    let lastBg: string | null = null
+    let el: Element | null = pageRoot.lastElementChild
+    while (el) {
+      const bg = window.getComputedStyle(el).backgroundColor
+      if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+        lastBg = bg
+        break
+      }
+      el = el.previousElementSibling
+    }
+    // Fallback: the page root itself may carry a background (e.g. full-page dark wrappers)
+    if (!lastBg) {
+      const rootBg = window.getComputedStyle(pageRoot).backgroundColor
+      if (rootBg && rootBg !== 'rgba(0, 0, 0, 0)' && rootBg !== 'transparent') lastBg = rootBg
+    }
+    setLight(lastBg ? isColorDark(lastBg) : false)
   }, [pathname])
 
   const bg         = light ? '#F8F4EB'              : '#0d0220'
