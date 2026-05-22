@@ -122,7 +122,8 @@ export default function PrivacyPage() {
           <ul style={ul}>
             <li style={li}><strong style={{ fontWeight: 600 }}>Supabase</strong> stores your account information and content. Supabase is a database and authentication provider. Your data is stored on Supabase&apos;s Canadian servers (ca-central-1 region).</li>
             <li style={li}><strong style={{ fontWeight: 600 }}>Resend</strong> sends emails on behalf of the platform (account confirmations, password resets, and notifications to your Legacy Contact at the time of designation). Resend processes emails through US-based infrastructure.</li>
-            <li style={{ ...li, marginBottom: 0 }}><strong style={{ fontWeight: 600 }}>Vercel</strong> hosts the platform itself. Vercel may process technical information such as IP addresses for hosting and security purposes. Vercel&apos;s infrastructure is US-based.</li>
+            <li style={li}><strong style={{ fontWeight: 600 }}>Vercel</strong> hosts the platform itself. Vercel may process technical information such as IP addresses for hosting and security purposes. Vercel&apos;s infrastructure is US-based.</li>
+            <li style={{ ...li, marginBottom: 0 }}><strong style={{ fontWeight: 600 }}>Plausible Analytics</strong> measures aggregate traffic to the platform — things like how many people visit, what pages they view, and where they come from. Plausible does not use cookies, does not track individuals, and does not store personal data. Plausible is GDPR and PIPEDA compliant, and their infrastructure is EU-based.</li>
           </ul>
           <p style={{ ...p, margin: '16px 0 0' }}>
             We do not sell your information. We do not share your information with third parties for marketing, advertising, or any commercial purpose. We do not use third-party analytics tools that track you across the web.
