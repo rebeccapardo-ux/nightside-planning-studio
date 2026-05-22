@@ -106,7 +106,7 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
               Send us feedback
             </h2>
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.6, margin: '0 0 24px' }}>
-              We&apos;d love to hear your thoughts about the platform — what&apos;s working, what&apos;s not, or anything else you&apos;d like to share.
+              We&apos;d love to hear your thoughts about the platform: what&apos;s working, what&apos;s not, or anything else you&apos;d like to share.
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
