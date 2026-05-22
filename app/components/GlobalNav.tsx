@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
@@ -160,6 +161,20 @@ export default function GlobalNav() {
   const pathname = usePathname()
   const entry = getNavEntry(pathname)
   const style = NAV_STYLES[entry.theme]
+  // null = auth state not yet known (prevents flash between authed/unauthed UI)
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient()
+    // getSession() is a local read — fast, no network round-trip
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthed(!!session)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsAuthed(!!session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   return (
     <nav className={`border-b ${style.border} ${entry.navBg} sticky top-0 z-50`}>
@@ -192,23 +207,43 @@ export default function GlobalNav() {
           </Link>
 
           <div className="flex items-center gap-6">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-              >
-                {link.label}
-              </Link>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-            >
-              Sign out
-            </button>
+            {isAuthed === true && (
+              <>
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                >
+                  Sign out
+                </button>
+              </>
+            )}
+            {isAuthed === false && (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+            {/* isAuthed === null: auth state not yet resolved — render nothing to avoid flash */}
           </div>
         </div>
       </div>
