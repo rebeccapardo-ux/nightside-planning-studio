@@ -53,12 +53,10 @@ const NAV_STYLES: Record<NavTheme, NavStyle> = {
 // - Default (no match): dark nav, bg-[#130426]
 // ---------------------------------------------------------------------------
 
-// Default nav is visibly lighter than the page bg (#130426)
-// so every page has nav ≠ page background.
 const DEFAULT_ENTRY: RouteThemeEntry = {
   prefix: '/',
-  theme: 'light',
-  navBg: 'bg-[#F8F4EB]',
+  theme: 'dark',
+  navBg: 'bg-[#200840]',
 }
 
 const ROUTE_THEME_MAP: RouteThemeEntry[] = [
@@ -88,14 +86,12 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/reflect/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
   { prefix: '/app/reflect/fears-ranking',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
 
-  // Account management pages — cream nav
-  { prefix: '/app/account', theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/help',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/about',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
-
-  // Public legal pages — navy nav (page bg is cream, nav must differ)
-  { prefix: '/privacy', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/terms',   theme: 'dark', navBg: 'bg-[#2C3777]' },
+  // Account management + legal pages — navy nav (page bg is cream, nav must differ)
+  { prefix: '/app/account', theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/help',    theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/about',   theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/privacy',     theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/terms',       theme: 'dark', navBg: 'bg-[#2C3777]' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
