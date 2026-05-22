@@ -197,6 +197,14 @@ function ValuesRankingContent() {
     loadSavedEntry()
   }, [entryIdFromUrl])
 
+  useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'values_ranking' } }),
+    }).catch(() => {})
+  }, [])
+
   // Autosave card state 1500ms after assignments change
   useEffect(() => {
     if (!isDirty) return
@@ -257,6 +265,11 @@ function ValuesRankingContent() {
         if (error) throw error
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'values_ranking' } }),
+        }).catch(() => {})
       }
       setIsDirty(false)
       setSaveStatus('saved')

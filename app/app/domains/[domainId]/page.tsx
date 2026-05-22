@@ -513,6 +513,13 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       setNoteLinks(noteLinkMap)
       setEntryLinks(entryLinkMap)
       setLoading(false)
+
+      const foundDomain = containers.find((c) => c.id === domainId)
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'document_opened', metadata: { domain_id: domainId, domain_title: foundDomain?.title ?? null } }),
+      }).catch(() => {})
     }
     load()
   }, [domainId])
@@ -1451,6 +1458,11 @@ function PlanningStatusSection({
       localStorage.setItem(`ready_${domainId}_${itemKey}`, status)
       onReadyStatusChange(itemKey, status)
       syncCheckboxToMeta(itemKey, idx, updated)
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, field_type: 'checkbox', field_key: itemKey } }),
+      }).catch(() => {})
       return { ...prev, [itemKey]: updated }
     })
   }
@@ -1462,6 +1474,11 @@ function PlanningStatusSection({
         current === 'not_started' ? 'in_progress' :
         current === 'in_progress' ? 'complete' : 'not_started'
       localStorage.setItem(`orient_${domainId}_${key}`, next)
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, field_type: 'orientation', field_key: key, new_status: next } }),
+      }).catch(() => {})
       return { ...prev, [key]: next }
     })
   }
@@ -1469,6 +1486,11 @@ function PlanningStatusSection({
   function setOrientStatus(key: string, newStatus: DomainItemStatus) {
     setOrientStatuses((prev) => {
       localStorage.setItem(`orient_${domainId}_${key}`, newStatus)
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, field_type: 'orientation', field_key: key, new_status: newStatus } }),
+      }).catch(() => {})
       return { ...prev, [key]: newStatus }
     })
   }

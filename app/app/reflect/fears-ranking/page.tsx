@@ -193,6 +193,14 @@ function FearsRankingContent() {
   }, [entryIdFromUrl])
 
   useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'fears_ranking' } }),
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     if (!isDirty) return
     if (cardSaveTimerRef.current) clearTimeout(cardSaveTimerRef.current)
     cardSaveTimerRef.current = setTimeout(() => { autoSaveCardState() }, 1500)
@@ -249,6 +257,11 @@ function FearsRankingContent() {
         if (error) throw error
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'fears_ranking' } }),
+        }).catch(() => {})
       }
       setIsDirty(false)
       setSaveStatus('saved')

@@ -768,6 +768,11 @@ export default function PlanExportPage() {
       }
 
       const blob = await pdf(<PlanPDFDocument planProps={planProps} />).toBlob()
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'export_generated', metadata: { mode } }),
+      }).catch(() => {})
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

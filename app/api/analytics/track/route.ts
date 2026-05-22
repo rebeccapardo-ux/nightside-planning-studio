@@ -9,6 +9,11 @@ const ALLOWED_EVENTS = new Set([
   'platform_entered',
   'learn_page_viewed',
   'account_settings_updated',
+  'document_opened',
+  'document_field_saved',
+  'activity_opened',
+  'activity_engaged',
+  'export_generated',
 ])
 
 export async function POST(req: NextRequest) {

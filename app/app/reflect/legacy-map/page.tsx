@@ -277,6 +277,14 @@ export default function LegacyMapPage() {
     init();
   }, []);
 
+  useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'legacy_map' } }),
+    }).catch(() => {})
+  }, [])
+
   // ── Auto-save (drag / position changes only) ─────────────────────────────────
 
   useEffect(() => {
@@ -319,6 +327,11 @@ export default function LegacyMapPage() {
               window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
               setSupabaseEntryId(created.id);
               supabaseEntryIdRef.current = created.id;
+              fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'legacy_map' } }),
+              }).catch(() => {});
             }
           }
           if (supabaseEntryIdRef.current) associateEntryWithLegacyDomain(supabaseEntryIdRef.current);
@@ -435,6 +448,11 @@ export default function LegacyMapPage() {
           window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
           setSupabaseEntryId(created.id);
           supabaseEntryIdRef.current = created.id;
+          fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'legacy_map' } }),
+          }).catch(() => {});
         }
       }
       if (supabaseEntryIdRef.current) {
@@ -485,6 +503,11 @@ export default function LegacyMapPage() {
           window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
           setSupabaseEntryId(created.id);
           supabaseEntryIdRef.current = created.id;
+          fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'legacy_map' } }),
+          }).catch(() => {});
         }
       }
 

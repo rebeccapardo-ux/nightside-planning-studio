@@ -88,6 +88,14 @@ function ReflectPromptsInner() {
   const userIdRef = useRef<string | null>(null)
 
   useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'reflection_prompts' } }),
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     if (initialIndex < 0) {
       router.replace('/app/reflect/reflection-prompts')
       return
@@ -198,6 +206,11 @@ function ReflectPromptsInner() {
         const entry = await createReflectEntry(promptLabel, text)
         if (!entry) throw new Error('Failed to create entry')
         savedEntryIdRef.current = entry.id
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'reflection_prompts' } }),
+        }).catch(() => {})
 
         const note = await createPromptNote(text, promptLabel, entry.id)
         if (note) savedNoteIdRef.current = note.id
