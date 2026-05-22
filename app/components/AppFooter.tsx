@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import FeedbackModal from '@/app/components/FeedbackModal'
 
 const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -17,6 +18,7 @@ export default function AppFooter() {
   const pathname = usePathname()
   const [light, setLight] = useState(false)
   const [isAuthed, setIsAuthed] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
@@ -60,6 +62,8 @@ export default function AppFooter() {
   const disclaimer = light ? 'rgba(19,4,38,0.70)'   : 'rgba(248,244,235,0.70)'
 
   return (
+    <>
+    {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     <footer style={{ background: bg, borderTop: `1px solid ${border}`, padding: '28px 24px', transition: 'background 200ms ease, border-color 200ms ease' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
@@ -80,12 +84,19 @@ export default function AppFooter() {
                 {label}
               </Link>
             ))}
+            <button
+              onClick={() => setFeedbackOpen(true)}
+              style={{ fontFamily: inter, fontSize: 13, color: textPrimary, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+              className="footer-link"
+            >
+              Send feedback
+            </button>
             <span style={{ color: dot, fontSize: 13 }}>·</span>
             {[
               { href: '/privacy', label: 'Privacy' },
               { href: '/terms',   label: 'Terms'   },
             ].map(({ href, label }) => (
-              <Link key={href} href={href} style={{ fontFamily: inter, fontSize: 13, color: textMuted, textDecoration: 'none' }} className="footer-link">
+              <Link key={href} href={href} style={{ fontFamily: inter, fontSize: 13, color: textPrimary, textDecoration: 'none' }} className="footer-link">
                 {label}
               </Link>
             ))}
@@ -99,5 +110,6 @@ export default function AppFooter() {
       </div>
       <style>{`.footer-link:hover { opacity: 0.7; }`}</style>
     </footer>
+    </>
   )
 }
