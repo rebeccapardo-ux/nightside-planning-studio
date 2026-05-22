@@ -106,8 +106,20 @@ export default function SignUpPage() {
       setLoading(false)
     } else if (data.session) {
       // Email confirmation is disabled — user is signed in directly.
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'signup_submitted' }),
+      }).catch(() => {})
       window.location.href = '/auth/signup/payment'
     } else {
+      if (data.user) {
+        fetch('/api/analytics/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventName: 'signup_submitted', metadata: { userId: data.user.id } }),
+        }).catch(() => {})
+      }
       setConfirmationSent(true)
       setLoading(false)
     }

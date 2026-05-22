@@ -379,6 +379,11 @@ export default function AccountPage() {
     })
     if (error) { setProfileError(error.message); setProfileStatus('error'); return }
     setUser(data.user)
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'account_settings_updated', metadata: { type: 'profile' } }),
+    }).catch(() => {})
     closeProfileModal()
   }
 
@@ -452,6 +457,11 @@ export default function AccountPage() {
     if (signInError) { setPwError('Current password is incorrect.'); setPwStatus('error'); return }
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
     if (updateError) { setPwError(updateError.message); setPwStatus('error'); return }
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'account_settings_updated', metadata: { type: 'password' } }),
+    }).catch(() => {})
     setPwStatus('success')
     setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
     setTimeout(() => setPwStatus('idle'), 4000)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
+import { logEvent } from '@/lib/analytics'
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -234,6 +235,12 @@ export async function POST(req: NextRequest) {
       )
     }
   }
+
+  logEvent({
+    userId: user.id,
+    eventName: 'legacy_contact_designated',
+    metadata: { has_secondary: !!secondary },
+  })
 
   return NextResponse.json({ ok: true })
 }

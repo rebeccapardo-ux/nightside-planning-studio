@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
+import { logEvent } from '@/lib/analytics'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -258,6 +259,7 @@ export async function POST(req: NextRequest) {
       // Don't block on email failure — the edit is already saved
     }
 
+    logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'edit', contactType } })
     return NextResponse.json({ ok: true })
   }
 
@@ -364,6 +366,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType } })
     return NextResponse.json({ ok: true })
   }
 
@@ -441,6 +444,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'add-secondary' } })
     return NextResponse.json({ ok: true })
   }
 
@@ -481,6 +485,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'remove-secondary' } })
     return NextResponse.json({ ok: true })
   }
 

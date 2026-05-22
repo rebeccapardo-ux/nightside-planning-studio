@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
+import { logEvent } from '@/lib/analytics'
 
 export async function POST(req: NextRequest) {
   // Verify the requester is authenticated
@@ -25,6 +26,9 @@ export async function POST(req: NextRequest) {
   }
 
   const uid = user.id
+
+  // Log before deletion so user_id reference is still valid
+  await logEvent({ userId: uid, eventName: 'account_deleted' })
 
   // Delete storage files (voice notes)
   try {

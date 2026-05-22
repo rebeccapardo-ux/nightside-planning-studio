@@ -11,6 +11,11 @@ export default function PaymentButton() {
   async function handleClick() {
     setLoading(true)
     setError('')
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'payment_started' }),
+    }).catch(() => {})
     try {
       const res = await fetch('/api/stripe/create-checkout-session', { method: 'POST' })
       const json = await res.json()

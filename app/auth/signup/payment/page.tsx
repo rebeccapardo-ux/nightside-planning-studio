@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import AuthNav from '@/app/components/AuthNav'
 import PaymentButton from './PaymentButton'
+import { logEvent } from '@/lib/analytics'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -27,6 +28,9 @@ export default async function PaymentPage() {
 
   // If email is not confirmed, show a "check your email" message instead of payment.
   const emailConfirmed = !!user.email_confirmed_at
+  if (emailConfirmed) {
+    logEvent({ userId: user.id, eventName: 'payment_page_reached' })
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7f3e8', display: 'flex', flexDirection: 'column' }}>

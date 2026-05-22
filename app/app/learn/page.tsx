@@ -19,6 +19,14 @@ const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'a
 
 export default function LearnPage() {
   useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'learn_page_viewed' }),
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     const elements = document.querySelectorAll('.ln-animate')
     if (!elements.length) return
     const observer = new IntersectionObserver(

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
 import Stripe from 'stripe'
+import { logEvent } from '@/lib/analytics'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -28,11 +29,17 @@ export default async function SignupSuccessPage({
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId)
       if (session.payment_status === 'paid' && session.metadata?.supabase_user_id) {
-        await supabaseAdmin
+        const userId = session.metadata.supabase_user_id
+        const { data: updated } = await supabaseAdmin
           .from('user_profiles')
           .update({ paid_at: new Date().toISOString() })
-          .eq('user_id', session.metadata.supabase_user_id)
+          .eq('user_id', userId)
           .is('paid_at', null) // idempotent
+          .select('paid_at')
+          .maybeSingle()
+        if (updated) {
+          logEvent({ userId, eventName: 'payment_completed', metadata: { stripe_session_id: sessionId } })
+        }
       }
     } catch (err) {
       console.error('Success page Stripe verification failed:', err)
