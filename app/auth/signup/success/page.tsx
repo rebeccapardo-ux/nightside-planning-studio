@@ -3,6 +3,7 @@ import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
 import Stripe from 'stripe'
 import { logEvent } from '@/lib/analytics'
+import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -49,7 +50,8 @@ export default async function SignupSuccessPage({
   return (
     <div style={{ minHeight: '100vh', background: '#f7f3e8', display: 'flex', flexDirection: 'column' }}>
       <AuthNav />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px 48px', gap: 32 }}>
+        <OnboardingStepIndicator currentStep={4} />
         <div style={{
           background: '#ffffff',
           border: '1px solid #e8e4d8',

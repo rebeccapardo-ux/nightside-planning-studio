@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
+import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -59,6 +60,8 @@ export default function AppHomePage() {
           .yto-cards { grid-template-columns: 1fr !important; }
         }
       `}</style>
+
+      <HomeOnboardingIndicator />
 
       {/* ── Cream section ── */}
       <div style={{ background: '#f8f4eb', paddingBottom: 48 }}>

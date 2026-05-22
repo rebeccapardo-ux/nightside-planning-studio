@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
 
 const hv    = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -283,7 +284,12 @@ export default function LegacyContactForm() {
         <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: 28, width: 'auto' }} />
       </header>
 
-      <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 24px 88px' }}>
+      {/* Step indicator — placed between header and content */}
+      <div style={{ padding: '28px 24px 0' }}>
+        <OnboardingStepIndicator currentStep={4} />
+      </div>
+
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px 88px' }}>
 
         <h1 style={{ fontFamily: apfel, fontSize: 36, fontWeight: 600, color: '#130426', margin: '0 0 20px', lineHeight: 1.1 }}>
           Designate your Legacy Contact
