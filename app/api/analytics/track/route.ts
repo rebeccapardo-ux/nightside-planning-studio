@@ -15,6 +15,7 @@ const ALLOWED_EVENTS = new Set([
   'activity_engaged',
   'activity_contributed',
   'export_generated',
+  'sign_in',
 ])
 
 export async function POST(req: NextRequest) {
@@ -42,6 +43,39 @@ export async function POST(req: NextRequest) {
   // Fallback: accept userId from metadata for pre-auth events (signup_submitted)
   if (!userId && metadata?.userId && typeof metadata.userId === 'string') {
     userId = metadata.userId
+  }
+
+  // sign_in: read previous last_sign_in_at, compute delta, update to now, then log
+  if (eventName === 'sign_in' && userId) {
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+    const { data: profile } = await admin
+      .from('user_profiles')
+      .select('last_sign_in_at')
+      .eq('user_id', userId)
+      .single()
+
+    const previousSignInAt: string | null = profile?.last_sign_in_at ?? null
+    const now = new Date()
+    const daysSince = previousSignInAt
+      ? Math.floor((now.getTime() - new Date(previousSignInAt).getTime()) / (1000 * 60 * 60 * 24))
+      : null
+
+    await admin
+      .from('user_profiles')
+      .update({ last_sign_in_at: now.toISOString() })
+      .eq('user_id', userId)
+
+    await logEvent({
+      userId,
+      eventName: 'sign_in',
+      metadata: { days_since_last_sign_in: daysSince },
+      includePlanningStatus: true,
+    })
+    return NextResponse.json({ ok: true })
   }
 
   // platform_entered: only fire once, then set flag in user_profiles
