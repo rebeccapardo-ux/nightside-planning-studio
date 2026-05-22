@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -15,6 +16,14 @@ function isColorDark(color: string): boolean {
 export default function AppFooter() {
   const pathname = usePathname()
   const [light, setLight] = useState(false)
+  const [isAuthed, setIsAuthed] = useState(false)
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient()
+    supabase.auth.getSession().then(({ data: { session } }) => setIsAuthed(!!session))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => setIsAuthed(!!session))
+    return () => subscription.unsubscribe()
+  }, [])
 
   useEffect(() => {
     const main = document.querySelector('main')
@@ -58,10 +67,14 @@ export default function AppFooter() {
             © {new Date().getFullYear()} The Nightside
           </span>
           <nav style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            {isAuthed && (
+              <Link href="/app/account" style={{ fontFamily: inter, fontSize: 13, color: textPrimary, textDecoration: 'none' }} className="footer-link">
+                My Account
+              </Link>
+            )}
             {[
-              { href: '/app/account', label: 'My Account' },
-              { href: '/app/help',    label: 'Help'       },
-              { href: '/app/about',   label: 'About'      },
+              { href: '/app/help',  label: 'Help'  },
+              { href: '/app/about', label: 'About' },
             ].map(({ href, label }) => (
               <Link key={href} href={href} style={{ fontFamily: inter, fontSize: 13, color: textPrimary, textDecoration: 'none' }} className="footer-link">
                 {label}
