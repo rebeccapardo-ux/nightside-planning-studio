@@ -69,20 +69,25 @@ export default function HomeOnboardingIndicator() {
             }, delay)
           })
 
-          // After last flourish circle + 300ms, clear flourish and start fade
+          // After last flourish circle + 300ms, clear flourish glow and hold
           setTimeout(() => {
             if (cancelled) return
             setFlourishIndex(-1)
 
-            // Start fading
-            setContainerOpacity(0)
-
-            // After fade completes (800ms transition), unmount and mark shown
+            // Hold the fully-completed state so the user can appreciate it
             setTimeout(() => {
               if (cancelled) return
-              setPhase('hidden')
-              fetch('/api/onboarding/complete-shown', { method: 'POST' }).catch(() => {})
-            }, 900)
+
+              // Start fading
+              setContainerOpacity(0)
+
+              // After fade completes (800ms transition), unmount and mark shown
+              setTimeout(() => {
+                if (cancelled) return
+                setPhase('hidden')
+                fetch('/api/onboarding/complete-shown', { method: 'POST' }).catch(() => {})
+              }, 900)
+            }, 1800)
           }, 280 + 300)
         }, 600)
 
