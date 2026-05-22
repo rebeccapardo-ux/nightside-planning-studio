@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { TRIVIA_CARDS, type TriviaCard } from '@/lib/trivia-data'
 import { createNote, updateNote } from '@/lib/notes'
@@ -16,6 +16,15 @@ type View =
 export default function TriviaPage() {
   const [view, setView] = useState<View>({ kind: 'deck' })
   const [seenIds, setSeenIds] = useState<Set<number>>(new Set())
+  const hasEngagedRef = useRef(false)
+
+  useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'deathcare_trivia' } }),
+    }).catch(() => {})
+  }, [])
 
   function selectCard(card: TriviaCard) {
     setSeenIds((prev) => new Set([...prev, card.id]))
@@ -41,6 +50,16 @@ export default function TriviaPage() {
           onBack={backToDeck}
           onNext={nextCard}
           total={TRIVIA_CARDS.length}
+          onFirstFlip={() => {
+            if (!hasEngagedRef.current) {
+              hasEngagedRef.current = true
+              fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'deathcare_trivia' } }),
+              }).catch(() => {})
+            }
+          }}
         />
       ) : (
         <DeckView
@@ -193,11 +212,13 @@ function CardView({
   onBack,
   onNext,
   total,
+  onFirstFlip,
 }: {
   card: TriviaCard
   onBack: () => void
   onNext: () => void
   total: number
+  onFirstFlip?: () => void
 }) {
   const [flipped, setFlipped] = useState(false)
   const [noteText, setNoteText] = useState('')
@@ -274,7 +295,7 @@ function CardView({
                 </p>
               </div>
               <button
-                onClick={() => setFlipped(true)}
+                onClick={() => { setFlipped(true); onFirstFlip?.() }}
                 className="mt-8 w-full rounded-full bg-[#130426] text-[#f8f4eb] py-3 text-sm font-semibold hover:bg-[#2C3777] transition-colors"
               >
                 See answer

@@ -268,7 +268,7 @@ function ValuesRankingContent() {
         fetch('/api/analytics/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'values_ranking' } }),
+          body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'values_ranking' } }),
         }).catch(() => {})
       }
       setIsDirty(false)

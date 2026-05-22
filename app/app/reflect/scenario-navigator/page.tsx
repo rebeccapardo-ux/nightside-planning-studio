@@ -79,6 +79,15 @@ const CPR_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor
 
 export default function ScenarioNavigatorPage() {
   const [view, setView] = useState<ViewState>({ kind: 'selection' })
+  const hasEngagedRef = useRef(false)
+
+  useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'scenario_navigator' } }),
+    }).catch(() => {})
+  }, [])
 
   // Push a history entry on every internal navigation so the browser Back
   // button steps through view states rather than leaving the page entirely.
@@ -86,6 +95,14 @@ export default function ScenarioNavigatorPage() {
     window.scrollTo(0, 0)
     window.history.pushState(next, '')
     setView(next)
+    if (next.kind === 'outcome' && !hasEngagedRef.current) {
+      hasEngagedRef.current = true
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'scenario_navigator' } }),
+      }).catch(() => {})
+    }
   }
 
   useEffect(() => {

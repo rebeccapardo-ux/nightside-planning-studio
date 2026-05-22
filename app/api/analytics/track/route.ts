@@ -13,6 +13,7 @@ const ALLOWED_EVENTS = new Set([
   'document_field_saved',
   'activity_opened',
   'activity_engaged',
+  'activity_contributed',
   'export_generated',
 ])
 

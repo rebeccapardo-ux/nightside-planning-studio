@@ -61,6 +61,14 @@ export default function ReflectPage() {
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'reflection_prompts' } }),
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     async function load() {
       const supabase = createSupabaseBrowserClient()
       const { data: { user } } = await supabase.auth.getUser()

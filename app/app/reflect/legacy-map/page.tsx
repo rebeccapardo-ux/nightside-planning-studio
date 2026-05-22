@@ -330,7 +330,7 @@ export default function LegacyMapPage() {
               fetch('/api/analytics/track', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'legacy_map' } }),
+                body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'legacy_map' } }),
               }).catch(() => {});
             }
           }
@@ -451,7 +451,7 @@ export default function LegacyMapPage() {
           fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'legacy_map' } }),
+            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'legacy_map' } }),
           }).catch(() => {});
         }
       }
@@ -506,7 +506,7 @@ export default function LegacyMapPage() {
           fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'legacy_map' } }),
+            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'legacy_map' } }),
           }).catch(() => {});
         }
       }
