@@ -4,7 +4,7 @@ import { useState } from 'react'
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 const EFFECTIVE_DATE = 'May 20, 2026'
-const LAST_UPDATED   = 'May 20, 2026'
+const LAST_UPDATED   = 'May 22, 2026'
 
 const p:  React.CSSProperties = { fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: '0 0 16px' }
 const h3: React.CSSProperties = { fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', margin: '24px 0 8px' }
@@ -189,10 +189,15 @@ export default function TermsPage() {
         {/* ── Payment ── */}
         <StaticSection title="Payment">
           <p style={p}>
-            Fees for use of the platform, refund policies, and billing details will be communicated to you at signup. By signing up, you agree to the fees in effect at that time.
+            <strong style={{ fontWeight: 600 }}>Fees.</strong> Access to the platform is provided in exchange for a one-time payment of $179 CAD plus applicable provincial sales tax (HST/GST), calculated based on your province of residence. This is a one-time purchase — there are no recurring fees or subscription charges.
           </p>
-          <p style={{ ...p, margin: 0, fontStyle: 'italic', color: 'rgba(19,4,38,0.6)' }}>
-            [Detailed payment terms will be added when the payment system is implemented.]
+          <p style={p}>
+            <strong style={{ fontWeight: 600 }}>Payment processing.</strong> Payments are processed by Stripe, our third-party payment processor. We do not store your credit card or banking information; that information is handled directly by Stripe under their own terms and privacy policy.
+          </p>
+          <p style={{ ...p, margin: 0 }}>
+            <strong style={{ fontWeight: 600 }}>Refunds.</strong> We consider refund requests on a case-by-case basis. If you&apos;re not satisfied with the platform or your situation has changed, please contact us at{' '}
+            <a href="mailto:contact@thenightside.net" style={a}>contact@thenightside.net</a>{' '}
+            to discuss.
           </p>
         </StaticSection>
 
@@ -290,8 +295,7 @@ export default function TermsPage() {
           </p>
           <p style={{ ...p, margin: 0 }}>
             The current version of these Terms is always available at{' '}
-            <a href="/terms" style={a}>thenightside.net/terms</a>{' '}
-            <span style={{ color: 'rgba(19,4,38,0.45)', fontSize: 14 }}>[URL to be confirmed at production launch]</span>.
+            <a href="https://studio.thenightside.net/terms" style={a}>https://studio.thenightside.net/terms</a>.
           </p>
         </StaticSection>
 
