@@ -73,6 +73,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  await logEvent({ userId, eventName, metadata })
+  await logEvent({
+    userId,
+    eventName,
+    metadata,
+    includePlanningStatus: eventName === 'return_visit',
+  })
   return NextResponse.json({ ok: true })
 }

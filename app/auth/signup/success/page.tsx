@@ -38,7 +38,7 @@ export default async function SignupSuccessPage({
           .select('paid_at')
           .maybeSingle()
         if (updated) {
-          logEvent({ userId, eventName: 'payment_completed', metadata: { stripe_session_id: sessionId } })
+          logEvent({ userId, eventName: 'payment_completed', metadata: { stripe_session_id: sessionId }, includePlanningStatus: true })
         }
       }
     } catch (err) {

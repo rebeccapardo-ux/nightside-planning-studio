@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { logEvent } from '@/lib/analytics'
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -48,17 +49,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    const { error } = await supabaseAdmin
+    const { data: updated, error } = await supabaseAdmin
       .from('user_profiles')
       .update({ paid_at: new Date().toISOString() })
       .eq('user_id', userId)
       .is('paid_at', null) // idempotent — don't overwrite if already set
+      .select('paid_at')
+      .maybeSingle()
 
     if (error) {
       console.error('Failed to set paid_at for user:', userId, error)
       await alertAdmin(session.id, `DB update failed for user ${userId}: ${error.message}`)
     } else {
       console.log('paid_at set for user:', userId, 'session:', session.id)
+      // Only log if this webhook was the one to set paid_at (prevents double-logging
+      // on the rare case the success page already logged it)
+      if (updated) {
+        logEvent({
+          userId,
+          eventName: 'payment_completed',
+          metadata: { stripe_session_id: session.id },
+          includePlanningStatus: true,
+        })
+      }
     }
   }
 

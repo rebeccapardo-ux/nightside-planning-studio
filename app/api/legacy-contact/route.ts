@@ -240,6 +240,7 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     eventName: 'legacy_contact_designated',
     metadata: { has_secondary: !!secondary },
+    includePlanningStatus: true,
   })
 
   return NextResponse.json({ ok: true })
