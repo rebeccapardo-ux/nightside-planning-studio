@@ -92,6 +92,10 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/account', theme: 'light', navBg: 'bg-[#f8f4eb]' },
   { prefix: '/app/help',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
   { prefix: '/app/about',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
+
+  // Public legal pages — navy nav (page bg is cream, nav must differ)
+  { prefix: '/privacy', theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/terms',   theme: 'dark', navBg: 'bg-[#2C3777]' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
