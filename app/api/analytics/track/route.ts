@@ -7,7 +7,6 @@ const ALLOWED_EVENTS = new Set([
   'signup_submitted',
   'payment_started',
   'platform_entered',
-  'return_visit',
   'learn_page_viewed',
   'account_settings_updated',
 ])
@@ -26,12 +25,10 @@ export async function POST(req: NextRequest) {
   }
 
   let userId: string | null = null
-  let lastSignInAt: string | null = null
   try {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     userId = user?.id ?? null
-    lastSignInAt = user?.last_sign_in_at ?? null
   } catch {
     // unauthed — ok for signup_submitted
   }
@@ -64,20 +61,6 @@ export async function POST(req: NextRequest) {
       .eq('user_id', userId)
   }
 
-  // return_visit: only fire if last sign-in was > 7 days ago
-  if (eventName === 'return_visit') {
-    if (!lastSignInAt) return NextResponse.json({ ok: true, skipped: true })
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-    if (new Date(lastSignInAt) >= sevenDaysAgo) {
-      return NextResponse.json({ ok: true, skipped: true })
-    }
-  }
-
-  await logEvent({
-    userId,
-    eventName,
-    metadata,
-    includePlanningStatus: eventName === 'return_visit',
-  })
+  await logEvent({ userId, eventName, metadata })
   return NextResponse.json({ ok: true })
 }
