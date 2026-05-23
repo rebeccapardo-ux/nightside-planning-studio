@@ -888,7 +888,7 @@ function ValuesRankingContent() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 22 }}>
             {isDone ? (
               <div style={{
-                width: '100%', maxWidth: 280, minHeight: 140, borderRadius: 18,
+                width: '70%', maxWidth: 240, aspectRatio: '3 / 4', borderRadius: 18,
                 border: '1.5px solid rgba(255,255,255,0.25)',
                 background: 'rgba(255,255,255,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18,
@@ -900,13 +900,13 @@ function ValuesRankingContent() {
             ) : cardRevealed && current ? (
               <>
                 <div style={{
-                  width: '100%', maxWidth: 280, minHeight: 140, borderRadius: 18,
-                  background: '#F29836',
-                  border: '2px solid #DB5835',
-                  boxShadow: '0 0 18px rgba(219,88,53,0.22), 0 2px 8px rgba(0,0,0,0.08)',
+                  width: '70%', maxWidth: 240, aspectRatio: '3 / 4', borderRadius: 18,
+                  background: '#FFFFFF',
+                  border: '2px solid #F29836',
+                  boxShadow: '0 8px 24px rgba(19,4,38,0.25)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
                 }}>
-                  <span style={{ fontFamily: hv, fontSize: 18, fontWeight: 600, color: '#130426', textAlign: 'center', lineHeight: 1.3 }}>
+                  <span style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', textAlign: 'center', lineHeight: 1.3 }}>
                     {current.replace(/\//g, '/​')}
                   </span>
                 </div>
@@ -920,10 +920,10 @@ function ValuesRankingContent() {
                   type="button"
                   onClick={() => setCardRevealed(true)}
                   style={{
-                    width: '100%', maxWidth: 280, minHeight: 140, borderRadius: 18,
-                    border: '2px solid #DB5835',
+                    width: '70%', maxWidth: 240, aspectRatio: '3 / 4', borderRadius: 18,
+                    border: '2px solid #F29836',
                     background: 'rgba(255,255,255,0.08)',
-                    boxShadow: '0 0 18px rgba(219,88,53,0.22)',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#ffffff',
