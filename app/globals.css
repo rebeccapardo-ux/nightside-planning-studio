@@ -207,3 +207,9 @@ body {
   font-size: 16px;
   line-height: 1.6;
 }
+
+/* Hide the floating notepad while the mobile nav drawer is open
+   so it doesn't float above the drawer overlay. */
+body.nav-drawer-open .ns-floating-notepad-wrap {
+  visibility: hidden;
+}
