@@ -542,8 +542,8 @@ function ValuesRankingContent() {
 
   if (loadingSavedEntry) {
     return (
-      <div className="mx-auto max-w-[1200px] px-6 py-8 text-[#f8f4eb]/70 md:px-10">
-        Loading…
+      <div className="min-h-screen" style={{ background: '#2C3777' }}>
+        <div style={{ background: '#130426', minHeight: 180 }} />
       </div>
     )
   }
