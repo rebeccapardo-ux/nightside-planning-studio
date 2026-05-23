@@ -221,6 +221,10 @@ export default async function PlanPage() {
             grid-template-columns: 1fr !important;
             gap: 32px 0 !important;
           }
+          /* Domain cards: 2-up was too cramped — revert to 1-per-row */
+          .plan-domain-keydetails-grid > div#tour-areas > div {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
 

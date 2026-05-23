@@ -234,11 +234,11 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
 }
 
 /* Wishes-doc export bar (capture pages): absolute → static on mobile so
-   the Export + Saved status sit in the document flow at the top of the
-   content gutter, not under the notepad. Also hide the page-level
-   Saved-status span on mobile (Brief 2 §3a) — section-level save
-   indicators that already exist inline with each section heading take
-   over. */
+   the Export + Saved-status sit in the document flow at the top of the
+   content gutter, not under the notepad. The page-level Saved-status
+   span that lives inside the export bar is hidden on mobile because
+   a left-aligned .mobile-saved-status (rendered below the pills in each
+   wishes doc) takes over as the canonical save indicator on mobile. */
 @media (max-width: 767px) {
   .capture-export-bar {
     position: static !important;
@@ -257,15 +257,18 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   }
 }
 
-/* Plan page Preview & Export button: absolute → static on mobile. */
+/* Plan page Preview & Export button: absolute → static on mobile, pulled
+   up close to the "Your Plan" title so it reads as anchored to the title
+   row rather than floating in the cream space below. On very narrow
+   viewports the button wraps under the title at the right edge. */
 @media (max-width: 767px) {
   .plan-export-bar {
     position: static !important;
     top: auto !important;
     right: auto !important;
-    padding: 24px 20px 0 !important;
+    padding: 0 20px !important;
     max-width: 1100px;
-    margin: 0 auto !important;
+    margin: -36px auto 12px !important;
     display: flex;
     justify-content: flex-end;
   }
