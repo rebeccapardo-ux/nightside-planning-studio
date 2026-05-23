@@ -216,6 +216,12 @@ export default async function PlanPage() {
         .plan-export-link:hover { text-decoration: underline !important; }
         .plan-pill-out:hover { background: #f5f5f5 !important; }
         .plan-export-btn:hover { background: #C04828 !important; }
+        @media (max-width: 767px) {
+          .plan-domain-keydetails-grid {
+            grid-template-columns: 1fr !important;
+            gap: 32px 0 !important;
+          }
+        }
       `}</style>
 
       {/* ── Page header ── */}
@@ -259,7 +265,7 @@ export default async function PlanPage() {
         {allDomains.length > 0 && <DomainNullStateBanner domains={allDomains} />}
 
         {/* ── Domain cards + Key details grid ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0 40px', alignItems: 'stretch', marginBottom: 64 }}>
+        <div className="plan-domain-keydetails-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0 40px', alignItems: 'stretch', marginBottom: 64 }}>
 
           {/* Left: domain cards */}
           <div id="tour-areas">

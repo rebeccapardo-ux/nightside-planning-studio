@@ -143,6 +143,12 @@ export default function YourMaterialsPanel({
         .plan-export-link:hover { text-decoration: underline !important; }
         .plan-pill-out:hover  { background: #f5f5f5 !important; }
         .ym-header:hover .ym-chevron { opacity: 0.7; }
+        @media (max-width: 767px) {
+          .ym-status-cols {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+          }
+        }
       `}</style>
 
       <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
@@ -185,7 +191,7 @@ export default function YourMaterialsPanel({
                 <Link href="/app/learn" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>Learn</Link>{' '}
                 sections.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+              <div className="ym-status-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
                 <div style={{ paddingRight: 10 }}>
                   <p style={columnHeader}>In progress</p>
                   {inProgressWishes.length > 0 ? (
@@ -244,7 +250,7 @@ export default function YourMaterialsPanel({
               <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: 'rgba(19,4,38,0.7)', maxWidth: 480, marginBottom: 36, marginTop: 0, lineHeight: 1.55 }}>
                 Templates for practical information; fill them in at any time.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+              <div className="ym-status-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
                 <div style={{ paddingRight: 10 }}>
                   <p style={columnHeader}>In progress</p>
                   {inProgressPractical.length > 0 ? (
@@ -300,7 +306,7 @@ export default function YourMaterialsPanel({
             {/* Activity outputs group */}
             <div style={groupPanel}>
               <h3 style={groupHeader}>Activity outputs</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+              <div className="ym-status-cols" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
                 <div style={{ paddingRight: 10 }}>
                   <p style={columnHeader}>In progress</p>
                   {inProgressActivities.length > 0 ? (

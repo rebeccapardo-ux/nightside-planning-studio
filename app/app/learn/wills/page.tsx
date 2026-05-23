@@ -89,6 +89,9 @@ export default async function WillsLearnPage() {
         @media (max-width: 768px) {
           .wl-why-grid { grid-template-columns: 1fr; gap: 40px; }
         }
+        @media (max-width: 767px) {
+          .learn-next-steps-row { grid-template-columns: 1fr !important; gap: 20px !important; }
+        }
       `}</style>
       <WillsAnimations />
 
@@ -202,7 +205,7 @@ export default async function WillsLearnPage() {
             </p>
 
             {/* Row 1: Relevant Activities + Resources */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
+            <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
 
               {/* Card 1: Relevant Activities — orange */}
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>

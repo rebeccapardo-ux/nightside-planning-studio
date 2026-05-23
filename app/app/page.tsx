@@ -54,10 +54,10 @@ export default function AppHomePage() {
         .about-link:hover { text-decoration: underline; }
         @media (max-width: 768px) {
           .approach-grid { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 900px) {
+          .home-card-grid { grid-template-columns: 1fr !important; }
           .yto-top-row { grid-template-columns: 1fr !important; }
           .yto-cards { grid-template-columns: 1fr !important; }
+          .home-approach-aside { margin-left: 0 !important; }
         }
       `}</style>
 
@@ -77,7 +77,7 @@ export default function AppHomePage() {
           </div>
 
           {/* Three-card grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'stretch' }}>
+          <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'stretch' }}>
 
             {/* Reflect */}
             <Link href="/app/reflect" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', background: '#BBABF4', borderRadius: 16, padding: '28px 24px 24px' }}>
@@ -156,7 +156,7 @@ export default function AppHomePage() {
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
 
           {/* Top half — two-column grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start', marginBottom: 52 }}>
+          <div className="yto-top-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start', marginBottom: 52 }}>
 
             {/* Left — heading + subhead */}
             <div>
@@ -189,7 +189,7 @@ export default function AppHomePage() {
           <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#f0a030', margin: '0 0 16px 0' }}>
             Organized by area
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+          <div className="yto-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {['Healthcare Wishes', 'Deathcare', 'Legacy', 'Wills & Estates', 'Personal Admin', 'Ritual & Ceremony'].map((area) => (
               <div key={area} style={{ fontFamily: hv, fontSize: 14, fontWeight: 400, color: '#F8F4EB', padding: '10px 14px', borderLeft: '1.5px solid rgba(240,160,48,0.5)' }}>
                 {area}
@@ -220,7 +220,7 @@ export default function AppHomePage() {
                 By leaning into curiosity and reflection, this process can bring clarity, comfort, and even a sense of peace — both for you, and the people who care about you.
               </p>
             </div>
-            <div style={{ background: '#EEEDFE', borderRadius: 12, padding: '24px 28px', marginLeft: 24 }}>
+            <div className="home-approach-aside" style={{ background: '#EEEDFE', borderRadius: 12, padding: '24px 28px', marginLeft: 24 }}>
               <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#26215C', margin: '0 0 10px' }}>
                 Use on your own, or with others
               </p>

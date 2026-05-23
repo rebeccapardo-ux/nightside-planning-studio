@@ -56,6 +56,9 @@ export default async function RitualLearnPage() {
         @media (max-width: 768px) {
           .rc-why-grid { grid-template-columns: 1fr; gap: 40px; }
         }
+        @media (max-width: 767px) {
+          .learn-next-steps-row { grid-template-columns: 1fr !important; gap: 20px !important; }
+        }
       `}</style>
 
       <div>
@@ -173,7 +176,7 @@ export default async function RitualLearnPage() {
               Use these activities and resources to keep moving in your ritual &amp; ceremony planning.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
+            <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
 
               {/* Card 1: Relevant Activities — orange */}
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>

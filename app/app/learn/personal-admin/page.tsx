@@ -87,6 +87,9 @@ export default async function PersonalAdminLearnPage() {
         @media (max-width: 768px) {
           .pa-why-grid { grid-template-columns: 1fr; gap: 40px; }
         }
+        @media (max-width: 767px) {
+          .learn-next-steps-row { grid-template-columns: 1fr !important; gap: 20px !important; }
+        }
       `}</style>
       <PersonalAdminAnimations />
 
@@ -190,7 +193,7 @@ export default async function PersonalAdminLearnPage() {
               Use these resources to keep moving in your personal admin planning.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
+            <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
 
               {/* Card 1: Explore resources — cream */}
               <div style={{ background: '#F8F4EB', borderRadius: '24px', padding: '36px', display: 'flex', flexDirection: 'column' }}>

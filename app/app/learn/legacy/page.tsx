@@ -58,6 +58,9 @@ export default async function LegacyLearnPage() {
         .lg-source-link:hover {
           color: #C47820;
         }
+        @media (max-width: 767px) {
+          .learn-next-steps-row { grid-template-columns: 1fr !important; gap: 20px !important; }
+        }
       `}</style>
 
       <div>
@@ -164,7 +167,7 @@ export default async function LegacyLearnPage() {
             </p>
 
             {/* Activities card */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
+            <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
                   Relevant Activities
