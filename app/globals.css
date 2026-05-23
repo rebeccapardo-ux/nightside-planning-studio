@@ -293,3 +293,19 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
     white-space: normal !important;
   }
 }
+
+/* Export button on activity pages (Values / Fears / Legacy Map): tone
+   down from solid orange primary to a quieter outlined treatment on
+   mobile. The activity banner is midnight so a white outline + white
+   text reads as secondary against the dark background. Desktop keeps
+   the solid orange primary. */
+@media (max-width: 767px) {
+  .activity-export-btn {
+    background: transparent !important;
+    border: 1px solid rgba(248,244,235,0.55) !important;
+    color: #f8f4eb !important;
+  }
+  .activity-export-btn svg path {
+    stroke: #f8f4eb !important;
+  }
+}
