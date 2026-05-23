@@ -235,7 +235,10 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
 
 /* Wishes-doc export bar (capture pages): absolute → static on mobile so
    the Export + Saved status sit in the document flow at the top of the
-   content gutter, not under the notepad. */
+   content gutter, not under the notepad. Also hide the page-level
+   Saved-status span on mobile (Brief 2 §3a) — section-level save
+   indicators that already exist inline with each section heading take
+   over. */
 @media (max-width: 767px) {
   .capture-export-bar {
     position: static !important;
@@ -245,6 +248,9 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
     max-width: 720px;
     margin: 0 auto !important;
     padding: 20px 20px 0 !important;
+  }
+  .capture-export-bar > span {
+    display: none !important;
   }
 }
 
