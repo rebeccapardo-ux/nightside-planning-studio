@@ -707,7 +707,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   ] : []
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ background: '#EDE7FF' }}>
       <style>{`
         .domain-note-input::placeholder { color: rgba(19,4,38,0.34); font-size: 18px; font-weight: 400; line-height: 1.4; }
         .planning-grid {
