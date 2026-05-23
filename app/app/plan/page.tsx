@@ -231,7 +231,7 @@ export default async function PlanPage() {
           <SectionTitleReveal title="Your Plan" color="#130426" size={64} />
         </div>
         {/* Export button — absolutely positioned so it stays a fixed distance from the notepad */}
-        <div style={{ position: 'absolute', top: 20, right: 148 }}>
+        <div className="plan-export-bar" style={{ position: 'absolute', top: 20, right: 148 }}>
           <Link
             href="/app/plan/export"
             className="plan-export-btn"

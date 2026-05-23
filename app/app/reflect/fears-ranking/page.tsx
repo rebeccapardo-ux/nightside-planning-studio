@@ -510,7 +510,7 @@ function FearsRankingContent() {
     <div className="min-h-screen" style={{ background: '#2C3777' }}>
 
       {/* Dark editorial banner */}
-      <div className="px-5 md:pl-24 md:pr-[148px]" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>
@@ -543,7 +543,7 @@ function FearsRankingContent() {
         </div>
 
         {/* Right: export + saved status */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -44, flexShrink: 0 }}>
+        <div className="activity-banner-aside" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -44, flexShrink: 0 }}>
           {savedEntryId && (
             <button
               type="button"

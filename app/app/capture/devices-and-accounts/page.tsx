@@ -353,7 +353,7 @@ export default function DevicesAndAccountsPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F8F4EB', position: 'relative' }}>
       {savedEntryId && hasAnyContent && (
-        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+        <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <button
             type="button"
             onClick={handlePreviewExport}

@@ -213,3 +213,51 @@ body {
 body.nav-drawer-open .ns-floating-notepad-wrap {
   visibility: hidden;
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   Mobile composition overrides (Brief 2)
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Activity page banner (values-ranking, fears-ranking, legacy-map):
+   row → column on mobile so Export + Saved status drop below the title
+   instead of competing with the notepad. */
+@media (max-width: 767px) {
+  .activity-banner-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 20px !important;
+  }
+  .activity-banner-aside {
+    margin-top: 0 !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* Wishes-doc export bar (capture pages): absolute → static on mobile so
+   the Export + Saved status sit in the document flow at the top of the
+   content gutter, not under the notepad. */
+@media (max-width: 767px) {
+  .capture-export-bar {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    align-items: flex-end !important;
+    max-width: 720px;
+    margin: 0 auto !important;
+    padding: 20px 20px 0 !important;
+  }
+}
+
+/* Plan page Preview & Export button: absolute → static on mobile. */
+@media (max-width: 767px) {
+  .plan-export-bar {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    padding: 24px 20px 0 !important;
+    max-width: 1100px;
+    margin: 0 auto !important;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

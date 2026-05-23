@@ -355,7 +355,7 @@ function AdvanceDirectivePage() {
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   const exportZone = entryId ? (
-    <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+    <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
       <ExportButton onClick={handlePreviewExport} disabled={saveState === 'saving'} />
       {saveStatusText && (
         <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>
