@@ -127,6 +127,8 @@ function ValuesRankingContent() {
   const [cardRevealed, setCardRevealed] = useState(false)
   const [deckModuleVisible, setDeckModuleVisible] = useState(true)
   const [expandedBucket, setExpandedBucket] = useState<Bucket | null>(null)
+  const [placedBucketPulse, setPlacedBucketPulse] = useState<Bucket | null>(null)
+  const placedPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [mobileMovePicker, setMobileMovePicker] = useState<string | null>(null)
 
   const cardSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -394,6 +396,9 @@ function ValuesRankingContent() {
     setAssignments((prev) => ({ ...prev, [bucket]: [...prev[bucket], current] }))
     setCardRevealed(false)
     advance()
+    setPlacedBucketPulse(bucket)
+    if (placedPulseTimerRef.current) clearTimeout(placedPulseTimerRef.current)
+    placedPulseTimerRef.current = setTimeout(() => setPlacedBucketPulse(null), 450)
   }
 
   function handleMobileMove(fromBucket: Bucket, value: string, toBucket: Bucket) {
@@ -965,6 +970,7 @@ function ValuesRankingContent() {
                   <button
                     key={b.key}
                     type="button"
+                    className={placedBucketPulse === b.key ? 'ns-bucket-just-placed' : undefined}
                     onClick={() => {
                       if (placeable) {
                         handleMobilePlace(b.key)
@@ -990,7 +996,7 @@ function ValuesRankingContent() {
                       {b.label}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: '100%', marginTop: 10 }}>
-                      <span style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1 }}>
+                      <span className="ns-bucket-count" style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'left center' }}>
                         {b.count}
                       </span>
                       <span
