@@ -514,6 +514,9 @@ function FuneralWishesPage() {
               </span>
             ))}
           </div>
+          {saveStatusText && (
+            <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+          )}
         </div>
 
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-12 items-start">

@@ -252,6 +252,9 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   .capture-export-bar > span {
     display: none !important;
   }
+  .mobile-saved-status {
+    display: block !important;
+  }
 }
 
 /* Plan page Preview & Export button: absolute → static on mobile. */

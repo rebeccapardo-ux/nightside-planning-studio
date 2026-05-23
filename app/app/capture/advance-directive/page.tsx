@@ -415,6 +415,9 @@ function AdvanceDirectivePage() {
                 </span>
               ))}
             </div>
+            {saveStatusText && (
+              <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+            )}
           </div>
 
         </div>
