@@ -309,3 +309,14 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
     stroke: #f8f4eb !important;
   }
 }
+
+/* Scenario Navigator: every multi-column grid inside the activity
+   (choice cards, path comparison, outcome panels) collapses to a
+   single column on mobile so content flows vertically and doesn't
+   extend past the viewport. */
+@media (max-width: 767px) {
+  .sn-stack {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
