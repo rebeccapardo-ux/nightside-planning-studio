@@ -480,7 +480,7 @@ function PersonalAdminPage() {
             <Field label="My email(s)" value={form.emails} onChange={(v) => updateField('emails', v)} onBlur={handleBlur} rows={2} />
             <Field label="My date of birth:" value={form.dateOfBirth} onChange={(v) => updateField('dateOfBirth', v)} onBlur={handleBlur} rows={2} />
             <Field label="My place of birth:" value={form.placeOfBirth} onChange={(v) => updateField('placeOfBirth', v)} onBlur={handleBlur} rows={2} />
-            <Field label="Employment status (circle one): Employed/Unemployed/Self-employed/Small business owner" value={form.employmentStatus} onChange={(v) => updateField('employmentStatus', v)} onBlur={handleBlur} rows={2} />
+            <Field label="Employment status:" value={form.employmentStatus} onChange={(v) => updateField('employmentStatus', v)} onBlur={handleBlur} rows={2} />
             <Field label="Employer's name, address, and phone #:" value={form.employerDetails} onChange={(v) => updateField('employerDetails', v)} onBlur={handleBlur} rows={3} />
           </AccordionSection>
 
