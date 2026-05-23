@@ -29,10 +29,12 @@ export default function TriviaPage() {
   function selectCard(card: TriviaCard) {
     setSeenIds((prev) => new Set([...prev, card.id]))
     setView({ kind: 'card', card })
+    window.scrollTo(0, 0)
   }
 
   function backToDeck() {
     setView({ kind: 'deck' })
+    window.scrollTo(0, 0)
   }
 
   function nextCard() {
@@ -169,7 +171,7 @@ function DeckView({
               : 'Select any card to begin.'}
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-stretch">
             {TRIVIA_CARDS.map((card) => {
               const seen = seenIds.has(card.id)
               return (
@@ -182,7 +184,7 @@ function DeckView({
                     border: '1px solid rgba(255,255,255,0.18)',
                     boxShadow: seen ? 'none' : '0 8px 20px rgba(19,4,38,0.18), inset 0 1px 0 rgba(255,255,255,0.07)',
                   }}
-                  className={`rounded-2xl px-5 py-6 text-left transition-all duration-150 flex flex-col justify-center
+                  className={`h-full w-full rounded-2xl px-5 py-6 text-left transition-all duration-150 flex flex-col justify-center
                     ${seen
                       ? 'opacity-25 cursor-default'
                       : 'hover:-translate-y-1.5 hover:shadow-[0_12px_28px_rgba(19,4,38,0.28)] active:translate-y-0 cursor-pointer'
