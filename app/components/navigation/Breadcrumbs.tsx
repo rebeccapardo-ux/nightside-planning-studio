@@ -24,7 +24,7 @@ export default function Breadcrumbs({ items, theme = 'light' }: BreadcrumbsProps
   const hoverClass = isNavy ? 'hover:text-[#BBABF4]' : 'hover:text-[#2C3777]'
 
   return (
-    <nav aria-label="Breadcrumb">
+    <nav aria-label="Breadcrumb" className="ns-breadcrumbs">
       <ol style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', listStyle: 'none', margin: 0, padding: 0 }}>
         {items.map((item, i) => {
           const isLast = i === items.length - 1

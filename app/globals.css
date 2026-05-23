@@ -267,3 +267,23 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
     justify-content: flex-end;
   }
 }
+
+/* Breadcrumbs: smaller on mobile so they don't extend under the notepad
+   in the top-right. Inline styles use !important to override. */
+@media (max-width: 767px) {
+  .ns-breadcrumbs ol li > * {
+    font-size: 12px !important;
+  }
+  .ns-breadcrumbs ol {
+    padding-right: 64px !important;
+  }
+}
+
+/* Instruction pills on wishes/practical capture pages: allow text to
+   wrap inside the pill on mobile so long pills don't overflow the
+   viewport. Pills still flow-wrap to new rows for shorter labels. */
+@media (max-width: 767px) {
+  .instruction-pill {
+    white-space: normal !important;
+  }
+}

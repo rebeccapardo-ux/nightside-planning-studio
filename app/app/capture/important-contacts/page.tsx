@@ -406,7 +406,7 @@ function ImportantContactsPage() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {['Expand a section to fill it in', 'Add as many contacts as you need', 'Update anytime as things change'].map((text) => (
-              <span key={text} style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
+              <span key={text} className="instruction-pill" style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
                 {text}
               </span>
             ))}
