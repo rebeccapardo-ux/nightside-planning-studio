@@ -938,6 +938,13 @@ function FearsRankingContent() {
             )}
           </div>
 
+          {/* State copy — bridge between drawn card and buckets */}
+          {cardRevealed && current && !isDone && expandedBucket === null && (
+            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', color: 'rgba(255,255,255,0.72)', textAlign: 'center', margin: '0 0 18px 0' }}>
+              Where does this belong?
+            </p>
+          )}
+
           {/* Error */}
           {errorMessage && (
             <p style={{ fontFamily: hv, fontSize: 13, color: '#ffd2a6', margin: '0 0 14px', textAlign: 'center' }}>
