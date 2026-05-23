@@ -148,6 +148,23 @@ export default function YourMaterialsPanel({
             grid-template-columns: 1fr !important;
             gap: 24px !important;
           }
+          /* Constrain card widths so content never overflows the panel on
+             mobile. Allow inner flex rows to wrap and shrink so long labels
+             ellipsize cleanly and Continue/Export buttons stack if needed. */
+          .plan-pill-doc,
+          .plan-pill-out {
+            max-width: 100% !important;
+            overflow: hidden !important;
+          }
+          .plan-pill-doc > div,
+          .plan-pill-out > div {
+            max-width: 100%;
+            min-width: 0;
+            flex-wrap: wrap;
+          }
+          .plan-pill-doc > div + div {
+            margin-left: 0 !important;
+          }
         }
       `}</style>
 
