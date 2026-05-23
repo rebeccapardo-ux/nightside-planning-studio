@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
@@ -163,6 +163,9 @@ export default function GlobalNav() {
   const style = NAV_STYLES[entry.theme]
   // null = auth state not yet known (prevents flash between authed/unauthed UI)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const drawerRef = useRef<HTMLDivElement>(null)
+  const hamburgerBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
@@ -176,77 +179,215 @@ export default function GlobalNav() {
     return () => subscription.unsubscribe()
   }, [])
 
-  return (
-    <nav className={`border-b ${style.border} ${entry.navBg} sticky top-0 z-50`}>
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-[76px]">
-          <Link
-            href="/app"
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 1, textDecoration: 'none', color: style.subtitle, transition: 'opacity 0.2s ease', paddingTop: 8, paddingBottom: 8 }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={style.wordmark}
-              alt="The Nightside"
-              className="h-[40px] w-auto"
-            />
-            <div style={{ width: '100%', height: 1.5, background: style.divider, margin: '2px 0' }} />
-            <span style={{
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-              fontSize: 12,
-              lineHeight: '14px',
-              fontWeight: 500,
-              letterSpacing: '0.01em',
-              color: style.subtitle,
-              marginLeft: 18,
-            }}>
-              Planning Studio
-            </span>
-          </Link>
+  // Close drawer on route change
+  useEffect(() => {
+    setDrawerOpen(false)
+  }, [pathname])
 
-          <div className="flex items-center gap-6">
-            {isAuthed === true && (
-              <>
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
+  // Body scroll lock + body class for FAB to react to, ESC to close, focus management
+  useEffect(() => {
+    if (!drawerOpen) return
+
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.body.classList.add('nav-drawer-open')
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setDrawerOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+
+    // Move focus into the drawer for keyboard users
+    const firstLink = drawerRef.current?.querySelector<HTMLElement>('a, button')
+    firstLink?.focus()
+
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.body.classList.remove('nav-drawer-open')
+      window.removeEventListener('keydown', onKey)
+      // Restore focus to the hamburger button
+      hamburgerBtnRef.current?.focus()
+    }
+  }, [drawerOpen])
+
+  const drawerLinkClass = `block w-full text-left px-6 py-4 text-[17px] font-medium ${style.link}`
+  const hamburgerLineBg = entry.theme === 'dark' ? '#f8f4eb' : '#130426'
+
+  return (
+    <>
+      <nav className={`border-b ${style.border} ${entry.navBg} sticky top-0 z-50`}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-[76px]">
+            <Link
+              href="/app"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 1, textDecoration: 'none', color: style.subtitle, transition: 'opacity 0.2s ease', paddingTop: 8, paddingBottom: 8 }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={style.wordmark}
+                alt="The Nightside"
+                className="h-[40px] w-auto"
+              />
+              <div style={{ width: '100%', height: 1.5, background: style.divider, margin: '2px 0' }} />
+              <span style={{
+                fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                fontSize: 12,
+                lineHeight: '14px',
+                fontWeight: 500,
+                letterSpacing: '0.01em',
+                color: style.subtitle,
+                marginLeft: 18,
+              }}>
+                Planning Studio
+              </span>
+            </Link>
+
+            {/* Desktop links (>= md) */}
+            <div className="hidden md:flex items-center gap-6">
+              {isAuthed === true && (
+                <>
+                  {NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
                     className={`text-[15.7px] font-medium transition-colors ${style.link}`}
                   >
-                    {link.label}
+                    Sign out
+                  </button>
+                </>
+              )}
+              {isAuthed === false && (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                  >
+                    Sign in
                   </Link>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-                >
-                  Sign out
-                </button>
-              </>
+                  <Link
+                    href="/auth/signup"
+                    className={`text-[15.7px] font-medium transition-colors ${style.link}`}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+              {/* isAuthed === null: auth state not yet resolved — render nothing to avoid flash */}
+            </div>
+
+            {/* Mobile hamburger (< md) */}
+            {isAuthed !== null && (
+              <button
+                ref={hamburgerBtnRef}
+                type="button"
+                onClick={() => setDrawerOpen(true)}
+                aria-label="Open navigation menu"
+                aria-expanded={drawerOpen}
+                aria-controls="mobile-nav-drawer"
+                className="md:hidden flex flex-col justify-center items-center w-11 h-11 -mr-2"
+              >
+                <span style={{ display: 'block', width: 22, height: 2, background: hamburgerLineBg, borderRadius: 1, margin: '2px 0' }} />
+                <span style={{ display: 'block', width: 22, height: 2, background: hamburgerLineBg, borderRadius: 1, margin: '2px 0' }} />
+                <span style={{ display: 'block', width: 22, height: 2, background: hamburgerLineBg, borderRadius: 1, margin: '2px 0' }} />
+              </button>
             )}
-            {isAuthed === false && (
-              <>
-                <Link
-                  href="/auth/signin"
-                  className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
-            {/* isAuthed === null: auth state not yet resolved — render nothing to avoid flash */}
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Mobile drawer */}
+      {drawerOpen && (
+        <>
+          {/* Backdrop — tap to close */}
+          <div
+            onClick={() => setDrawerOpen(false)}
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(19,4,38,0.45)',
+              zIndex: 90,
+              animation: 'navDrawerFadeIn 200ms ease-out',
+            }}
+          />
+          {/* Drawer panel */}
+          <div
+            ref={drawerRef}
+            id="mobile-nav-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            className={entry.navBg}
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: 'min(280px, 80vw)',
+              zIndex: 95,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '-4px 0 24px rgba(0,0,0,0.25)',
+              animation: 'navDrawerSlideIn 220ms ease-out',
+            }}
+          >
+            <div className={`flex justify-end items-center h-[76px] px-4 border-b ${style.border}`}>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close navigation menu"
+                className={`flex items-center justify-center w-11 h-11 ${style.link}`}
+              >
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M4 4L18 18M18 4L4 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <nav className="flex-1 py-2" aria-label="Primary">
+              {isAuthed === true && (
+                <>
+                  {NAV_LINKS.map((link) => (
+                    <Link key={link.href} href={link.href} className={drawerLinkClass}>
+                      {link.label}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className={drawerLinkClass}
+                  >
+                    Sign out
+                  </button>
+                </>
+              )}
+              {isAuthed === false && (
+                <>
+                  <Link href="/auth/signin" className={drawerLinkClass}>Sign in</Link>
+                  <Link href="/auth/signup" className={drawerLinkClass}>Sign up</Link>
+                </>
+              )}
+            </nav>
+          </div>
+          <style>{`
+            @keyframes navDrawerFadeIn {
+              from { opacity: 0 } to { opacity: 1 }
+            }
+            @keyframes navDrawerSlideIn {
+              from { transform: translateX(100%) } to { transform: translateX(0) }
+            }
+          `}</style>
+        </>
+      )}
+    </>
   )
 }
