@@ -21,7 +21,7 @@ export default async function RitualLearnPage() {
 
   const apfel = "'ApfelGrotezk', sans-serif"
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const, paddingLeft: '64px', paddingRight: '64px' }
+  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const }
 
   return (
     <>
@@ -62,7 +62,7 @@ export default async function RitualLearnPage() {
 
         {/* ── 1. HERO ── navy */}
         <section style={{ background: '#2C3777' }}>
-          <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
+          <div className="px-5 md:px-16" style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
 
             <div style={{ marginBottom: 24 }}>
               <Breadcrumbs
@@ -89,7 +89,7 @@ export default async function RitualLearnPage() {
 
         {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
-          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+          <div className="px-5 md:px-16" style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' }}>
 
             <h2 style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
               Why this matters
@@ -123,7 +123,7 @@ export default async function RitualLearnPage() {
 
         {/* ── 3. NOTE ── cream */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '88px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
             <div style={{ maxWidth: '680px' }}>
               <h2 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.15', color: '#130426', marginTop: 0, marginBottom: '20px' }}>
                 Planning for marginalized communities
@@ -164,7 +164,7 @@ export default async function RitualLearnPage() {
 
         {/* ── 4. NEXT STEPS ── deep purple */}
         <section style={{ width: '100%', background: '#130426', paddingTop: '104px', paddingBottom: '104px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
 
             <h2 style={{ fontFamily: apfel, fontSize: '44px', fontWeight: 600, lineHeight: '1.12', letterSpacing: '-0.01em', color: '#FFFFFF', marginBottom: '20px' }}>
               Next steps

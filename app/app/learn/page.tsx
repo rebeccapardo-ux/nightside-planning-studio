@@ -15,7 +15,7 @@ const CARD_STYLES = [
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const, paddingLeft: '64px', paddingRight: '64px' }
+const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const }
 
 export default function LearnPage() {
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function LearnPage() {
       <div className="min-h-screen" style={{ background: '#BBABF4' }}>
 
         {/* ── HERO ── */}
-        <div style={{ ...inner, paddingTop: '80px', paddingBottom: '32px' }}>
+        <div className="px-5 md:px-16" style={{ ...inner, paddingTop: '80px', paddingBottom: '32px' }}>
           <div style={{ maxWidth: '760px' }}>
             <div className="ln-animate">
               <h1 className="ns-title-section" style={{ fontSize: 64, fontWeight: 500, lineHeight: 1.08, color: '#130426', margin: 0 }}>
@@ -112,7 +112,7 @@ export default function LearnPage() {
         </div>
 
         {/* ── EDITORIAL INTRO ── */}
-        <div style={{ ...inner, paddingTop: 0, paddingBottom: 0 }}>
+        <div className="px-5 md:px-16" style={{ ...inner, paddingTop: 0, paddingBottom: 0 }}>
           <div style={{ maxWidth: '760px' }}>
             <div className="ln-animate">
               <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '20px' }}>
@@ -137,7 +137,7 @@ export default function LearnPage() {
         </div>
 
         {/* ── DEATHCARE TRIVIA PANEL ── */}
-        <div style={{ ...inner, marginTop: '48px' }}>
+        <div className="px-5 md:px-16" style={{ ...inner, marginTop: '48px' }}>
           <Link href="/app/learn/trivia" className="ln-trivia-panel">
             <span style={{
               position: 'absolute',
@@ -170,7 +170,7 @@ export default function LearnPage() {
         </div>
 
         {/* ── AREAS OF PLANNING ── */}
-        <div style={{ ...inner, marginTop: '56px', paddingBottom: '96px' }}>
+        <div className="px-5 md:px-16" style={{ ...inner, marginTop: '56px', paddingBottom: '96px' }}>
           <div style={{ background: 'rgba(248, 244, 235, 0.28)', border: '1px solid rgba(19, 4, 38, 0.08)', borderRadius: '24px', padding: '48px' }}>
           <h2 style={{ fontFamily: apfel, fontSize: '32px', fontWeight: 600, lineHeight: '1.1', color: '#130426', margin: 0 }}>
             Areas of planning

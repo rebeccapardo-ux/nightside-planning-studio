@@ -152,7 +152,7 @@ export default function AppHomePage() {
       </div>
 
       {/* ── "Your thinking, organized" section ── */}
-      <section style={{ background: '#2C3777', padding: '56px 64px 56px', width: '100%', boxSizing: 'border-box' }}>
+      <section className="px-5 md:px-16" style={{ background: '#2C3777', paddingTop: 56, paddingBottom: 56, width: '100%', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
 
           {/* Top half — two-column grid */}

@@ -22,7 +22,7 @@ export default async function WillsLearnPage() {
 
   const apfel = "'ApfelGrotezk', sans-serif"
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const, paddingLeft: '64px', paddingRight: '64px' }
+  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const }
 
   return (
     <>
@@ -96,7 +96,7 @@ export default async function WillsLearnPage() {
 
         {/* ── 1. HERO ── navy */}
         <section style={{ background: '#2C3777' }}>
-          <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
+          <div className="px-5 md:px-16" style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
 
             <div style={{ marginBottom: 24 }}>
               <Breadcrumbs
@@ -125,7 +125,7 @@ export default async function WillsLearnPage() {
 
         {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
-          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+          <div className="px-5 md:px-16" style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' }}>
 
             <h2 className="wl-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
               Why this matters
@@ -162,7 +162,7 @@ export default async function WillsLearnPage() {
 
         {/* ── 3. ESTATE PLANNING OVERVIEW ── cream */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
             <div style={{ maxWidth: '620px' }}>
               <h2 className="wl-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '40px' }}>
                 An estate plan may also include
@@ -186,7 +186,7 @@ export default async function WillsLearnPage() {
 
         {/* ── 5. NEXT STEPS ── navy */}
         <section style={{ width: '100%', background: '#2C3777', paddingTop: '104px', paddingBottom: '104px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
 
             <div className="wl-animate">
               <h2

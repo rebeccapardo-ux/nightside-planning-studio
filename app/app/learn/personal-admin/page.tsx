@@ -22,7 +22,7 @@ export default async function PersonalAdminLearnPage() {
 
   const apfel = "'ApfelGrotezk', sans-serif"
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const, paddingLeft: '64px', paddingRight: '64px' }
+  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const }
 
   const coverItems = [
     {
@@ -94,7 +94,7 @@ export default async function PersonalAdminLearnPage() {
 
         {/* ── 1. HERO ── navy */}
         <section style={{ background: '#2C3777' }}>
-          <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
+          <div className="px-5 md:px-16" style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
 
             <div style={{ marginBottom: 24 }}>
               <Breadcrumbs
@@ -121,7 +121,7 @@ export default async function PersonalAdminLearnPage() {
 
         {/* ── 2. WHY THIS MATTERS ── cream, two-column */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
-          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+          <div className="px-5 md:px-16" style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' }}>
 
             <h2 className="pa-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
               Why this matters
@@ -155,7 +155,7 @@ export default async function PersonalAdminLearnPage() {
 
         {/* ── 3. WHAT PERSONAL ADMIN COVERS ── deep purple */}
         <section style={{ width: '100%', background: '#130426', paddingTop: '96px', paddingBottom: '96px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
             <div style={{ maxWidth: '620px' }}>
               <div className="pa-animate">
                 <h2 style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#FFFFFF', marginTop: 0, marginBottom: '28px' }}>
@@ -181,7 +181,7 @@ export default async function PersonalAdminLearnPage() {
 
         {/* ── 5. NEXT STEPS ── navy */}
         <section style={{ width: '100%', background: '#2C3777', paddingTop: '104px', paddingBottom: '104px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
 
             <h2 style={{ fontFamily: apfel, fontSize: '44px', fontWeight: 600, lineHeight: '1.12', letterSpacing: '-0.01em', color: '#FFFFFF', marginBottom: '20px' }}>
               Next steps

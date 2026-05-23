@@ -22,7 +22,7 @@ export default async function HealthcareLearnPage() {
 
   const apfel = "'ApfelGrotezk', sans-serif"
   const inter = "'Inter', system-ui, -apple-system, sans-serif"
-  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const, paddingLeft: '64px', paddingRight: '64px' }
+  const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const }
 
   const accentUnderline: React.CSSProperties = {
     textDecoration: 'underline',
@@ -108,7 +108,7 @@ export default async function HealthcareLearnPage() {
 
         {/* ── 1. HERO ── */}
         <section style={{ background: '#2C3777' }}>
-          <div style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
+          <div className="px-5 md:px-16" style={{ ...inner, paddingTop: '80px', paddingBottom: '88px' }}>
             <div style={{ marginBottom: 24 }}>
               <Breadcrumbs
                 theme="navy"
@@ -133,7 +133,7 @@ export default async function HealthcareLearnPage() {
 
         {/* ── Disclaimer ── */}
         <div style={{ width: '100%', background: '#F8F4EB', paddingTop: '32px', paddingBottom: '0' }}>
-          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+          <div className="px-5 md:px-16" style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' }}>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '15px', fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, margin: 0 }}>
               The information here is for understanding. For medical decisions, consult your healthcare team.
             </p>
@@ -142,7 +142,7 @@ export default async function HealthcareLearnPage() {
 
         {/* ── 2. WHY THIS MATTERS — heading above, equal columns below ── */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '72px', paddingBottom: '72px' }}>
-          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+          <div className="px-5 md:px-16" style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' }}>
 
             {/* Heading spans full width above both columns */}
             <h2 className="hc-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '48px' }}>
@@ -184,7 +184,7 @@ export default async function HealthcareLearnPage() {
 
         {/* ── 3. CHOOSING SDM — soft inset panel ── */}
         <section style={{ width: '100%', background: '#F8F4EB', paddingTop: '64px', paddingBottom: '112px' }}>
-          <div style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '64px', paddingRight: '64px' }}>
+          <div className="px-5 md:px-16" style={{ maxWidth: '1180px', marginLeft: 'auto', marginRight: 'auto' }}>
             <div className="hc-animate">
               <div style={{
                 background: 'rgba(187,171,244,0.12)',
@@ -228,7 +228,7 @@ export default async function HealthcareLearnPage() {
 
         {/* ── 4. NEXT STEPS — action surface, no motion ── */}
         <section style={{ width: '100%', background: '#2A1450', paddingTop: '112px', paddingBottom: '120px' }}>
-          <div style={inner}>
+          <div className="px-5 md:px-16" style={inner}>
             <h2
               style={{ fontFamily: apfel, fontSize: '44px', fontWeight: 600, lineHeight: '1.2', letterSpacing: '0.01em', color: '#FFFFFF', marginBottom: '12px' }}
             >

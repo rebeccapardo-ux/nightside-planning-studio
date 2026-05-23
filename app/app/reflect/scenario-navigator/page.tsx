@@ -179,7 +179,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
     <div className="min-h-screen bg-[#2f3f8f] text-white">
 
       {/* Midnight banner — full width */}
-      <div style={{ background: '#130426', padding: '64px 32px 60px 96px' }}>
+      <div className="px-5 md:pl-24 md:pr-8" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60 }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"

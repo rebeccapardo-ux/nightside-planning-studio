@@ -519,7 +519,7 @@ function ValuesRankingContent() {
     <div className="min-h-screen" style={{ background: '#2C3777' }}>
 
       {/* Dark editorial banner */}
-      <div style={{ background: '#130426', padding: '64px 148px 60px 96px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className="px-5 md:pl-24 md:pr-[148px]" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>
@@ -582,7 +582,7 @@ function ValuesRankingContent() {
 
       {/* Blue activity workspace */}
       <div style={{ background: '#2C3777' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', paddingTop: 28, paddingLeft: 32, paddingRight: 32, paddingBottom: 48 }}>
+        <div className="px-5 md:px-8" style={{ maxWidth: 1400, margin: '0 auto', paddingTop: 28, paddingBottom: 48 }}>
 
           {/* Deck / card module — centered, compact */}
           <div ref={deckModuleRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
