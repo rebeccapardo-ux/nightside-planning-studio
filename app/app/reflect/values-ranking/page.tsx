@@ -981,8 +981,9 @@ function ValuesRankingContent() {
                       minHeight: 110,
                       cursor: 'pointer',
                       textAlign: 'left',
-                      boxShadow: placeable ? '0 0 0 2px rgba(219,88,53,0.35)' : 'none',
-                      transition: 'box-shadow 160ms',
+                      outline: placeable ? '2px dashed #F29836' : 'none',
+                      outlineOffset: 3,
+                      transition: 'outline-color 160ms',
                     }}
                   >
                     <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426', lineHeight: 1.2 }}>
