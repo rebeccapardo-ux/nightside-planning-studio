@@ -86,6 +86,13 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/reflect/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
   { prefix: '/app/reflect/fears-ranking',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
 
+  // Activity screens with dark/midnight banners — use cream nav for contrast
+  { prefix: '/app/reflect/reflection-prompts', theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/reflect/prompts',            theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/reflect/scenario-navigator', theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/reflect/legacy-map',         theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/learn/trivia',               theme: 'light', navBg: 'bg-[#f8f4eb]' },
+
   // Account management + legal pages — navy nav (page bg is cream, nav must differ)
   { prefix: '/app/account', theme: 'dark', navBg: 'bg-[#2C3777]' },
   { prefix: '/app/help',    theme: 'dark', navBg: 'bg-[#2C3777]' },
