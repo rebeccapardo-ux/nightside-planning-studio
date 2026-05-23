@@ -410,8 +410,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
         <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
           Choose a path to explore:
         </h2>
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
-          className="!grid-cols-1 sm:!grid-cols-3">
+        <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-3">
           {scenario.choices.map((choice) => {
             const cs = PANCREATIC_CHOICE_STYLES[choice.id] ?? PANCREATIC_CHOICE_STYLES['aggressive-treatment']
             const isHov = hovered === choice.id
@@ -503,8 +502,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
         </div>
 
         {/* Two-column: left = narrative + DYK, right = reflection */}
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 48, alignItems: 'start' }}
-          className="!grid-cols-1 sm:!grid-cols-[1.5fr_1fr]">
+        <div className="sn-stack grid grid-cols-1 gap-12 items-start sm:grid-cols-[1.5fr_1fr]">
 
           {/* Left column */}
           <div>
@@ -607,8 +605,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
         {/* Action section */}
         <div style={{ borderTop: '2px solid rgba(26,26,26,0.22)', marginTop: 80, paddingTop: 48 }}>
-          <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr', gap: 24 }}
-            className="!grid-cols-1 sm:!grid-cols-[5fr_4fr]">
+          <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {otherChoices.length > 0 && (
               <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
@@ -754,8 +751,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
         <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
           Choose a path to explore:
         </h2>
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
-          className="!grid-cols-1 sm:!grid-cols-3">
+        <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-3">
           {scenario.choices.map((choice) => {
             const cs = COGNITIVE_DECLINE_CHOICE_STYLES[choice.id] ?? COGNITIVE_DECLINE_CHOICE_STYLES['aggressive-treatment']
             const isHov = hovered === choice.id
@@ -847,8 +843,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
         </div>
 
         {/* Two-column: left = narrative + DYK, right = reflection */}
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 48, alignItems: 'start' }}
-          className="!grid-cols-1 sm:!grid-cols-[1.5fr_1fr]">
+        <div className="sn-stack grid grid-cols-1 gap-12 items-start sm:grid-cols-[1.5fr_1fr]">
 
           {/* Left column */}
           <div>
@@ -951,8 +946,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 
         {/* Action section */}
         <div style={{ borderTop: '2px solid rgba(26,26,26,0.22)', marginTop: 80, paddingTop: 48 }}>
-          <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr', gap: 24 }}
-            className="!grid-cols-1 sm:!grid-cols-[5fr_4fr]">
+          <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {otherChoices.length > 0 && (
               <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
@@ -1076,8 +1070,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
         <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
           Choose a path to explore:
         </h2>
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}
-          className="!grid-cols-1 sm:!grid-cols-2">
+        <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-2">
           {scenario.choices.map((choice) => {
             const cs = CPR_CHOICE_STYLES[choice.id] ?? CPR_CHOICE_STYLES['full-resuscitation']
             const isHov = hovered === choice.id
@@ -1169,8 +1162,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
         </div>
 
         {/* Two-column: left = narrative + DYK, right = reflection */}
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 48, alignItems: 'start' }}
-          className="!grid-cols-1 sm:!grid-cols-[1.5fr_1fr]">
+        <div className="sn-stack grid grid-cols-1 gap-12 items-start sm:grid-cols-[1.5fr_1fr]">
 
           {/* Left column */}
           <div>
@@ -1273,8 +1265,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
         {/* Action section */}
         <div style={{ borderTop: '2px solid rgba(26,26,26,0.22)', marginTop: 80, paddingTop: 48 }}>
-          <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr', gap: 24 }}
-            className="!grid-cols-1 sm:!grid-cols-[5fr_4fr]">
+          <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {otherChoices.length > 0 && (
               <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
@@ -1398,8 +1389,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
         <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 400, color: '#1A1A1A', marginTop: 64, marginBottom: 28, textAlign: 'center' }}>
           Choose a path to explore:
         </h2>
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 24 }}
-          className="!grid-cols-1 sm:!grid-cols-3">
+        <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-3">
           {scenario.choices.map((choice) => {
             const cs = ALS_CHOICE_STYLES[choice.id] ?? ALS_CHOICE_STYLES['palliative-care']
             const isHov = hovered === choice.id
@@ -1755,8 +1745,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
         </div>
 
         {/* Two-column: left = narrative + DYK, right = reflection module */}
-        <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 48, alignItems: 'start' }}
-          className="!grid-cols-1 sm:!grid-cols-[1.5fr_1fr]">
+        <div className="sn-stack grid grid-cols-1 gap-12 items-start sm:grid-cols-[1.5fr_1fr]">
 
           {/* Left column */}
           <div>
@@ -1870,8 +1859,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
         {/* Action section — 2px divider, 2fr/1fr grid */}
         <div style={{ borderTop: '2px solid rgba(26,26,26,0.22)', marginTop: 80, paddingTop: 48 }}>
-          <div className="sn-stack" style={{ display: 'grid', gridTemplateColumns: '5fr 4fr', gap: 24 }}
-            className="!grid-cols-1 sm:!grid-cols-[5fr_4fr]">
+          <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {/* Left — Explore other paths */}
             {otherChoices.length > 0 && (

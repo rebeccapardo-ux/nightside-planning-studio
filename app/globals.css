@@ -310,11 +310,13 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   }
 }
 
-/* Scenario Navigator: every multi-column grid inside the activity
-   (choice cards, path comparison, outcome panels) collapses to a
-   single column on mobile so content flows vertically and doesn't
-   extend past the viewport. */
-@media (max-width: 767px) {
+/* Scenario Navigator: stacks the one remaining inline-grid choice list
+   (line ~319 with dynamic gridTemplateColumns) to a single column on
+   small viewports. The other 12 grids in the file now use Tailwind
+   responsive classes (grid-cols-1 sm:grid-cols-X) directly, so this
+   rule scopes to <640px to align with Tailwind's sm: breakpoint and
+   avoid fighting those classes at 640–767px. */
+@media (max-width: 639px) {
   .sn-stack {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
