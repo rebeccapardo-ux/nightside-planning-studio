@@ -397,7 +397,7 @@ export default function DevicesAndAccountsPage() {
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
-            Information you add will save automatically to Your Plan. You can add access details during export.
+            Information you add will save automatically to Your Plan.
           </p>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>

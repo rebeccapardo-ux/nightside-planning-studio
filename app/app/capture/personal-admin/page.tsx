@@ -445,11 +445,11 @@ function PersonalAdminPage() {
             When you&apos;re incapacitated or after you die, the people handling your affairs need basic information about you and your family, and they need to know where to find your important documents. Most people have no idea where their loved ones keep these things. This document gives them a map.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Identification and health numbers are designed to be added at the moment of export rather than saved to your plan. This protects information that&apos;s most often targeted by identity theft.{' '}
+            Identification and health numbers are designed to be added at the moment of export rather than saved to your plan.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
-            Information you add will save automatically to Your Plan. You can add identification and health numbers during export.
+            Information you add will save automatically to Your Plan.
           </p>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>

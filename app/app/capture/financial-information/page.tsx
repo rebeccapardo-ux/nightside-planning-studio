@@ -428,15 +428,12 @@ export default function FinancialInformationPage() {
           <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
             Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
           </p>
-          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            The content here is for planning and organizing. For financial decisions or estate planning, consult a financial advisor or lawyer in your province.
-          </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
             Account numbers are designed to be added at the moment of export rather than saved to your plan. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
-            Information you add will save automatically to Your Plan. You can add account numbers during export.
+            Information you add will save automatically to Your Plan.
           </p>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
@@ -602,6 +599,10 @@ export default function FinancialInformationPage() {
           </AccordionSection>
 
         </div>
+
+        <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, marginTop: 32, marginBottom: 0, maxWidth: 600 }}>
+          The content here is for planning and organizing. For financial decisions or estate planning, consult a financial advisor or lawyer in your province.
+        </p>
       </div>
     </div>
   )
