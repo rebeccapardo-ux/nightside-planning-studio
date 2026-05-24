@@ -313,7 +313,7 @@ function ReflectPromptsInner() {
           {/* Card bottom — navy, note UI */}
           <div style={{ background: '#2C3777', padding: '28px' }}>
 
-            <p style={{ fontFamily: fontHelvetica, fontSize: 14, fontStyle: 'italic', color: '#f8f4eb', margin: '0 0 12px 0' }}>
+            <p style={{ fontFamily: fontHelvetica, fontSize: 14, fontStyle: 'italic', color: 'rgba(248,244,235,0.75)', margin: '0 0 12px 0' }}>
               Notes save automatically to Your Plan.
             </p>
 
