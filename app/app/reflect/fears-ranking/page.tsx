@@ -123,8 +123,9 @@ function FearsRankingContent() {
   const [cardRevealed, setCardRevealed] = useState(false)
   const [deckModuleVisible, setDeckModuleVisible] = useState(true)
   const [expandedBucket, setExpandedBucket] = useState<Bucket | null>(null)
-  const [placedBucketPulse, setPlacedBucketPulse] = useState<Bucket | null>(null)
-  const placedPulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [pulseTrigger, setPulseTrigger] = useState<{ bucket: Bucket; tick: number } | null>(null)
+  const bucketRefs = useRef<Partial<Record<Bucket, HTMLButtonElement | null>>>({})
+  const countRefs = useRef<Partial<Record<Bucket, HTMLSpanElement | null>>>({})
   const [mobileMovePicker, setMobileMovePicker] = useState<string | null>(null)
 
   const cardSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -387,10 +388,35 @@ function FearsRankingContent() {
     setAssignments((prev) => ({ ...prev, [bucket]: [...prev[bucket], current] }))
     setCardRevealed(false)
     advance()
-    setPlacedBucketPulse(bucket)
-    if (placedPulseTimerRef.current) clearTimeout(placedPulseTimerRef.current)
-    placedPulseTimerRef.current = setTimeout(() => setPlacedBucketPulse(null), 450)
+    setPulseTrigger((prev) => ({ bucket, tick: (prev?.tick ?? 0) + 1 }))
   }
+
+  // Bucket placement animation — Web Animations API so it restarts on every
+  // placement (including consecutive taps on the same bucket, which a CSS
+  // class toggle can't restart). Skips animation if prefers-reduced-motion.
+  useEffect(() => {
+    if (!pulseTrigger) return
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const btn = bucketRefs.current[pulseTrigger.bucket]
+    const ct = countRefs.current[pulseTrigger.bucket]
+    btn?.animate(
+      [
+        { transform: 'scale(1)', filter: 'brightness(1)' },
+        { transform: 'scale(1.08)', filter: 'brightness(1.12)', offset: 0.4 },
+        { transform: 'scale(1)', filter: 'brightness(1)' },
+      ],
+      { duration: 380, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
+    )
+    ct?.animate(
+      [
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.35)', offset: 0.4 },
+        { transform: 'scale(1)' },
+      ],
+      { duration: 320, easing: 'ease-out' },
+    )
+  }, [pulseTrigger])
 
   function handleMobileMove(fromBucket: Bucket, value: string, toBucket: Bucket) {
     if (fromBucket === toBucket) return
@@ -969,8 +995,8 @@ function FearsRankingContent() {
                 return (
                   <button
                     key={b.key}
+                    ref={(el) => { bucketRefs.current[b.key] = el }}
                     type="button"
-                    className={placedBucketPulse === b.key ? 'ns-bucket-just-placed' : undefined}
                     onClick={() => {
                       if (placeable) {
                         handleMobilePlace(b.key)
@@ -996,7 +1022,10 @@ function FearsRankingContent() {
                       {b.label}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: '100%', marginTop: 10 }}>
-                      <span className="ns-bucket-count" style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'left center' }}>
+                      <span
+                        ref={(el) => { countRefs.current[b.key] = el }}
+                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center' }}
+                      >
                         {b.count}
                       </span>
                       <span
