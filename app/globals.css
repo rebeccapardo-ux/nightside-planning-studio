@@ -232,44 +232,49 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
    Mobile composition overrides (Brief 2)
    ─────────────────────────────────────────────────────────────────── */
 
-/* Activity page banner (values-ranking, fears-ranking, legacy-map):
-   row → column-reverse on mobile so the right-side aside (Export +
-   Saved-status cluster) renders ABOVE the breadcrumbs/title block,
-   visually landing directly under the sticky notepad. */
+/* Brief 4b: Export cluster sits absolutely positioned immediately to
+   the LEFT of the sticky notepad on mobile, on the same horizontal
+   row. The cluster is non-sticky — it scrolls with page content,
+   leaving only the notepad in view on long pages once scrolled. */
 @media (max-width: 767px) {
+  /* Activity-page banner: aside (Export + Saved-status) anchors to
+     top-right of the banner. Banner needs position:relative for the
+     absolute aside, and extra paddingTop so breadcrumbs/title don't
+     start under the cluster. */
   .activity-banner-row {
-    flex-direction: column-reverse !important;
+    position: relative !important;
+    flex-direction: column !important;
     align-items: stretch !important;
-    gap: 20px !important;
+    gap: 0 !important;
+    padding-top: 104px !important;
   }
   .activity-banner-aside {
+    position: absolute !important;
+    top: 20px !important;
+    right: 140px !important;
     margin-top: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
     align-items: flex-end !important;
+    gap: 8px !important;
   }
-}
 
-/* Wishes-doc export bar (capture pages) + Plan-page export bar (Brief 4a):
-   The Export button + Saved-status cluster sits at the top of page
-   content, right-aligned, non-sticky. Wrappers were absolute on desktop;
-   on mobile they become static blocks with a paddingTop large enough that
-   the Export button lands ~14px below the notepad on first paint. The
-   page-level Saved-status span that lives inside .capture-export-bar is
-   re-shown on mobile here so it appears directly under the Export button
-   (right-aligned); the Brief 3 §1 .mobile-saved-status span (left-aligned
-   below the pills) is hidden as it's now redundant. */
-@media (max-width: 767px) {
+  /* Wishes-doc + Plan-page export bars: stay absolutely positioned
+     (as on desktop) but shift to the mobile notepad cluster — top:20,
+     right:140 (notepad at right:16 with ~117px width + 12px gap). */
   .capture-export-bar,
   .plan-export-bar {
-    position: static !important;
-    top: auto !important;
-    right: auto !important;
-    padding: 64px 16px 0 !important;
+    position: absolute !important;
+    top: 20px !important;
+    right: 140px !important;
+    left: auto !important;
+    padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
-  }
-  .plan-export-bar {
     display: flex !important;
-    justify-content: flex-end !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
   }
   .capture-export-bar > span {
     display: inline !important;
@@ -277,10 +282,15 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   .mobile-saved-status {
     display: none !important;
   }
-  /* When the export bar precedes the content gutter, drop the gutter's
-     top padding so we don't double up on vertical space. */
+  /* Content gutter directly after the export bar needs extra top
+     padding so breadcrumbs/title don't render under the cluster. */
   .capture-export-bar + div {
-    padding-top: 16px !important;
+    padding-top: 104px !important;
+  }
+  /* Plan page header section needs the same clearance for the
+     "Your Plan" title which otherwise sits directly under the bar. */
+  .plan-page-header {
+    padding-top: 84px !important;
   }
 }
 

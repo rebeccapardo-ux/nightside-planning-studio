@@ -229,7 +229,7 @@ export default async function PlanPage() {
       `}</style>
 
       {/* ── Page header ── */}
-      <div style={{ position: 'relative', paddingTop: 64 }}>
+      <div className="plan-page-header" style={{ position: 'relative', paddingTop: 64 }}>
         {/* Title — centered with same max-width as content */}
         <div style={{ maxWidth: 1100, margin: '0 auto', paddingLeft: 24, paddingRight: 24 }}>
           <SectionTitleReveal title="Your Plan" color="#130426" size={64} />
