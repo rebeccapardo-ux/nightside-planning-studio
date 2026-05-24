@@ -106,9 +106,13 @@ export default function ScenarioNavigatorPage() {
   }
 
   useEffect(() => {
+    function isValidViewState(s: unknown): s is ViewState {
+      if (!s || typeof s !== 'object') return false
+      const kind = (s as { kind?: unknown }).kind
+      return kind === 'selection' || kind === 'scenario' || kind === 'outcome'
+    }
     function handlePopState(e: PopStateEvent) {
-      const state = e.state as ViewState | null
-      setView(state ?? { kind: 'selection' })
+      setView(isValidViewState(e.state) ? e.state : { kind: 'selection' })
       window.scrollTo(0, 0)
     }
     window.addEventListener('popstate', handlePopState)

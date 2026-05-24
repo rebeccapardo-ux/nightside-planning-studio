@@ -172,11 +172,11 @@ export default async function WillsLearnPage() {
               </h2>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {[
-                  { term: 'Powers of Attorney', detail: 'Managing financial or legal decisions if you\'re unable to.' },
-                  { term: 'Trusts', detail: 'Managing assets for specific purposes or beneficiaries.' },
-                  { term: 'Life Insurance', detail: 'Providing financial support for loved ones.' },
-                  { term: 'Asset and Liability Documentation', detail: 'Listing property, debts, and accounts.' },
-                  { term: 'Tax Strategies', detail: 'Supporting efficient distribution of your estate.' },
+                  { term: 'Powers of Attorney', detail: 'managing financial or legal decisions if you\'re unable to.' },
+                  { term: 'Trusts', detail: 'managing assets for specific purposes or beneficiaries.' },
+                  { term: 'Life Insurance', detail: 'providing financial support for loved ones.' },
+                  { term: 'Asset and Liability Documentation', detail: 'listing property, debts, and accounts.' },
+                  { term: 'Tax Strategies', detail: 'supporting efficient distribution of your estate.' },
                 ].map(({ term, detail }) => (
                   <li key={term} style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginBottom: '16px' }}>
                     <strong style={{ fontWeight: 600 }}>{term}:</strong>{' '}{detail}

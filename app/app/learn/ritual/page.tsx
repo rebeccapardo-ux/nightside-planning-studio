@@ -147,11 +147,11 @@ export default async function RitualLearnPage() {
                   },
                   {
                     heading: 'Family dynamics',
-                    body: 'Preferences that differ from family expectations can create conflict — documenting your wishes reduces ambiguity.',
+                    body: 'preferences that differ from family expectations can create conflict — documenting your wishes reduces ambiguity.',
                   },
                   {
                     heading: 'Knowing your rights',
-                    body: 'Legal rights around funerals, body care, and ceremonies vary by province — knowing your options helps ensure your wishes are followed.',
+                    body: 'legal rights around funerals, body care, and ceremonies vary by province — knowing your options helps ensure your wishes are followed.',
                   },
                 ].map(({ heading, body }) => (
                   <div key={heading}>

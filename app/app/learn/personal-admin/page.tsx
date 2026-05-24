@@ -27,7 +27,7 @@ export default async function PersonalAdminLearnPage() {
   const coverItems = [
     {
       term: 'Who you are and how to reach the people who matter',
-      detail: 'Basic information, emergency contacts, and who should be notified.',
+      detail: 'basic information, emergency contacts, and who should be notified.',
     },
     {
       term: 'Your financial life',
@@ -35,15 +35,15 @@ export default async function PersonalAdminLearnPage() {
     },
     {
       term: 'Your digital life',
-      detail: 'Email, social media, subscriptions, and what should happen to those accounts.',
+      detail: 'email, social media, subscriptions, and what should happen to those accounts.',
     },
     {
       term: 'Passwords and access',
-      detail: 'How trusted people can access what they need.',
+      detail: 'how trusted people can access what they need.',
     },
     {
       term: 'Devices',
-      detail: 'Who should have access to your phone, computer, or other devices.',
+      detail: 'who should have access to your phone, computer, or other devices.',
     },
   ]
 
