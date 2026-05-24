@@ -74,13 +74,13 @@ export default async function LegacyLearnPage() {
                 theme="navy"
                 items={[
                   { label: 'Learn', href: '/app/learn' },
-                  { label: 'Legacy Planning' },
+                  { label: 'Legacy' },
                 ]}
               />
             </div>
 
             <h1 className="ns-title-activity" style={{ color: '#FFFFFF', margin: '0 0 16px 0' }}>
-              Legacy Planning
+              Legacy
             </h1>
 
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '680px', marginBottom: '24px' }}>

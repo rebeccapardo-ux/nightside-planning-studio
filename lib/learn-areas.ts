@@ -61,7 +61,7 @@ export const LEARN_AREAS: LearnArea[] = [
   },
   {
     id: 'legacy',
-    title: 'Legacy Planning',
+    title: 'Legacy',
     description:
       'Think about how you want to be remembered and what you want to leave behind.',
     color: '#6B7A8D',
