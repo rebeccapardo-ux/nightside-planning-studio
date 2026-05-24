@@ -893,7 +893,7 @@ function FearsRankingContent() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 22 }}>
             {isDone ? (
               <div style={{
-                width: '70%', maxWidth: 240, aspectRatio: '3 / 4', borderRadius: 18,
+                width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
                 border: '1.5px solid rgba(255,255,255,0.25)',
                 background: 'rgba(255,255,255,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18,
@@ -905,7 +905,7 @@ function FearsRankingContent() {
             ) : cardRevealed && current ? (
               <>
                 <div style={{
-                  width: '70%', maxWidth: 240, aspectRatio: '3 / 4', borderRadius: 18,
+                  width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
                   background: '#FFFFFF',
                   border: '2px solid #F29836',
                   boxShadow: '0 8px 24px rgba(19,4,38,0.25)',
@@ -925,7 +925,7 @@ function FearsRankingContent() {
                   type="button"
                   onClick={() => setCardRevealed(true)}
                   style={{
-                    width: '70%', maxWidth: 240, aspectRatio: '3 / 4', borderRadius: 18,
+                    width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
                     border: '2px solid #F29836',
                     background: 'rgba(255,255,255,0.08)',
                     boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
