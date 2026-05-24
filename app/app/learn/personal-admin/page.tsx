@@ -116,7 +116,7 @@ export default async function PersonalAdminLearnPage() {
             </div>
 
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '640px' }}>
-              The practical details of your life — your accounts, passwords, contacts, and digital presence — rarely feel urgent until they&apos;re urgently needed. Getting this information organized is one of the quietest and most considerate things you can do for the people you love.
+              The practical details of your life — your accounts, passwords, contacts, and digital presence — rarely feel urgent until they&apos;re urgently needed. Getting this information organized is one of the most considerate things you can do for the people you love.
             </p>
 
           </div>
