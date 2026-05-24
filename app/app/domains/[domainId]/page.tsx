@@ -1635,8 +1635,8 @@ function PlanningStatusSection({
           <div className="planning-panels">
             <div className="rounded-xl p-6" style={{ background: '#BBABF4' }}>
               <p className="text-[22px] font-bold text-[#130426] mb-2">Reflection + Learning</p>
-              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>
-                Topics to think through and read about for this area.
+              <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>
+                Topics to think through and read about for this area
               </p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 24 }}>
                 Update your status as you explore each topic.
@@ -1662,7 +1662,7 @@ function PlanningStatusSection({
 
             <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }}>
               <p className="text-[22px] font-bold mb-2" style={{ color: '#DB5835' }}>Practical Readiness</p>
-              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document.</p>
+              <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document</p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 24 }}>Your progress updates as you complete each step.</p>
               <div className="space-y-3">
                 {structure.readiness.map((item) => {
@@ -1741,7 +1741,7 @@ function PlanningStatusSection({
           <div className="rounded-xl p-6" style={{ background: '#BBABF4' }}>
             <div className="mb-8">
               <p className="text-[22px] font-bold text-[#130426] mb-2">Reflection + Learning</p>
-              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Topics to think through and read about for this area.</p>
+              <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Topics to think through and read about for this area</p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 0 }}>Update your status as you explore each topic.</p>
             </div>
             <div className="space-y-3">
@@ -1773,7 +1773,7 @@ function PlanningStatusSection({
           <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }}>
             <div className="mb-8">
               <p className="text-[22px] font-bold mb-2" style={{ color: '#DB5835' }}>Practical Readiness</p>
-              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document.</p>
+              <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document</p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 0 }}>Your progress updates as you complete each step.</p>
             </div>
             <div className="space-y-3">
