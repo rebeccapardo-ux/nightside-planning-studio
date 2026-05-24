@@ -214,19 +214,13 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   visibility: hidden;
 }
 
-/* Mobile Export buttons (Brief 4a §1): no longer sticky — they sit in
-   page content, right-aligned at the top of the content area so the
-   button visually lands directly beneath the still-sticky notepad on
-   initial page load, but scrolls away with the rest of the page. The
-   class is a no-op layout hint that ensures right-alignment regardless
-   of the parent's display mode. */
-@media (max-width: 767px) {
-  .mobile-sticky-export {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: 0 !important;
-  }
-}
+/* Mobile Export buttons: right-alignment is handled by each wrapper
+   (.capture-export-bar, .plan-export-bar, .activity-banner-aside) via
+   flex-end on the column. The .mobile-sticky-export class is kept on
+   the buttons as a historical marker but no longer has a CSS rule —
+   the previous `display: block !important` was destroying each
+   button's inline `display: flex`, which caused the icon and label
+   to stack instead of sitting on a single row. */
 
 /* ─────────────────────────────────────────────────────────────────────
    Mobile composition overrides (Brief 2)
