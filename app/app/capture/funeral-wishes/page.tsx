@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
@@ -199,6 +200,35 @@ function FuneralWishesPage() {
   const savedSectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastEditedSectionIdxRef = useRef<number | null>(null)
 
+  // Mobile drawer for Relevant Materials (≤ lg). Desktop keeps the right rail.
+  const materialsData = useFWMaterialsData()
+  const [drawerQuestion, setDrawerQuestion] = useState<SupplementaryDocQuestion | null>(null)
+  const [insertToast, setInsertToast] = useState(false)
+  const insertToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const recommendedCountByQuestion = useMemo(() => {
+    const counts = new Map<SupplementaryDocQuestion, number>()
+    for (const s of SECTIONS) {
+      if (s.qKey === null) continue
+      const { recommended } = computeRecommendedAndOther(
+        s.qKey,
+        materialsData.allNotes,
+        materialsData.deduplicatedOutputs,
+        materialsData.allDomainAndManualItems,
+      )
+      counts.set(s.qKey, recommended.length)
+    }
+    return counts
+  }, [materialsData.allNotes, materialsData.deduplicatedOutputs, materialsData.allDomainAndManualItems])
+
+  function openMaterialsDrawer(qKey: SupplementaryDocQuestion) {
+    setDrawerQuestion(qKey)
+  }
+
+  function closeMaterialsDrawer() {
+    setDrawerQuestion(null)
+  }
+
   useEffect(() => { window.scrollTo(0, 0) }, [])
 
   // Auto-scroll when a section expands
@@ -347,6 +377,17 @@ function FuneralWishesPage() {
       return updated
     })
   }
+
+  function handleDrawerInsert(text: string) {
+    insertIntoCurrent(text)
+    if (insertToastTimerRef.current) clearTimeout(insertToastTimerRef.current)
+    setInsertToast(true)
+    insertToastTimerRef.current = setTimeout(() => setInsertToast(false), 2500)
+  }
+
+  useEffect(() => () => {
+    if (insertToastTimerRef.current) clearTimeout(insertToastTimerRef.current)
+  }, [])
 
   function triggerSave() {
     lastEditedSectionIdxRef.current = expandedIndex
@@ -584,6 +625,42 @@ function FuneralWishesPage() {
                         <div style={{ padding: '0 16px 20px', background: '#FFFFFF' }}>
                         <div style={{ background: '#F8F4EB', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 28 }}>
 
+                          {(() => {
+                            if (!section.qKey) return null
+                            const count = recommendedCountByQuestion.get(section.qKey) ?? 0
+                            if (count === 0) return null
+                            return (
+                              <div className="lg:hidden" style={{ marginBottom: -12 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => openMaterialsDrawer(section.qKey!)}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                    padding: '3px 8px',
+                                    background: '#EEEDFE',
+                                    border: '1.5px solid #7F77DD',
+                                    borderRadius: 6,
+                                    fontSize: 13,
+                                    fontWeight: 500,
+                                    color: '#3C3489',
+                                    cursor: 'pointer',
+                                    fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                                    lineHeight: 1.4,
+                                  }}
+                                  className="hover:opacity-80 transition-opacity"
+                                >
+                                  <svg width="12" height="13" viewBox="0 0 12 13" fill="none" aria-hidden>
+                                    <rect x="1.5" y="3" width="9" height="9.5" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                                    <circle cx="6" cy="3" r="2" fill="currentColor" />
+                                  </svg>
+                                  See relevant materials · {count} suggested →
+                                </button>
+                              </div>
+                            )
+                          })()}
+
                           {section.key === 'what_matters_most' && (
                             <TF
                               label="What is most important to you about how you are remembered and honored?"
@@ -786,17 +863,60 @@ function FuneralWishesPage() {
             })}
           </div>
 
-          {/* RIGHT: panel */}
-          <div>
+          {/* RIGHT: panel — desktop only. Mobile uses inline trigger + SlidePanel drawer. */}
+          <div className="hidden lg:block">
             <div className="lg:sticky lg:top-40 mt-12 lg:mt-0">
               <FWMaterialsPanel
                 activeQuestion={activePanelQuestion}
                 onInsert={insertIntoCurrent}
+                data={materialsData}
               />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile-only Relevant Materials drawer */}
+      <SlidePanel
+        open={drawerQuestion !== null}
+        onClose={closeMaterialsDrawer}
+        title="Relevant materials"
+      >
+        {drawerQuestion !== null && (
+          <FWMaterialsPanel
+            activeQuestion={drawerQuestion}
+            onInsert={handleDrawerInsert}
+            data={materialsData}
+            variant="drawer"
+          />
+        )}
+        {insertToast && (
+          <div
+            role="status"
+            aria-live="polite"
+            style={{
+              position: 'fixed',
+              bottom: 28,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: '#130426',
+              color: '#F8F4EB',
+              fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+              fontSize: 14,
+              fontWeight: 500,
+              padding: '10px 18px',
+              borderRadius: 999,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.24)',
+              zIndex: 60,
+              whiteSpace: 'nowrap',
+              maxWidth: '92vw',
+              pointerEvents: 'none',
+            }}
+          >
+            Inserted into your answer.
+          </div>
+        )}
+      </SlidePanel>
     </div>
   )
 }
@@ -1011,10 +1131,7 @@ function computeRecommendedAndOther(
 // FWMaterialsPanel
 // ---------------------------------------------------------------------------
 
-function FWMaterialsPanel({ activeQuestion, onInsert }: {
-  activeQuestion: SupplementaryDocQuestion | null
-  onInsert: (text: string) => void
-}) {
+function useFWMaterialsData() {
   const [domainNotes, setDomainNotes] = useState<PanelNote[]>([])
   const [promptNotes, setPromptNotes] = useState<PanelNote[]>([])
   const [domainItems, setDomainItems] = useState<PanelEntry[]>([])
@@ -1022,7 +1139,6 @@ function FWMaterialsPanel({ activeQuestion, onInsert }: {
   const [manualItems, setManualItems] = useState<PanelEntry[]>([])
   const [manualNotes, setManualNotes] = useState<PanelNote[]>([])
   const [loadingPanel, setLoadingPanel] = useState(true)
-  const [showBrowser, setShowBrowser] = useState(false)
 
   useEffect(() => {
     async function fetchPanelData() {
@@ -1090,6 +1206,9 @@ function FWMaterialsPanel({ activeQuestion, onInsert }: {
     return result
   }, [domainItems, manualItems])
 
+  const existingEntryIds = useMemo(() => new Set([...domainItems, ...outputItems, ...manualItems].map(e => e.id)), [domainItems, outputItems, manualItems])
+  const existingNoteIds = useMemo(() => new Set([...promptNotes, ...domainNotes, ...manualNotes].map(n => n.id)), [promptNotes, domainNotes, manualNotes])
+
   function addManualItem(entry: PanelEntry) {
     setManualItems(prev => prev.some(e => e.id === entry.id) ? prev : [...prev, entry])
   }
@@ -1097,8 +1216,34 @@ function FWMaterialsPanel({ activeQuestion, onInsert }: {
     setManualNotes(prev => prev.some(n => n.id === note.id) ? prev : [...prev, note])
   }
 
-  const existingEntryIds = useMemo(() => new Set([...domainItems, ...outputItems, ...manualItems].map(e => e.id)), [domainItems, outputItems, manualItems])
-  const existingNoteIds = useMemo(() => new Set([...promptNotes, ...domainNotes, ...manualNotes].map(n => n.id)), [promptNotes, domainNotes, manualNotes])
+  return {
+    loadingPanel,
+    deduplicatedOutputs, allNotes, allDomainAndManualItems,
+    existingEntryIds, existingNoteIds,
+    addManualItem, addManualNote,
+  }
+}
+
+type FWMaterialsData = ReturnType<typeof useFWMaterialsData>
+
+function FWMaterialsPanel({
+  activeQuestion,
+  onInsert,
+  data,
+  variant = 'panel',
+}: {
+  activeQuestion: SupplementaryDocQuestion | null
+  onInsert: (text: string) => void
+  data: FWMaterialsData
+  variant?: 'panel' | 'drawer'
+}) {
+  const [showBrowser, setShowBrowser] = useState(false)
+  const {
+    loadingPanel,
+    deduplicatedOutputs, allNotes, allDomainAndManualItems,
+    existingEntryIds, existingNoteIds,
+    addManualItem, addManualNote,
+  } = data
 
   const { recommended, other } = useMemo(() => {
     if (activeQuestion === null) {
@@ -1125,6 +1270,53 @@ function FWMaterialsPanel({ activeQuestion, onInsert }: {
     return computeRecommendedAndOther(activeQuestion, allNotes, deduplicatedOutputs, allDomainAndManualItems)
   }, [activeQuestion, allNotes, deduplicatedOutputs, allDomainAndManualItems])
 
+  const browser = showBrowser ? (
+    <FWMaterialsBrowser
+      existingEntryIds={existingEntryIds}
+      existingNoteIds={existingNoteIds}
+      onAdd={item => { if (item.kind === 'entry') addManualItem(item.data); else addManualNote(item.data) }}
+      onClose={() => setShowBrowser(false)}
+    />
+  ) : null
+
+  const innerContent = loadingPanel ? (
+    <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.50)' }}>Loading...</p>
+  ) : activeQuestion === null ? (
+    <FWFlatPanelContent items={other} onInsert={onInsert} />
+  ) : (
+    <FWPanelContent recommended={recommended} other={other} onInsert={onInsert} />
+  )
+
+  if (variant === 'drawer') {
+    return (
+      <>
+        <button
+          onClick={() => setShowBrowser(true)}
+          className="shrink-0 transition-opacity hover:opacity-70"
+          style={{
+            display: 'inline-block',
+            fontSize: 13,
+            lineHeight: '18px',
+            fontWeight: 500,
+            color: '#130426',
+            textDecoration: 'underline',
+            textUnderlineOffset: '3px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+            marginBottom: 16,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          + Add materials
+        </button>
+        {innerContent}
+        {browser}
+      </>
+    )
+  }
+
   return (
     <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
@@ -1141,23 +1333,10 @@ function FWMaterialsPanel({ activeQuestion, onInsert }: {
       </div>
 
       <div style={{ background: '#F8F4EB', borderRadius: 10, padding: 14 }}>
-        {loadingPanel ? (
-          <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.50)' }}>Loading...</p>
-        ) : activeQuestion === null ? (
-          <FWFlatPanelContent items={other} onInsert={onInsert} />
-        ) : (
-          <FWPanelContent recommended={recommended} other={other} onInsert={onInsert} />
-        )}
+        {innerContent}
       </div>
 
-      {showBrowser && (
-        <FWMaterialsBrowser
-          existingEntryIds={existingEntryIds}
-          existingNoteIds={existingNoteIds}
-          onAdd={item => { if (item.kind === 'entry') addManualItem(item.data); else addManualNote(item.data) }}
-          onClose={() => setShowBrowser(false)}
-        />
-      )}
+      {browser}
     </div>
   )
 }

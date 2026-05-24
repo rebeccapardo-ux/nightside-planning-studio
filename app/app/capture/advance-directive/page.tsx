@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
@@ -109,6 +110,46 @@ function AdvanceDirectivePage() {
   const [savedSectionFading, setSavedSectionFading] = useState(false)
   const savedSectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastEditedSectionIdxRef = useRef<number | null>(null)
+
+  // Mobile drawer for Relevant Materials (≤ lg). Desktop keeps the right rail.
+  const materialsData = useMaterialsData()
+  const [drawerQuestion, setDrawerQuestion] = useState<SupplementaryDocQuestion | null>(null)
+  const [insertToast, setInsertToast] = useState(false)
+  const insertToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const recommendedCountByQuestion = useMemo(() => {
+    const counts = new Map<SupplementaryDocQuestion, number>()
+    for (const q of QUESTIONS) {
+      const { recommended } = computeRecommendedAndOther(
+        q.qKey,
+        materialsData.allNotes,
+        materialsData.deduplicatedOutputs,
+        materialsData.healthcareItems,
+        materialsData.manualItems,
+      )
+      counts.set(q.qKey, recommended.length)
+    }
+    return counts
+  }, [materialsData.allNotes, materialsData.deduplicatedOutputs, materialsData.healthcareItems, materialsData.manualItems])
+
+  function openMaterialsDrawer(qKey: SupplementaryDocQuestion) {
+    setDrawerQuestion(qKey)
+  }
+
+  function closeMaterialsDrawer() {
+    setDrawerQuestion(null)
+  }
+
+  function handleDrawerInsert(text: string) {
+    insertIntoCurrent(text)
+    if (insertToastTimerRef.current) clearTimeout(insertToastTimerRef.current)
+    setInsertToast(true)
+    insertToastTimerRef.current = setTimeout(() => setInsertToast(false), 2500)
+  }
+
+  useEffect(() => () => {
+    if (insertToastTimerRef.current) clearTimeout(insertToastTimerRef.current)
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -480,6 +521,40 @@ function AdvanceDirectivePage() {
                         }}>
                           <div style={{ padding: '0 16px 20px', background: '#FFFFFF' }}>
                             <div style={{ background: '#F8F4EB', borderRadius: 12, padding: 20 }}>
+                              {(() => {
+                                const count = recommendedCountByQuestion.get(q.qKey) ?? 0
+                                if (count === 0) return null
+                                return (
+                                  <div className="lg:hidden" style={{ marginBottom: 14 }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => openMaterialsDrawer(q.qKey)}
+                                      style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 5,
+                                        padding: '3px 8px',
+                                        background: '#EEEDFE',
+                                        border: '1.5px solid #7F77DD',
+                                        borderRadius: 6,
+                                        fontSize: 13,
+                                        fontWeight: 500,
+                                        color: '#3C3489',
+                                        cursor: 'pointer',
+                                        fontFamily: hv,
+                                        lineHeight: 1.4,
+                                      }}
+                                      className="hover:opacity-80 transition-opacity"
+                                    >
+                                      <svg width="12" height="13" viewBox="0 0 12 13" fill="none" aria-hidden>
+                                        <rect x="1.5" y="3" width="9" height="9.5" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                                        <circle cx="6" cy="3" r="2" fill="currentColor" />
+                                      </svg>
+                                      See relevant materials · {count} suggested →
+                                    </button>
+                                  </div>
+                                )
+                              })()}
                               <textarea
                                 value={form[q.key]}
                                 onChange={(e) => updateField(q.key, e.target.value)}
@@ -553,17 +628,60 @@ function AdvanceDirectivePage() {
             )}
           </div>
 
-          {/* Right: materials */}
-          <div>
+          {/* Right: materials — desktop only. Mobile uses inline trigger + SlidePanel drawer. */}
+          <div className="hidden lg:block">
             <div className="lg:sticky lg:top-40 mt-12 lg:mt-0">
               <MaterialsPanel
                 activeQuestion={expandedIndex !== null ? QUESTIONS[expandedIndex].qKey : null}
                 onInsert={insertIntoCurrent}
+                data={materialsData}
               />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile-only Relevant Materials drawer */}
+      <SlidePanel
+        open={drawerQuestion !== null}
+        onClose={closeMaterialsDrawer}
+        title="Relevant materials"
+      >
+        {drawerQuestion !== null && (
+          <MaterialsPanel
+            activeQuestion={drawerQuestion}
+            onInsert={handleDrawerInsert}
+            data={materialsData}
+            variant="drawer"
+          />
+        )}
+        {insertToast && (
+          <div
+            role="status"
+            aria-live="polite"
+            style={{
+              position: 'fixed',
+              bottom: 28,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: '#130426',
+              color: '#F8F4EB',
+              fontFamily: hv,
+              fontSize: 14,
+              fontWeight: 500,
+              padding: '10px 18px',
+              borderRadius: 999,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.24)',
+              zIndex: 60,
+              whiteSpace: 'nowrap',
+              maxWidth: '92vw',
+              pointerEvents: 'none',
+            }}
+          >
+            Inserted into your answer.
+          </div>
+        )}
+      </SlidePanel>
     </div>
   )
 }
@@ -695,23 +813,18 @@ function computeRecommendedAndOther(
 }
 
 // ---------------------------------------------------------------------------
-// MaterialsPanel
+// useMaterialsData — page-level hook so both desktop right rail and mobile
+// drawer can share data + persistent insertedByQuestion state, and so trigger
+// counts can be computed before the drawer opens.
 // ---------------------------------------------------------------------------
 
-function MaterialsPanel({
-  activeQuestion,
-  onInsert,
-}: {
-  activeQuestion: SupplementaryDocQuestion | null
-  onInsert: (text: string) => void
-}) {
+function useMaterialsData() {
   const [healthcareItems, setHealthcareItems] = useState<PanelEntry[]>([])
   const [outputItems, setOutputItems] = useState<PanelEntry[]>([])
   const [manualItems, setManualItems] = useState<PanelEntry[]>([])
   const [healthcareNotes, setHealthcareNotes] = useState<PanelNote[]>([])
   const [manualNotes, setManualNotes] = useState<PanelNote[]>([])
   const [loadingPanel, setLoadingPanel] = useState(true)
-  const [showBrowser, setShowBrowser] = useState(false)
 
   const [insertedByQuestion, setInsertedByQuestion] = useState<
     Map<SupplementaryDocQuestion, Set<string>>
@@ -807,14 +920,6 @@ function MaterialsPanel({
     }))
   }, [outputItems])
 
-  function addManualItem(entry: PanelEntry) {
-    setManualItems((prev) => (prev.some((e) => e.id === entry.id) ? prev : [...prev, entry]))
-  }
-
-  function addManualNote(note: PanelNote) {
-    setManualNotes((prev) => (prev.some((n) => n.id === note.id) ? prev : [...prev, note]))
-  }
-
   const existingEntryIds = useMemo(
     () => new Set([...healthcareItems, ...outputItems, ...manualItems].map((e) => e.id)),
     [healthcareItems, outputItems, manualItems],
@@ -834,27 +939,74 @@ function MaterialsPanel({
     return result
   }, [healthcareNotes, manualNotes])
 
-  function markInserted(itemId: string) {
-    if (!activeQuestion) return
+  function addManualItem(entry: PanelEntry) {
+    setManualItems((prev) => (prev.some((e) => e.id === entry.id) ? prev : [...prev, entry]))
+  }
+
+  function addManualNote(note: PanelNote) {
+    setManualNotes((prev) => (prev.some((n) => n.id === note.id) ? prev : [...prev, note]))
+  }
+
+  function markInserted(question: SupplementaryDocQuestion | null, itemId: string) {
+    if (!question) return
     setInsertedByQuestion((prev) => {
       const next = new Map(prev)
-      const existing = next.get(activeQuestion) ?? new Set<string>()
-      next.set(activeQuestion, new Set([...existing, itemId]))
+      const existing = next.get(question) ?? new Set<string>()
+      next.set(question, new Set([...existing, itemId]))
       return next
     })
   }
 
-  function markRemoved(itemId: string) {
-    if (!activeQuestion) return
+  function markRemoved(question: SupplementaryDocQuestion | null, itemId: string) {
+    if (!question) return
     setInsertedByQuestion((prev) => {
       const next = new Map(prev)
-      const existing = next.get(activeQuestion) ?? new Set<string>()
+      const existing = next.get(question) ?? new Set<string>()
       const updated = new Set([...existing])
       updated.delete(itemId)
-      next.set(activeQuestion, updated)
+      next.set(question, updated)
       return next
     })
   }
+
+  return {
+    healthcareItems, outputItems, manualItems, healthcareNotes, manualNotes,
+    loadingPanel,
+    deduplicatedOutputs, allNotes,
+    existingEntryIds, existingNoteIds,
+    addManualItem, addManualNote,
+    insertedByQuestion, markInserted, markRemoved,
+  }
+}
+
+type MaterialsData = ReturnType<typeof useMaterialsData>
+
+// ---------------------------------------------------------------------------
+// MaterialsPanel — presentation. Reads from MaterialsData; supports two
+// visual variants ('panel' = desktop right rail with own chrome; 'drawer'
+// = mobile drawer body without outer chrome since SlidePanel provides it).
+// ---------------------------------------------------------------------------
+
+function MaterialsPanel({
+  activeQuestion,
+  onInsert,
+  data,
+  variant = 'panel',
+}: {
+  activeQuestion: SupplementaryDocQuestion | null
+  onInsert: (text: string) => void
+  data: MaterialsData
+  variant?: 'panel' | 'drawer'
+}) {
+  const [showBrowser, setShowBrowser] = useState(false)
+  const {
+    healthcareItems, manualItems,
+    loadingPanel,
+    deduplicatedOutputs, allNotes,
+    existingEntryIds, existingNoteIds,
+    addManualItem, addManualNote,
+    insertedByQuestion, markInserted, markRemoved,
+  } = data
 
   const insertedIds: Set<string> = useMemo(
     () => activeQuestion ? (insertedByQuestion.get(activeQuestion) ?? new Set()) : new Set<string>(),
@@ -901,6 +1053,70 @@ function MaterialsPanel({
     [recommended, insertedIds],
   )
 
+  const browser = showBrowser ? (
+    <MaterialsBrowser
+      existingEntryIds={existingEntryIds}
+      existingNoteIds={existingNoteIds}
+      onAdd={(item) => {
+        if (item.kind === 'entry') addManualItem(item.data)
+        else addManualNote(item.data)
+      }}
+      onClose={() => setShowBrowser(false)}
+    />
+  ) : null
+
+  const handleInserted = (id: string) => markInserted(activeQuestion, id)
+  const handleRemoved = (id: string) => markRemoved(activeQuestion, id)
+
+  const innerContent = loadingPanel ? (
+    <p className="text-[12px]" style={{ color: 'rgba(19,4,38,0.50)' }}>
+      Loading...
+    </p>
+  ) : activeQuestion === null ? (
+    <FlatPanelContent items={other} onInsert={onInsert} />
+  ) : (
+    <PanelContent
+      recommended={visibleRecommended}
+      alreadyInserted={alreadyInserted}
+      other={other}
+      insertedIds={insertedIds}
+      onInsert={onInsert}
+      onInserted={handleInserted}
+      onRemoved={handleRemoved}
+      onBrowse={() => setShowBrowser(true)}
+    />
+  )
+
+  if (variant === 'drawer') {
+    return (
+      <>
+        <button
+          onClick={() => setShowBrowser(true)}
+          className="shrink-0 transition-opacity hover:opacity-70"
+          style={{
+            display: 'inline-block',
+            fontSize: 13,
+            lineHeight: '18px',
+            fontWeight: 500,
+            color: '#130426',
+            textDecoration: 'underline',
+            textUnderlineOffset: '3px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+            marginBottom: 16,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          + Add materials
+        </button>
+        {innerContent}
+        {browser}
+      </>
+    )
+  }
+
   return (
     // Outer panel: pale Sunrise #F7E2C7
     <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16 }}>
@@ -942,37 +1158,10 @@ function MaterialsPanel({
 
       {/* Inner panel: Light #F8F4EB */}
       <div style={{ background: '#F8F4EB', borderRadius: 10, padding: 14 }}>
-        {loadingPanel ? (
-          <p className="text-[12px]" style={{ color: 'rgba(19,4,38,0.50)' }}>
-            Loading...
-          </p>
-        ) : activeQuestion === null ? (
-          <FlatPanelContent items={other} onInsert={onInsert} />
-        ) : (
-          <PanelContent
-            recommended={visibleRecommended}
-            alreadyInserted={alreadyInserted}
-            other={other}
-            insertedIds={insertedIds}
-            onInsert={onInsert}
-            onInserted={markInserted}
-            onRemoved={markRemoved}
-            onBrowse={() => setShowBrowser(true)}
-          />
-        )}
+        {innerContent}
       </div>
 
-      {showBrowser && (
-        <MaterialsBrowser
-          existingEntryIds={existingEntryIds}
-          existingNoteIds={existingNoteIds}
-          onAdd={(item) => {
-            if (item.kind === 'entry') addManualItem(item.data)
-            else addManualNote(item.data)
-          }}
-          onClose={() => setShowBrowser(false)}
-        />
-      )}
+      {browser}
     </div>
   )
 }
