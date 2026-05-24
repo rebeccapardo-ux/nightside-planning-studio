@@ -116,7 +116,7 @@ export default function NotepadModal({
       <div className="w-full max-w-xl rounded-2xl border border-white/10 p-6 shadow-2xl" style={{ background: '#2d3a6b' }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-2">
           <h2 className="text-2xl font-semibold text-[#f8f4eb]">Notepad</h2>
           <button
             onClick={handleClose}
@@ -126,6 +126,9 @@ export default function NotepadModal({
             ×
           </button>
         </div>
+
+        {/* Helper text */}
+        <p className="text-sm text-[#f8f4eb] mb-4">Notes save automatically to Your Plan.</p>
 
         {/* Composer */}
         <textarea
