@@ -288,14 +288,11 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   }
 }
 
-/* Breadcrumbs: smaller on mobile so they don't extend under the notepad
-   in the top-right. Inline styles use !important to override. */
+/* Breadcrumbs: hidden on mobile to reclaim vertical space and avoid
+   overlap with the fixed notepad button in the top-right. */
 @media (max-width: 767px) {
-  .ns-breadcrumbs ol li > * {
-    font-size: 12px !important;
-  }
-  .ns-breadcrumbs ol {
-    padding-right: 64px !important;
+  .ns-breadcrumbs {
+    display: none !important;
   }
 }
 

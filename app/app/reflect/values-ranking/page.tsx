@@ -917,8 +917,11 @@ function ValuesRankingContent() {
         <div className="px-5">
 
           {/* Disclosure copy */}
+          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
+            To see all your placements side-by-side, open this activity on a larger screen.
+          </p>
           <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 22 }}>
-            On mobile, place cards into buckets one at a time. To see all your placements side-by-side, open this activity on a larger screen.
+            Your work saves automatically to Your Plan.
           </p>
 
           {/* Drawn card area */}
