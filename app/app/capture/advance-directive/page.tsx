@@ -604,7 +604,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
         <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M1.5 10.5h10" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
-      Preview &amp; Export
+      <span className="hidden md:inline">Preview &amp; </span>Export
     </button>
   )
 }

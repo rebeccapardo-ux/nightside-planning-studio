@@ -251,7 +251,7 @@ export default async function PlanPage() {
               <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#f8f4eb" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M1.5 10.5h10" stroke="#f8f4eb" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
-            Preview &amp; Export
+            <span className="hidden md:inline">Preview &amp; </span>Export
           </Link>
         </div>
       </div>
