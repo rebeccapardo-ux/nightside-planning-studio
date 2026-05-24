@@ -50,7 +50,7 @@ const DEFAULT_RELEASE_ITEMS = [
   'Wishes for My Body, Funeral & Ceremony',
   'Important Contacts',
   'Financial Information',
-  'Personal Admin',
+  'Personal Admin Information',
   'Devices & Accounts',
   'Keepsakes Inventory',
 ]

@@ -436,7 +436,7 @@ function PersonalAdminPage() {
 
         <div style={{ marginBottom: 48 }}>
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
-            Personal Admin
+            Personal Admin Information
           </h1>
           <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
             A place to record your basic personal information, family details for official records, and where to find important documents.
