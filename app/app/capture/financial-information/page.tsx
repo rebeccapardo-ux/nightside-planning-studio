@@ -435,15 +435,8 @@ export default function FinancialInformationPage() {
             Account numbers are designed to be added at the moment of export rather than saved to your plan. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {['Expand a section to fill it in', 'Update anytime as your finances change', 'Add account numbers at the moment of export'].map((text) => (
-              <span key={text} className="instruction-pill" style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
-                {text}
-              </span>
-            ))}
-          </div>
-          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 32, marginBottom: 0 }}>
-            Information you add will save automatically to Your Plan.
+          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
+            Information you add will save automatically to Your Plan. You can add account numbers during export.
           </p>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>

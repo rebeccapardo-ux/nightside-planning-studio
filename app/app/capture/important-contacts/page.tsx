@@ -404,14 +404,7 @@ function ImportantContactsPage() {
           <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
             When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {['Expand a section to fill it in', 'Add as many contacts as you need', 'Update anytime as things change'].map((text) => (
-              <span key={text} className="instruction-pill" style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 13, color: '#F8F4EB', whiteSpace: 'nowrap' }}>
-                {text}
-              </span>
-            ))}
-          </div>
-          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 32, marginBottom: 0 }}>
+          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
             Contacts you add will save automatically to Your Plan.
           </p>
           {saveStatusText && (
