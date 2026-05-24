@@ -340,9 +340,6 @@ function CardView({
 
                 {/* Note */}
                 <div className="space-y-1">
-                  <p className="text-sm italic text-[#f8f4eb]/75 mb-3">
-                    Notes save automatically to Your Plan.
-                  </p>
                   <textarea
                     value={noteText}
                     onChange={(e) => {
@@ -365,6 +362,9 @@ function CardView({
                     className="w-full text-[#130426] placeholder:text-[#130426]/40 leading-relaxed resize-none outline-none overflow-hidden"
                     style={{ fontSize: 16, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: 12 }}
                   />
+                  <p className="text-sm italic text-[#f8f4eb]/75 mt-2">
+                    Notes save automatically to Your Plan.
+                  </p>
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
                     {noteStatus === 'saving' && <span>Saving…</span>}
                     {noteStatus === 'saved' && (
