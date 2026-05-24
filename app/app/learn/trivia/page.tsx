@@ -340,6 +340,9 @@ function CardView({
 
                 {/* Note */}
                 <div className="space-y-1">
+                  <p className="text-sm italic text-[#f8f4eb]/75 mb-3">
+                    Notes save automatically to Your Plan.
+                  </p>
                   <textarea
                     value={noteText}
                     onChange={(e) => {
