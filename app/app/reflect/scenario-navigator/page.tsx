@@ -592,7 +592,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                   </>
                 )}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '12px 0 8px 0' }}>
+              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
                 Notes save automatically to Your Plan.
               </p>
               <div style={{ marginTop: 10 }}>
@@ -936,7 +936,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                   </>
                 )}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '12px 0 8px 0' }}>
+              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
                 Notes save automatically to Your Plan.
               </p>
               <div style={{ marginTop: 10 }}>
@@ -1258,7 +1258,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                   </>
                 )}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '12px 0 8px 0' }}>
+              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
                 Notes save automatically to Your Plan.
               </p>
               <div style={{ marginTop: 10 }}>
@@ -1855,7 +1855,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
               </div>
 
               {/* Voice option */}
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '12px 0 8px 0' }}>
+              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
                 Notes save automatically to Your Plan.
               </p>
               <div style={{ marginTop: 10 }}>
