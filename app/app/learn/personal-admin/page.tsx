@@ -31,7 +31,7 @@ export default async function PersonalAdminLearnPage() {
     },
     {
       term: 'Your financial life',
-      detail: 'Accounts, debts, insurance — enough to know what exists and where to look.',
+      detail: 'a record of accounts, debts, and insurance, so someone can know what exists and where to find it.',
     },
     {
       term: 'Your digital life',
@@ -220,7 +220,7 @@ export default async function PersonalAdminLearnPage() {
                   Continue in your plan
                 </h3>
                 <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}>
-                  Start documenting your personal details in the Capture section — biographical info, contacts, finances, passwords, and more.
+                  Start documenting your personal details in Your Plan: biographical info, contacts, finances, passwords, and more.
                 </p>
                 <Link
                   href={personalAdminDomainHref}
