@@ -4,6 +4,7 @@ import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
+import { TERMS_VERSION, PRIVACY_VERSION } from '@/lib/policy-versions'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -91,6 +92,8 @@ export default function SignUpPage() {
           full_name: `${firstName.trim()} ${lastName.trim()}`,
           province,
           terms_accepted_at: new Date().toISOString(),
+          terms_version_accepted: TERMS_VERSION,
+          privacy_version_accepted: PRIVACY_VERSION,
         },
       },
     })
@@ -376,12 +379,15 @@ export default function SignUpPage() {
                         style={{ marginTop: '2px', flexShrink: 0, width: 16, height: 16, accentColor: '#2d3a6b', cursor: 'pointer' }}
                       />
                       <span style={{ fontFamily: hv, fontSize: '13px', color: '#3a3a3a', lineHeight: 1.5 }}>
-                        I agree to The Nightside&apos;s{' '}
+                        I have read and agree to the{' '}
                         <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#2d3a6b', textDecoration: 'underline' }}>Terms of Service</a>
                         {' '}and{' '}
                         <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#2d3a6b', textDecoration: 'underline' }}>Privacy Policy</a>.
                       </span>
                     </label>
+                    <p style={{ fontFamily: hv, fontSize: '12px', fontStyle: 'italic', color: 'rgba(19, 4, 38, 0.70)', lineHeight: 1.5, margin: '6px 0 0 26px' }}>
+                      Your information is stored in Canada. Some processing occurs through providers in other countries — see our Privacy Policy for details.
+                    </p>
                     {fieldErrors.terms && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '6px 0 0 26px' }}>{fieldErrors.terms}</p>}
                   </div>
 

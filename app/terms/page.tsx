@@ -1,10 +1,11 @@
 'use client'
 import { useState } from 'react'
+import { TERMS_LAST_UPDATED_DISPLAY } from '@/lib/policy-versions'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 const EFFECTIVE_DATE = 'May 20, 2026'
-const LAST_UPDATED   = 'May 22, 2026'
+const LAST_UPDATED   = TERMS_LAST_UPDATED_DISPLAY
 
 const p:  React.CSSProperties = { fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: '0 0 16px' }
 const h3: React.CSSProperties = { fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', margin: '24px 0 8px' }
