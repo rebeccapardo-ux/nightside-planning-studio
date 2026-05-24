@@ -162,6 +162,23 @@ export default function YourMaterialsPanel({
             min-width: 0;
             flex-wrap: wrap;
           }
+          /* Icon + title row (first child div after the absolute Link)
+             must NOT flex-wrap onto two rows — otherwise long Wishes-doc
+             titles push the title below the icon. Force the row to stay
+             inline (icon + title side by side), let the title text wrap
+             to multiple lines next to the icon, and align the icon to
+             the top so it sits with the first line of the title. */
+          .plan-pill-doc > div:nth-child(2),
+          .plan-pill-out > div:nth-child(2) {
+            flex-wrap: nowrap !important;
+            align-items: flex-start !important;
+          }
+          .plan-pill-doc > div:nth-child(2) > span,
+          .plan-pill-out > div:nth-child(2) > span {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+          }
           .plan-pill-doc > div + div {
             margin-left: 0 !important;
           }

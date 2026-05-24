@@ -208,25 +208,23 @@ body {
   line-height: 1.6;
 }
 
-/* Hide the floating notepad + sticky Export button while the mobile
-   nav drawer is open so they don't float above the drawer overlay. */
-body.nav-drawer-open .ns-floating-notepad-wrap,
-body.nav-drawer-open .mobile-sticky-export {
+/* Hide the floating notepad while the mobile nav drawer is open so it
+   doesn't float above the drawer overlay. */
+body.nav-drawer-open .ns-floating-notepad-wrap {
   visibility: hidden;
 }
 
-/* Export buttons on mobile: sticky directly below the floating notepad,
-   right-aligned to the same viewport offset (16px). Variable button
-   widths are preserved — right edges align, left edges vary by label.
-   Below 640px only — desktop layout keeps each page's existing Export
-   placement. (Brief 4 §1) */
+/* Mobile Export buttons (Brief 4a §1): no longer sticky — they sit in
+   page content, right-aligned at the top of the content area so the
+   button visually lands directly beneath the still-sticky notepad on
+   initial page load, but scrolls away with the rest of the page. The
+   class is a no-op layout hint that ensures right-alignment regardless
+   of the parent's display mode. */
 @media (max-width: 767px) {
   .mobile-sticky-export {
-    position: fixed !important;
-    top: 140px !important;
-    right: 16px !important;
-    z-index: 40 !important;
-    margin: 0 !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
   }
 }
 
@@ -235,45 +233,54 @@ body.nav-drawer-open .mobile-sticky-export {
    ─────────────────────────────────────────────────────────────────── */
 
 /* Activity page banner (values-ranking, fears-ranking, legacy-map):
-   row → column on mobile so Export + Saved status drop below the title
-   instead of competing with the notepad. */
+   row → column-reverse on mobile so the right-side aside (Export +
+   Saved-status cluster) renders ABOVE the breadcrumbs/title block,
+   visually landing directly under the sticky notepad. */
 @media (max-width: 767px) {
   .activity-banner-row {
-    flex-direction: column !important;
+    flex-direction: column-reverse !important;
     align-items: stretch !important;
     gap: 20px !important;
   }
   .activity-banner-aside {
     margin-top: 0 !important;
-    align-items: flex-start !important;
+    align-items: flex-end !important;
   }
 }
 
-/* Wishes-doc export bar (capture pages) + Plan-page export bar:
-   The Export buttons inside these wrappers now use .mobile-sticky-export
-   (fixed-positioned to the top-right cluster below the notepad), so on
-   mobile the wrappers themselves take no vertical space — but still
-   render so the fixed-positioned button inside them paints. The page-
-   level Saved-status span that lived inside .capture-export-bar stays
-   hidden on mobile because the canonical save indicator is now the
-   left-aligned .mobile-saved-status rendered below the pills. */
+/* Wishes-doc export bar (capture pages) + Plan-page export bar (Brief 4a):
+   The Export button + Saved-status cluster sits at the top of page
+   content, right-aligned, non-sticky. Wrappers were absolute on desktop;
+   on mobile they become static blocks with a paddingTop large enough that
+   the Export button lands ~14px below the notepad on first paint. The
+   page-level Saved-status span that lives inside .capture-export-bar is
+   re-shown on mobile here so it appears directly under the Export button
+   (right-aligned); the Brief 3 §1 .mobile-saved-status span (left-aligned
+   below the pills) is hidden as it's now redundant. */
 @media (max-width: 767px) {
   .capture-export-bar,
   .plan-export-bar {
     position: static !important;
     top: auto !important;
     right: auto !important;
-    padding: 0 !important;
+    padding: 64px 16px 0 !important;
     margin: 0 !important;
     max-width: none !important;
-    height: 0;
-    overflow: visible;
+  }
+  .plan-export-bar {
+    display: flex !important;
+    justify-content: flex-end !important;
   }
   .capture-export-bar > span {
-    display: none !important;
+    display: inline !important;
   }
   .mobile-saved-status {
-    display: block !important;
+    display: none !important;
+  }
+  /* When the export bar precedes the content gutter, drop the gutter's
+     top padding so we don't double up on vertical space. */
+  .capture-export-bar + div {
+    padding-top: 16px !important;
   }
 }
 
