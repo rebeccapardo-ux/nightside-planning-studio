@@ -449,7 +449,7 @@ function AdvanceDirectivePage() {
               </a>
             </p>
 
-            <div style={{ display: 'flex', gap: 6, marginTop: 28 }}>
+            <div className="hidden md:flex" style={{ gap: 6, marginTop: 28 }}>
               {['Expand a section', 'Relevant materials update as you work', 'Pull content into your answers'].map((text) => (
                 <span key={text} className="instruction-pill" style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: hv, fontSize: 14, color: '#F8F4EB', cursor: 'default', whiteSpace: 'nowrap' }}>
                   {text}
