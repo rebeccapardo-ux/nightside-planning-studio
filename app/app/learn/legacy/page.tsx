@@ -87,7 +87,7 @@ export default async function LegacyLearnPage() {
               The word &ldquo;legacy&rdquo; can feel like it belongs only to people with long careers, complicated estates, or their names on buildings. But legacy belongs to everyone, and can include simple things like the way you made people laugh, or the lessons you taught someone without meaning to.
             </p>
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '680px' }}>
-              Legacy planning is the practice of consciously reflecting on what you want to leave behind, and doing that reflecting while you&apos;re still here to shape it. This can mean creating artifacts, like writing letters, recording stories, or other projects. Or it can mean simply deciding how you want your values and relationships to be remembered, and having intentional conversations to share this with the people in your life.
+              Legacy planning is the practice of consciously reflecting on what you want to leave behind, and doing that reflecting while you&apos;re still here to shape it. This can mean creating artifacts, like writing letters, recording stories, or other projects. This can also mean simply deciding how you want your values and relationships to be remembered, and having intentional conversations to share this with the people in your life.
             </p>
 
           </div>
@@ -142,7 +142,7 @@ export default async function LegacyLearnPage() {
                 There are no rules, and no required format. Legacy work is whatever is meaningful to the person doing it.
               </p>
               <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                Some people write letters for milestones they won&apos;t be present for, or to say things that might otherwise go unsaid. Some record audio or video, telling stories in their own voice. Others make something physical: a collection of recipes, a quilt from meaningful clothing, a hand casting made together with someone they love. Cultural traditions like altars or shrines offer their own form of legacy-making. So do scholarships, dedicated benches, or causes given to in someone&apos;s name.
+                Some people write letters for milestones they won&apos;t be present for, or to say things that might otherwise go unsaid. Some record audio or video, telling stories in their own voice. Others make something physical: a collection of recipes, a quilt from meaningful clothing, a hand casting made together with someone they love. Cultural traditions like altars or shrines offer their own form of legacy-making, as do scholarships, dedicated benches, or causes given in someone&apos;s name.
               </p>
               <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
                 There&apos;s no single right time to begin. Some people start years before any illness, others at diagnosis, while others return to it in pieces over time. If you&apos;re living with a serious illness, it&apos;s worth starting sooner rather than later, while you have the most energy and clarity to shape it.
