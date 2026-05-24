@@ -731,7 +731,7 @@ function FearsRankingContent() {
               <div style={{ paddingTop: 14, minWidth: 220 }}>
 
                 {/* Instructions */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
                   {[
                     'Draw a card',
                     'Place it in the column that feels right',
@@ -748,6 +748,9 @@ function FearsRankingContent() {
                     </p>
                   )}
                 </div>
+                <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(255,255,255,0.6)', margin: '0 0 20px 0' }}>
+                  Your work saves automatically to Your Plan.
+                </p>
 
                 {/* Move-mode instruction */}
                 {liveInstruction && (

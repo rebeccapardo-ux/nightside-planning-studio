@@ -715,7 +715,7 @@ export default function LegacyMapPage() {
             The map works alone or as a prompt for conversation. This activity tends to open exchanges that wouldn&apos;t happen otherwise, and helps you identify the lessons and values you most want to pass on.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-            {['Add moments', 'Drag to reposition on timeline', 'Edits save automatically'].map((text) => (
+            {['Add moments', 'Drag to reposition on timeline'].map((text) => (
               <span
                 key={text}
                 style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}
@@ -780,7 +780,7 @@ export default function LegacyMapPage() {
           }}
         >
           {/* Add moment button — inside cream panel, centered above canvas */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
             <button
               type="button"
               onClick={() => openCreateModal(getNextMomentX(state.moments))}
@@ -795,6 +795,9 @@ export default function LegacyMapPage() {
               Add moment
             </button>
           </div>
+          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', textAlign: 'center', marginTop: 0, marginBottom: 16 }}>
+            Your work saves automatically to Your Plan.
+          </p>
           <div
             ref={pathContainerRef}
             className="relative w-full select-none rounded-[20px] overflow-hidden"
