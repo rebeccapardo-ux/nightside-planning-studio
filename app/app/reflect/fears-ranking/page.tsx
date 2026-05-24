@@ -1051,32 +1051,37 @@ function FearsRankingContent() {
               important: 'Somewhat pressing',
               less_central: 'Less pressing',
             }
+            const bgFor: Record<Bucket, string> = {
+              essential: '#F29836',
+              important: '#BBABF4',
+              less_central: '#F8F4EB',
+            }
             const bucket = expandedBucket
             const items = assignments[bucket]
             const otherBuckets: Bucket[] = (['essential', 'important', 'less_central'] as Bucket[]).filter((b) => b !== bucket)
             return (
-              <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 18, padding: 16, marginBottom: 22, border: '1px solid rgba(255,255,255,0.10)' }}>
+              <div style={{ background: bgFor[bucket], borderRadius: 18, padding: 16, marginBottom: 22 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#ffffff' }}>
+                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426' }}>
                     {labelFor[bucket]} · {items.length}{bucket === 'essential' ? `/${ESSENTIAL_SLOTS}` : ''}
                   </span>
                   <button
                     type="button"
                     onClick={() => { setExpandedBucket(null); setMobileMovePicker(null) }}
                     aria-label="Close"
-                    style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: 22, lineHeight: 1, cursor: 'pointer', padding: 4 }}
+                    style={{ background: 'none', border: 'none', color: '#130426', fontSize: 22, lineHeight: 1, cursor: 'pointer', padding: 4 }}
                   >
                     ×
                   </button>
                 </div>
                 {items.length === 0 ? (
-                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
                     No cards placed here yet.
                   </p>
                 ) : (
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {items.map((value) => (
-                      <li key={value} style={{ background: '#F8F4EB', borderRadius: 12, padding: '12px 12px 10px' }}>
+                      <li key={value} style={{ background: '#ffffff', borderRadius: 12, padding: '12px 12px 10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                           <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', lineHeight: 1.3, flex: 1 }}>
                             {value}
