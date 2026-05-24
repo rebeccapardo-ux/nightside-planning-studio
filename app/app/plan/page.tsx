@@ -238,7 +238,7 @@ export default async function PlanPage() {
         <div className="plan-export-bar" style={{ position: 'absolute', top: 20, right: 148 }}>
           <Link
             href="/app/plan/export"
-            className="plan-export-btn"
+            className="plan-export-btn mobile-sticky-export"
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               borderRadius: 999, padding: '10px 20px',

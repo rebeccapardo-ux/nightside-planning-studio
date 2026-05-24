@@ -607,7 +607,7 @@ function FearsRankingContent() {
             <button
               type="button"
               onClick={handlePreviewExport}
-              className="activity-export-btn"
+              className="mobile-sticky-export"
               style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
               onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}

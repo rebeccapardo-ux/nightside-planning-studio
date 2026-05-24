@@ -399,7 +399,7 @@ export default function KeepsakeDocumentPage() {
           <button
             type="button"
             onClick={handlePreviewExport}
-            className="hover:opacity-90 transition-opacity"
+            className="hover:opacity-90 transition-opacity mobile-sticky-export"
             style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#F8F4EB', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
             <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
