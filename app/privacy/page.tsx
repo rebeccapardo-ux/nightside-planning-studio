@@ -4,7 +4,7 @@ import { useState } from 'react'
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 const EFFECTIVE_DATE = 'May 20, 2026'
-const LAST_UPDATED   = 'May 22, 2026'
+const LAST_UPDATED   = 'May 24, 2026'
 
 const p:  React.CSSProperties = { fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: '0 0 16px' }
 const h3: React.CSSProperties = { fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', margin: '24px 0 8px' }
@@ -128,6 +128,12 @@ export default function PrivacyPage() {
           <p style={{ ...p, margin: '16px 0 0' }}>
             We do not sell your information. We do not share your information with third parties for marketing, advertising, or any commercial purpose. We do not use third-party analytics tools that track you across the web.
           </p>
+
+          <h3 style={h3}>A note on cross-border data transfers</h3>
+          <p style={{ ...p, margin: 0 }}>
+            Some of the services we use are operated outside of Canada. When your data is processed by services in other countries, it may be subject to the laws of those countries — including laws that allow government access to data under different terms than Canadian law. We choose providers that maintain strong security and contractual protections, and we limit cross-border transfers to what is necessary to operate the platform. If you have questions about cross-border transfers, contact our privacy officer at{' '}
+            <a href="mailto:contact@thenightside.net" style={a}>contact@thenightside.net</a>.
+          </p>
         </Section>
 
         {/* ── How we protect it ── */}
@@ -142,17 +148,20 @@ export default function PrivacyPage() {
             We do not access your content in the normal course of operating the platform. There are limited circumstances where access may be necessary — to help you troubleshoot a problem you&apos;ve reported, to investigate a security incident, to comply with a legal order, or to perform necessary database maintenance. We minimize this access and treat any content we encounter with care.
           </p>
           <p style={{ ...p, margin: 0 }}>
-            No security measure is perfect. While we take reasonable care to protect your information, no system can guarantee complete security. If we become aware of a security incident affecting your information, we will notify you in accordance with applicable privacy law.
+            No security measure is perfect. While we take reasonable care to protect your information, no system can guarantee complete security. If we become aware of a security incident that creates a real risk of significant harm to your information, we will notify you and the appropriate privacy regulator (the Office of the Privacy Commissioner of Canada and, where applicable, your provincial privacy commissioner) without undue delay after we determine the nature and scope of the incident. Our notification will include information about what happened, what data was affected, and what you can do to protect yourself.
           </p>
         </Section>
 
         {/* ── How long we keep it ── */}
         <Section title="How long we keep it">
           <p style={p}>
-            We keep your information for as long as you have an account. The Nightside Planning Studio is designed for return. Your account stays active indefinitely so you can revisit and update your work over time. We do not deactivate accounts for inactivity.
+            We keep your information for as long as you have an active account, so that you can access and update your plan over time. The Nightside Planning Studio is designed for return — your account stays active indefinitely, and we do not deactivate accounts for inactivity.
+          </p>
+          <p style={p}>
+            If you delete your account, all of your content is permanently removed from our active database immediately. Backups follow Supabase&apos;s standard retention schedule (typically 30 days), after which the data is permanently purged from those as well.
           </p>
           <p style={{ ...p, margin: 0 }}>
-            If you delete your account, all of your content is permanently removed from our database. Backups follow Supabase&apos;s standard retention schedule (typically 30 days), after which the data is purged from those as well.
+            For our internal event log (the record of how users move through the platform), we retain this data for as long as your account is active. When you delete your account, your associated event log entries are also deleted. We may keep anonymized, aggregated information about platform usage indefinitely for analysis purposes — this information cannot identify you.
           </p>
         </Section>
 
@@ -230,7 +239,7 @@ export default function PrivacyPage() {
         <Section title="Your rights">
           <p style={p}>You have the following rights regarding your information:</p>
           <p style={p}>
-            <strong style={{ fontWeight: 600 }}>Access.</strong> You can view all of your information through the platform and export your full plan at any time.
+            <strong style={{ fontWeight: 600 }}>Access and portability.</strong> You can view all of your information through the platform and export your full plan at any time. Exports are available as a PDF version of your plan.
           </p>
           <p style={p}>
             <strong style={{ fontWeight: 600 }}>Correction and updates.</strong> You can update your name, email address, and province through your My Account page. You can update or change your content (documents, activities, notes) at any time through the platform. You can update your Legacy Contact designation at any time. Changes to your email address and Legacy Contact require password confirmation.
@@ -266,12 +275,22 @@ export default function PrivacyPage() {
           </p>
         </StaticSection>
 
-        {/* ── Children ── */}
-        <StaticSection title="Children">
+        {/* ── Privacy officer ── */}
+        <StaticSection title="Privacy officer">
           <p style={{ ...p, margin: 0 }}>
-            The Nightside Planning Studio is intended for adults. We do not knowingly collect information from anyone under 18. If you become aware that a child has provided information to us, please contact us at{' '}
-            <a href="mailto:contact@thenightside.net" style={a}>contact@thenightside.net</a>{' '}
-            so we can address it.
+            The Nightside Inc. has designated a privacy officer responsible for compliance with applicable Canadian privacy law and for responding to privacy inquiries. You can reach our privacy officer at{' '}
+            <a href="mailto:contact@thenightside.net" style={a}>contact@thenightside.net</a>.
+          </p>
+        </StaticSection>
+
+        {/* ── Information about minors ── */}
+        <StaticSection title="Information about minors">
+          <p style={p}>
+            The Nightside Planning Studio is intended for adults. By creating an account, you confirm that you are 18 years of age or older. We do not knowingly collect information from anyone under 18.
+          </p>
+          <p style={{ ...p, margin: 0 }}>
+            If you become aware that a minor has provided information to us, please contact us at{' '}
+            <a href="mailto:contact@thenightside.net" style={a}>contact@thenightside.net</a>. We will promptly delete any information we have collected from a minor and close any related accounts.
           </p>
         </StaticSection>
 
