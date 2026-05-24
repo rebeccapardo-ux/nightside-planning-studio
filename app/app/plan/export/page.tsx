@@ -545,6 +545,7 @@ export default function PlanExportPage() {
   const [materials, setMaterials]             = useState<PlanMaterial[]>([])
   const [summaryLoading, setSummaryLoading]   = useState(false)
   const [fullLoading, setFullLoading]         = useState(false)
+  const [jsonLoading, setJsonLoading]         = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -789,6 +790,34 @@ export default function PlanExportPage() {
     }
   }
 
+  async function handleJsonDownload() {
+    setJsonLoading(true)
+    try {
+      const res = await fetch('/api/plan/export-json', { credentials: 'same-origin' })
+      if (!res.ok) {
+        console.error('JSON export failed:', res.status)
+        return
+      }
+      const blob = await res.blob()
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventName: 'export_generated', metadata: { mode: 'json' } }),
+      }).catch(() => {})
+      const todayStr = new Date().toISOString().slice(0, 10)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `nightside-plan-${todayStr}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } finally {
+      setJsonLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#F8F4EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -811,36 +840,68 @@ export default function PlanExportPage() {
           >
             ← Back to Plan
           </Link>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              type="button"
-              onClick={() => handleDownload('summary')}
-              disabled={summaryLoading}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => handleDownload('summary')}
+                disabled={summaryLoading}
+                style={{
+                  fontFamily: hv, fontSize: 13, fontWeight: 500,
+                  color: summaryLoading ? '#999' : '#1A1A1A',
+                  background: '#F5F5F5', border: '1px solid #DDDDDD',
+                  borderRadius: 6, padding: '8px 16px',
+                  cursor: summaryLoading ? 'default' : 'pointer',
+                }}
+              >
+                {summaryLoading ? 'Generating…' : 'Download summary only (PDF)'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDownload('full')}
+                disabled={fullLoading}
+                style={{
+                  fontFamily: hv, fontSize: 13, fontWeight: 500,
+                  color: fullLoading ? '#999' : '#FFFFFF',
+                  background: fullLoading ? '#888' : '#130426',
+                  border: '1px solid #130426',
+                  borderRadius: 6, padding: '8px 16px',
+                  cursor: fullLoading ? 'default' : 'pointer',
+                }}
+              >
+                {fullLoading ? 'Generating…' : `Download full plan (${materials.length} material${materials.length !== 1 ? 's' : ''}) (PDF)`}
+              </button>
+              <button
+                type="button"
+                onClick={handleJsonDownload}
+                disabled={jsonLoading}
+                title="A structured data file of your plan, for technical use or for keeping a complete record."
+                style={{
+                  fontFamily: hv, fontSize: 13, fontWeight: 500,
+                  color: jsonLoading ? '#999' : '#130426',
+                  background: jsonLoading ? '#E8E2F8' : '#DBD2F6',
+                  border: '1px solid #BBABF4',
+                  borderRadius: 6, padding: '8px 16px',
+                  cursor: jsonLoading ? 'default' : 'pointer',
+                }}
+              >
+                {jsonLoading ? 'Generating…' : 'Download JSON'}
+              </button>
+            </div>
+            <p
               style={{
-                fontFamily: hv, fontSize: 13, fontWeight: 500,
-                color: summaryLoading ? '#999' : '#1A1A1A',
-                background: '#F5F5F5', border: '1px solid #DDDDDD',
-                borderRadius: 6, padding: '8px 16px',
-                cursor: summaryLoading ? 'default' : 'pointer',
+                fontFamily: hv,
+                fontSize: 12,
+                fontStyle: 'italic',
+                color: 'rgba(19,4,38,0.6)',
+                margin: 0,
+                maxWidth: 360,
+                textAlign: 'right',
+                lineHeight: 1.5,
               }}
             >
-              {summaryLoading ? 'Generating…' : 'Download summary only (PDF)'}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDownload('full')}
-              disabled={fullLoading}
-              style={{
-                fontFamily: hv, fontSize: 13, fontWeight: 500,
-                color: fullLoading ? '#999' : '#FFFFFF',
-                background: fullLoading ? '#888' : '#130426',
-                border: '1px solid #130426',
-                borderRadius: 6, padding: '8px 16px',
-                cursor: fullLoading ? 'default' : 'pointer',
-              }}
-            >
-              {fullLoading ? 'Generating…' : `Download full plan (${materials.length} material${materials.length !== 1 ? 's' : ''}) (PDF)`}
-            </button>
+              JSON: a structured data file of your plan, for technical use or for keeping a complete record.
+            </p>
           </div>
         </div>
 
