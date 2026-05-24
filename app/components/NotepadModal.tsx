@@ -128,7 +128,7 @@ export default function NotepadModal({
         </div>
 
         {/* Helper text */}
-        <p className="text-sm text-[#f8f4eb] mb-4">Notes save automatically to Your Plan.</p>
+        <p className="text-sm italic text-[#f8f4eb] mb-4">Notes save automatically to Your Plan.</p>
 
         {/* Composer */}
         <textarea
