@@ -469,8 +469,11 @@ export default function KeepsakeDocumentPage() {
         </p>
 
         {/* Transition line */}
-        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(19,4,38,0.85)', marginBottom: 16, marginTop: 0 }}>
+        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(19,4,38,0.85)', marginBottom: 8, marginTop: 0 }}>
           Add anything you&rsquo;d want someone to know about the things that matter to you.
+        </p>
+        <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 16, marginTop: 0 }}>
+          Keepsakes you add will save automatically to Your Plan.
         </p>
 
         {/* Dynamic entries — only render those with content or the active pending entry */}

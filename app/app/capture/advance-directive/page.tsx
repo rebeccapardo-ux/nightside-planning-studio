@@ -415,6 +415,9 @@ function AdvanceDirectivePage() {
                 </span>
               ))}
             </div>
+            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 16, marginBottom: 0 }}>
+              Your answers will save automatically to Your Plan.
+            </p>
             {saveStatusText && (
               <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
             )}
