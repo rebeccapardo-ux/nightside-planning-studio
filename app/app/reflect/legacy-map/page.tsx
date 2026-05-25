@@ -866,7 +866,7 @@ export default function LegacyMapPage() {
             The map works alone or as a prompt for conversation. This activity tends to open exchanges that wouldn&apos;t happen otherwise, and helps you identify the lessons and values you most want to pass on.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-            {['Add moments', orientation === "vertical" ? 'Tap and drag to reposition on timeline' : 'Drag to reposition on timeline'].map((text) => (
+            {['Add moments', 'Drag to reposition on timeline'].map((text) => (
               <span
                 key={text}
                 style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}
