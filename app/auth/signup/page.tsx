@@ -271,10 +271,11 @@ export default function SignUpPage() {
                   {/* Name row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+                      <label htmlFor="signup-first-name" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
                         First name <span style={{ color: '#c0392b' }}>*</span>
                       </label>
                       <input
+                        id="signup-first-name"
                         type="text"
                         value={firstName}
                         onChange={(e) => { setFirstName(e.target.value); clearFieldError('firstName') }}
@@ -284,10 +285,11 @@ export default function SignUpPage() {
                       {fieldErrors.firstName && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.firstName}</p>}
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+                      <label htmlFor="signup-last-name" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
                         Last name <span style={{ color: '#c0392b' }}>*</span>
                       </label>
                       <input
+                        id="signup-last-name"
                         type="text"
                         value={lastName}
                         onChange={(e) => { setLastName(e.target.value); clearFieldError('lastName') }}
@@ -300,10 +302,11 @@ export default function SignUpPage() {
 
                   {/* Email */}
                   <div style={{ marginTop: '20px' }}>
-                    <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+                    <label htmlFor="signup-email" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
                       Email <span style={{ color: '#c0392b' }}>*</span>
                     </label>
                     <input
+                      id="signup-email"
                       type="email"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); clearFieldError('email') }}
@@ -315,11 +318,12 @@ export default function SignUpPage() {
 
                   {/* Password */}
                   <div style={{ marginTop: '20px' }}>
-                    <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+                    <label htmlFor="signup-password" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
                       Password <span style={{ color: '#c0392b' }}>*</span>
                     </label>
                     <div style={{ position: 'relative' }}>
                       <input
+                        id="signup-password"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => { setPassword(e.target.value); clearFieldError('password') }}
@@ -345,10 +349,11 @@ export default function SignUpPage() {
 
                   {/* Province */}
                   <div style={{ marginTop: '20px' }}>
-                    <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+                    <label htmlFor="signup-province" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
                       Province <span style={{ color: '#c0392b' }}>*</span>
                     </label>
                     <select
+                      id="signup-province"
                       value={province}
                       onChange={(e) => { setProvince(e.target.value); clearFieldError('province') }}
                       className={`auth-input auth-select${!province ? ' placeholder-shown' : ''}${fieldErrors.province ? ' has-error' : ''}`}

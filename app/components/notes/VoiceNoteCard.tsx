@@ -106,6 +106,7 @@ export default function VoiceNoteCard({ note, promptContext, actions }: Props) {
     }}>
       {/* Hidden audio element — mounts once URL is loaded */}
       {signedUrl && (
+        // eslint-disable-next-line jsx-a11y/media-has-caption -- transcript rendered as <p> below and linked via aria-describedby on the play button
         <audio
           ref={audioRef}
           src={signedUrl}

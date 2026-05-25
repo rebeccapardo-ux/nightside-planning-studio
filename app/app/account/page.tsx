@@ -1105,6 +1105,7 @@ export default function AccountPage() {
                 </p>
                 <input
                   type="password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)}
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- focus on user-triggered destructive-action confirm dialog
                   placeholder="Your password" autoFocus
                   style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', border: '1.5px solid rgba(19,4,38,0.2)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', marginBottom: deleteError ? 8 : 20 }}
                 />

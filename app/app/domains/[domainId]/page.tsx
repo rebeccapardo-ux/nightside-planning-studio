@@ -2141,6 +2141,7 @@ function AddExistingPanel({
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search…"
           className="w-full bg-transparent text-sm text-[#130426] placeholder:text-[#130426]/35 outline-none"
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- focus on user-triggered panel open
           autoFocus
         />
       </div>

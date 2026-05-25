@@ -182,6 +182,7 @@ export default function PlanNotesGrid({
                     </div>
                   ) : isEditing ? (
                     <textarea
+                      // eslint-disable-next-line jsx-a11y/no-autofocus -- focus on user-triggered edit mode
                       autoFocus
                       value={editDraft}
                       onChange={(e) => setEditDraft(e.target.value)}

@@ -89,6 +89,7 @@ export default function NoteItem({ note, isMarked, onMark, onUpdate }: Props) {
           <textarea
             ref={textareaRef}
             value={text}
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- focus on user-triggered edit mode
             autoFocus
             onChange={(e) => handleChange(e.target.value)}
             onBlur={handleBlur}

@@ -41,11 +41,13 @@ export default function VoiceNotePlayback({ note, theme = 'light' }: Props) {
       {/* Playback row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {signedUrl ? (
+          // eslint-disable-next-line jsx-a11y/media-has-caption -- transcript rendered adjacent and linked via aria-describedby
           <audio
             ref={audioRef}
             src={signedUrl}
             controls
             autoPlay
+            aria-describedby={transcript ? `voice-note-transcript-${note.id}` : undefined}
             style={{ flex: 1, height: 32, minWidth: 0 }}
           />
         ) : (
@@ -87,6 +89,7 @@ export default function VoiceNotePlayback({ note, theme = 'light' }: Props) {
 
       {status === 'complete' && transcript && (
         <p
+          id={`voice-note-transcript-${note.id}`}
           style={{
             fontSize: 13,
             lineHeight: '1.55',

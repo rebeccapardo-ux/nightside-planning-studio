@@ -1486,6 +1486,7 @@ export default function LegacyMapPage() {
               <div>
                 <label className="mb-2 block" style={{ fontFamily: hv, fontSize: 14, color: "#1A1A1A" }}>Name</label>
                 <input
+                  // eslint-disable-next-line jsx-a11y/no-autofocus -- focus on user-triggered modal open
                   autoFocus
                   type="text"
                   value={draftMoment.title}

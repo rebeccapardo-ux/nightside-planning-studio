@@ -217,9 +217,11 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
       {/* Audio player */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {reviewUrl && (
+          // eslint-disable-next-line jsx-a11y/media-has-caption -- review playback of a just-recorded clip; no transcript exists yet
           <audio
             src={reviewUrl}
             controls
+            aria-label="Review recording"
             style={{ flex: 1, height: 32, minWidth: 0 }}
           />
         )}
