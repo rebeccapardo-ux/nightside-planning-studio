@@ -436,11 +436,7 @@ function AdvanceDirectivePage() {
         <div style={{ marginBottom: 36 }}>
           <div style={{ maxWidth: 620 }}>
             <p style={{ fontSize: 18, lineHeight: 1.55, fontWeight: 400, color: '#130426', marginBottom: 20, fontFamily: hv }}>
-              This document is a place to express your values and preferences for your care. It will be most useful if you&apos;ve already taken time to{' '}
-              <Link href="/app/reflect" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: '#130426' }}>reflect</Link>
-              {' '}on your priorities and{' '}
-              <Link href="/app/learn/healthcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: '#130426' }}>learn</Link>
-              {' '}about your rights and options.
+              This document is a place to express your values and preferences for your care. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
             </p>
             <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', marginBottom: 20, fontFamily: hv }}>
               It is <strong>not a legal directive</strong>, but can be used alongside one to provide important context. Looking for official legal forms?{' '}

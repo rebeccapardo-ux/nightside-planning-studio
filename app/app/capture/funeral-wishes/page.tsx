@@ -532,11 +532,7 @@ function FuneralWishesPage() {
 
           {/* Body */}
           <p style={{ fontSize: 18, lineHeight: 1.55, fontWeight: 400, color: '#130426', marginBottom: 20, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-            This document is a place to record your wishes for what happens to your body, any funeral or ceremony, and how you&apos;d like to be remembered. It will be most useful if you&apos;ve already taken time to{' '}
-            <Link href="/app/reflect/reflection-prompts" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: '#130426' }}>reflect</Link>
-            {' '}on your priorities and{' '}
-            <Link href="/app/learn/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: '#130426' }}>learn</Link>
-            {' '}about your rights and options.
+            This document is a place to record your wishes for what happens to your body, any funeral or ceremony, and how you&apos;d like to be remembered. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
           </p>
 
           {/* Legal note */}
