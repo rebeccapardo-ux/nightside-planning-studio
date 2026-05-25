@@ -38,6 +38,7 @@ import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import DomainTour from '@/app/components/DomainTour'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -798,7 +799,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           className="max-w-6xl mx-auto"
           style={{ padding: '4px 40px 56px', position: 'relative', zIndex: 1 }}
         >
-          <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
+          <h1 className="ns-title-activity text-white" data-tour-anchor="domain-ready">{domain?.title ?? '…'}</h1>
         </div>
       </div>
 
@@ -1237,6 +1238,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
         </div>
       )}
 
+      <DomainTour />
     </div>
   )
 }
