@@ -20,28 +20,54 @@ const COLORS = {
 
 // ─── Path geometry ────────────────────────────────────────────────────────────
 
-const VB_W = 1000;
-const VB_H = 380;
-const PATH_MID_Y = 190;
-const PATH_AMP_Y = 90;
+type Orientation = "horizontal" | "vertical";
 
-function getPathPoint(xPercent: number): { x: number; y: number } {
-  const t = (clamp(xPercent, 5, 95) - 5) / 90;
+// Horizontal (desktop): t advances in x, sine drives y.
+// Vertical   (mobile):  t advances in y, sine drives x — same character, axes
+// rotated 90° and the sine output negated so the first arc bows left and the
+// second bows right (the rotated equivalent of the desktop down-then-up shape).
+const VB_W_H = 1000;
+const VB_H_H = 380;
+const PATH_MID_H = 190;
+const PATH_AMP_H = 90;
+
+const VB_W_V = 380;
+const VB_H_V = 1000;
+const PATH_MID_V = 190;
+const PATH_AMP_V = 90;
+
+function viewBox(o: Orientation): { w: number; h: number } {
+  return o === "vertical" ? { w: VB_W_V, h: VB_H_V } : { w: VB_W_H, h: VB_H_H };
+}
+
+function getPathPoint(percent: number, o: Orientation = "horizontal"): { x: number; y: number } {
+  const t = (clamp(percent, 5, 95) - 5) / 90;
+  if (o === "vertical") {
+    const y = 50 + t * 900;
+    const x = PATH_MID_V - PATH_AMP_V * Math.sin(t * 2 * Math.PI);
+    return { x, y };
+  }
   const x = 50 + t * 900;
-  const y = PATH_MID_Y + PATH_AMP_Y * Math.sin(t * 2 * Math.PI);
+  const y = PATH_MID_H + PATH_AMP_H * Math.sin(t * 2 * Math.PI);
   return { x, y };
 }
 
-const SERPENTINE_D = (() => {
+function serpentineD(o: Orientation): string {
   const pts: string[] = [];
   for (let i = 0; i <= 400; i++) {
     const t = i / 400;
-    const x = 50 + t * 900;
-    const y = PATH_MID_Y + PATH_AMP_Y * Math.sin(t * 2 * Math.PI);
-    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    if (o === "vertical") {
+      const y = 50 + t * 900;
+      const x = PATH_MID_V - PATH_AMP_V * Math.sin(t * 2 * Math.PI);
+      pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    } else {
+      const x = 50 + t * 900;
+      const y = PATH_MID_H + PATH_AMP_H * Math.sin(t * 2 * Math.PI);
+      pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+    }
   }
   return `M ${pts.join(" L ")}`;
-})();
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,24 +117,28 @@ function truncateLabel(title: string): string {
   return title.length > LABEL_TRUNCATE ? `${title.slice(0, LABEL_TRUNCATE)}…` : title;
 }
 
-function computeLabelSides(moments: LegacyMoment[]): Map<string, boolean> {
+// In horizontal: true = label drawn above the marker (used when the curve
+// dips down below the midline). In vertical: true = label drawn to the right
+// of the marker (used when the curve bows left of the midline). Same flip-on-
+// collision logic in both orientations.
+function computeLabelSides(moments: LegacyMoment[], o: Orientation = "horizontal"): Map<string, boolean> {
   const sorted = [...moments].sort((a, b) => a.xPercent - b.xPercent);
   const result = new Map<string, boolean>();
 
   sorted.forEach((m, i) => {
-    const pt = getPathPoint(m.xPercent);
-    let above = pt.y > PATH_MID_Y;
+    const pt = getPathPoint(m.xPercent, o);
+    let flipped = o === "vertical" ? pt.x < PATH_MID_V : pt.y > PATH_MID_H;
 
     if (i > 0) {
       const prev = sorted[i - 1];
-      const prevAbove = result.get(prev.id) ?? true;
-      const xDiff = m.xPercent - prev.xPercent;
-      if (xDiff < CLOSE_THRESHOLD && prevAbove === above) {
-        above = !above;
+      const prevFlipped = result.get(prev.id) ?? true;
+      const diff = m.xPercent - prev.xPercent;
+      if (diff < CLOSE_THRESHOLD && prevFlipped === flipped) {
+        flipped = !flipped;
       }
     }
 
-    result.set(m.id, above);
+    result.set(m.id, flipped);
   });
 
   return result;
@@ -177,6 +207,39 @@ export default function LegacyMapPage() {
   const [tooltipId, setTooltipId] = useState<string | null>(null);
   const touchModeRef = useRef(false);
 
+  // Mobile vs desktop orientation. SSR + initial client render default to
+  // horizontal; the effect upgrades to "vertical" below 768px once mounted.
+  const [orientation, setOrientation] = useState<Orientation>("horizontal");
+  const orientationRef = useRef<Orientation>("horizontal");
+  orientationRef.current = orientation;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    const apply = () => setOrientation(mq.matches ? "vertical" : "horizontal");
+    apply();
+    if (mq.addEventListener) {
+      mq.addEventListener("change", apply);
+      return () => mq.removeEventListener("change", apply);
+    }
+    mq.addListener(apply);
+    return () => mq.removeListener(apply);
+  }, []);
+
+  // Reduced-motion preference for tooltip animations.
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReducedMotion(mq.matches);
+    apply();
+    if (mq.addEventListener) {
+      mq.addEventListener("change", apply);
+      return () => mq.removeEventListener("change", apply);
+    }
+    mq.addListener(apply);
+    return () => mq.removeListener(apply);
+  }, []);
+
   // Supabase
   const [supabaseEntryId, setSupabaseEntryId] = useState<string | null>(null);
   const supabaseEntryIdRef = useRef<string | null>(null);
@@ -193,7 +256,7 @@ export default function LegacyMapPage() {
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const realMoments = useMemo(() => state.moments, [state.moments]);
-  const labelSides = useMemo(() => computeLabelSides(realMoments), [realMoments]);
+  const labelSides = useMemo(() => computeLabelSides(realMoments, orientation), [realMoments, orientation]);
 
   // ── Load from localStorage + resolve Supabase entry ID ─────────────────────
 
@@ -642,10 +705,13 @@ export default function LegacyMapPage() {
 
   // ── Drag helpers ─────────────────────────────────────────────────────────────
 
-  function getXPercentFromClientX(clientX: number) {
+  function getPercentFromClient(clientX: number, clientY: number): number {
     const el = pathContainerRef.current;
     if (!el) return 50;
     const rect = el.getBoundingClientRect();
+    if (orientationRef.current === "vertical") {
+      return clamp(((clientY - rect.top) / rect.height) * 100, 5, 95);
+    }
     return clamp(((clientX - rect.left) / rect.width) * 100, 5, 95);
   }
 
@@ -662,7 +728,7 @@ export default function LegacyMapPage() {
   function handleContainerPointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (!draggingId) return;
     didDragRef.current = true;
-    const xPercent = getXPercentFromClientX(event.clientX);
+    const xPercent = getPercentFromClient(event.clientX, event.clientY);
     markChanged((current) => ({
       ...current,
       moments: current.moments.map((m) =>
@@ -802,30 +868,39 @@ export default function LegacyMapPage() {
             ref={pathContainerRef}
             className="relative w-full select-none rounded-[20px] overflow-hidden"
             style={{
-              height: "360px",
-              background: "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)",
+              height: orientation === "vertical" ? 620 : 360,
+              background: orientation === "vertical"
+                ? "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)"
+                : "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)",
               border: "1px solid rgba(44,55,119,0.10)",
               cursor: draggingId ? "grabbing" : "default",
+              touchAction: draggingId ? "none" : "auto",
             }}
             onPointerMove={handleContainerPointerMove}
             onClick={() => setTooltipId(null)}
           >
             {/* SVG serpentine path */}
             <svg
-              viewBox={`0 0 ${VB_W} ${VB_H}`}
+              viewBox={`0 0 ${viewBox(orientation).w} ${viewBox(orientation).h}`}
               preserveAspectRatio="none"
               className="absolute inset-0 w-full h-full"
               aria-hidden="true"
             >
               <defs>
-                <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient
+                  id="path-gradient"
+                  x1={orientation === "vertical" ? "0%" : "0%"}
+                  y1={orientation === "vertical" ? "0%" : "0%"}
+                  x2={orientation === "vertical" ? "0%" : "100%"}
+                  y2={orientation === "vertical" ? "100%" : "0%"}
+                >
                   <stop offset="0%"   stopColor={COLORS.dusk}    stopOpacity="0.7" />
                   <stop offset="50%"  stopColor={COLORS.sunrise} stopOpacity="0.8" />
                   <stop offset="100%" stopColor={COLORS.sunset}  stopOpacity="0.9" />
                 </linearGradient>
               </defs>
               <path
-                d={SERPENTINE_D}
+                d={serpentineD(orientation)}
                 fill="none"
                 stroke="url(#path-gradient)"
                 strokeWidth="5"
@@ -834,47 +909,136 @@ export default function LegacyMapPage() {
               />
             </svg>
 
-            {/* Birth label */}
-            <div
-              className="absolute pointer-events-none select-none"
-              style={{ left: 24, bottom: 16, fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
-            >
-              Birth
-            </div>
-
-            {/* Now label */}
-            <div
-              className="absolute pointer-events-none select-none"
-              style={{ right: 24, bottom: 16, fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
-            >
-              Now
-            </div>
+            {/* Birth + Now labels (top/bottom on vertical, left/right on horizontal) */}
+            {orientation === "vertical" ? (
+              <>
+                <div
+                  className="absolute pointer-events-none select-none"
+                  style={{ left: "50%", top: 12, transform: "translateX(-50%)", fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
+                >
+                  Birth
+                </div>
+                <div
+                  className="absolute pointer-events-none select-none"
+                  style={{ left: "50%", bottom: 12, transform: "translateX(-50%)", fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
+                >
+                  Now
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className="absolute pointer-events-none select-none"
+                  style={{ left: 24, bottom: 16, fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
+                >
+                  Birth
+                </div>
+                <div
+                  className="absolute pointer-events-none select-none"
+                  style={{ right: 24, bottom: 16, fontFamily: hv, fontSize: 11, letterSpacing: '0.08em', color: COLORS.midnight }}
+                >
+                  Now
+                </div>
+              </>
+            )}
 
             {/* Real moment nodes */}
             {state.moments.map((moment) => {
               const isSelected = selectedId === moment.id;
               const isDragging = draggingId === moment.id;
-              const pt = getPathPoint(moment.xPercent);
-              const above = labelSides.get(moment.id) ?? (pt.y > PATH_MID_Y);
+              const pt = getPathPoint(moment.xPercent, orientation);
+              const vb = viewBox(orientation);
+              const flipped = labelSides.get(moment.id) ?? (orientation === "vertical" ? pt.x < PATH_MID_V : pt.y > PATH_MID_H);
               const displayTitle = truncateLabel(moment.title);
               const isTruncated = displayTitle !== moment.title;
               const isTooltipOpen = tooltipId === moment.id && !draggingId;
 
-              const tooltipAbove = (pt.y / VB_H) > 0.38;
-              const xFrac = pt.x / VB_W;
-              const tooltipHAlign: React.CSSProperties =
-                xFrac < 0.28
-                  ? { left: "-8px", transform: "none" }
-                  : xFrac > 0.72
-                  ? { right: "-8px", transform: "none" }
-                  : { left: "50%", transform: "translateX(-50%)" };
+              const xFrac = pt.x / vb.w;
+              const yFrac = pt.y / vb.h;
 
-              const labelHAlign: React.CSSProperties =
-                xFrac < 0.20
-                  ? { left: 0, transform: "none" }
-                  : xFrac > 0.75
-                  ? { right: 0, transform: "none" }
-                  : { left: "50%", transform: "translateX(-50%)" };
+              // Tooltip positioning differs by orientation:
+              //  horizontal: card floats above/below marker, with smart left/center/right alignment.
+              //  vertical:   card floats left/right of marker (opposite the bow), with smart top/center/bottom alignment.
+              let tooltipPlacementStyle: React.CSSProperties;
+              if (orientation === "vertical") {
+                // place opposite the curve's bow direction at this point
+                const tooltipRight = pt.x < PATH_MID_V; // curve bowed left → tooltip on right
+                const tooltipVAlign: React.CSSProperties =
+                  yFrac < 0.20
+                    ? { top: 0, transform: "none" }
+                    : yFrac > 0.80
+                    ? { bottom: 0, transform: "none" }
+                    : { top: "50%", transform: "translateY(-50%)" };
+                tooltipPlacementStyle = {
+                  ...(tooltipRight ? { left: "30px" } : { right: "30px" }),
+                  ...tooltipVAlign,
+                  width: "220px",
+                };
+              } else {
+                const tooltipAbove = (pt.y / vb.h) > 0.38;
+                const tooltipHAlign: React.CSSProperties =
+                  xFrac < 0.28
+                    ? { left: "-8px", transform: "none" }
+                    : xFrac > 0.72
+                    ? { right: "-8px", transform: "none" }
+                    : { left: "50%", transform: "translateX(-50%)" };
+                tooltipPlacementStyle = {
+                  ...(tooltipAbove ? { bottom: "46px" } : { top: "46px" }),
+                  ...tooltipHAlign,
+                  width: "268px",
+                };
+              }
+
+              // Label placement:
+              //  horizontal: above/below marker (flipped = above), with smart h-align.
+              //  vertical:   left/right of marker (flipped = right), with smart v-align.
+              let labelPlacementStyle: React.CSSProperties;
+              if (orientation === "vertical") {
+                const labelVAlign: React.CSSProperties =
+                  yFrac < 0.06
+                    ? { top: 0, transform: "none" }
+                    : yFrac > 0.94
+                    ? { bottom: 0, transform: "none" }
+                    : { top: "50%", transform: "translateY(-50%)" };
+                labelPlacementStyle = {
+                  ...(flipped ? { left: `${LABEL_OFFSET}px` } : { right: `${LABEL_OFFSET}px` }),
+                  ...labelVAlign,
+                  width: 130,
+                };
+              } else {
+                const labelHAlign: React.CSSProperties =
+                  xFrac < 0.20
+                    ? { left: 0, transform: "none" }
+                    : xFrac > 0.75
+                    ? { right: 0, transform: "none" }
+                    : { left: "50%", transform: "translateX(-50%)" };
+                labelPlacementStyle = {
+                  ...(flipped ? { bottom: `${LABEL_OFFSET}px` } : { top: `${LABEL_OFFSET}px` }),
+                  ...labelHAlign,
+                  width: 160,
+                };
+              }
+
+              // Connector tick between marker and label.
+              const connectorStyle: React.CSSProperties = orientation === "vertical"
+                ? {
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    ...(flipped ? { left: "22px" } : { right: "22px" }),
+                    height: "1px",
+                    width: "12px",
+                    backgroundColor: "rgba(44,55,119,0.28)",
+                  }
+                : {
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    ...(flipped ? { bottom: "22px" } : { top: "22px" }),
+                    height: "12px",
+                    width: "1px",
+                    backgroundColor: "rgba(44,55,119,0.28)",
+                  };
+
+              const enableHover = orientation !== "vertical";
 
               return (
                 <div
@@ -882,23 +1046,21 @@ export default function LegacyMapPage() {
                   data-moment="true"
                   className={`absolute ${isTooltipOpen ? "z-50" : "z-20"}`}
                   style={{
-                    left: `${(pt.x / VB_W) * 100}%`,
-                    top: `${(pt.y / VB_H) * 100}%`,
+                    left: `${(pt.x / vb.w) * 100}%`,
+                    top: `${(pt.y / vb.h) * 100}%`,
                     transform: "translate(-50%, -50%)",
                   }}
-                  onMouseEnter={() => { if (!draggingId) setTooltipId(moment.id); }}
-                  onMouseLeave={() => setTooltipId((prev) => prev === moment.id ? null : prev)}
+                  onMouseEnter={() => { if (enableHover && !draggingId) setTooltipId(moment.id); }}
+                  onMouseLeave={() => { if (enableHover) setTooltipId((prev) => prev === moment.id ? null : prev); }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Tooltip card */}
                   {isTooltipOpen && (
                     <button
                       type="button"
-                      className="absolute z-40 text-left w-full"
+                      className={`absolute z-40 text-left ${reducedMotion ? "" : "legacy-tooltip-card"}`}
                       style={{
-                        ...(tooltipAbove ? { bottom: "46px" } : { top: "46px" }),
-                        ...tooltipHAlign,
-                        width: "268px",
+                        ...tooltipPlacementStyle,
                         backgroundColor: COLORS.light,
                         borderRadius: "16px",
                         border: "1px solid rgba(44,55,119,0.13)",
@@ -907,8 +1069,8 @@ export default function LegacyMapPage() {
                         cursor: "pointer",
                       }}
                       onClick={(e) => { e.stopPropagation(); openEditModal(moment); }}
-                      onMouseEnter={() => setTooltipId(moment.id)}
-                      onMouseLeave={() => setTooltipId(null)}
+                      onMouseEnter={() => { if (enableHover) setTooltipId(moment.id); }}
+                      onMouseLeave={() => { if (enableHover) setTooltipId(null); }}
                     >
                       <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
                         {moment.title}
@@ -933,11 +1095,7 @@ export default function LegacyMapPage() {
                   {/* Label */}
                   <div
                     className="absolute"
-                    style={{
-                      ...(above ? { bottom: `${LABEL_OFFSET}px` } : { top: `${LABEL_OFFSET}px` }),
-                      ...labelHAlign,
-                      width: 160,
-                    }}
+                    style={labelPlacementStyle}
                   >
                     <button
                       type="button"
@@ -963,11 +1121,8 @@ export default function LegacyMapPage() {
 
                   {/* Connector tick */}
                   <div
-                    className="absolute left-1/2 -translate-x-1/2 w-px"
-                    style={{
-                      ...(above ? { bottom: "22px", height: "12px" } : { top: "22px", height: "12px" }),
-                      backgroundColor: "rgba(44,55,119,0.28)",
-                    }}
+                    className="absolute"
+                    style={connectorStyle}
                   />
 
                   {/* Draggable circle */}

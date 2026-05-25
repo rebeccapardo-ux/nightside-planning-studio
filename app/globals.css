@@ -317,3 +317,18 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
     gap: 16px !important;
   }
 }
+
+/* Legacy Map moment-description card: subtle fade-and-scale on mount.
+   Suppressed under prefers-reduced-motion. */
+@keyframes legacyTooltipIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.legacy-tooltip-card {
+  animation: legacyTooltipIn 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legacy-tooltip-card {
+    animation: none;
+  }
+}
