@@ -150,47 +150,46 @@ function getArrow(stepIdx: number, vw: number, vh: number, modal: ModalPlacement
   let cp2x: number, cp2y: number
   let ex: number, ey: number
 
-  // Curve recipe (steps 1–3): the cubic bezier reuses Plan tour's
-  // "control point directly above endpoint forces a vertical arrival"
-  // trick — cp2y sits well above ey so the arrowhead's tangent points
-  // straight down onto the target. To also produce the "arc up then
-  // down" swoosh the brief asks for, cp1y is pulled ABOVE sy so the
-  // curve exits the modal heading upward, peaks somewhere over the
-  // path, then comes down. Both control points are HIGH (above the
-  // line from start to end).
-  //
-  // Step 0 mirrors that recipe for a target that's also above the
-  // modal — exit goes up, peaks above PS, drops onto the header.
+  // Curve recipe (steps 0–2): cubic bezier with the same vertical-
+  // arrival trick PlanTour uses — cp2x = ex (directly above the
+  // endpoint) forces the curve's end tangent to be straight down so the
+  // arrowhead points cleanly onto the target. For the swoosh shape,
+  // both control points sit at the same "peak" y above the line from
+  // start to end, which arcs the path up before it drops onto the
+  // target. cp1's x is offset along the path so the start tangent
+  // exits the modal in the natural direction (up, left, or right
+  // depending on which side of the modal we're on).
   //
   // Step 3 is a straight downward arrow, verbatim from Plan tour's
   // "Your Materials" step for below-the-fold content.
 
   if (stepIdx === 0) {
     // Planning Status — modal lower-right, PS above and to the left.
-    // Exit modal top, swoosh up and over, drop onto PS header.
+    // Exit modal top-left going up, drop onto the PS header.
     sx = cx - mhw + 60;                                   sy = cy - mhh
     if (tgt) { ex = tgt.x;                                ey = Math.max(40, tgt.y - 8) }
     else     { ex = Math.max(80, cx - mhw - 80);          ey = Math.max(40, cy - 220) }
-    cp1x = sx - 40;          cp1y = sy - 90               // above-left of start (upward exit)
-    cp2x = ex + 30;          cp2y = ey - 90               // above-right of end (vertical arrival)
+    cp1x = sx - 30;          cp1y = sy - 80               // up-left of start (upward exit)
+    cp2x = ex;               cp2y = ey - 60               // directly above end → straight-down arrival
   } else if (stepIdx === 1) {
     // Reflection + Learning — modal on right, R+L panel below-left.
     // Exit modal left, arc up then down onto the panel's top edge.
     sx = cx - mhw - 18;                                   sy = cy
     if (tgt) { ex = tgt.rect.left + tgt.rect.width * 0.25; ey = Math.max(60, tgt.y - 8) }
     else     { ex = Math.max(80, cx - mhw - 380);         ey = cy + 100 }
-    const peakY = Math.min(sy, ey) - 80                    // a single peak above both ends
-    cp1x = sx - 80;          cp1y = peakY                 // pull up-left from start
-    cp2x = ex + 80;          cp2y = ey - 90               // pull above end for downward arrival
+    const peakY = Math.min(sy, ey) - 80                   // arc peak — well above the lower of start/end
+    cp1x = sx + (ex - sx) * 0.3;  cp1y = peakY            // 30% toward target, at peak
+    cp2x = ex;                    cp2y = peakY            // directly above end, same height → vertical arrival
   } else if (stepIdx === 2) {
     // Practical Readiness — modal on left, PR panel below-right. Mirror
-    // of step 1.
+    // of step 1. Endpoint targets the header text area (left quarter
+    // of the panel rect, just above the top edge).
     sx = cx + mhw + 18;                                   sy = cy
-    if (tgt) { ex = tgt.rect.right - tgt.rect.width * 0.25; ey = Math.max(60, tgt.y - 8) }
+    if (tgt) { ex = tgt.rect.left + tgt.rect.width * 0.25; ey = Math.max(60, tgt.y - 8) }
     else     { ex = Math.min(vw - 80, cx + mhw + 380);    ey = cy + 100 }
     const peakY = Math.min(sy, ey) - 80
-    cp1x = sx + 80;          cp1y = peakY
-    cp2x = ex - 80;          cp2y = ey - 90
+    cp1x = sx + (ex - sx) * 0.3;  cp1y = peakY
+    cp2x = ex;                    cp2y = peakY
   } else {
     // Your Thoughts — straight down to below-the-fold notes section.
     // Same shape as PlanTour's final step.

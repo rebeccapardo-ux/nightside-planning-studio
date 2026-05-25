@@ -48,6 +48,13 @@ type ArrowDef = {
   headAngle: number // degrees
 }
 
+function targetRect(anchor: string | null): DOMRect | null {
+  if (!anchor || typeof document === 'undefined') return null
+  const el = document.querySelector<HTMLElement>(`[data-tour-anchor="${anchor}"]`) ||
+             document.getElementById(anchor)
+  return el ? el.getBoundingClientRect() : null
+}
+
 function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
   if (stepIdx === 0 || vw < 600) return null
 
@@ -63,19 +70,33 @@ function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
   let ex: number, ey: number
 
   if (stepIdx === 1) {
-    // Key details: horizontal exit → vertical arrival
-    // c1 same y as origin (forces horizontal start tangent)
-    // c2 directly above endpoint (forces vertical end tangent → arrowhead points straight down)
+    // Key details: exit modal right, arrive vertically from above the panel.
+    // Endpoint reads the panel's actual top edge so the arrowhead lands
+    // 8px above the panel header instead of inside the panel content.
     sx = cx + mhw + 18;  sy = cy
-    ex = Math.min(vw - 60, cx + mhw + 155);  ey = cy + 75
+    const rect = targetRect(STEPS[1].anchor)
+    if (rect) {
+      ex = rect.left + rect.width / 2
+      ey = rect.top - 8
+    } else {
+      ex = Math.min(vw - 60, cx + mhw + 155); ey = cy + 75
+    }
     cp1x = (sx + ex) / 2;  cp1y = sy       // halfway x, same y → horizontal exit
     cp2x = ex;             cp2y = ey - 70  // directly above endpoint → vertical arrival
   } else if (stepIdx === 2) {
-    // Areas of planning: left edge (vertical middle) → short downward-left drop, head just above domain cards
+    // Areas of planning: exit modal left, arrive vertically above the
+    // section. The anchor wraps the cards grid (not the h2), so we lift
+    // ey an extra 30px so the arrowhead lands on the heading.
     sx = cx - mhw - 18;  sy = cy
-    ex = Math.max(60, cx - mhw - 70);  ey = cy + 72
+    const rect = targetRect(STEPS[2].anchor)
+    if (rect) {
+      ex = rect.left + 100
+      ey = rect.top - 30
+    } else {
+      ex = Math.max(60, cx - mhw - 70); ey = cy + 72
+    }
     cp1x = sx - 24;  cp1y = sy + 20    // gentle exit left
-    cp2x = ex + 18;  cp2y = ey - 50    // arrive from above so arrowhead points down
+    cp2x = ex;       cp2y = ey - 50    // directly above end → arrowhead points down
   } else {
     // Your Materials: bottom-center → straight down, long enough to clear the fold
     sx = cx;  sy = cy + mhh + 18
