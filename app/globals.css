@@ -332,3 +332,28 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
     animation: none;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Focus-visible (WCAG 2.4.7).
+   Box-shadow ring approach so the focus indicator layers cleanly over
+   rounded corners and respects each element's existing border-radius
+   instead of clipping outside. Only applies when the browser decides
+   focus should be visible (keyboard nav, programmatic focus) — won't
+   show on mouse clicks. Ring color is Night #2C3777 at 40% opacity,
+   3px wide.
+   ────────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(44, 55, 119, 0.40);
+}
+/* On elements that already use box-shadow for visual styling, compose
+   the focus ring on top so we don't blow away their existing shadow.
+   Authors should add the `.has-shadow` class (or extend this list) for
+   such elements. Tour modals, drawer panels, and the YourMaterialsPanel
+   intro popover are common cases. */
+.has-shadow:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(44, 55, 119, 0.40),
+    var(--component-shadow, 0 8px 32px rgba(19, 4, 38, 0.20));
+}
