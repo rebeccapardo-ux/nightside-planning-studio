@@ -850,7 +850,7 @@ export default function LegacyMapPage() {
             The map works alone or as a prompt for conversation. This activity tends to open exchanges that wouldn&apos;t happen otherwise, and helps you identify the lessons and values you most want to pass on.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-            {['Add moments', 'Drag to reposition on timeline'].map((text) => (
+            {['Add moments', orientation === "vertical" ? 'Tap and drag to reposition on timeline' : 'Drag to reposition on timeline'].map((text) => (
               <span
                 key={text}
                 style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}
@@ -938,9 +938,11 @@ export default function LegacyMapPage() {
             className="relative w-full select-none rounded-[20px] overflow-hidden"
             style={{
               height: orientation === "vertical" ? 620 : 360,
-              background: orientation === "vertical"
-                ? "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)"
-                : "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)",
+              // Horizontal padding on mobile gives labels room to extend
+              // outside the curve area without getting clipped by the
+              // overflow-hidden canvas edge.
+              ...(orientation === "vertical" ? { paddingLeft: 40, paddingRight: 40 } : null),
+              background: "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)",
               border: "1px solid rgba(44,55,119,0.10)",
               cursor: draggingId ? "grabbing" : "default",
               touchAction: draggingId ? "none" : "auto",
@@ -1072,7 +1074,11 @@ export default function LegacyMapPage() {
                 labelPlacementStyle = {
                   ...(flipped ? { left: `${LABEL_OFFSET}px` } : { right: `${LABEL_OFFSET}px` }),
                   ...labelVAlign,
-                  width: 130,
+                  // Narrower maxWidth on mobile so labels fit within the
+                  // canvas even when the collision flip places them on
+                  // the cramped side (near the curve's bow apex). Titles
+                  // longer than this wrap inside the pill via wordBreak.
+                  maxWidth: 90,
                 };
               } else {
                 const labelHAlign: React.CSSProperties =
@@ -1123,42 +1129,101 @@ export default function LegacyMapPage() {
                   onMouseLeave={() => { if (enableHover) setTooltipId((prev) => prev === moment.id ? null : prev); }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {/* Tooltip card */}
+                  {/* Tooltip card. On desktop the whole card is one button
+                      that opens the editor on click (preserves the
+                      hover-then-click flow). On mobile it's a read-only
+                      view with an explicit Edit affordance — tapping the
+                      body does nothing; only the Edit button opens the
+                      editor. Closing still goes through tap-same-moment
+                      or tap-outside the canvas. */}
                   {isTooltipOpen && (
-                    <button
-                      type="button"
-                      className={`absolute z-40 text-left ${reducedMotion ? "" : "legacy-tooltip-card"}`}
-                      style={{
-                        ...tooltipPlacementStyle,
-                        backgroundColor: COLORS.light,
-                        borderRadius: "16px",
-                        border: "1px solid rgba(44,55,119,0.13)",
-                        boxShadow: "0 8px 32px rgba(19,4,38,0.20), 0 2px 8px rgba(19,4,38,0.10)",
-                        padding: "14px 16px",
-                        cursor: "pointer",
-                      }}
-                      onClick={(e) => { e.stopPropagation(); openEditModal(moment); }}
-                      onMouseEnter={() => { if (enableHover) setTooltipId(moment.id); }}
-                      onMouseLeave={() => { if (enableHover) setTooltipId(null); }}
-                    >
-                      <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
-                        {moment.title}
-                      </p>
-                      {moment.note && (
-                        <div
-                          style={{
-                            maxHeight: "120px",
-                            overflowY: "auto",
-                            fontSize: "12px",
-                            lineHeight: "1.55",
-                            color: "rgba(19,4,38,0.72)",
-                            whiteSpace: "pre-wrap",
-                          }}
-                        >
-                          {moment.note}
+                    orientation === "vertical" ? (
+                      <div
+                        className={`absolute z-40 text-left ${reducedMotion ? "" : "legacy-tooltip-card"}`}
+                        style={{
+                          ...tooltipPlacementStyle,
+                          backgroundColor: COLORS.light,
+                          borderRadius: "16px",
+                          border: "1px solid rgba(44,55,119,0.13)",
+                          boxShadow: "0 8px 32px rgba(19,4,38,0.20), 0 2px 8px rgba(19,4,38,0.10)",
+                          padding: "14px 16px",
+                        }}
+                      >
+                        <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                          {moment.title}
+                        </p>
+                        {moment.note && (
+                          <div
+                            style={{
+                              maxHeight: "120px",
+                              overflowY: "auto",
+                              fontSize: "12px",
+                              lineHeight: "1.55",
+                              color: "rgba(19,4,38,0.72)",
+                              whiteSpace: "pre-wrap",
+                              marginBottom: 10,
+                            }}
+                          >
+                            {moment.note}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: moment.note ? 0 : 10 }}>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); openEditModal(moment); }}
+                            style={{
+                              fontFamily: hv,
+                              fontSize: 13,
+                              fontWeight: 500,
+                              color: COLORS.midnight,
+                              background: "transparent",
+                              border: "none",
+                              padding: "4px 0",
+                              cursor: "pointer",
+                              textDecoration: "underline",
+                              textUnderlineOffset: 3,
+                            }}
+                          >
+                            Edit
+                          </button>
                         </div>
-                      )}
-                    </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`absolute z-40 text-left ${reducedMotion ? "" : "legacy-tooltip-card"}`}
+                        style={{
+                          ...tooltipPlacementStyle,
+                          backgroundColor: COLORS.light,
+                          borderRadius: "16px",
+                          border: "1px solid rgba(44,55,119,0.13)",
+                          boxShadow: "0 8px 32px rgba(19,4,38,0.20), 0 2px 8px rgba(19,4,38,0.10)",
+                          padding: "14px 16px",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => { e.stopPropagation(); openEditModal(moment); }}
+                        onMouseEnter={() => { if (enableHover) setTooltipId(moment.id); }}
+                        onMouseLeave={() => { if (enableHover) setTooltipId(null); }}
+                      >
+                        <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                          {moment.title}
+                        </p>
+                        {moment.note && (
+                          <div
+                            style={{
+                              maxHeight: "120px",
+                              overflowY: "auto",
+                              fontSize: "12px",
+                              lineHeight: "1.55",
+                              color: "rgba(19,4,38,0.72)",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {moment.note}
+                          </div>
+                        )}
+                      </button>
+                    )
                   )}
 
                   {/* Label */}
@@ -1170,7 +1235,9 @@ export default function LegacyMapPage() {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (touchModeRef.current) {
+                        // Mobile: open the read-only description (tooltip).
+                        // Desktop: open the editor directly.
+                        if (orientation === "vertical") {
                           setTooltipId((prev) => prev === moment.id ? null : moment.id);
                         } else {
                           openEditModal(moment);
@@ -1203,7 +1270,9 @@ export default function LegacyMapPage() {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (didDragRef.current) { didDragRef.current = false; return; }
-                      if (touchModeRef.current) {
+                      // Mobile: open the read-only description (tooltip).
+                      // Desktop: open the editor directly.
+                      if (orientation === "vertical") {
                         setTooltipId((prev) => prev === moment.id ? null : moment.id);
                       } else {
                         openEditModal(moment);
