@@ -1,22 +1,39 @@
 'use client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import FeedbackModal from '@/app/components/FeedbackModal'
 
-const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-function isColorDark(color: string): boolean {
-  const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-  if (!match) return true
-  const r = +match[1], g = +match[2], b = +match[3]
-  return (0.299 * r + 0.587 * g + 0.114 * b) < 128
+const BG          = '#130426'
+const LIGHT       = '#F8F4EB'
+const DIVIDER     = 'rgba(248,244,235,0.15)'
+const DISCLAIMER  = 'rgba(248,244,235,0.80)'
+const COPYRIGHT   = 'rgba(248,244,235,0.70)'
+
+function scrollToTop() {
+  if (typeof window === 'undefined') return
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
+}
+
+function ArrowUp({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      style={{ flexShrink: 0 }}
+    >
+      <path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
 }
 
 export default function AppFooter() {
-  const pathname = usePathname()
-  const [light, setLight] = useState(false)
   const [isAuthed, setIsAuthed] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
 
@@ -27,89 +44,193 @@ export default function AppFooter() {
     return () => subscription.unsubscribe()
   }, [])
 
-  useEffect(() => {
-    const main = document.querySelector('main')
-    if (!main) { setLight(false); return }
-    const pageRoot = main.lastElementChild
-    if (!pageRoot) { setLight(false); return }
-
-    // Walk backwards through the page root's direct children to find the last
-    // section that has an explicit background. This avoids escaping <main> and
-    // reading the outer dark wrapper, which was causing all pages to appear dark.
-    let lastBg: string | null = null
-    let el: Element | null = pageRoot.lastElementChild
-    while (el) {
-      const bg = window.getComputedStyle(el).backgroundColor
-      if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
-        lastBg = bg
-        break
-      }
-      el = el.previousElementSibling
-    }
-    // Fallback: the page root itself may carry a background (e.g. full-page dark wrappers)
-    if (!lastBg) {
-      const rootBg = window.getComputedStyle(pageRoot).backgroundColor
-      if (rootBg && rootBg !== 'rgba(0, 0, 0, 0)' && rootBg !== 'transparent') lastBg = rootBg
-    }
-    setLight(lastBg ? isColorDark(lastBg) : false)
-  }, [pathname])
-
-  const bg         = light ? '#F8F4EB'              : '#0d0220'
-  const border     = light ? 'rgba(19,4,38,0.08)'   : 'rgba(248,244,235,0.08)'
-  const textPrimary = light ? '#130426'              : '#f8f4eb'
-  const textMuted  = light ? 'rgba(19,4,38,0.6)'    : 'rgba(248,244,235,0.6)'
-  const dot        = light ? 'rgba(19,4,38,0.25)'   : 'rgba(248,244,235,0.25)'
-  const disclaimer = light ? 'rgba(19,4,38,0.70)'   : 'rgba(248,244,235,0.70)'
+  // Six links per brief. My Account is hidden for signed-out visitors —
+  // the rest are public.
+  const links: Array<{ label: string; href?: string; onClick?: () => void; authed?: boolean }> = [
+    { label: 'My Account',    href: '/app/account', authed: true },
+    { label: 'Help',          href: '/app/help'    },
+    { label: 'About',         href: '/app/about'   },
+    { label: 'Send feedback', onClick: () => setFeedbackOpen(true) },
+    { label: 'Privacy',       href: '/privacy'     },
+    { label: 'Terms',         href: '/terms'       },
+  ]
+  const visibleLinks = links.filter((l) => !l.authed || isAuthed)
 
   return (
     <>
-    {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
-    <footer style={{ background: bg, borderTop: `1px solid ${border}`, padding: '28px 24px', transition: 'background 200ms ease, border-color 200ms ease' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
-          <span style={{ fontFamily: inter, fontSize: 13, color: textPrimary }}>
-            © {new Date().getFullYear()} The Nightside
-          </span>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            {isAuthed && (
-              <Link href="/app/account" style={{ fontFamily: inter, fontSize: 13, color: textPrimary, textDecoration: 'none' }} className="footer-link">
-                My Account
-              </Link>
-            )}
-            {[
-              { href: '/app/help',  label: 'Help'  },
-              { href: '/app/about', label: 'About' },
-            ].map(({ href, label }) => (
-              <Link key={href} href={href} style={{ fontFamily: inter, fontSize: 13, color: textPrimary, textDecoration: 'none' }} className="footer-link">
-                {label}
-              </Link>
-            ))}
-            <button
-              onClick={() => setFeedbackOpen(true)}
-              style={{ fontFamily: inter, fontSize: 13, color: textPrimary, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-              className="footer-link"
-            >
-              Send feedback
-            </button>
-            <span style={{ color: dot, fontSize: 13 }}>·</span>
-            {[
-              { href: '/privacy', label: 'Privacy' },
-              { href: '/terms',   label: 'Terms'   },
-            ].map(({ href, label }) => (
-              <Link key={href} href={href} style={{ fontFamily: inter, fontSize: 13, color: textPrimary, textDecoration: 'none' }} className="footer-link">
-                {label}
-              </Link>
-            ))}
+      {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
+      <footer
+        className="px-5 md:px-8 py-14 md:py-20"
+        style={{ background: BG, color: LIGHT, fontFamily: hv }}
+      >
+        <div
+          className="mx-auto flex flex-col gap-6 md:gap-8"
+          style={{ maxWidth: 1100 }}
+        >
+          {/* 1. Disclaimer */}
+          <p
+            style={{
+              fontFamily: hv,
+              fontStyle: 'italic',
+              color: DISCLAIMER,
+              lineHeight: 1.6,
+              textAlign: 'center',
+              margin: '0 auto',
+              maxWidth: 720,
+            }}
+            className="text-[14px] md:text-[15px] w-full"
+          >
+            The Nightside Planning Studio is a planning tool and educational resource. It is not a substitute for legal, medical, or financial advice. For binding decisions, consult a qualified professional in your province. See{' '}
+            <Link href="/terms" style={{ color: LIGHT, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              Terms of Service
+            </Link>
+            {' '}for details.
+          </p>
+
+          {/* 2. Divider */}
+          <hr style={{ width: '100%', height: 1, border: 'none', background: DIVIDER, margin: 0 }} aria-hidden="true" />
+
+          {/* 3. Links — horizontal row on desktop, stacked rows on mobile */}
+          <nav aria-label="Footer">
+            {/* Desktop: single horizontal row, gap-6 = 24px */}
+            <ul className="hidden md:flex md:flex-row md:items-center md:justify-center md:gap-6 list-none m-0 p-0">
+              {visibleLinks.map((link) => (
+                <li key={link.label} className="m-0 p-0">
+                  {link.onClick ? (
+                    <button
+                      type="button"
+                      onClick={link.onClick}
+                      className="footer-link"
+                      style={{ fontFamily: hv, fontSize: 15, color: LIGHT, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                    >
+                      {link.label}
+                    </button>
+                  ) : (
+                    <Link
+                      href={link.href!}
+                      className="footer-link"
+                      style={{ fontFamily: hv, fontSize: 15, color: LIGHT, textDecoration: 'none' }}
+                    >
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {/* Mobile: stacked rows, 44px min tap, 12px gap, full-row tap target */}
+            <ul className="flex flex-col md:hidden list-none m-0 p-0" style={{ gap: 12 }}>
+              {visibleLinks.map((link) => (
+                <li key={link.label} className="m-0 p-0">
+                  {link.onClick ? (
+                    <button
+                      type="button"
+                      onClick={link.onClick}
+                      style={{
+                        fontFamily: hv,
+                        fontSize: 16,
+                        color: LIGHT,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        width: '100%',
+                        minHeight: 44,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 0,
+                      }}
+                    >
+                      {link.label}
+                    </button>
+                  ) : (
+                    <Link
+                      href={link.href!}
+                      style={{
+                        fontFamily: hv,
+                        fontSize: 16,
+                        color: LIGHT,
+                        textDecoration: 'none',
+                        width: '100%',
+                        minHeight: 44,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
           </nav>
+
+          {/* 4. Back to top + copyright row.
+                 Desktop: copyright centered, Back-to-top right-aligned, same row.
+                 Mobile:  Back-to-top stacked icon+text first, copyright below. */}
+          {/* Desktop layout */}
+          <div className="hidden md:grid md:grid-cols-3 md:items-center">
+            <div /> {/* left column spacer to keep copyright visually centered */}
+            <p style={{ fontFamily: hv, fontSize: 13, color: COPYRIGHT, textAlign: 'center', margin: 0 }}>
+              © {new Date().getFullYear()} The Nightside
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={scrollToTop}
+                className="footer-link"
+                style={{
+                  fontFamily: hv,
+                  fontSize: 14,
+                  color: LIGHT,
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <ArrowUp />
+                Back to top
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile layout */}
+          <div className="flex flex-col items-center md:hidden" style={{ gap: 24 }}>
+            <button
+              type="button"
+              onClick={scrollToTop}
+              style={{
+                fontFamily: hv,
+                fontSize: 14,
+                color: LIGHT,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                minHeight: 44,
+                minWidth: 44,
+                padding: '8px 16px',
+              }}
+            >
+              <ArrowUp />
+              Back to top
+            </button>
+            <p style={{ fontFamily: hv, fontSize: 13, color: COPYRIGHT, textAlign: 'center', margin: 0 }}>
+              © {new Date().getFullYear()} The Nightside
+            </p>
+          </div>
         </div>
-        <p style={{ fontFamily: inter, fontSize: 11, fontStyle: 'italic', color: disclaimer, lineHeight: 1.6, textAlign: 'center', margin: 0 }}>
-          The Nightside Planning Studio is a planning tool and educational resource.<br />It is not a substitute for legal, medical, or financial advice. For binding decisions, consult a qualified professional in your province.<br />See{' '}
-          <Link href="/terms" style={{ color: disclaimer, textDecoration: 'underline' }}>Terms of Service</Link>
-          {' '}for details.
-        </p>
-      </div>
-      <style>{`.footer-link:hover { opacity: 0.7; }`}</style>
-    </footer>
+
+        <style>{`.footer-link:hover { text-decoration: underline; text-underline-offset: 3px; }`}</style>
+      </footer>
     </>
   )
 }
