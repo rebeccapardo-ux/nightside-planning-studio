@@ -68,7 +68,7 @@ type ModalPlacement = {
 
 function getModalPlacement(stepIdx: number, vw: number, vh: number): ModalPlacement {
   const mhw = Math.min(MODAL_W, vw - 32) / 2
-  const isMobile = vw < 600
+  const isMobile = vw < 768
 
   // Mobile: always center. Auto-scroll handles target visibility.
   if (isMobile) {
@@ -137,15 +137,12 @@ function getTargetPoint(anchor: string): { x: number; y: number; rect: DOMRect }
 }
 
 function getArrow(stepIdx: number, vw: number, vh: number, modal: ModalPlacement): ArrowDef | null {
-  if (vw < 600) return null
+  if (vw < 768) return null
 
   const { cx, cy } = modal
   const mhw = Math.min(MODAL_W, vw - 32) / 2
   const mhh = MODAL_MHH
   const anchor = STEPS[stepIdx].anchor
-
-  // Try to point at the actual element. If the DOM hasn't settled yet,
-  // fall back to a sensible direction so the tour still draws *something*.
   const tgt = getTargetPoint(anchor)
 
   let sx: number, sy: number
@@ -153,38 +150,54 @@ function getArrow(stepIdx: number, vw: number, vh: number, modal: ModalPlacement
   let cp2x: number, cp2y: number
   let ex: number, ey: number
 
+  // Curve recipe (steps 1–3): the cubic bezier reuses Plan tour's
+  // "control point directly above endpoint forces a vertical arrival"
+  // trick — cp2y sits well above ey so the arrowhead's tangent points
+  // straight down onto the target. To also produce the "arc up then
+  // down" swoosh the brief asks for, cp1y is pulled ABOVE sy so the
+  // curve exits the modal heading upward, peaks somewhere over the
+  // path, then comes down. Both control points are HIGH (above the
+  // line from start to end).
+  //
+  // Step 0 mirrors that recipe for a target that's also above the
+  // modal — exit goes up, peaks above PS, drops onto the header.
+  //
+  // Step 3 is a straight downward arrow, verbatim from Plan tour's
+  // "Your Materials" step for below-the-fold content.
+
   if (stepIdx === 0) {
-    // Modal on right, target (Planning Status header) is up-left.
-    // Exit modal left, curve up-left.
-    sx = cx - mhw - 18;  sy = cy
-    if (tgt) { ex = tgt.x; ey = Math.max(60, tgt.y - 8) }
-    else     { ex = Math.max(60, cx - mhw - 220); ey = Math.max(60, cy - 200) }
-    cp1x = sx - 60;  cp1y = sy
-    cp2x = ex + 40;  cp2y = ey + 60
+    // Planning Status — modal lower-right, PS above and to the left.
+    // Exit modal top, swoosh up and over, drop onto PS header.
+    sx = cx - mhw + 60;                                   sy = cy - mhh
+    if (tgt) { ex = tgt.x;                                ey = Math.max(40, tgt.y - 8) }
+    else     { ex = Math.max(80, cx - mhw - 80);          ey = Math.max(40, cy - 220) }
+    cp1x = sx - 40;          cp1y = sy - 90               // above-left of start (upward exit)
+    cp2x = ex + 30;          cp2y = ey - 90               // above-right of end (vertical arrival)
   } else if (stepIdx === 1) {
-    // Modal on right, R+L panel is on the left. Exit modal left, curve
-    // down-left so the arrowhead arrives from above the panel.
-    sx = cx - mhw - 18;  sy = cy
-    if (tgt) { ex = tgt.rect.left + 40;  ey = Math.max(60, tgt.y - 8) }
-    else     { ex = Math.max(60, cx - mhw - 70); ey = cy + 72 }
-    cp1x = sx - 30;  cp1y = sy + 30
-    cp2x = ex + 20;  cp2y = ey - 60
+    // Reflection + Learning — modal on right, R+L panel below-left.
+    // Exit modal left, arc up then down onto the panel's top edge.
+    sx = cx - mhw - 18;                                   sy = cy
+    if (tgt) { ex = tgt.rect.left + tgt.rect.width * 0.25; ey = Math.max(60, tgt.y - 8) }
+    else     { ex = Math.max(80, cx - mhw - 380);         ey = cy + 100 }
+    const peakY = Math.min(sy, ey) - 80                    // a single peak above both ends
+    cp1x = sx - 80;          cp1y = peakY                 // pull up-left from start
+    cp2x = ex + 80;          cp2y = ey - 90               // pull above end for downward arrival
   } else if (stepIdx === 2) {
-    // Modal on left, PR panel is on the right. Exit modal right, curve
-    // down-right so the arrowhead arrives from above the panel.
-    sx = cx + mhw + 18;  sy = cy
-    if (tgt) { ex = tgt.rect.right - 40; ey = Math.max(60, tgt.y - 8) }
-    else     { ex = Math.min(vw - 60, cx + mhw + 70); ey = cy + 72 }
-    cp1x = sx + 30;  cp1y = sy + 30
-    cp2x = ex - 20;  cp2y = ey - 60
+    // Practical Readiness — modal on left, PR panel below-right. Mirror
+    // of step 1.
+    sx = cx + mhw + 18;                                   sy = cy
+    if (tgt) { ex = tgt.rect.right - tgt.rect.width * 0.25; ey = Math.max(60, tgt.y - 8) }
+    else     { ex = Math.min(vw - 80, cx + mhw + 380);    ey = cy + 100 }
+    const peakY = Math.min(sy, ey) - 80
+    cp1x = sx + 80;          cp1y = peakY
+    cp2x = ex - 80;          cp2y = ey - 90
   } else {
-    // Notes section — modal centered, arrow exits bottom, long downward
-    // (matches PlanTour's "Your Materials" step). Target may or may not
-    // be in view depending on viewport size.
-    sx = cx;     sy = cy + mhh + 18
-    ex = cx + 5; ey = cy + mhh + 196
-    cp1x = cx + 4;  cp1y = sy + 55
-    cp2x = cx + 8;  cp2y = ey - 55
+    // Your Thoughts — straight down to below-the-fold notes section.
+    // Same shape as PlanTour's final step.
+    sx = cx;             sy = cy + mhh + 18
+    ex = cx + 5;         ey = cy + mhh + 196
+    cp1x = cx + 4;       cp1y = sy + 55
+    cp2x = cx + 8;       cp2y = ey - 55
   }
 
   const curvePath = `M ${sx} ${sy} C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${ex} ${ey}`
@@ -288,10 +301,18 @@ export default function DomainTour() {
       const dialogEl = document.querySelector('[role="dialog"]')
       if (anchor && !dialogEl) {
         if (mounted.current) {
-          // Bring step 0's target into view before activating so the first
-          // arrow + modal placement render with the page already settled.
-          scrollToTourTarget(STEPS[0].anchor)
-          setTimeout(() => { if (mounted.current) setActive(true) }, TOUR_SCROLL_SETTLE_MS)
+          // Mobile: bring step 0's target into view before activating so
+          // the first modal renders against a settled page. Desktop: no
+          // scroll — assumes the user is at the top of the page after
+          // navigation and the desktop arrow geometry handles where
+          // targets sit relative to the modal.
+          const isMobile = window.innerWidth < 768
+          if (isMobile) {
+            scrollToTourTarget(STEPS[0].anchor)
+            setTimeout(() => { if (mounted.current) setActive(true) }, TOUR_SCROLL_SETTLE_MS)
+          } else {
+            setActive(true)
+          }
         }
       } else {
         timer = setTimeout(checkReady, 350)
@@ -314,13 +335,14 @@ export default function DomainTour() {
   }, [userId])
 
   const goToStep = useCallback((newIdx: number) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
     setArrowVisible(false)
-    scrollToTourTarget(STEPS[newIdx].anchor)
+    if (isMobile) scrollToTourTarget(STEPS[newIdx].anchor)
     setTimeout(() => {
       setStepIdx(newIdx)
       setArrowKey(k => k + 1)
       setArrowVisible(true)
-    }, TOUR_SCROLL_SETTLE_MS)
+    }, isMobile ? TOUR_SCROLL_SETTLE_MS : 200)
   }, [])
 
   const next = useCallback(() => {

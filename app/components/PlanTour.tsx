@@ -197,16 +197,18 @@ export default function PlanTour({ userId }: { userId: string }) {
     setActive(false)
   }, [userId])
 
-  // Fade out current arrow, scroll the next step's target into view, then
-  // switch step and remount the arrow once the scroll has settled.
+  // Fade out current arrow, switch step, remount the arrow. Auto-scroll
+  // runs only on mobile (<768px); desktop keeps the original no-scroll
+  // behavior since its arrow geometry assumes a stable viewport.
   const goToStep = useCallback((newIdx: number) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
     setArrowVisible(false)
-    scrollToTourTarget(STEPS[newIdx].anchor)
+    if (isMobile) scrollToTourTarget(STEPS[newIdx].anchor)
     setTimeout(() => {
       setStepIdx(newIdx)
       setArrowKey(k => k + 1)
       setArrowVisible(true)
-    }, TOUR_SCROLL_SETTLE_MS)
+    }, isMobile ? TOUR_SCROLL_SETTLE_MS : 200)
   }, [])
 
   const next = useCallback(() => {
