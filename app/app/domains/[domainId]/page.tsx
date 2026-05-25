@@ -710,6 +710,14 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
     ...domainStructure.readiness.map(i => ({ key: i.key, title: i.title, section: 'readiness' as const })),
   ] : []
 
+  // Hold the page on a clean background while initial data resolves.
+  // Without this gate the dark header + "…" placeholder title rendered
+  // before the domain object loaded, then the structure/notes sections
+  // popped in once the parallel fetches settled — a visible flash.
+  if (loading) {
+    return <div className="min-h-screen" style={{ background: '#EDE7FF' }} />
+  }
+
   return (
     <div className="min-h-screen" style={{ background: '#EDE7FF' }}>
       <style>{`
