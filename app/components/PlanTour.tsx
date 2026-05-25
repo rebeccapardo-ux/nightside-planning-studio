@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { scrollToTourTarget, TOUR_SCROLL_SETTLE_MS } from '@/lib/tour-scroll'
 
 const apf = "'Apfel Grotezk', sans-serif"
 const hv  = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -12,18 +13,22 @@ const STEPS = [
   {
     title: 'Welcome to Your Plan',
     body: "This is a place to gather your outputs, review your thinking, and manage key tasks. Fill things in at your own pace, and export when you're ready.",
+    anchor: null as string | null,
   },
   {
     title: 'Key details',
     body: 'Your most important info at a glance — pulled from documents and contacts as you fill them in.',
+    anchor: 'tour-key-details' as string | null,
   },
   {
     title: 'Areas of planning',
     body: 'Click into an area to track your progress and access the documents, reflections, and learning content for that area.',
+    anchor: 'tour-areas' as string | null,
   },
   {
     title: 'Your Materials',
     body: "All your documents, activity outputs, and notes live here. Pick up where you left off, or export when you're ready.",
+    anchor: 'tour-materials' as string | null,
   },
 ]
 
@@ -192,14 +197,16 @@ export default function PlanTour({ userId }: { userId: string }) {
     setActive(false)
   }, [userId])
 
-  // Fade out current arrow, then switch step and remount arrow
+  // Fade out current arrow, scroll the next step's target into view, then
+  // switch step and remount the arrow once the scroll has settled.
   const goToStep = useCallback((newIdx: number) => {
     setArrowVisible(false)
+    scrollToTourTarget(STEPS[newIdx].anchor)
     setTimeout(() => {
       setStepIdx(newIdx)
       setArrowKey(k => k + 1)
       setArrowVisible(true)
-    }, 200)
+    }, TOUR_SCROLL_SETTLE_MS)
   }, [])
 
   const next = useCallback(() => {

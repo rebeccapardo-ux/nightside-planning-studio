@@ -805,7 +805,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
       {/* ── Section 1: Status ── */}
       {domainStructure && (
-        <div style={{ background: '#EDE7FF' }}>
+        <div style={{ background: '#EDE7FF' }} data-tour-anchor="planning-status">
           <div className="max-w-6xl mx-auto px-6 py-12">
             {isWills && (
               <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 28px 0' }}>
@@ -847,7 +847,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
       {/* ── Section 2: Notes ── */}
       {(isHealthcare || isLegacy || isDeathcare || isWills || isRitual || isPersonalAdmin) && (
-        <div style={{ background: '#EDE7FF', paddingBottom: 96 }}>
+        <div style={{ background: '#EDE7FF', paddingBottom: 96 }} data-tour-anchor="your-thoughts">
           <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 40 }}>
 
             <p style={{
@@ -1560,7 +1560,7 @@ function PlanningStatusSection({
 
           {/* Two panels side by side */}
           <div className="planning-panels">
-            <div className="rounded-xl p-6" style={{ background: '#BBABF4' }}>
+            <div className="rounded-xl p-6" style={{ background: '#BBABF4' }} data-tour-anchor="reflection-learning">
               <p className="text-[22px] font-bold text-[#130426] mb-2">Reflection + Learning</p>
               <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>
                 Topics to think through and read about for this area
@@ -1587,7 +1587,7 @@ function PlanningStatusSection({
               </div>
             </div>
 
-            <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }}>
+            <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }} data-tour-anchor="practical-readiness">
               <p className="text-[22px] font-bold mb-2" style={{ color: '#DB5835' }}>Practical Readiness</p>
               <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document</p>
               <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 24 }}>Your progress updates as you complete each step.</p>

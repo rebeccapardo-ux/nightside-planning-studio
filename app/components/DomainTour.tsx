@@ -2,39 +2,115 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { scrollToTourTarget, TOUR_SCROLL_SETTLE_MS } from '@/lib/tour-scroll'
 
-// Visual primitives are copied 1:1 from PlanTour so the two tours read as the
-// same pattern. Only the step content + arrow geometry differ.
+// Visual primitives mirror PlanTour so the two tours read as the same
+// pattern. Differences:
+//   * Each step has an explicit DOM anchor (data-tour-anchor) that the
+//     auto-scroll uses to bring the target into view.
+//   * Desktop modal position varies per step so the modal never occludes
+//     the area the arrow is pointing to. On mobile the modal stays
+//     centered and auto-scroll handles the "where to look" problem.
+//   * Steps 1 + 2 read the target element's bounding box at draw time so
+//     the arrow tip actually reaches the panel rather than hanging mid-
+//     air. Plan tour didn't need this because its targets sit at known
+//     offsets from viewport center.
 const apf = "'Apfel Grotezk', sans-serif"
 const hv  = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const ARROW_COLOR = '#FF5E1F'
 
-// Independent flag from PlanTour. Set once after the user sees this tour on
-// any domain page; never fires again on any domain page after that.
 const tourKey = (uid: string) => `nightside.tour.domain:${uid}`
 
-const STEPS = [
+type Step = {
+  title: string
+  body: string
+  anchor: string
+}
+
+const STEPS: Step[] = [
   {
-    title: 'Track your progress at a glance',
-    body: 'This shows how engaged you are with this area overall. It updates automatically as you make progress in the panels below.',
+    title: 'Planning Status',
+    body: 'Track your progress in this area at a glance. Your planning status updates automatically based on your activity in the panels below.',
+    anchor: 'planning-status',
   },
   {
-    title: 'Topics to think through and read about for this area',
-    body: 'Update your status manually as you explore each one. Relevant materials also surface here.',
+    title: 'Reflection + Learning',
+    body: 'Topics to think through and read about for this area. Update your status manually as you explore each one. Relevant materials also surface here.',
+    anchor: 'reflection-learning',
   },
   {
-    title: 'Practical decisions to make and document',
-    body: 'Check items off as you go — your progress updates automatically. Relevant materials surface here too.',
+    title: 'Practical Readiness',
+    body: 'Document practical decisions. Check items off as you go — your progress updates automatically. Relevant materials surface here too.',
+    anchor: 'practical-readiness',
   },
   {
-    title: 'Capture thoughts as they come',
-    body: 'Notes you take here save to Your Plan and stay attached to this area.',
+    title: 'Your Thoughts',
+    body: "Capture thoughts about this area in the notes section below. They'll save to Your Plan and stay attached here.",
+    anchor: 'your-thoughts',
   },
 ]
 
 // ---------------------------------------------------------------------------
-// Arrow geometry — same bezier draw + animated arrowhead as PlanTour,
-// retargeted for the four domain-page sections.
+// Modal positioning per step (desktop only — mobile is always centered).
+// Returns the modal's intended center (cx, cy) plus the inline style that
+// should be applied to the modal element. mhw/mhh stay constant so the
+// arrow math can rely on them.
+// ---------------------------------------------------------------------------
+
+const MODAL_W   = 400
+const MODAL_MHH = 138 // approximate half-height for arrow math
+
+type ModalPlacement = {
+  cx: number
+  cy: number
+  style: React.CSSProperties
+}
+
+function getModalPlacement(stepIdx: number, vw: number, vh: number): ModalPlacement {
+  const mhw = Math.min(MODAL_W, vw - 32) / 2
+  const isMobile = vw < 600
+
+  // Mobile: always center. Auto-scroll handles target visibility.
+  if (isMobile) {
+    return {
+      cx: vw / 2,
+      cy: vh / 2,
+      style: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+    }
+  }
+
+  // Desktop placements per the brief:
+  //   step 0 (Planning Status) — modal anchored to the right side, vertically lower.
+  //     Planning Status sits in the upper half of the viewport after scroll;
+  //     placing the modal lower-right keeps it out of the way.
+  //   step 1 (R+L)               — modal on the right; R+L sits on the left.
+  //   step 2 (Practical Readiness)— modal on the left; PR sits on the right.
+  //   step 3 (Your Thoughts)     — centered. Arrow points down.
+  let cx: number, cy: number, style: React.CSSProperties
+
+  if (stepIdx === 0) {
+    cx = vw - mhw - 60
+    cy = vh / 2 + 40
+    style = { top: cy, left: cx, transform: 'translate(-50%, -50%)' }
+  } else if (stepIdx === 1) {
+    cx = vw - mhw - 60
+    cy = vh / 2
+    style = { top: cy, left: cx, transform: 'translate(-50%, -50%)' }
+  } else if (stepIdx === 2) {
+    cx = mhw + 60
+    cy = vh / 2
+    style = { top: cy, left: cx, transform: 'translate(-50%, -50%)' }
+  } else {
+    cx = vw / 2
+    cy = vh / 2
+    style = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+  }
+
+  return { cx, cy, style }
+}
+
+// ---------------------------------------------------------------------------
+// Arrow geometry
 // ---------------------------------------------------------------------------
 
 function bezierTangent(p0: number, p1: number, p2: number, p3: number, t: number) {
@@ -49,14 +125,28 @@ type ArrowDef = {
   headAngle: number
 }
 
-function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
+function getTargetPoint(anchor: string): { x: number; y: number; rect: DOMRect } | null {
+  if (typeof document === 'undefined') return null
+  const el =
+    document.querySelector<HTMLElement>(`[data-tour-anchor="${anchor}"]`) ||
+    document.getElementById(anchor)
+  if (!el) return null
+  const rect = el.getBoundingClientRect()
+  // Tip lands just above the top edge horizontally centered on the element.
+  return { x: rect.left + rect.width / 2, y: rect.top + 4, rect }
+}
+
+function getArrow(stepIdx: number, vw: number, vh: number, modal: ModalPlacement): ArrowDef | null {
   if (vw < 600) return null
 
-  const modalW = Math.min(400, vw - 32)
-  const mhw = modalW / 2
-  const mhh = 138
-  const cx = vw / 2
-  const cy = vh / 2
+  const { cx, cy } = modal
+  const mhw = Math.min(MODAL_W, vw - 32) / 2
+  const mhh = MODAL_MHH
+  const anchor = STEPS[stepIdx].anchor
+
+  // Try to point at the actual element. If the DOM hasn't settled yet,
+  // fall back to a sensible direction so the tour still draws *something*.
+  const tgt = getTargetPoint(anchor)
 
   let sx: number, sy: number
   let cp1x: number, cp1y: number
@@ -64,28 +154,33 @@ function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
   let ex: number, ey: number
 
   if (stepIdx === 0) {
-    // Planning Status — exit modal top, curve up, arrowhead pointing UP.
-    sx = cx;          sy = cy - mhh - 18
-    ex = cx + 5;      ey = Math.max(40, cy - mhh - 160)
-    cp1x = cx + 4;    cp1y = sy - 55
-    cp2x = cx + 8;    cp2y = ey + 55
-  } else if (stepIdx === 1) {
-    // Reflection + Learning panel (left of two-panel section). Exit modal
-    // left, curve down-left, arrowhead arrives from above so it points DOWN.
+    // Modal on right, target (Planning Status header) is up-left.
+    // Exit modal left, curve up-left.
     sx = cx - mhw - 18;  sy = cy
-    ex = Math.max(60, cx - mhw - 70);  ey = cy + 72
-    cp1x = sx - 24;  cp1y = sy + 20
-    cp2x = ex + 18;  cp2y = ey - 50
+    if (tgt) { ex = tgt.x; ey = Math.max(60, tgt.y - 8) }
+    else     { ex = Math.max(60, cx - mhw - 220); ey = Math.max(60, cy - 200) }
+    cp1x = sx - 60;  cp1y = sy
+    cp2x = ex + 40;  cp2y = ey + 60
+  } else if (stepIdx === 1) {
+    // Modal on right, R+L panel is on the left. Exit modal left, curve
+    // down-left so the arrowhead arrives from above the panel.
+    sx = cx - mhw - 18;  sy = cy
+    if (tgt) { ex = tgt.rect.left + 40;  ey = Math.max(60, tgt.y - 8) }
+    else     { ex = Math.max(60, cx - mhw - 70); ey = cy + 72 }
+    cp1x = sx - 30;  cp1y = sy + 30
+    cp2x = ex + 20;  cp2y = ey - 60
   } else if (stepIdx === 2) {
-    // Practical Readiness panel (right of two-panel section). Mirror of
-    // step 1: exit modal right, curve down-right, arrowhead points DOWN.
+    // Modal on left, PR panel is on the right. Exit modal right, curve
+    // down-right so the arrowhead arrives from above the panel.
     sx = cx + mhw + 18;  sy = cy
-    ex = Math.min(vw - 60, cx + mhw + 70);  ey = cy + 72
-    cp1x = sx + 24;  cp1y = sy + 20
-    cp2x = ex - 18;  cp2y = ey - 50
+    if (tgt) { ex = tgt.rect.right - 40; ey = Math.max(60, tgt.y - 8) }
+    else     { ex = Math.min(vw - 60, cx + mhw + 70); ey = cy + 72 }
+    cp1x = sx + 30;  cp1y = sy + 30
+    cp2x = ex - 20;  cp2y = ey - 60
   } else {
-    // Notes section — likely below the fold. Same long downward as Plan
-    // tour's "Your Materials" step.
+    // Notes section — modal centered, arrow exits bottom, long downward
+    // (matches PlanTour's "Your Materials" step). Target may or may not
+    // be in view depending on viewport size.
     sx = cx;     sy = cy + mhh + 18
     ex = cx + 5; ey = cy + mhh + 196
     cp1x = cx + 4;  cp1y = sy + 55
@@ -162,7 +257,6 @@ export default function DomainTour() {
     return () => { mounted.current = false }
   }, [])
 
-  // Resolve the user once. If unauthed, the tour never activates.
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -175,11 +269,13 @@ export default function DomainTour() {
     const update = () => { setVw(window.innerWidth); setVh(window.innerHeight) }
     update()
     window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
+    window.addEventListener('scroll', update, { passive: true })
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update)
+    }
   }, [active])
 
-  // Wait until the domain page's main content is rendered (loading gate
-  // released, anchor element present) and no other modal is open.
   useEffect(() => {
     if (!userId) return
     if (localStorage.getItem(tourKey(userId)) === 'done') return
@@ -191,7 +287,12 @@ export default function DomainTour() {
       const anchor   = document.querySelector('[data-tour-anchor="domain-ready"]')
       const dialogEl = document.querySelector('[role="dialog"]')
       if (anchor && !dialogEl) {
-        if (mounted.current) setActive(true)
+        if (mounted.current) {
+          // Bring step 0's target into view before activating so the first
+          // arrow + modal placement render with the page already settled.
+          scrollToTourTarget(STEPS[0].anchor)
+          setTimeout(() => { if (mounted.current) setActive(true) }, TOUR_SCROLL_SETTLE_MS)
+        }
       } else {
         timer = setTimeout(checkReady, 350)
       }
@@ -201,7 +302,6 @@ export default function DomainTour() {
     return () => clearTimeout(timer)
   }, [userId])
 
-  // Move keyboard focus to the primary CTA on each step transition.
   useEffect(() => {
     if (!active) return
     const id = setTimeout(() => primaryBtnRef.current?.focus(), 30)
@@ -215,11 +315,12 @@ export default function DomainTour() {
 
   const goToStep = useCallback((newIdx: number) => {
     setArrowVisible(false)
+    scrollToTourTarget(STEPS[newIdx].anchor)
     setTimeout(() => {
       setStepIdx(newIdx)
       setArrowKey(k => k + 1)
       setArrowVisible(true)
-    }, 200)
+    }, TOUR_SCROLL_SETTLE_MS)
   }, [])
 
   const next = useCallback(() => {
@@ -236,7 +337,8 @@ export default function DomainTour() {
   const step    = STEPS[stepIdx]
   const isLast  = stepIdx === STEPS.length - 1
   const isFirst = stepIdx === 0
-  const arrowDef = vw > 0 ? getArrow(stepIdx, vw, vh) : null
+  const modal   = vw > 0 ? getModalPlacement(stepIdx, vw, vh) : null
+  const arrowDef = (vw > 0 && modal) ? getArrow(stepIdx, vw, vh, modal) : null
 
   return (
     <div
@@ -278,11 +380,9 @@ export default function DomainTour() {
         aria-live="polite"
         style={{
           position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
+          ...(modal?.style ?? { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }),
           zIndex: 1001,
-          width: 400,
+          width: MODAL_W,
           maxWidth: 'calc(100vw - 32px)',
           background: '#F8F4EB',
           border: '1px solid rgba(19,4,38,0.1)',
@@ -290,6 +390,7 @@ export default function DomainTour() {
           padding: '28px',
           boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
           boxSizing: 'border-box',
+          transition: 'top 250ms ease, left 250ms ease',
         }}
       >
         <p style={{
