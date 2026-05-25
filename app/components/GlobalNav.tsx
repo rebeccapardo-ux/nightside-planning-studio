@@ -209,7 +209,10 @@ export default function GlobalNav() {
     }
   }, [drawerOpen])
 
-  const drawerLinkClass = `block w-full text-left px-6 py-4 text-[17px] font-medium ${style.link}`
+  // py-4 (16px top + 16px bottom) yields the spec'd ~32px gap between
+  // adjacent text rows. font-medium is Tailwind's 500. Bumped from 17px
+  // so the primary nav reads with the visual weight it deserves.
+  const drawerLinkClass = `block w-full text-left px-6 py-4 text-[22px] font-medium ${style.link}`
   const hamburgerLineBg = entry.theme === 'dark' ? '#f8f4eb' : '#130426'
 
   return (
@@ -347,7 +350,7 @@ export default function GlobalNav() {
                 aria-label="Close navigation menu"
                 className={`flex items-center justify-center w-11 h-11 ${style.link}`}
               >
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                   <path d="M4 4L18 18M18 4L4 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </button>
