@@ -70,9 +70,10 @@ function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
   let ex: number, ey: number
 
   if (stepIdx === 1) {
-    // Key details: exit modal right, arrive vertically from above the panel.
-    // Endpoint reads the panel's actual top edge so the arrowhead lands
-    // 8px above the panel header instead of inside the panel content.
+    // Key details: exit modal right, arc up, drop vertically onto the
+    // panel header. Curve recipe matches the domain tour — both
+    // control points at peakY (above both endpoints) so the path arcs
+    // upward, and cp2x = ex forces a vertical arrival.
     sx = cx + mhw + 18;  sy = cy
     const rect = targetRect(STEPS[1].anchor)
     if (rect) {
@@ -81,22 +82,24 @@ function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
     } else {
       ex = Math.min(vw - 60, cx + mhw + 155); ey = cy + 75
     }
-    cp1x = (sx + ex) / 2;  cp1y = sy       // halfway x, same y → horizontal exit
-    cp2x = ex;             cp2y = ey - 70  // directly above endpoint → vertical arrival
+    const peakY = Math.min(sy, ey) - 80
+    cp1x = sx + (ex - sx) * 0.3;  cp1y = peakY
+    cp2x = ex;                    cp2y = peakY
   } else if (stepIdx === 2) {
-    // Areas of planning: exit modal left, arrive vertically above the
-    // section. The anchor wraps the cards grid (not the h2), so we lift
-    // ey an extra 30px so the arrowhead lands on the heading.
+    // Areas of planning: target the h2 directly so the arrowhead lands
+    // on the section header instead of on a domain card. Same swoosh
+    // recipe as step 1, mirrored to exit modal left.
     sx = cx - mhw - 18;  sy = cy
-    const rect = targetRect(STEPS[2].anchor)
+    const rect = targetRect('tour-areas-header')
     if (rect) {
-      ex = rect.left + 100
-      ey = rect.top - 30
+      ex = rect.left + rect.width * 0.5
+      ey = rect.top - 8
     } else {
       ex = Math.max(60, cx - mhw - 70); ey = cy + 72
     }
-    cp1x = sx - 24;  cp1y = sy + 20    // gentle exit left
-    cp2x = ex;       cp2y = ey - 50    // directly above end → arrowhead points down
+    const peakY = Math.min(sy, ey) - 80
+    cp1x = sx + (ex - sx) * 0.3;  cp1y = peakY
+    cp2x = ex;                    cp2y = peakY
   } else {
     // Your Materials: bottom-center → straight down, long enough to clear the fold
     sx = cx;  sy = cy + mhh + 18
