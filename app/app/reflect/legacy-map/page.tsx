@@ -117,6 +117,29 @@ function truncateLabel(title: string): string {
   return title.length > LABEL_TRUNCATE ? `${title.slice(0, LABEL_TRUNCATE)}…` : title;
 }
 
+// Normalize a raw blob (from localStorage or Supabase entry.content) into a
+// well-formed LegacyMapState. Drops sample "Example:" rows, repairs missing
+// ids, clamps positions, and coerces optional string fields.
+function sanitizeLegacyMapState(parsed: Partial<LegacyMapState> | null | undefined): LegacyMapState {
+  return {
+    moments: Array.isArray(parsed?.moments)
+      ? parsed!.moments
+          .filter((m) => !String(m?.title || "").startsWith("Example:"))
+          .map((m) => ({
+            id: m?.id || createId(),
+            title: m?.title || "",
+            note: m?.note || "",
+            xPercent: typeof m?.xPercent === "number" ? clamp(m.xPercent, 5, 95) : 50,
+          }))
+      : [],
+    themes:         parsed?.themes         || "",
+    surprises:      parsed?.surprises      || "",
+    valuesToPassOn: parsed?.valuesToPassOn || "",
+    legacyProjects: parsed?.legacyProjects || "",
+    updatedAt:      parsed?.updatedAt      || null,
+  };
+}
+
 // In horizontal: true = label drawn above the marker (used when the curve
 // dips down below the midline). In vertical: true = label drawn to the right
 // of the marker (used when the curve bows left of the midline). Same flip-on-
@@ -258,81 +281,127 @@ export default function LegacyMapPage() {
   const realMoments = useMemo(() => state.moments, [state.moments]);
   const labelSides = useMemo(() => computeLabelSides(realMoments, orientation), [realMoments, orientation]);
 
-  // ── Load from localStorage + resolve Supabase entry ID ─────────────────────
+  // ── Load: Supabase is source of truth. localStorage is a write-through
+  //         cache and a last-resort fallback when offline / pre-signup.
+  // ──────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     async function init() {
-      // Fetch user first so all storage operations are user-scoped
       const supabase = createSupabaseBrowserClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) userIdRef.current = user.id;
       const storageKey = user ? `${STORAGE_KEY}:${user.id}` : STORAGE_KEY;
       const entryIdKey = user ? `${ENTRY_ID_KEY}:${user.id}` : ENTRY_ID_KEY;
 
+      // 1. Read whatever the device has cached (may be empty/stale).
+      let localState: LegacyMapState | null = null;
       try {
         const raw = window.localStorage.getItem(storageKey);
-        if (raw) {
-          const parsed = JSON.parse(raw) as Partial<LegacyMapState>;
-          const nextState: LegacyMapState = {
-            moments: Array.isArray(parsed.moments)
-              ? parsed.moments
-                  .filter((m) => !String(m.title || "").startsWith("Example:"))
-                  .map((m) => ({
-                    id: m.id || createId(),
-                    title: m.title || "",
-                    note: m.note || "",
-                    xPercent: typeof m.xPercent === "number" ? clamp(m.xPercent, 5, 95) : 50,
-                  }))
-              : [],
-            themes: parsed.themes || "",
-            surprises: parsed.surprises || "",
-            valuesToPassOn: parsed.valuesToPassOn || "",
-            legacyProjects: parsed.legacyProjects || "",
-            updatedAt: parsed.updatedAt || null,
-          };
-          setState(nextState);
-          stateRef.current = nextState;
-        }
+        if (raw) localState = sanitizeLegacyMapState(JSON.parse(raw) as Partial<LegacyMapState>);
       } catch {
-        // silently ignore
+        // ignore parse errors
       }
 
+      // 2. Fetch the authoritative Supabase row for this user, if any.
+      let remoteState: LegacyMapState | null = null;
+      let remoteEntryId: string | null = null;
+      let remoteCreatedAt: string | null = null;
       if (user) {
         try {
-          const stored = window.localStorage.getItem(entryIdKey);
-          if (stored) {
-            setSupabaseEntryId(stored);
-            supabaseEntryIdRef.current = stored;
-            const { data } = await supabase
-              .from("entries")
-              .select("created_at")
-              .eq("id", stored)
-              .single();
-            const storedSaveTime = window.localStorage.getItem(`nightside.lastSaved.${user.id}.${stored}`);
-            if (storedSaveTime) setLastSavedAt(new Date(storedSaveTime));
-            else if (data?.created_at) setLastSavedAt(new Date(data.created_at));
-            associateEntryWithLegacyDomain(stored);
-          } else {
-            const { data } = await supabase
-              .from("entries")
-              .select("id, created_at")
-              .eq("user_id", user.id)
-              .eq("activity", "legacy_map")
-              .order("created_at", { ascending: false })
-              .limit(1);
-            if (data?.[0]?.id) {
-              window.localStorage.setItem(entryIdKey, data[0].id);
-              setSupabaseEntryId(data[0].id);
-              supabaseEntryIdRef.current = data[0].id;
-              const storedSaveTime2 = window.localStorage.getItem(`nightside.lastSaved.${user.id}.${data[0].id}`);
-              if (storedSaveTime2) setLastSavedAt(new Date(storedSaveTime2));
-              else if (data[0].created_at) setLastSavedAt(new Date(data[0].created_at));
-              associateEntryWithLegacyDomain(data[0].id);
-            }
+          const { data } = await supabase
+            .from("entries")
+            .select("id, content, created_at")
+            .eq("user_id", user.id)
+            .eq("activity", "legacy_map")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (data?.id) {
+            remoteEntryId = data.id;
+            remoteCreatedAt = data.created_at ?? null;
+            remoteState = sanitizeLegacyMapState((data.content ?? {}) as Partial<LegacyMapState>);
+            // Fall back to created_at if the content blob lacks updatedAt.
+            if (!remoteState.updatedAt) remoteState.updatedAt = remoteCreatedAt;
           }
         } catch {
-          // silently ignore
+          // network/auth errors fall through to local-only behavior
         }
+      }
+
+      // 3. Resolve the winning state.
+      //    Both present  → newer updatedAt wins; ties go to remote.
+      //    Only one      → that one wins.
+      //    Neither       → leave DEFAULT_STATE in place (new user).
+      let winner: LegacyMapState | null = null;
+      if (remoteState && localState) {
+        const r = remoteState.updatedAt ?? "";
+        const l = localState.updatedAt ?? "";
+        winner = r >= l ? remoteState : localState;
+      } else {
+        winner = remoteState ?? localState ?? null;
+      }
+      if (winner) {
+        setState(winner);
+        stateRef.current = winner;
+        try { window.localStorage.setItem(storageKey, JSON.stringify(winner)); } catch { /* ignore */ }
+      }
+
+      // 4. Resolve the Supabase entry id we'll target on subsequent saves.
+      if (user) {
+        if (remoteEntryId) {
+          setSupabaseEntryId(remoteEntryId);
+          supabaseEntryIdRef.current = remoteEntryId;
+          try { window.localStorage.setItem(entryIdKey, remoteEntryId); } catch { /* ignore */ }
+          try { associateEntryWithLegacyDomain(remoteEntryId); } catch { /* ignore */ }
+
+          const storedSaveTime = window.localStorage.getItem(`nightside.lastSaved.${user.id}.${remoteEntryId}`);
+          if (storedSaveTime) setLastSavedAt(new Date(storedSaveTime));
+          else if (winner?.updatedAt) setLastSavedAt(new Date(winner.updatedAt));
+          else if (remoteCreatedAt) setLastSavedAt(new Date(remoteCreatedAt));
+
+          // If local was chosen over remote (local was newer), push it up so
+          // other devices see it immediately on next load.
+          if (winner && localState && winner === localState) {
+            try {
+              const content = {
+                moments:        winner.moments,
+                themes:         winner.themes,
+                surprises:      winner.surprises,
+                valuesToPassOn: winner.valuesToPassOn,
+                legacyProjects: winner.legacyProjects,
+                updatedAt:      winner.updatedAt ?? new Date().toISOString(),
+              };
+              await supabase.from("entries")
+                .update({ content, title: "Legacy Map" })
+                .eq("id", remoteEntryId);
+            } catch { /* ignore — retry on next autosave */ }
+          }
+        } else if (winner && (winner.moments.length > 0 || winner.themes || winner.surprises || winner.valuesToPassOn || winner.legacyProjects)) {
+          // Local-only data and no Supabase row yet → push local up so this
+          // user's existing work survives cross-device.
+          try {
+            const content = {
+              moments:        winner.moments,
+              themes:         winner.themes,
+              surprises:      winner.surprises,
+              valuesToPassOn: winner.valuesToPassOn,
+              legacyProjects: winner.legacyProjects,
+              updatedAt:      winner.updatedAt ?? new Date().toISOString(),
+            };
+            const { data: created } = await supabase.from("entries")
+              .insert({ user_id: user.id, title: "Legacy Map", section: "explore", activity: "legacy_map", content })
+              .select("id")
+              .single();
+            if (created?.id) {
+              setSupabaseEntryId(created.id);
+              supabaseEntryIdRef.current = created.id;
+              try { window.localStorage.setItem(entryIdKey, created.id); } catch { /* ignore */ }
+              try { associateEntryWithLegacyDomain(created.id); } catch { /* ignore */ }
+            }
+          } catch { /* ignore — next autosave will retry */ }
+        }
+        // else: new user with no data anywhere; nothing to do. DEFAULT_STATE
+        // is already in place and the first save will create the entry.
       }
 
       setIsLoaded(true);
