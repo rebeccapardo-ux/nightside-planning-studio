@@ -165,7 +165,7 @@ export default function AppFooter() {
             The Nightside Planning Studio is a planning tool and educational resource. It is not a substitute for legal, medical, or financial advice. For binding decisions, consult a qualified professional in your province.
             <br />
             See{' '}
-            <Link href="/terms" style={{ color: LIGHT, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            <Link href="/terms" style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 3 }}>
               Terms of Service
             </Link>
             {' '}for details.
