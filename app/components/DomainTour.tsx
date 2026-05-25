@@ -331,6 +331,12 @@ export default function DomainTour() {
   const dismiss = useCallback(() => {
     if (userId) localStorage.setItem(tourKey(userId), 'done')
     setActive(false)
+    // On mobile, auto-scroll progressively moved the user down through
+    // the page during the tour. Return them to the top so the end of
+    // the tour doesn't leave them stranded mid-page.
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      scrollToTourTarget(null)
+    }
   }, [userId])
 
   const goToStep = useCallback((newIdx: number) => {

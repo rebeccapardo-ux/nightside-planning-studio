@@ -23,7 +23,10 @@ const STEPS = [
   {
     title: 'Areas of planning',
     body: 'Click into an area to track your progress and access the documents, reflections, and learning content for that area.',
-    anchor: 'tour-areas' as string | null,
+    // Mobile auto-scroll targets the h2 itself (same element the desktop
+    // arrow lands on) so the heading sits at the top of the viewport
+    // above the modal, not the cards below it.
+    anchor: 'tour-areas-header' as string | null,
   },
   {
     title: 'Your Materials',
@@ -222,6 +225,12 @@ export default function PlanTour({ userId }: { userId: string }) {
   const dismiss = useCallback(() => {
     localStorage.setItem(tourKey(userId), 'done')
     setActive(false)
+    // On mobile, auto-scroll progressively moved the user down through
+    // the page during the tour. Return them to the top so the end of
+    // the tour doesn't leave them stranded mid-page.
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      scrollToTourTarget(null)
+    }
   }, [userId])
 
   // Fade out current arrow, switch step, remount the arrow. Auto-scroll
