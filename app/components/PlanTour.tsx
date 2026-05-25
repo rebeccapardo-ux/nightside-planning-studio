@@ -87,15 +87,18 @@ function getArrow(stepIdx: number, vw: number, vh: number): ArrowDef | null {
     cp2x = ex;                    cp2y = peakY
   } else if (stepIdx === 2) {
     // Areas of planning: target the h2 directly so the arrowhead lands
-    // on the section header instead of on a domain card. Same swoosh
-    // recipe as step 1, mirrored to exit modal left.
+    // on the section header instead of on a domain card. The h2 is a
+    // block-level element so its rect.width spans the full container
+    // (~1052px) — using rect.left + rect.width/2 would put ex at the
+    // container center, which on a centered modal IS the modal center.
+    // Anchor on the LEFT side of the rect where the text actually sits.
     sx = cx - mhw - 18;  sy = cy
     const rect = targetRect('tour-areas-header')
     if (rect) {
-      ex = rect.left + rect.width * 0.5
+      ex = rect.left + 80
       ey = rect.top - 8
     } else {
-      ex = Math.max(60, cx - mhw - 70); ey = cy + 72
+      ex = Math.max(60, cx - mhw - 200); ey = Math.max(40, cy - mhh - 40)
     }
     const peakY = Math.min(sy, ey) - 80
     cp1x = sx + (ex - sx) * 0.3;  cp1y = peakY
