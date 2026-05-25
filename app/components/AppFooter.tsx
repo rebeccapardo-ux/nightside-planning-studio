@@ -9,7 +9,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const BG          = '#130426'
 const LIGHT       = '#F8F4EB'
 const DIVIDER     = 'rgba(248,244,235,0.15)'
-const DISCLAIMER  = 'rgba(248,244,235,0.80)'
+const DISCLAIMER  = 'rgba(248,244,235,0.65)'
 const COPYRIGHT   = 'rgba(248,244,235,0.70)'
 
 function scrollToTop() {
@@ -67,30 +67,7 @@ export default function AppFooter() {
           className="mx-auto flex flex-col gap-6 md:gap-8"
           style={{ maxWidth: 1100 }}
         >
-          {/* 1. Disclaimer */}
-          <p
-            style={{
-              fontFamily: hv,
-              fontStyle: 'italic',
-              color: DISCLAIMER,
-              lineHeight: 1.6,
-              textAlign: 'center',
-              margin: '0 auto',
-              maxWidth: 720,
-            }}
-            className="text-[14px] md:text-[15px] w-full"
-          >
-            The Nightside Planning Studio is a planning tool and educational resource. It is not a substitute for legal, medical, or financial advice. For binding decisions, consult a qualified professional in your province. See{' '}
-            <Link href="/terms" style={{ color: LIGHT, textDecoration: 'underline', textUnderlineOffset: 3 }}>
-              Terms of Service
-            </Link>
-            {' '}for details.
-          </p>
-
-          {/* 2. Divider */}
-          <hr style={{ width: '100%', height: 1, border: 'none', background: DIVIDER, margin: 0 }} aria-hidden="true" />
-
-          {/* 3. Links — horizontal row on desktop, stacked rows on mobile */}
+          {/* 1. Links — horizontal row on desktop, stacked rows on mobile */}
           <nav aria-label="Footer">
             {/* Desktop: single horizontal row, gap-6 = 24px */}
             <ul className="hidden md:flex md:flex-row md:items-center md:justify-center md:gap-6 list-none m-0 p-0">
@@ -101,7 +78,7 @@ export default function AppFooter() {
                       type="button"
                       onClick={link.onClick}
                       className="footer-link"
-                      style={{ fontFamily: hv, fontSize: 15, color: LIGHT, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                      style={{ fontFamily: hv, fontSize: 16, fontWeight: 500, color: LIGHT, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                     >
                       {link.label}
                     </button>
@@ -109,7 +86,7 @@ export default function AppFooter() {
                     <Link
                       href={link.href!}
                       className="footer-link"
-                      style={{ fontFamily: hv, fontSize: 15, color: LIGHT, textDecoration: 'none' }}
+                      style={{ fontFamily: hv, fontSize: 16, fontWeight: 500, color: LIGHT, textDecoration: 'none' }}
                     >
                       {link.label}
                     </Link>
@@ -118,8 +95,9 @@ export default function AppFooter() {
               ))}
             </ul>
 
-            {/* Mobile: stacked rows, 44px min tap, 12px gap, full-row tap target */}
-            <ul className="flex flex-col md:hidden list-none m-0 p-0" style={{ gap: 12 }}>
+            {/* Mobile: stacked rows. Tighter than before — text rows hug
+                the type, with small flex gap and full-width tap target. */}
+            <ul className="flex flex-col md:hidden list-none m-0 p-0" style={{ gap: 4 }}>
               {visibleLinks.map((link) => (
                 <li key={link.label} className="m-0 p-0">
                   {link.onClick ? (
@@ -129,12 +107,13 @@ export default function AppFooter() {
                       style={{
                         fontFamily: hv,
                         fontSize: 16,
+                        fontWeight: 500,
                         color: LIGHT,
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
                         width: '100%',
-                        minHeight: 44,
+                        minHeight: 40,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -149,10 +128,11 @@ export default function AppFooter() {
                       style={{
                         fontFamily: hv,
                         fontSize: 16,
+                        fontWeight: 500,
                         color: LIGHT,
                         textDecoration: 'none',
                         width: '100%',
-                        minHeight: 44,
+                        minHeight: 40,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -165,6 +145,31 @@ export default function AppFooter() {
               ))}
             </ul>
           </nav>
+
+          {/* 2. Divider */}
+          <hr style={{ width: '100%', height: 1, border: 'none', background: DIVIDER, margin: 0 }} aria-hidden="true" />
+
+          {/* 3. Disclaimer */}
+          <p
+            style={{
+              fontFamily: hv,
+              fontStyle: 'italic',
+              color: DISCLAIMER,
+              lineHeight: 1.6,
+              textAlign: 'center',
+              margin: '0 auto',
+              maxWidth: 720,
+            }}
+            className="text-[14px] md:text-[15px] w-full"
+          >
+            The Nightside Planning Studio is a planning tool and educational resource. It is not a substitute for legal, medical, or financial advice. For binding decisions, consult a qualified professional in your province.
+            <br />
+            See{' '}
+            <Link href="/terms" style={{ color: LIGHT, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              Terms of Service
+            </Link>
+            {' '}for details.
+          </p>
 
           {/* 4. Back to top + copyright row.
                  Desktop: copyright centered, Back-to-top right-aligned, same row.
