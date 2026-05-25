@@ -27,7 +27,11 @@ import {
   type EntryRef,
   type TopicNoteRow,
 } from '@/lib/notes'
-import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import {
+  loadDomainState, saveCheckboxes, saveOrient,
+  getCheckboxes, getOrient, computeReadyStatus,
+  type DomainState,
+} from '@/lib/domain-state'
 import DomainAssigner from '@/app/components/DomainAssigner'
 // import FragmentField from '@/app/components/FragmentField'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
@@ -1317,147 +1321,56 @@ function PlanningStatusSection({
   }
   const [orientStatuses, setOrientStatuses] = useState<Record<string, DomainItemStatus>>({})
 
+  const [domainStateLoaded, setDomainStateLoaded] = useState(false)
+  const domainStateRef = useRef<DomainState>({})
+
+  // ── Load checkboxes + orient state from Supabase (source of truth).
+  //    loadDomainState() also performs a one-time, idempotent backfill
+  //    from legacy localStorage keys and auth.user_metadata.sync_* flags,
+  //    so existing users don't lose progress when the DB column is empty.
+  //    domainStateLoaded gates rendering of readiness items below so the
+  //    user never sees a flash of unchecked state on first paint (the
+  //    race the localStorage-first flow had).
   useEffect(() => {
     if (!structure) return
-    const loaded: Record<string, boolean[]> = {}
-    for (const item of structure.readiness) {
-      const vals = item.checkboxes.map((_, idx) => {
-        const raw = localStorage.getItem(`checkbox_${domainId}_${item.key}_${idx}`)
-        return raw === 'true'
-      })
-      loaded[item.key] = vals
-    }
-    setCheckboxes(loaded)
-    for (const item of structure.readiness) {
-      const vals = loaded[item.key] ?? item.checkboxes.map(() => false)
-      onReadyStatusChange(item.key, computeReadyStatus(vals, item.checkboxes.length))
-    }
+    let cancelled = false
+    void (async () => {
+      const { state } = await loadDomainState()
+      if (cancelled) return
+      domainStateRef.current = state
+      const cbLoaded: Record<string, boolean[]> = {}
+      for (const item of structure.readiness) {
+        const vals = getCheckboxes(state, domainId, item.key, item.checkboxes.length)
+        cbLoaded[item.key] = vals
+        onReadyStatusChange(item.key, computeReadyStatus(vals, item.checkboxes.length))
+      }
+      setCheckboxes(cbLoaded)
+      if (isHealthcare) {
+        const orLoaded: Record<string, DomainItemStatus> = {}
+        for (const item of structure.orientation) {
+          orLoaded[item.key] = getOrient(state, domainId, item.key)
+        }
+        setOrientStatuses(orLoaded)
+      }
+      setDomainStateLoaded(true)
+    })()
+    return () => { cancelled = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [structure, domainId])
-
-  useEffect(() => {
-    if (!structure || !isHealthcare) return
-    const loaded: Record<string, DomainItemStatus> = {}
-    for (const item of structure.orientation) {
-      const raw = localStorage.getItem(`orient_${domainId}_${item.key}`)
-      loaded[item.key] = (raw === 'in_progress' || raw === 'complete') ? raw : 'not_started'
-    }
-    setOrientStatuses(loaded)
   }, [structure, domainId, isHealthcare])
 
-  // Seed sync checkboxes from Supabase user_metadata on mount
-  useEffect(() => {
-    if (!structure || !domainTitle) return
-    const lower = domainTitle.toLowerCase()
-    const isWillsDomain = lower.includes('will')
-    const isHealthcareDomain = lower.includes('healthcare')
-    const isDeathcareDomain = lower.includes('death')
-    if (!isWillsDomain && !isHealthcareDomain && !isDeathcareDomain) return
-
-    async function seedFromMeta() {
-      const supabase = createSupabaseBrowserClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const meta = user.user_metadata ?? {}
-
-      if (isWillsDomain && typeof meta.sync_has_will === 'boolean') {
-        const val = meta.sync_has_will as boolean
-        localStorage.setItem(`checkbox_${domainId}_legal_will_in_place_0`, String(val))
-        const status: DomainItemStatus = val ? 'complete' : 'not_started'
-        localStorage.setItem(`ready_${domainId}_legal_will_in_place`, status)
-        setCheckboxes(prev => ({ ...prev, legal_will_in_place: [val] }))
-        onReadyStatusChange('legal_will_in_place', status)
-      }
-
-      if (isHealthcareDomain) {
-        if (typeof meta.sync_has_care_decision_maker === 'boolean') {
-          const val = meta.sync_has_care_decision_maker as boolean
-          localStorage.setItem(`checkbox_${domainId}_who_will_decide_0`, String(val))
-          localStorage.setItem(`checkbox_${domainId}_who_will_decide_2`, String(val))
-          const idx1 = localStorage.getItem(`checkbox_${domainId}_who_will_decide_1`) === 'true'
-          const vals = [val, idx1, val]
-          const status: DomainItemStatus = computeReadyStatus(vals, 3)
-          localStorage.setItem(`ready_${domainId}_who_will_decide`, status)
-          setCheckboxes(prev => ({ ...prev, who_will_decide: vals }))
-          onReadyStatusChange('who_will_decide', status)
-        }
-        if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
-          const val = meta.sync_has_eol_wishes_doc as boolean
-          localStorage.setItem(`checkbox_${domainId}_wishes_clear_shared_0`, String(val))
-          localStorage.setItem(`checkbox_${domainId}_wishes_clear_shared_1`, String(val))
-          const vals = [val, val]
-          const status: DomainItemStatus = computeReadyStatus(vals, 2)
-          localStorage.setItem(`ready_${domainId}_wishes_clear_shared`, status)
-          setCheckboxes(prev => ({ ...prev, wishes_clear_shared: vals }))
-          onReadyStatusChange('wishes_clear_shared', status)
-        }
-      }
-
-      if (isDeathcareDomain) {
-        if (typeof meta.sync_has_funeral_wishes === 'boolean') {
-          const val = meta.sync_has_funeral_wishes as boolean
-          localStorage.setItem(`checkbox_${domainId}_final_resting_place_wishes_0`, String(val))
-          const idx1 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_1`) === 'true'
-          const idx2 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_2`) === 'true'
-          const vals = [val, idx1, idx2]
-          const status: DomainItemStatus = computeReadyStatus(vals, 3)
-          localStorage.setItem(`ready_${domainId}_final_resting_place_wishes`, status)
-          setCheckboxes(prev => ({ ...prev, final_resting_place_wishes: vals }))
-          onReadyStatusChange('final_resting_place_wishes', status)
-        }
-        if (typeof meta.sync_has_organ_donation_wishes === 'boolean') {
-          const val = meta.sync_has_organ_donation_wishes as boolean
-          localStorage.setItem(`checkbox_${domainId}_final_resting_place_wishes_2`, String(val))
-          const idx0 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_0`) === 'true'
-          const idx1 = localStorage.getItem(`checkbox_${domainId}_final_resting_place_wishes_1`) === 'true'
-          const vals = [idx0, idx1, val]
-          const status: DomainItemStatus = computeReadyStatus(vals, 3)
-          localStorage.setItem(`ready_${domainId}_final_resting_place_wishes`, status)
-          setCheckboxes(prev => ({ ...prev, final_resting_place_wishes: vals }))
-          onReadyStatusChange('final_resting_place_wishes', status)
-        }
-      }
-    }
-    void seedFromMeta()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [structure, domainId, domainTitle])
-
-  function computeReadyStatus(vals: boolean[], total: number): DomainItemStatus {
-    const checked = vals.filter(Boolean).length
-    if (checked === 0) return 'not_started'
-    if (checked === total) return 'complete'
-    return 'in_progress'
-  }
-
-  function syncCheckboxToMeta(itemKey: string, idx: number, vals: boolean[]) {
-    const lower = domainTitle.toLowerCase()
-    const supabase = createSupabaseBrowserClient()
-    if (lower.includes('will') && itemKey === 'legal_will_in_place' && idx === 0) {
-      supabase.auth.updateUser({ data: { sync_has_will: vals[0] } }).catch(() => {})
-    } else if (lower.includes('healthcare') && itemKey === 'who_will_decide' && (idx === 0 || idx === 2)) {
-      supabase.auth.updateUser({ data: { sync_has_care_decision_maker: vals[0] || vals[2] } }).catch(() => {})
-    } else if (lower.includes('healthcare') && itemKey === 'wishes_clear_shared' && (idx === 0 || idx === 1)) {
-      const communicated = vals[0]
-      const documented = vals[1]
-      const careStatus = communicated && documented ? 'both' : communicated ? 'communicated' : documented ? 'documented' : null
-      supabase.auth.updateUser({ data: { sync_has_eol_wishes_doc: communicated || documented, sync_care_preferences_status: careStatus } }).catch(() => {})
-    } else if (lower.includes('death') && itemKey === 'final_resting_place_wishes' && idx === 0) {
-      supabase.auth.updateUser({ data: { sync_has_funeral_wishes: vals[0] } }).catch(() => {})
-    } else if (lower.includes('death') && itemKey === 'final_resting_place_wishes' && idx === 2) {
-      supabase.auth.updateUser({ data: { sync_has_organ_donation_wishes: vals[2] } }).catch(() => {})
-    }
-  }
-
   function handleCheckbox(itemKey: string, idx: number, total: number) {
+    // Drop taps that arrive before the source-of-truth load resolves —
+    // prevents an early click from being overwritten when state arrives.
+    if (!domainStateLoaded) return
     setCheckboxes((prev) => {
       const current = prev[itemKey] ?? Array(total).fill(false)
       const updated = [...current]
       updated[idx] = !updated[idx]
-      localStorage.setItem(`checkbox_${domainId}_${itemKey}_${idx}`, String(updated[idx]))
       const status = computeReadyStatus(updated, total)
-      localStorage.setItem(`ready_${domainId}_${itemKey}`, status)
       onReadyStatusChange(itemKey, status)
-      syncCheckboxToMeta(itemKey, idx, updated)
+      // Fire-and-forget persist to user_profiles.domain_state.
+      void saveCheckboxes(domainId, itemKey, updated, { currentState: domainStateRef.current })
+        .then((next) => { if (next) domainStateRef.current = next })
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1468,12 +1381,14 @@ function PlanningStatusSection({
   }
 
   function cycleOrientStatus(key: string) {
+    if (!domainStateLoaded) return
     setOrientStatuses((prev) => {
       const current = prev[key] ?? 'not_started'
       const next: DomainItemStatus =
         current === 'not_started' ? 'in_progress' :
         current === 'in_progress' ? 'complete' : 'not_started'
-      localStorage.setItem(`orient_${domainId}_${key}`, next)
+      void saveOrient(domainId, key, next, { currentState: domainStateRef.current })
+        .then((updated) => { if (updated) domainStateRef.current = updated })
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1484,8 +1399,10 @@ function PlanningStatusSection({
   }
 
   function setOrientStatus(key: string, newStatus: DomainItemStatus) {
+    if (!domainStateLoaded) return
     setOrientStatuses((prev) => {
-      localStorage.setItem(`orient_${domainId}_${key}`, newStatus)
+      void saveOrient(domainId, key, newStatus, { currentState: domainStateRef.current })
+        .then((updated) => { if (updated) domainStateRef.current = updated })
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

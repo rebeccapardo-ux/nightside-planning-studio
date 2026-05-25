@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { loadDomainState, getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from '../../entries/[id]/export/pdfTypes'
 import type { PlanKeyDetail, PlanDomainStatus, PlanCheckboxItem, PlanMaterial, PlanPDFProps } from './PlanPDFDocument'
 
@@ -563,12 +564,7 @@ export default function PlanExportPage() {
       setFirstName(_first)
       setLastName(_last)
 
-      const meta = user.user_metadata ?? {}
-      const syncHasWill = !!meta.sync_has_will
-      const syncHasEOL  = !!meta.sync_has_eol_wishes_doc
-      const careStatus  = (meta.sync_care_preferences_status as string | undefined) ?? null
-
-      const [{ data: entries }, { data: domainContainers }] = await Promise.all([
+      const [{ data: entries }, { data: domainContainers }, { state: domainState }] = await Promise.all([
         supabase
           .from('entries')
           .select('id, title, content, created_at, activity, document_type')
@@ -579,10 +575,26 @@ export default function PlanExportPage() {
           .select('id, title')
           .eq('type', 'domain')
           .order('title'),
+        loadDomainState(supabase),
       ])
 
       const allEntries = entries ?? []
       const allDomains = domainContainers ?? []
+
+      // Derive syncHasWill / syncHasEOL / careStatus from the JSONB-backed
+      // domain_state (no longer from user_metadata).
+      const willsDomain      = allDomains.find(d => d.title.toLowerCase().includes('will'))
+      const healthcareDomain = allDomains.find(d => d.title.toLowerCase().includes('health'))
+      const willVals = willsDomain      ? getCheckboxes(domainState, willsDomain.id,      'legal_will_in_place', 1) : [false]
+      const eolVals  = healthcareDomain ? getCheckboxes(domainState, healthcareDomain.id, 'wishes_clear_shared', 2) : [false, false]
+      const syncHasWill = willVals[0] === true
+      const communicated = eolVals[0] === true
+      const documented   = eolVals[1] === true
+      const syncHasEOL  = communicated || documented
+      const careStatus: string | null =
+        communicated && documented ? 'both' :
+        communicated ? 'communicated' :
+        documented   ? 'documented'   : null
 
       const adminEntry     = allEntries.find(e => e.document_type === 'personal_admin_info')
       const contactsEntry  = allEntries.find(e => e.document_type === 'important_contacts')
@@ -623,14 +635,14 @@ export default function PlanExportPage() {
         if (firstLawyer) lawyer = { name: firstLawyer.name?.trim() || '', institution: (firstLawyer.institution ?? '').trim(), phone: firstLawyer.phone?.trim() || '', email: firstLawyer.email?.trim() || '' }
       }
 
-      // Resting place from localStorage (deathcare domain)
+      // Resting place from domain_state (deathcare domain)
       const deathcareDomain = allDomains.find(d => d.title.toLowerCase().includes('death'))
       let restingDocumented = false
       let restingShared = false
       if (deathcareDomain) {
-        const did = deathcareDomain.id
-        restingDocumented = localStorage.getItem(`checkbox_${did}_final_resting_place_wishes_0`) === 'true'
-        restingShared     = localStorage.getItem(`checkbox_${did}_final_resting_place_wishes_1`) === 'true'
+        const restVals = getCheckboxes(domainState, deathcareDomain.id, 'final_resting_place_wishes', 3)
+        restingDocumented = restVals[0] === true
+        restingShared     = restVals[1] === true
       }
 
       // Build key details
@@ -693,29 +705,28 @@ export default function PlanExportPage() {
       setKeyDetails(kd)
 
       // Build domain statuses from DOMAIN_SEGMENT_CONFIGS (canonical list of all 6 domains)
-      // Match to DB domains where they exist to get the ID for localStorage lookups.
+      // Match to DB domains where they exist; status comes from JSONB domain_state.
       const ds: PlanDomainStatus[] = DOMAIN_SEGMENT_CONFIGS.map(config => {
         const dbDomain = allDomains.find(d => d.title.toLowerCase().includes(config.match))
 
         // Topic-level engagement for qualitative status label
         const topicsStarted = config.segments.filter(seg => {
           if (!dbDomain) return false
-          const lsKey = seg.type === 'orient'
-            ? `orient_${dbDomain.id}_${seg.key}`
-            : `ready_${dbDomain.id}_${seg.key}`
-          const val = localStorage.getItem(lsKey)
-          return val === 'complete' || val === 'in_progress'
+          const status = seg.type === 'orient'
+            ? getOrient(domainState, dbDomain.id, seg.key)
+            : getReadyStatus(domainState, dbDomain.id, seg.key)
+          return status === 'complete' || status === 'in_progress'
         }).length
 
         // Individual checkbox items for display
         const checkboxItems: PlanCheckboxItem[] = []
         for (const seg of config.segments) {
           if (seg.type !== 'ready' || !seg.checkboxes) continue
+          const vals = dbDomain
+            ? getCheckboxes(domainState, dbDomain.id, seg.key, seg.checkboxes.length)
+            : seg.checkboxes.map(() => false)
           for (let i = 0; i < seg.checkboxes.length; i++) {
-            const checked = dbDomain
-              ? localStorage.getItem(`checkbox_${dbDomain.id}_${seg.key}_${i}`) === 'true'
-              : false
-            checkboxItems.push({ label: seg.checkboxes[i], checked })
+            checkboxItems.push({ label: seg.checkboxes[i], checked: vals[i] === true })
           }
         }
 

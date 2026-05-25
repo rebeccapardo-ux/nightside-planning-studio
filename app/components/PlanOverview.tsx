@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { loadDomainState, getCheckboxes } from '@/lib/domain-state'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apf = "'Apfel Grotezk', sans-serif"
@@ -48,11 +49,25 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoaded(true); return }
 
-      const meta = user.user_metadata ?? {}
-      setSyncHasWill(!!meta.sync_has_will)
-      setSyncHasCDM(!!meta.sync_has_care_decision_maker)
-      setSyncHasEOL(!!meta.sync_has_eol_wishes_doc)
-      setCareStatus((meta.sync_care_preferences_status as CareStatus) ?? null)
+      // Pull source-of-truth domain state (also backfills legacy sources).
+      const { state: domainState } = await loadDomainState(supabase)
+      if (willsDomain) {
+        const willVals = getCheckboxes(domainState, willsDomain.id, 'legal_will_in_place', 1)
+        setSyncHasWill(willVals[0] === true)
+      }
+      if (healthcareDomain) {
+        const cdmVals = getCheckboxes(domainState, healthcareDomain.id, 'who_will_decide', 3)
+        setSyncHasCDM(cdmVals[0] || cdmVals[2])
+        const eolVals = getCheckboxes(domainState, healthcareDomain.id, 'wishes_clear_shared', 2)
+        const communicated = eolVals[0] === true
+        const documented   = eolVals[1] === true
+        setSyncHasEOL(communicated || documented)
+        setCareStatus(
+          communicated && documented ? 'both' :
+          communicated ? 'communicated' :
+          documented   ? 'documented'   : null
+        )
+      }
 
       const { data: entries } = await supabase
         .from('entries')
@@ -91,9 +106,9 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
       }
 
       if (deathcareDomain) {
-        const did = deathcareDomain.id
-        setRestingDocumented(localStorage.getItem(`checkbox_${did}_final_resting_place_wishes_0`) === 'true')
-        setRestingShared(localStorage.getItem(`checkbox_${did}_final_resting_place_wishes_1`) === 'true')
+        const restVals = getCheckboxes(domainState, deathcareDomain.id, 'final_resting_place_wishes', 3)
+        setRestingDocumented(restVals[0] === true)
+        setRestingShared(restVals[1] === true)
       }
 
       setLoaded(true)

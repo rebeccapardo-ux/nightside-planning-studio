@@ -62,7 +62,7 @@ const OPTIONAL_RELEASE_ITEMS: Array<{ key: keyof ReleasePrefs; label: string; de
   { key: 'include_fears_ranking',  label: 'Fears Ranking',    description: 'Your ranked fears and concerns about end-of-life.' },
 ]
 
-const STORAGE_PREFIXES = ['nightside.', 'nightside-legacy-map', 'reflect-', 'checkbox_', 'ready_', 'orient_', 'planning_']
+const STORAGE_PREFIXES = ['nightside.', 'nightside-legacy-map', 'reflect-', 'checkbox_', 'ready_', 'orient_']
 const SS_PREFIXES      = ['nightside_', 'nightside.']
 
 const CANADIAN_PROVINCES = [

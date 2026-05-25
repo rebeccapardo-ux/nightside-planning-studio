@@ -1,0 +1,349 @@
+// Domain state (readiness checkboxes + orientation status) — single source
+// of truth lives in user_profiles.domain_state JSONB. This module is the
+// only place any consumer should touch that column.
+//
+// Reads also perform a one-time, idempotent backfill from legacy locations
+// (localStorage checkbox_*/orient_*, auth.user_metadata.sync_*) so existing
+// users don't lose progress when the DB column is empty for them.
+//
+// Conflict policy during backfill: prefer `true`. We never make a user's
+// progress regress because of a stale local copy.
+
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+
+export type DomainItemStatus = 'not_started' | 'in_progress' | 'complete'
+
+export type DomainEntryState = {
+  checkboxes?: Record<string, boolean[]>
+  orient?: Record<string, DomainItemStatus>
+}
+
+export type DomainState = Record<string, DomainEntryState>
+
+// ---------- accessors ---------------------------------------------------
+
+export function getCheckboxes(
+  state: DomainState,
+  domainId: string,
+  itemKey: string,
+  length: number,
+): boolean[] {
+  const arr = state[domainId]?.checkboxes?.[itemKey]
+  if (!Array.isArray(arr)) return Array(length).fill(false)
+  // Always pad/truncate to the requested length so the UI is stable
+  // even if the schema for an item changes.
+  const out = Array(length).fill(false)
+  for (let i = 0; i < length; i++) out[i] = arr[i] === true
+  return out
+}
+
+export function getOrient(
+  state: DomainState,
+  domainId: string,
+  itemKey: string,
+): DomainItemStatus {
+  const v = state[domainId]?.orient?.[itemKey]
+  return v === 'in_progress' || v === 'complete' ? v : 'not_started'
+}
+
+export function computeReadyStatus(vals: boolean[], total: number): DomainItemStatus {
+  const checked = vals.filter(Boolean).length
+  if (checked === 0) return 'not_started'
+  if (checked === total) return 'complete'
+  return 'in_progress'
+}
+
+// Convenience: infer ready status for an item directly from JSONB without
+// the caller needing to know the expected checkbox count. If the item has
+// no entries in the JSONB, returns 'not_started'.
+export function getReadyStatus(
+  state: DomainState,
+  domainId: string,
+  itemKey: string,
+): DomainItemStatus {
+  const arr = state[domainId]?.checkboxes?.[itemKey]
+  if (!Array.isArray(arr) || arr.length === 0) return 'not_started'
+  return computeReadyStatus(arr, arr.length)
+}
+
+// ---------- IO ----------------------------------------------------------
+
+async function fetchRaw(supabase: SupabaseClient, userId: string): Promise<DomainState> {
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('domain_state')
+    .eq('user_id', userId)
+    .maybeSingle()
+  return ((data?.domain_state ?? {}) as DomainState) || {}
+}
+
+async function writeRaw(
+  supabase: SupabaseClient,
+  userId: string,
+  state: DomainState,
+): Promise<void> {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ domain_state: state })
+    .eq('user_id', userId)
+  if (error) console.error('domain_state write failed:', error.message)
+}
+
+// ---------- legacy migration --------------------------------------------
+
+// Read every `checkbox_*` / `orient_*` / `ready_*` localStorage key on this
+// device and bucket them by domainId/itemKey. Safe to call on any browser.
+function readLegacyLocalState(): DomainState {
+  const out: DomainState = {}
+  if (typeof window === 'undefined' || !window.localStorage) return out
+  try {
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i)
+      if (!key) continue
+      const raw = window.localStorage.getItem(key)
+      if (raw == null) continue
+
+      // checkbox_<domainId>_<itemKey>_<idx>
+      const cbMatch = /^checkbox_([^_]+)_(.+)_(\d+)$/.exec(key)
+      if (cbMatch) {
+        const [, domainId, itemKey, idxStr] = cbMatch
+        const idx = parseInt(idxStr, 10)
+        const bucket = (out[domainId] ||= {})
+        const cb = (bucket.checkboxes ||= {})
+        const arr = (cb[itemKey] ||= [])
+        // Pad as needed
+        while (arr.length <= idx) arr.push(false)
+        arr[idx] = raw === 'true'
+        continue
+      }
+
+      // orient_<domainId>_<itemKey>
+      const orMatch = /^orient_([^_]+)_(.+)$/.exec(key)
+      if (orMatch) {
+        const [, domainId, itemKey] = orMatch
+        const bucket = (out[domainId] ||= {})
+        const or = (bucket.orient ||= {})
+        const v = raw === 'in_progress' || raw === 'complete' ? raw : 'not_started'
+        or[itemKey] = v
+        continue
+      }
+
+      // ready_<domainId>_<itemKey> is derived — ignore; recomputed on demand.
+    }
+  } catch {
+    // localStorage can throw under quota/private modes — fall through
+  }
+  return out
+}
+
+// Translate the handful of `sync_*` boolean flags on auth.user_metadata
+// (the previous selective sync scheme) back into the per-item checkbox
+// shape, so backfill picks them up. Returns one entry per (domainId,
+// itemKey) it can definitively place; uses a "marker" record that the
+// caller merges into the state under whichever domain the page currently
+// represents (we don't know the domainId from metadata alone, so this
+// returns a domain-agnostic shape keyed by domainTitle.toLowerCase()
+// hints, which is the same mapping the legacy seedFromMeta used).
+type SyncFlagsByDomainHint = {
+  // Each hint key (substring matched against the domain title) maps to a
+  // partial DomainEntryState.
+  willsHint?:       DomainEntryState
+  healthcareHint?:  DomainEntryState
+  deathcareHint?:   DomainEntryState
+}
+
+function readSyncFlags(meta: Record<string, unknown>): SyncFlagsByDomainHint {
+  const out: SyncFlagsByDomainHint = {}
+
+  if (typeof meta.sync_has_will === 'boolean') {
+    out.willsHint = {
+      checkboxes: { legal_will_in_place: [meta.sync_has_will as boolean] },
+    }
+  }
+
+  if (typeof meta.sync_has_care_decision_maker === 'boolean'
+   || typeof meta.sync_has_eol_wishes_doc === 'boolean') {
+    const cb: Record<string, boolean[]> = {}
+    if (typeof meta.sync_has_care_decision_maker === 'boolean') {
+      const v = meta.sync_has_care_decision_maker as boolean
+      cb.who_will_decide = [v, false, v]   // idx 1 was never synced
+    }
+    if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
+      const v = meta.sync_has_eol_wishes_doc as boolean
+      cb.wishes_clear_shared = [v, v]
+    }
+    out.healthcareHint = { checkboxes: cb }
+  }
+
+  if (typeof meta.sync_has_funeral_wishes === 'boolean'
+   || typeof meta.sync_has_organ_donation_wishes === 'boolean') {
+    const cb: Record<string, boolean[]> = {}
+    const funeral = typeof meta.sync_has_funeral_wishes === 'boolean'      ? meta.sync_has_funeral_wishes as boolean      : false
+    const organ   = typeof meta.sync_has_organ_donation_wishes === 'boolean' ? meta.sync_has_organ_donation_wishes as boolean : false
+    cb.final_resting_place_wishes = [funeral, false, organ]
+    out.deathcareHint = { checkboxes: cb }
+  }
+
+  return out
+}
+
+// Resolve which domainId(s) each sync_* hint applies to by reading the
+// containers table (where domains are stored by title).
+async function resolveSyncFlagsToDomainIds(
+  supabase: SupabaseClient,
+  hints: SyncFlagsByDomainHint,
+): Promise<DomainState> {
+  const out: DomainState = {}
+  const needed: ('willsHint' | 'healthcareHint' | 'deathcareHint')[] = []
+  if (hints.willsHint)      needed.push('willsHint')
+  if (hints.healthcareHint) needed.push('healthcareHint')
+  if (hints.deathcareHint)  needed.push('deathcareHint')
+  if (needed.length === 0) return out
+
+  const { data: containers } = await supabase
+    .from('containers')
+    .select('id, title')
+    .eq('type', 'domain')
+
+  for (const c of containers ?? []) {
+    const lower = (c.title ?? '').toLowerCase()
+    if (hints.willsHint      && lower.includes('will'))    out[c.id] = mergeEntry(out[c.id], hints.willsHint)
+    if (hints.healthcareHint && lower.includes('health'))  out[c.id] = mergeEntry(out[c.id], hints.healthcareHint)
+    if (hints.deathcareHint  && lower.includes('death'))   out[c.id] = mergeEntry(out[c.id], hints.deathcareHint)
+  }
+  return out
+}
+
+// ---------- merge -------------------------------------------------------
+
+// Merge two DomainEntryStates. Conflicts on booleans resolve to `true`.
+// Conflicts on orient statuses resolve to the "further along" state
+// (not_started < in_progress < complete).
+function mergeEntry(a: DomainEntryState | undefined, b: DomainEntryState): DomainEntryState {
+  const out: DomainEntryState = {
+    checkboxes: { ...(a?.checkboxes ?? {}) },
+    orient:     { ...(a?.orient ?? {}) },
+  }
+  for (const [k, v] of Object.entries(b.checkboxes ?? {})) {
+    const existing = out.checkboxes![k] ?? []
+    const len = Math.max(existing.length, v.length)
+    const merged = Array(len).fill(false)
+    for (let i = 0; i < len; i++) merged[i] = (existing[i] === true) || (v[i] === true)
+    out.checkboxes![k] = merged
+  }
+  for (const [k, v] of Object.entries(b.orient ?? {})) {
+    const existing = out.orient![k]
+    out.orient![k] = orientMax(existing, v)
+  }
+  return out
+}
+
+function orientMax(a: DomainItemStatus | undefined, b: DomainItemStatus): DomainItemStatus {
+  const rank: Record<DomainItemStatus, number> = { not_started: 0, in_progress: 1, complete: 2 }
+  if (!a) return b
+  return rank[a] >= rank[b] ? a : b
+}
+
+function mergeState(a: DomainState, b: DomainState): DomainState {
+  const out: DomainState = { ...a }
+  for (const [domainId, entry] of Object.entries(b)) {
+    out[domainId] = mergeEntry(out[domainId], entry)
+  }
+  return out
+}
+
+function deepEqual(a: DomainState, b: DomainState): boolean {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
+// ---------- public API --------------------------------------------------
+
+// Load the user's domain_state, performing one-time backfill from legacy
+// localStorage keys and auth.user_metadata.sync_* flags if needed.
+// Idempotent across reloads; safe to call from any consumer.
+export async function loadDomainState(supabase?: SupabaseClient): Promise<{
+  state: DomainState
+  userId: string | null
+}> {
+  const client = supabase ?? createSupabaseBrowserClient()
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return { state: {}, userId: null }
+
+  const jsonb = await fetchRaw(client, user.id)
+  const local = readLegacyLocalState()
+  const syncHints = readSyncFlags(user.user_metadata ?? {})
+  const syncResolved = await resolveSyncFlagsToDomainIds(client, syncHints)
+
+  // Merge order: JSONB wins on conflicts ONLY when both have data for the
+  // same item. For booleans, "wins" still means OR-with-true, since any
+  // true should never be lost. So effectively we OR everything together.
+  let merged: DomainState = mergeState(jsonb, local)
+  merged = mergeState(merged, syncResolved)
+
+  // Write back only if something changed, to avoid churning the DB on
+  // every page load. Race-safe: monotonic merge.
+  if (!deepEqual(jsonb, merged)) {
+    await writeRaw(client, user.id, merged)
+  }
+
+  return { state: merged, userId: user.id }
+}
+
+// Persist a single item's checkbox row. Uses read-modify-write; callers
+// should debounce or call sparingly. Returns the new full state.
+export async function saveCheckboxes(
+  domainId: string,
+  itemKey: string,
+  vals: boolean[],
+  opts?: { supabase?: SupabaseClient; currentState?: DomainState; userId?: string },
+): Promise<DomainState | null> {
+  const client = opts?.supabase ?? createSupabaseBrowserClient()
+  let userId = opts?.userId
+  if (!userId) {
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return null
+    userId = user.id
+  }
+  const current = opts?.currentState ?? await fetchRaw(client, userId)
+  const next: DomainState = {
+    ...current,
+    [domainId]: {
+      ...current[domainId],
+      checkboxes: {
+        ...(current[domainId]?.checkboxes ?? {}),
+        [itemKey]: vals.slice(),
+      },
+    },
+  }
+  await writeRaw(client, userId, next)
+  return next
+}
+
+export async function saveOrient(
+  domainId: string,
+  itemKey: string,
+  status: DomainItemStatus,
+  opts?: { supabase?: SupabaseClient; currentState?: DomainState; userId?: string },
+): Promise<DomainState | null> {
+  const client = opts?.supabase ?? createSupabaseBrowserClient()
+  let userId = opts?.userId
+  if (!userId) {
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return null
+    userId = user.id
+  }
+  const current = opts?.currentState ?? await fetchRaw(client, userId)
+  const next: DomainState = {
+    ...current,
+    [domainId]: {
+      ...current[domainId],
+      orient: {
+        ...(current[domainId]?.orient ?? {}),
+        [itemKey]: status,
+      },
+    },
+  }
+  await writeRaw(client, userId, next)
+  return next
+}

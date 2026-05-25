@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { loadDomainState, getOrient, getReadyStatus } from '@/lib/domain-state'
 
 type SegmentDef = { key: string; type: 'orient' | 'ready' }
 
@@ -83,20 +84,25 @@ export default function DomainNullStateBanner({
   const [isNullState, setIsNullState] = useState(false)
 
   useEffect(() => {
-    let anyStarted = false
-    outer: for (const domain of domains) {
-      for (const seg of getDomainSegments(domain.title)) {
-        const key = seg.type === 'orient'
-          ? `orient_${domain.id}_${seg.key}`
-          : `ready_${domain.id}_${seg.key}`
-        const val = localStorage.getItem(key)
-        if (val === 'complete' || val === 'in_progress') {
-          anyStarted = true
-          break outer
+    let cancelled = false
+    void (async () => {
+      const { state } = await loadDomainState()
+      if (cancelled) return
+      let anyStarted = false
+      outer: for (const domain of domains) {
+        for (const seg of getDomainSegments(domain.title)) {
+          const status = seg.type === 'orient'
+            ? getOrient(state, domain.id, seg.key)
+            : getReadyStatus(state, domain.id, seg.key)
+          if (status === 'complete' || status === 'in_progress') {
+            anyStarted = true
+            break outer
+          }
         }
       }
-    }
-    setIsNullState(!anyStarted)
+      setIsNullState(!anyStarted)
+    })()
+    return () => { cancelled = true }
   }, [domains])
 
   if (!isNullState) return null

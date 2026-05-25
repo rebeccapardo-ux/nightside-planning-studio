@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { loadDomainState, getOrient, getReadyStatus, type DomainState } from '@/lib/domain-state'
 
 // ---------------------------------------------------------------------------
 // Domain segment configs — topic keys in page order (orientation then readiness)
@@ -78,14 +79,9 @@ const DOMAIN_SEGMENT_CONFIGS: { match: string; segments: SegmentDef[] }[] = [
 
 type Status = 'not_started' | 'in_progress' | 'complete'
 
-function getSegmentStatus(domainId: string, seg: SegmentDef): Status {
-  const key = seg.type === 'orient'
-    ? `orient_${domainId}_${seg.key}`
-    : `ready_${domainId}_${seg.key}`
-  const val = localStorage.getItem(key)
-  if (val === 'complete')    return 'complete'
-  if (val === 'in_progress') return 'in_progress'
-  return 'not_started'
+function getSegmentStatusFromState(domainId: string, seg: SegmentDef, state: DomainState): Status {
+  if (seg.type === 'orient') return getOrient(state, domainId, seg.key)
+  return getReadyStatus(state, domainId, seg.key)
 }
 
 function qualitativeLabel(exploredCount: number, totalCount: number): string {
@@ -123,7 +119,13 @@ function MiniSegmentBar({
   )
 
   useEffect(() => {
-    setStatuses(segments.map((seg) => getSegmentStatus(domainId, seg)))
+    let cancelled = false
+    void (async () => {
+      const { state } = await loadDomainState()
+      if (cancelled) return
+      setStatuses(segments.map((seg) => getSegmentStatusFromState(domainId, seg, state)))
+    })()
+    return () => { cancelled = true }
   }, [domainId, segments])
 
   const totalCount   = segments.length
