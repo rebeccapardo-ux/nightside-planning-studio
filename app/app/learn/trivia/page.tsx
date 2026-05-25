@@ -191,7 +191,7 @@ function DeckView({
                     }
                   `}
                 >
-                  <p className="text-[#F8F4EB] text-xl font-bold leading-snug">
+                  <p className="text-[#F8F4EB] text-sm sm:text-xl font-bold leading-tight sm:leading-snug">
                     {card.question}
                   </p>
                 </button>
