@@ -298,7 +298,8 @@ function SummaryPage({ planProps }: { planProps: PlanPDFProps }) {
       {/* Fixed header */}
       <View fixed style={SP.fixedHeader}>
         <View style={SP.headerRow}>
-          <Image src={logoUrl} alt="" style={{ height: 14 }} />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM */}
+          <Image src={logoUrl} style={{ height: 14 }} />
           <Text style={{ fontFamily: 'Helvetica', fontSize: 9, color: 'rgba(19,4,38,0.45)' }}>
             {planProps.userName}
           </Text>

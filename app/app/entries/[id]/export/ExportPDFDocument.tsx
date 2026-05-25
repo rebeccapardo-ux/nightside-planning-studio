@@ -242,8 +242,8 @@ export function DocHeader({ userName }: { userName?: string }) {
   return (
     <View fixed style={S.header}>
       <View style={S.headerRow}>
-        {/* @react-pdf/renderer Image — alt is for the lint rule; not rendered in PDF */}
-        <Image src={logoUrl} alt="" style={{ height: 15 }} />
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM */}
+        <Image src={logoUrl} style={{ height: 15 }} />
         {userName ? (
           <Text style={{ fontFamily: 'Helvetica', fontSize: 9, color: 'rgba(19,4,38,0.5)' }}>{userName}</Text>
         ) : null}
@@ -844,7 +844,8 @@ export function LegacyMapLandscapePage({ data }: { data: Extract<PDFData, { kind
       <View style={SLand.landFooter}>
         <View style={{ height: 0.5, backgroundColor: '#E8E4D8', marginBottom: 8 }} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Image src={logoUrl} alt="" style={{ height: 10 }} />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM */}
+          <Image src={logoUrl} style={{ height: 10 }} />
           <Text style={{ fontFamily: 'Helvetica', fontSize: 7.5, color: '#555555' }}>
             Generated {data.monthYear || ''}
           </Text>
