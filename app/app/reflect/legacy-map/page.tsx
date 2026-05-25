@@ -263,6 +263,22 @@ export default function LegacyMapPage() {
     return () => mq.removeListener(apply);
   }, []);
 
+  // Measured canvas width — used on mobile to size each label / tooltip
+  // panel to the actual available horizontal space at that marker's
+  // position, so left-side containers never extend past the viewport.
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  useEffect(() => {
+    if (orientation !== "vertical") return;
+    function measure() {
+      if (pathContainerRef.current) {
+        setCanvasWidth(pathContainerRef.current.getBoundingClientRect().width);
+      }
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [orientation]);
+
   // Supabase
   const [supabaseEntryId, setSupabaseEntryId] = useState<string | null>(null);
   const supabaseEntryIdRef = useRef<string | null>(null);
@@ -1027,23 +1043,44 @@ export default function LegacyMapPage() {
               const xFrac = pt.x / vb.w;
               const yFrac = pt.y / vb.h;
 
+              // Compute the marker's actual pixel x within the canvas
+              // so we can size left/right containers to the real
+              // available space. Mobile only — desktop keeps fixed
+              // widths since the curve has plenty of room horizontally.
+              const V_PADDING = 40;             // matches canvas padding on vertical
+              const SAFETY   = 8;               // px gap to the canvas edge
+              const TOOLTIP_OFFSET = 30;        // px gap between marker and tooltip card
+              const markerXPx = orientation === "vertical" && canvasWidth > 0
+                ? V_PADDING + (pt.x / vb.w) * (canvasWidth - 2 * V_PADDING)
+                : 0;
+
               // Tooltip positioning differs by orientation:
               //  horizontal: card floats above/below marker, with smart left/center/right alignment.
-              //  vertical:   card floats left/right of marker (opposite the bow), with smart top/center/bottom alignment.
+              //  vertical:   card floats left/right of marker on the side with more horizontal
+              //              room (not necessarily opposite the bow). Width sized to that room.
               let tooltipPlacementStyle: React.CSSProperties;
               if (orientation === "vertical") {
-                // place opposite the curve's bow direction at this point
-                const tooltipRight = pt.x < PATH_MID_V; // curve bowed left → tooltip on right
+                const tooltipRight = canvasWidth > 0
+                  ? markerXPx < canvasWidth / 2
+                  : pt.x < PATH_MID_V;
                 const tooltipVAlign: React.CSSProperties =
                   yFrac < 0.20
                     ? { top: 0, transform: "none" }
                     : yFrac > 0.80
                     ? { bottom: 0, transform: "none" }
                     : { top: "50%", transform: "translateY(-50%)" };
+                const availTooltipW = canvasWidth > 0
+                  ? (tooltipRight
+                      ? canvasWidth - markerXPx - TOOLTIP_OFFSET - SAFETY
+                      : markerXPx - TOOLTIP_OFFSET - SAFETY)
+                  : 220;
+                // Cap at a comfortable reading width.
+                const tooltipMaxW = Math.max(120, Math.min(280, availTooltipW));
                 tooltipPlacementStyle = {
-                  ...(tooltipRight ? { left: "30px" } : { right: "30px" }),
+                  ...(tooltipRight ? { left: `${TOOLTIP_OFFSET}px` } : { right: `${TOOLTIP_OFFSET}px` }),
                   ...tooltipVAlign,
-                  width: "220px",
+                  width: `${tooltipMaxW}px`,
+                  maxWidth: `${tooltipMaxW}px`,
                 };
               } else {
                 const tooltipAbove = (pt.y / vb.h) > 0.38;
@@ -1062,7 +1099,10 @@ export default function LegacyMapPage() {
 
               // Label placement:
               //  horizontal: above/below marker (flipped = above), with smart h-align.
-              //  vertical:   left/right of marker (flipped = right), with smart v-align.
+              //  vertical:   left/right of marker (flipped = right) per the brief's "opposite
+              //              the bow" rule + collision flip; max-width is the actual available
+              //              horizontal space on the chosen side, capped at ~40vw. Content
+              //              wraps to multiple lines horizontally inside the pill.
               let labelPlacementStyle: React.CSSProperties;
               if (orientation === "vertical") {
                 const labelVAlign: React.CSSProperties =
@@ -1071,14 +1111,17 @@ export default function LegacyMapPage() {
                     : yFrac > 0.94
                     ? { bottom: 0, transform: "none" }
                     : { top: "50%", transform: "translateY(-50%)" };
+                const availLabelW = canvasWidth > 0
+                  ? (flipped
+                      ? canvasWidth - markerXPx - LABEL_OFFSET - SAFETY
+                      : markerXPx - LABEL_OFFSET - SAFETY)
+                  : 100;
+                const labelIdealCap = canvasWidth > 0 ? canvasWidth * 0.4 : 140;
+                const labelMaxW = Math.max(48, Math.min(labelIdealCap, availLabelW));
                 labelPlacementStyle = {
                   ...(flipped ? { left: `${LABEL_OFFSET}px` } : { right: `${LABEL_OFFSET}px` }),
                   ...labelVAlign,
-                  // Narrower maxWidth on mobile so labels fit within the
-                  // canvas even when the collision flip places them on
-                  // the cramped side (near the curve's bow apex). Titles
-                  // longer than this wrap inside the pill via wordBreak.
-                  maxWidth: 90,
+                  maxWidth: `${labelMaxW}px`,
                 };
               } else {
                 const labelHAlign: React.CSSProperties =
@@ -1149,7 +1192,7 @@ export default function LegacyMapPage() {
                           padding: "14px 16px",
                         }}
                       >
-                        <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                        <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", overflowWrap: "break-word" }}>
                           {moment.title}
                         </p>
                         {moment.note && (
@@ -1205,7 +1248,7 @@ export default function LegacyMapPage() {
                         onMouseEnter={() => { if (enableHover) setTooltipId(moment.id); }}
                         onMouseLeave={() => { if (enableHover) setTooltipId(null); }}
                       >
-                        <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", wordBreak: "break-word", overflowWrap: "break-word" }}>
+                        <p style={{ fontWeight: 700, fontSize: "13px", color: COLORS.midnight, marginBottom: moment.note ? "8px" : 0, lineHeight: "1.3", overflowWrap: "break-word" }}>
                           {moment.title}
                         </p>
                         {moment.note && (
@@ -1248,7 +1291,7 @@ export default function LegacyMapPage() {
                         backgroundColor: isSelected ? "rgba(242,152,54,0.14)" : "rgba(248,244,235,0.96)",
                         borderColor: isSelected ? "rgba(219,88,53,0.38)" : "rgba(44,55,119,0.16)",
                         color: COLORS.midnight,
-                        wordBreak: "break-word",
+                        overflowWrap: "break-word",
                       }}
                     >
                       {moment.title}
