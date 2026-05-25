@@ -880,7 +880,7 @@ export default function LegacyMapPage() {
                 <div
                   key={moment.id}
                   data-moment="true"
-                  className="absolute z-20"
+                  className={`absolute ${isTooltipOpen ? "z-50" : "z-20"}`}
                   style={{
                     left: `${(pt.x / VB_W) * 100}%`,
                     top: `${(pt.y / VB_H) * 100}%`,
