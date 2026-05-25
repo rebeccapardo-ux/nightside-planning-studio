@@ -204,8 +204,12 @@ export default function AppFooter() {
             </div>
           </div>
 
-          {/* Mobile layout */}
+          {/* Mobile layout — copyright above, Back to top as the last
+              element in the footer. */}
           <div className="flex flex-col items-center md:hidden" style={{ gap: 24 }}>
+            <p style={{ fontFamily: hv, fontSize: 13, color: COPYRIGHT, textAlign: 'center', margin: 0 }}>
+              © {new Date().getFullYear()} The Nightside
+            </p>
             <button
               type="button"
               onClick={scrollToTop}
@@ -228,9 +232,6 @@ export default function AppFooter() {
               <ArrowUp />
               Back to top
             </button>
-            <p style={{ fontFamily: hv, fontSize: 13, color: COPYRIGHT, textAlign: 'center', margin: 0 }}>
-              © {new Date().getFullYear()} The Nightside
-            </p>
           </div>
         </div>
 
