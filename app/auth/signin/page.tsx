@@ -159,9 +159,6 @@ export default function SignInPage() {
           border-color: #2d3a6b;
           box-shadow: 0 0 0 3px rgba(45,58,107,0.1);
         }
-        .auth-input::placeholder {
-          color: rgba(26,26,26,0.28);
-        }
         .auth-btn {
           width: 100%;
           padding: 14px;

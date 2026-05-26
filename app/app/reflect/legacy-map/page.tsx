@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import VoiceNoteButton from "@/app/components/VoiceNoteButton";
 import type { Note } from "@/lib/notes";
 import Breadcrumbs from "@/app/components/navigation/Breadcrumbs";
+import AutosaveNotice from "@/app/components/AutosaveNotice";
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
@@ -946,9 +947,7 @@ export default function LegacyMapPage() {
               Add moment
             </button>
           </div>
-          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', textAlign: 'center', marginTop: 0, marginBottom: 16 }}>
-            Your work saves automatically to Your Plan.
-          </p>
+          <AutosaveNotice style={{ textAlign: 'center', marginBottom: 16 }}>Your work saves automatically to Your Plan.</AutosaveNotice>
           <div
             ref={pathContainerRef}
             className="relative w-full select-none rounded-[20px] overflow-hidden"
@@ -1418,9 +1417,7 @@ export default function LegacyMapPage() {
                 </p>
               )}
 
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '12px 0 8px 0' }}>
-                Notes save automatically to Your Plan.
-              </p>
+              <AutosaveNotice style={{ marginTop: 12, marginBottom: 8 }} />
               <div style={{ marginTop: 8 }}>
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}

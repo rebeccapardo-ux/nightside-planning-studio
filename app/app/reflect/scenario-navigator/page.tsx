@@ -11,6 +11,7 @@ import {
 import { createNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -522,7 +523,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -580,7 +581,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -596,9 +597,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                   </>
                 )}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
-                Notes save automatically to Your Plan.
-              </p>
+              <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 10 }}>
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}
@@ -866,7 +865,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -924,7 +923,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -940,9 +939,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                   </>
                 )}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
-                Notes save automatically to Your Plan.
-              </p>
+              <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 10 }}>
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}
@@ -1163,7 +1160,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
         {/* "You chose" + title */}
         <div style={{ marginBottom: 48 }}>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 12 }}>
+          <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 12 }}>
             You chose
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
@@ -1188,7 +1185,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1246,7 +1243,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -1262,9 +1259,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                   </>
                 )}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
-                Notes save automatically to Your Plan.
-              </p>
+              <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 10 }}>
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}
@@ -1656,7 +1651,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
                 onBlur={handleNoteBlur}
                 placeholder="What does this bring up for you?"
                 rows={4}
-                className="w-full bg-white text-[#130426] placeholder:text-[#130426]/35 px-3 py-2.5 rounded-lg text-sm leading-relaxed focus:outline-none resize-none border border-[#130426]/10"
+                className="w-full bg-white text-[#130426] placeholder:text-[#130426]/65 px-3 py-2.5 rounded-lg text-sm leading-relaxed focus:outline-none resize-none border border-[#130426]/10"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -1776,7 +1771,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
             {/* Did you know */}
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1839,7 +1834,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/36 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
 
               {/* Save confirmation + link */}
@@ -1859,9 +1854,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
               </div>
 
               {/* Voice option */}
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
-                Notes save automatically to Your Plan.
-              </p>
+              <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 10 }}>
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}

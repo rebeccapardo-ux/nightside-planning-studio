@@ -4,6 +4,8 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import ExportFieldHelper from '@/app/components/ExportFieldHelper'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 const DOCUMENT_TYPE = 'personal_admin_info'
 const DOCUMENT_TITLE = 'Personal Admin Information'
@@ -448,9 +450,7 @@ function PersonalAdminPage() {
             Identification and health numbers are designed to be added at the moment of export rather than saved to your plan.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
-          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
-            Information you add will save automatically to Your Plan.
-          </p>
+          <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}
@@ -913,9 +913,7 @@ function SensitiveFieldDisplay({ label }: { label: string }) {
       >
         To be added when finalizing document
       </div>
-      <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(26,26,26,0.45)', marginTop: 6, lineHeight: 1.4 }}>
-        This will be included in your export, but won&apos;t be saved to your plan.
-      </p>
+      <ExportFieldHelper />
     </div>
   )
 }

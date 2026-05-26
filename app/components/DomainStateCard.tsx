@@ -168,7 +168,7 @@ const DOMAIN_STYLES = [
   { bg: 'bg-[#2C3777]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.88)' },
   { bg: 'bg-[#f29836]', text: 'text-[#130426]', meta: 'text-[#130426]/65', labelColor: 'rgba(0,0,0,0.82)'    },
   { bg: 'bg-[#130426]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.88)' },
-  { bg: 'bg-[#DB5835]', text: 'text-[#f8f4eb]', meta: 'text-[#f8f4eb]/65', labelColor: 'rgba(255,255,255,0.88)' },
+  { bg: 'bg-[#DB5835]', text: 'text-[#130426]', meta: 'text-[#130426]', labelColor: '#130426' },
 ]
 
 export default function DomainStateCard({
@@ -217,7 +217,7 @@ export default function DomainStateCard({
           fontSize: 14,
           fontWeight: 500,
           background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
-          color: isDark ? '#FFFFFF' : '#1A1A1A',
+          color: isDark ? '#FFFFFF' : '#130426',
           border: isDark ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.15)',
         }}>
           Continue planning →

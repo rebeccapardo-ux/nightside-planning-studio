@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 import {
   fetchKeepsakeInventory,
   createKeepsakeInventory,
@@ -71,7 +72,7 @@ function Field({
           outline: 'none',
           boxSizing: 'border-box',
         }}
-        className="placeholder:text-[#1A1A1A]/40"
+        className="placeholder:text-[#1A1A1A]/65"
       />
     </div>
   )
@@ -472,9 +473,7 @@ export default function KeepsakeDocumentPage() {
         <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(19,4,38,0.85)', marginBottom: 8, marginTop: 0 }}>
           Add anything you&rsquo;d want someone to know about the things that matter to you.
         </p>
-        <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 16, marginTop: 0 }}>
-          Keepsakes you add will save automatically to Your Plan.
-        </p>
+        <AutosaveNotice style={{ marginBottom: 16 }}>Keepsakes you add will save automatically to Your Plan.</AutosaveNotice>
 
         {/* Dynamic entries — only render those with content or the active pending entry */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

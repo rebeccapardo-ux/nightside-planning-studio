@@ -7,6 +7,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
+import ErrorMessagePill from '@/app/components/ErrorMessagePill'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 type Bucket = 'essential' | 'important' | 'less_central'
 
@@ -619,7 +621,9 @@ function FearsRankingContent() {
               Export
             </button>
           )}
-          {saveStatusText && (
+          {saveStatus === 'error' ? (
+            <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>
+          ) : saveStatusText && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
                 <circle cx="7" cy="7" r="6" stroke="#ffffff" strokeWidth="1.3" />
@@ -648,7 +652,7 @@ function FearsRankingContent() {
                   <div style={{ position: 'relative', width: 120, height: 168, flexShrink: 0 }}>
                     {isDone ? (
                       <div style={{ position: 'absolute', inset: 0, borderRadius: 20, border: '2px solid rgba(23,3,39,0.2)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#170327' }}>Done</span>
+                        <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426' }}>Done</span>
                       </div>
                     ) : (
                       <>
@@ -748,9 +752,7 @@ function FearsRankingContent() {
                     </p>
                   )}
                 </div>
-                <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(255,255,255,0.6)', margin: '0 0 20px 0' }}>
-                  Your work saves automatically to Your Plan.
-                </p>
+                <AutosaveNotice theme="dark" style={{ marginBottom: 20 }}>Your work saves automatically to Your Plan.</AutosaveNotice>
 
                 {/* Move-mode instruction */}
                 {liveInstruction && (
@@ -854,7 +856,7 @@ function FearsRankingContent() {
           </div>
 
           {/* Reflection */}
-          <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#170327] md:px-8 md:py-6">
+          <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#130426] md:px-8 md:py-6">
             <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
               Once you've placed a few cards, you might start to notice patterns.
             </p>
@@ -872,7 +874,7 @@ function FearsRankingContent() {
                 }
               }}
               placeholder="Share your thoughts…"
-              className="min-h-[120px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2C3777]/35 focus:outline-none"
+              className="min-h-[120px] w-full rounded-[18px] border border-[#130426]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#130426] placeholder:text-[#130426]/65 focus:border-[#2C3777]/35 focus:outline-none"
             />
             <div style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
               {reflectionSaveStatus === 'saving' && <span>Saving…</span>}
@@ -885,11 +887,9 @@ function FearsRankingContent() {
                   <span>Saved to Your Plan</span>
                 </>
               )}
-              {reflectionSaveStatus === 'error' && <span style={{ color: '#DB5835' }}>Couldn't save — check your connection</span>}
+              {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>}
             </div>
-            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
-              Notes save automatically to Your Plan.
-            </p>
+            <AutosaveNotice style={{ marginBottom: 24 }} />
             <div style={{ marginTop: 8 }}>
               <VoiceNoteButton
                 saveMode={{ kind: 'freeform' }}
@@ -920,9 +920,7 @@ function FearsRankingContent() {
           <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
             To see all your placements side-by-side, open this activity on a larger screen.
           </p>
-          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 22 }}>
-            Your work saves automatically to Your Plan.
-          </p>
+          <AutosaveNotice theme="dark" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your Plan.</AutosaveNotice>
 
           {/* Drawn card area */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 22 }}>
@@ -1159,7 +1157,7 @@ function FearsRankingContent() {
 
           {/* Reflection (mobile) — visible once at least one card is placed */}
           {sortedCount > 0 && (
-            <section className="rounded-[24px] bg-[#f4efe4] px-5 py-5 text-[#170327]">
+            <section className="rounded-[24px] bg-[#f4efe4] px-5 py-5 text-[#130426]">
               <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
                 Once you've placed a few cards, you might start to notice patterns.
               </p>
@@ -1177,7 +1175,7 @@ function FearsRankingContent() {
                   }
                 }}
                 placeholder="Share your thoughts…"
-                className="min-h-[120px] w-full rounded-[18px] border border-[#170327]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#170327] placeholder:text-[#170327]/38 focus:border-[#2C3777]/35 focus:outline-none"
+                className="min-h-[120px] w-full rounded-[18px] border border-[#130426]/14 bg-white px-4 py-3.5 text-[15px] leading-relaxed text-[#130426] placeholder:text-[#130426]/65 focus:border-[#2C3777]/35 focus:outline-none"
               />
               <div style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)', marginTop: 6, minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {reflectionSaveStatus === 'saving' && <span>Saving…</span>}
@@ -1190,11 +1188,9 @@ function FearsRankingContent() {
                     <span>Saved to Your Plan</span>
                   </>
                 )}
-                {reflectionSaveStatus === 'error' && <span style={{ color: '#DB5835' }}>Couldn't save — check your connection</span>}
+                {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>}
               </div>
-              <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', margin: '0 0 24px 0' }}>
-                Notes save automatically to Your Plan.
-              </p>
+              <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 8 }}>
                 <VoiceNoteButton
                   saveMode={{ kind: 'freeform' }}
@@ -1464,7 +1460,7 @@ function ColumnSection({
 
       {/* Column header */}
       <div style={{ marginBottom: 18, display: 'flex', alignItems: 'baseline', gap: 10 }}>
-        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#170327', margin: 0 }}>
+        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#130426', margin: 0 }}>
           {title}
         </h2>
         {maxCards && (

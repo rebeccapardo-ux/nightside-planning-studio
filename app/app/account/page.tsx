@@ -102,7 +102,7 @@ function clearLocalStorage(uid: string) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-      <span style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.5)', flexShrink: 0 }}>{label}</span>
+      <span style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', flexShrink: 0 }}>{label}</span>
       <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', textAlign: 'right', wordBreak: 'break-all' }}>{value}</span>
     </div>
   )
@@ -555,9 +555,9 @@ export default function AccountPage() {
                 <span style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.5)', flexShrink: 0 }}>Last sign-in</span>
                 <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', textAlign: 'right' }}>{formattedLastSignIn}</span>
               </div>
-              <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.4)', margin: 0, lineHeight: 1.5 }}>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0, lineHeight: 1.5 }}>
                 If this looks unfamiliar, your account may have been accessed without your knowledge. Contact us at{' '}
-                <a href="mailto:contact@thenightside.net" style={{ color: 'rgba(19,4,38,0.5)' }}>contact@thenightside.net</a> if you're concerned.
+                <a href="mailto:contact@thenightside.net" style={{ color: 'rgba(19,4,38,0.65)' }}>contact@thenightside.net</a> if you're concerned.
               </p>
             </div>
           </div>
@@ -566,7 +566,7 @@ export default function AccountPage() {
         {/* ── Account access ── */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={sectionH2}>Account Access</h2>
-          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.5)', lineHeight: 1.5, margin: '0 0 16px' }}>
+          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 16px' }}>
             These credentials require additional verification when changed.
           </p>
           <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -575,7 +575,7 @@ export default function AccountPage() {
               <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', flexShrink: 0 }}>Email</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', wordBreak: 'break-all' }}>{user?.email ?? '—'}</span>
-                <button onClick={openEmailModal} style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 13, color: '#DB5835', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>Change</button>
+                <button onClick={openEmailModal} style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 14, color: '#DB5835', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Change</button>
               </div>
             </div>
             {/* Divider */}
@@ -611,7 +611,7 @@ export default function AccountPage() {
         {/* ── Legacy Contacts ── */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={sectionH2}>Legacy Contacts</h2>
-          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.55)', lineHeight: 1.6, margin: '0 0 16px' }}>
+          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.6, margin: '0 0 16px' }}>
             If you pass away, your Legacy Contact(s) may be eligible to receive your practical planning materials. They do not have access to your plan while you are alive.
           </p>
 
@@ -620,7 +620,7 @@ export default function AccountPage() {
             {/* Primary */}
             {primaryContact ? (
               <div style={{ ...card, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Primary Legacy Contact</span>
+                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Primary Legacy Contact</span>
                 <Row label="Name"         value={`${toTitleCase(primaryContact.first_name)} ${toTitleCase(primaryContact.last_name)}`} />
                 <Row label="Email"        value={primaryContact.email} />
                 <Row label="Relationship" value={primaryContact.relationship} />
@@ -631,15 +631,15 @@ export default function AccountPage() {
               </div>
             ) : (
               <div style={{ ...card, padding: '16px 20px' }}>
-                <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Primary Legacy Contact</span>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.45)', margin: '6px 0 0' }}>Not designated</p>
+                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Primary Legacy Contact</span>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0' }}>Not designated</p>
               </div>
             )}
 
             {/* Secondary */}
             {secondaryContact ? (
               <div style={{ ...card, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secondary Legacy Contact</span>
+                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secondary Legacy Contact</span>
                 <Row label="Name"         value={`${toTitleCase(secondaryContact.first_name)} ${toTitleCase(secondaryContact.last_name)}`} />
                 <Row label="Email"        value={secondaryContact.email} />
                 <Row label="Relationship" value={secondaryContact.relationship} />
@@ -652,8 +652,8 @@ export default function AccountPage() {
               </div>
             ) : (
               <div style={{ ...card, padding: '16px 20px' }}>
-                <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secondary Legacy Contact</span>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.45)', margin: '6px 0 8px' }}>Not designated</p>
+                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secondary Legacy Contact</span>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', margin: '6px 0 8px' }}>Not designated</p>
                 <button
                   style={ghostSmall}
                   onClick={() => openFlow({ type: 'add-secondary', contactType: 'secondary' })}
@@ -692,12 +692,12 @@ export default function AccountPage() {
                 />
                 <div>
                   <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', display: 'block', marginBottom: 2 }}>{label}</span>
-                  <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', fontStyle: 'italic' }}>{description}</span>
+                  <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic' }}>{description}</span>
                 </div>
               </label>
             ))}
           </div>
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)', margin: 0 }}>
+          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
             Your selections save automatically.
           </p>
         </section>

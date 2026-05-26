@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createNote } from '@/lib/notes'
 import VoiceNoteButton from './VoiceNoteButton'
+import AutosaveNotice from './AutosaveNotice'
 import type { Note } from '@/lib/notes'
 
 export default function NotepadModal({
@@ -50,7 +51,7 @@ export default function NotepadModal({
         shadow: '0 8px 32px rgba(0,0,0,0.45)',
         textareaBg: 'rgba(255,255,255,0.1)',
         textareaBorder: '1px solid rgba(255,255,255,0.2)',
-        placeholderClass: 'placeholder:text-white/45',
+        placeholderClass: 'placeholder:text-white/60',
         iconColor: 'rgba(255,255,255,0.75)',
         labelColor: 'rgba(255,255,255,0.75)',
       }
@@ -128,13 +129,13 @@ export default function NotepadModal({
         </div>
 
         {/* Helper text */}
-        <p className="text-sm italic text-[#f8f4eb]/75 mb-4">Notes save automatically to Your Plan.</p>
+        <AutosaveNotice theme="dark" style={{ marginBottom: 16 }} />
 
         {/* Composer */}
         <textarea
           value={composerText}
           placeholder="Capture a thought, question, or anything on your mind…"
-          className="h-44 w-full text-[#130426] placeholder:text-[#130426]/45 text-sm leading-relaxed resize-none outline-none"
+          className="h-44 w-full text-[#130426] placeholder:text-[#130426]/65 text-sm leading-relaxed resize-none outline-none"
           style={{ background: '#ffffff', border: '1.5px solid rgba(26,26,26,0.15)', borderRadius: 10, padding: '12px 16px' }}
           onChange={(e) => {
             const text = e.target.value
@@ -207,7 +208,7 @@ export default function NotepadModal({
               onKeyDown={handlePanelKeyDown}
               placeholder="Write a note…"
               rows={2}
-              className="w-full rounded-lg bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/40 px-3 py-2 text-sm leading-relaxed resize-none outline-none overflow-hidden"
+              className="w-full rounded-lg bg-[#f8f4eb] text-[#130426] placeholder:text-[#130426]/65 px-3 py-2 text-sm leading-relaxed resize-none outline-none overflow-hidden"
             />
           </div>
           <div className="flex items-center justify-end" style={{ minHeight: 36 }}>

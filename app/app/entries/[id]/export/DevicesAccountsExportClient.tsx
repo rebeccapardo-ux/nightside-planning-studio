@@ -36,7 +36,7 @@ function FieldRow({ label, value }: { label: string; value: string | undefined }
   if (!value?.trim()) return null
   return (
     <div style={{ marginBottom: 8 }}>
-      <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, color: '#9A9A9A', marginBottom: 2, lineHeight: 1.3 }}>
+      <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, color: '#6B6B6B', marginBottom: 2, lineHeight: 1.3 }}>
         {label}
       </p>
       <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
@@ -74,7 +74,7 @@ function SensitiveInput({
 
   return (
     <div style={{ marginBottom: 8 }}>
-      <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, color: '#9A9A9A', marginBottom: 2, lineHeight: 1.3 }}>
+      <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, color: '#6B6B6B', marginBottom: 2, lineHeight: 1.3 }}>
         {label}
       </p>
       <div style={{ position: 'relative' }}>

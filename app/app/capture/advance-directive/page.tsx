@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
@@ -452,9 +453,7 @@ function AdvanceDirectivePage() {
                 </span>
               ))}
             </div>
-            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 16, marginBottom: 0 }}>
-              Your answers will save automatically to Your Plan.
-            </p>
+            <AutosaveNotice style={{ marginTop: 16 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
             {saveStatusText && (
               <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
             )}
@@ -1221,9 +1220,9 @@ const REMOVE_STYLE: React.CSSProperties = {
 // ---------------------------------------------------------------------------
 
 const SECTION_LABEL_STYLE: React.CSSProperties = {
-  fontSize: 13,
+  fontSize: 14,
   lineHeight: '18px',
-  fontWeight: 500,
+  fontWeight: 700,
   color: '#DB5835',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 const DOCUMENT_TYPE = 'important_contacts'
 const DOCUMENT_TITLE = 'Important Contacts'
@@ -404,9 +405,7 @@ function ImportantContactsPage() {
           <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
             When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
           </p>
-          <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 0, marginBottom: 0 }}>
-            Contacts you add will save automatically to Your Plan.
-          </p>
+          <AutosaveNotice>Contacts you add will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}

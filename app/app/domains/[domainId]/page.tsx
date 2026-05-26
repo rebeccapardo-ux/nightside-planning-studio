@@ -440,9 +440,9 @@ const CONTAINER_STYLE: React.CSSProperties = {
 }
 
 const SECTION_COLORS = {
-  notes:   { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
-  docs:    { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
-  outputs: { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/50' },
+  notes:   { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/65' },
+  docs:    { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/65' },
+  outputs: { bgStyle: CONTAINER_STYLE, text: 'text-[#130426]', muted: 'text-[#2C3777]', faint: 'text-[#130426]/65' },
 }
 
 // ---------------------------------------------------------------------------
@@ -722,7 +722,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   return (
     <div className="min-h-screen" style={{ background: '#EDE7FF' }}>
       <style>{`
-        .domain-note-input::placeholder { color: rgba(19,4,38,0.34); font-size: 18px; font-weight: 400; line-height: 1.4; }
+        .domain-note-input::placeholder { color: rgba(19,4,38,0.65); font-size: 18px; font-weight: 400; line-height: 1.4; }
         .planning-grid {
           display: grid;
           grid-template-columns: 1fr 2fr;
@@ -933,7 +933,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
                 onChange={(e) => handleScratchpadChange(e.target.value)}
                 onBlur={handleScratchpadBlur}
                 placeholder="Capture anything that comes up about this area..."
-                className="placeholder:text-[#130426]/30"
+                className="placeholder:text-[#130426]/65"
                 style={{
                   display: 'block',
                   width: '100%',
@@ -1012,231 +1012,8 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
         />
       )}
 
-      {/* ── Materials canvas (suppressed for all active domains) ── */}
-      {!loading && !isHealthcare && !isLegacy && !isDeathcare && !isWills && !isRitual && !isPersonalAdmin && (
-        <div style={{ background: '#f8f4eb', marginTop: '64px' }}>
-          <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: '72px', paddingBottom: '88px' }}>
-
-            {!loading && (
-              <div style={{ marginBottom: '40px' }}>
-                <h2 style={{ fontSize: '28px', fontWeight: 600, lineHeight: '1.15', color: '#130426', margin: 0 }}>
-                  Materials in this area
-                </h2>
-                <p style={{ fontSize: '18px', fontWeight: 400, lineHeight: '1.45', color: 'rgba(19,4,38,0.58)', marginTop: '12px', marginBottom: 0 }}>
-                  Notes, documents, and outputs created from your work in this area.
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] items-start" style={{ columnGap: '32px', rowGap: '28px' }}>
-
-              {/* Notes */}
-              <div style={c.notes.bgStyle}>
-                <SectionHeader
-                  label="Notes"
-                  colors={c.notes}
-                  isOpen={addExistingFor === 'note'}
-                  onToggle={() => handleOpenAddExisting('note')}
-                />
-
-                {addExistingFor === 'note' && (
-                  <AddExistingPanel
-                    loading={loadingExisting}
-                    search={addSearch}
-                    onSearch={setAddSearch}
-                    notes={filteredNotes}
-                    entries={[]}
-                    noteLinks={noteLinks}
-                    entryLinks={entryLinks}
-                    domainId={domainId}
-                    onToggleNote={handleToggleExistingNote}
-                    onToggleEntry={handleToggleExistingEntry}
-                  />
-                )}
-
-                <textarea
-                  ref={composerRef}
-                  value={composerText}
-                  onChange={(e) => setComposerText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Write a note…"
-                  rows={2}
-                  className="w-full text-[#130426] resize-none outline-none overflow-hidden transition-colors domain-note-input"
-                  style={{
-                    background: '#FFFFFF',
-                    border: '1px solid rgba(19,4,38,0.08)',
-                    borderRadius: '16px',
-                    minHeight: '84px',
-                    padding: '20px 24px',
-                    fontSize: '18px',
-                    fontWeight: 400,
-                    lineHeight: '1.4',
-                    color: '#130426',
-                  }}
-                />
-                <div className="flex items-center justify-between mt-2 mb-5">
-                  <p style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.35', color: 'rgba(19,4,38,0.50)' }}>Notes are saved to your materials</p>
-                  {composerText.trim() && (
-                    <button
-                      onClick={handleNonHealthcareSave}
-                      disabled={saving}
-                      className={`text-xs ${c.notes.muted} hover:${c.notes.text} transition-colors`}
-                    >
-                      {saving ? 'Saving…' : 'Save →'}
-                    </button>
-                  )}
-                </div>
-
-                {loading ? (
-                  <p className={`text-xs ${c.notes.faint}`}>Loading…</p>
-                ) : notes.length === 0 ? (
-                  <p className={`text-xs ${c.notes.faint}`}>No notes yet. Write one above.</p>
-                ) : (
-                  <div className="grid grid-cols-4 gap-3 mt-1 items-start">
-                    {notes.map((note, idx) => (
-                      <NoteCard
-                        key={note.id}
-                        note={note}
-                        idx={idx}
-                        domainId={domainId}
-                        allDomains={allDomains}
-                        linkedDomainIds={noteLinks[note.id] ?? [domainId]}
-                        onToggled={(dId, isNowLinked) => {
-                          setNoteLinks((prev) => ({
-                            ...prev,
-                            [note.id]: isNowLinked
-                              ? [...new Set([...(prev[note.id] ?? []), dId])]
-                              : (prev[note.id] ?? []).filter((id) => id !== dId),
-                          }))
-                          if (!isNowLinked && dId === domainId) {
-                            setNotes((prev) => prev.filter((n) => n.id !== note.id))
-                          }
-                        }}
-                        onUpdated={(newContent) =>
-                          setNotes((prev) => prev.map((n) => n.id === note.id ? { ...n, content: newContent } : n))
-                        }
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Right column — Documents + Working Outputs */}
-              <div className="flex flex-col gap-6">
-
-                <div style={c.docs.bgStyle}>
-                  <SectionHeader
-                    label="Documents"
-                    colors={c.docs}
-                    isOpen={addExistingFor === 'document'}
-                    onToggle={() => handleOpenAddExisting('document')}
-                  />
-                  {addExistingFor === 'document' && (
-                    <AddExistingPanel
-                      loading={loadingExisting}
-                      search={addSearch}
-                      onSearch={setAddSearch}
-                      notes={[]}
-                      entries={filteredDocEntries}
-                      noteLinks={noteLinks}
-                      entryLinks={entryLinks}
-                      domainId={domainId}
-                      onToggleNote={handleToggleExistingNote}
-                      onToggleEntry={handleToggleExistingEntry}
-                    />
-                  )}
-                  {loading ? (
-                    <p className={`text-xs ${c.docs.faint}`}>Loading…</p>
-                  ) : documentEntries.length === 0 ? (
-                    <p className={`text-xs ${c.docs.faint}`}>No documents yet.</p>
-                  ) : (
-                    <div className="flex flex-col" style={{ gap: '16px' }}>
-                      {documentEntries.map((entry) => (
-                        <EntryCard
-                          key={entry.id}
-                          entry={entry}
-                          domainId={domainId}
-                          allDomains={allDomains}
-                          linkedDomainIds={entryLinks[entry.id] ?? [domainId]}
-                          variant="document"
-                          onToggled={(dId, isNowLinked) => {
-                            setEntryLinks((prev) => ({
-                              ...prev,
-                              [entry.id]: isNowLinked
-                                ? [...new Set([...(prev[entry.id] ?? []), dId])]
-                                : (prev[entry.id] ?? []).filter((id) => id !== dId),
-                            }))
-                            if (!isNowLinked && dId === domainId) {
-                              setEntries((prev) => prev.filter((e) => e.id !== entry.id))
-                            }
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div style={c.outputs.bgStyle}>
-                  <SectionHeader
-                    label="Working Outputs"
-                    colors={c.outputs}
-                    isOpen={addExistingFor === 'output'}
-                    onToggle={() => handleOpenAddExisting('output')}
-                  />
-                  {addExistingFor === 'output' && (
-                    <AddExistingPanel
-                      loading={loadingExisting}
-                      search={addSearch}
-                      onSearch={setAddSearch}
-                      notes={[]}
-                      entries={filteredOutputEntries}
-                      noteLinks={noteLinks}
-                      entryLinks={entryLinks}
-                      domainId={domainId}
-                      onToggleNote={handleToggleExistingNote}
-                      onToggleEntry={handleToggleExistingEntry}
-                    />
-                  )}
-                  {loading ? (
-                    <p className={`text-outputs.faint`}>Loading…</p>
-                  ) : workingOutputEntries.length === 0 ? (
-                    <div>
-                      <p className={`text-xs ${c.outputs.faint}`}>No working outputs yet.</p>
-                      <p className={`text-xs ${c.outputs.faint} mt-1`}>Complete an activity to create something here.</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col" style={{ gap: '16px' }}>
-                      {workingOutputEntries.map((entry) => (
-                        <EntryCard
-                          key={entry.id}
-                          entry={entry}
-                          domainId={domainId}
-                          allDomains={allDomains}
-                          linkedDomainIds={entryLinks[entry.id] ?? [domainId]}
-                          variant="output"
-                          onToggled={(dId, isNowLinked) => {
-                            setEntryLinks((prev) => ({
-                              ...prev,
-                              [entry.id]: isNowLinked
-                                ? [...new Set([...(prev[entry.id] ?? []), dId])]
-                                : (prev[entry.id] ?? []).filter((id) => id !== dId),
-                            }))
-                            if (!isNowLinked && dId === domainId) {
-                              setEntries((prev) => prev.filter((e) => e.id !== entry.id))
-                            }
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* Materials canvas block was unreachable — all configured domains hit the
+          isHealthcare branch in PlanningStatusSection. Removed in cleanup pass. */}
 
       <DomainTour />
     </div>
@@ -1517,7 +1294,7 @@ function PlanningStatusSection({
                 href="/app/capture/advance-directive"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, fontWeight: 500, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
                 className="hover:opacity-80 transition-opacity"
               >
                 Open document →
@@ -1546,7 +1323,7 @@ function PlanningStatusSection({
                 href="/app/capture/funeral-wishes"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, fontWeight: 500, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
                 className="hover:opacity-80 transition-opacity"
               >
                 Open document →
@@ -1619,115 +1396,10 @@ function PlanningStatusSection({
     )
   }
 
-  // ── Default (non-healthcare) layout ───────────────────────────────────────
-  const readinessStatuses = structure.readiness.map(i => {
-    const vals = checkboxes[i.key] ?? i.checkboxes.map(() => false)
-    return computeReadyStatus(vals, i.checkboxes.length)
-  })
-  const inProgressCount = readinessStatuses.filter(s => s === 'in_progress').length
-  const completeCount   = readinessStatuses.filter(s => s === 'complete').length
-  const notStartedCount = readinessStatuses.filter(s => s === 'not_started').length
-
-  const resolvedPanelDefault = openRowPanel
-    ? resolveRowNotes(openRowPanel.rowKey, openRowPanel.allowedReflectPrompts)
-    : null
-
-  return (
-    <>
-      {openRowPanel && resolvedPanelDefault && (
-        <RowNotesPanel
-          rowTitle={openRowPanel.rowTitle}
-          notes={resolvedPanelDefault.notes}
-          manualNoteIds={resolvedPanelDefault.manualNoteIds}
-          allUserNotes={allUserNotes}
-          domainNoteIds={domainNoteIds}
-          rowNoteIds={new Set(resolvedPanelDefault.notes.map(n => n.id))}
-          onClose={() => setOpenRowPanel(null)}
-          onRemoveNote={(noteId, isManual) => {
-            if (isManual) onTopicNoteRemove?.(noteId, openRowPanel.rowKey)
-            else onRowNoteHide?.(noteId, openRowPanel.rowKey)
-          }}
-          onAddNote={(note) => onTopicNoteAdd?.(note.id, openRowPanel.rowKey, note)}
-        />
-      )}
-      <div>
-        <div className="mb-10 pb-7" style={{ borderBottom: '1px solid rgba(19,4,38,0.10)' }}>
-          <h2 style={{ fontSize: '32px', fontWeight: 600, lineHeight: '1.15', color: '#130426', marginBottom: '10px' }}>
-            Planning Status
-          </h2>
-          <p className="text-[14px]" style={{ color: 'rgba(19,4,38,0.80)' }}>
-            {[
-              inProgressCount > 0 && `${inProgressCount} in progress`,
-              completeCount   > 0 && `${completeCount} complete`,
-              notStartedCount > 0 && `${notStartedCount} not started`,
-            ].filter(Boolean).join(' · ')}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="rounded-xl p-6" style={{ background: '#BBABF4' }}>
-            <div className="mb-8">
-              <p className="text-[22px] font-bold text-[#130426] mb-2">Reflection + Learning</p>
-              <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Topics to think through and read about for this area</p>
-              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 0 }}>Update your status as you explore each topic.</p>
-            </div>
-            <div className="space-y-3">
-              {structure.orientation.map((item) => {
-                const count = rowNoteCount(item.key, item.allowedReflectPrompts)
-                return (
-                  <div
-                    key={item.key}
-                    className="rounded-lg overflow-hidden"
-                    style={{ background: 'rgba(255,255,255,0.60)', border: '1px solid rgba(255,255,255,0.40)' }}
-                  >
-                    <div className="p-4">
-                      <p className="text-[14px] font-semibold text-[#130426] leading-snug mb-4">{item.title}</p>
-                      <Link
-                        href={item.learnHref ?? '/app/learn'}
-                        className="inline-block text-[12px] font-semibold bg-[#2C3777] text-white px-3 py-1.5 rounded hover:bg-[#1a1e4d] transition-colors"
-                      >
-                        Learn more
-                      </Link>
-                      <ItemMaterials matched={itemEntries(item)} domainId={domainId} panelType="reflection" />
-                      <RowNotesIndicator count={count} onClick={() => openPanel(item)} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-xl p-6" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)' }}>
-            <div className="mb-8">
-              <p className="text-[22px] font-bold mb-2" style={{ color: '#DB5835' }}>Practical Readiness</p>
-              <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.80)', marginBottom: 4 }}>Practical steps to take and decisions to document</p>
-              <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.80)', marginBottom: 0 }}>Your progress updates as you complete each step.</p>
-            </div>
-            <div className="space-y-3">
-              {structure.readiness.map((item) => {
-                const vals = checkboxes[item.key] ?? item.checkboxes.map(() => false)
-                const status = computeReadyStatus(vals, item.checkboxes.length)
-                const count = rowNoteCount(item.key)
-                return (
-                  <ReadinessCard
-                    key={item.key}
-                    item={item}
-                    vals={vals}
-                    status={status}
-                    matched={itemEntries(item)}
-                    domainId={domainId}
-                    onToggle={(idx) => handleCheckbox(item.key, idx, item.checkboxes.length)}
-                    noteCount={count}
-                    onViewNotes={() => openPanel(item)}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  )
+  // Default (non-healthcare) layout was unreachable in production — all six
+  // configured domain titles trigger the parent's combined isHealthcare prop.
+  // Removed in cleanup pass.
+  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -2140,7 +1812,7 @@ function AddExistingPanel({
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search…"
-          className="w-full bg-transparent text-sm text-[#130426] placeholder:text-[#130426]/35 outline-none"
+          className="w-full bg-transparent text-sm text-[#130426] placeholder:text-[#130426]/75 outline-none"
           // eslint-disable-next-line jsx-a11y/no-autofocus -- focus on user-triggered panel open
           autoFocus
         />
@@ -2327,7 +1999,7 @@ function RowNotesPanel({
           >
             ← Back
           </button>
-          <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.48)', marginBottom: 4 }}>Add a note to:</p>
+          <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.65)', marginBottom: 4 }}>Add a note to:</p>
           <p style={{ fontSize: 16, fontWeight: 700, color: '#130426', marginBottom: 18, lineHeight: 1.3 }}>{rowTitle}</p>
           <input
             type="text"
@@ -2338,18 +2010,18 @@ function RowNotesPanel({
           />
           {inDomain.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(19,4,38,0.44)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>In this area</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>In this area</p>
               {inDomain.map(n => <PickerNoteItem key={n.id} note={n} />)}
             </div>
           )}
           {elsewhere.length > 0 && (
             <div>
-              <p style={{ fontSize: 10, fontWeight: 600, color: 'rgba(19,4,38,0.44)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>All notes</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>All notes</p>
               {elsewhere.map(n => <PickerNoteItem key={n.id} note={n} />)}
             </div>
           )}
           {inDomain.length === 0 && elsewhere.length === 0 && (
-            <p style={{ fontSize: 14, color: 'rgba(19,4,38,0.44)' }}>No notes found.</p>
+            <p style={{ fontSize: 14, color: 'rgba(19,4,38,0.65)' }}>No notes found.</p>
           )}
         </div>
       </>
@@ -2364,7 +2036,7 @@ function RowNotesPanel({
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
-            <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.48)', marginBottom: 4 }}>Your notes on:</p>
+            <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.65)', marginBottom: 4 }}>Your notes on:</p>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: '#130426', margin: 0, lineHeight: 1.3 }}>{rowTitle}</h2>
           </div>
           <button

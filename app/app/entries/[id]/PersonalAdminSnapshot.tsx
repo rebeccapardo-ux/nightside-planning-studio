@@ -81,7 +81,7 @@ function FieldDisplay({ label, value }: { label: string; value: string | undefin
   if (!value?.trim()) return null
   return (
     <div style={{ marginBottom: 18 }}>
-      <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(26,26,26,0.6)', marginBottom: 3 }}>
+      <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(26,26,26,0.65)', marginBottom: 3 }}>
         {label}
       </p>
       <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>

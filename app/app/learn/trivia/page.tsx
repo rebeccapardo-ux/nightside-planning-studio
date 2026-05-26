@@ -6,6 +6,7 @@ import { TRIVIA_CARDS, type TriviaCard } from '@/lib/trivia-data'
 import { createNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -315,7 +316,7 @@ function CardView({
               className="rounded-2xl bg-[#2C3777] px-8 py-10 flex flex-col justify-between"
             >
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-[#BBABF4] mb-4">Answer</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-dusk-light mb-4">Answer</p>
                 <p className="text-[#f8f4eb] text-lg leading-relaxed whitespace-pre-line">
                   {card.answer}
                 </p>
@@ -359,12 +360,10 @@ function CardView({
                     }}
                     placeholder="Capture anything that comes up…"
                     rows={2}
-                    className="w-full text-[#130426] placeholder:text-[#130426]/40 leading-relaxed resize-none outline-none overflow-hidden"
+                    className="w-full text-[#130426] placeholder:text-[#130426]/65 leading-relaxed resize-none outline-none overflow-hidden"
                     style={{ fontSize: 16, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: 12 }}
                   />
-                  <p className="text-sm italic text-[#f8f4eb]/75 mt-2">
-                    Notes save automatically to Your Plan.
-                  </p>
+                  <AutosaveNotice theme="dark" style={{ marginTop: 8 }} />
                   <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
                     {noteStatus === 'saving' && <span>Saving…</span>}
                     {noteStatus === 'saved' && (

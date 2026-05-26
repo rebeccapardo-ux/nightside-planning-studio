@@ -212,7 +212,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
             {/* Date line */}
             {dateLine && (
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.56)', marginBottom: (isDocument || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? 16 : 24 }}>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-text-muted)', marginBottom: (isDocument || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? 16 : 24 }}>
                 {dateLine}
               </p>
             )}
@@ -220,21 +220,21 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             {/* Disclaimer — documents only */}
             {isDocument && (
               <>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes') ? 8 : 24, lineHeight: 1.55 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes') ? 8 : 24, lineHeight: 1.55 }}>
                   This is a record of your responses at the time of your last save. It is not a legal document.
                 </p>
                 {entry.document_type === 'financial_information' && (
-                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
                     Account numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
                   </p>
                 )}
                 {entry.document_type === 'personal_admin_info' && (
-                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
                     SIN and health card numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
                   </p>
                 )}
                 {entry.document_type === 'devices_and_accounts' && (
-                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 24, lineHeight: 1.55 }}>
+                  <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
                     Passwords and PIN numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
                   </p>
                 )}
@@ -242,12 +242,12 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             )}
 
             {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking') && (
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 8, lineHeight: 1.55 }}>
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 8, lineHeight: 1.55 }}>
                 This is a record of your responses at the time of your last save. It is not a legal document.
               </p>
             )}
             {entry.activity === 'legacy_map' && (
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)', marginBottom: 8, lineHeight: 1.55 }}>
+              <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 8, lineHeight: 1.55 }}>
                 This document maps meaningful moments and reflections from across your life.
               </p>
             )}
@@ -392,7 +392,7 @@ function LegacyMapSnapshot({ content, id, userName }: { content: LegacyMapConten
           ].map(({ field, label }) =>
             field ? (
               <div key={label} style={{ marginBottom: 28 }}>
-                <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 6, textTransform: 'uppercase' as const }}>
+                <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 6, textTransform: 'uppercase' as const }}>
                   {label}
                 </p>
                 <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
@@ -509,7 +509,7 @@ function ValuesCardSnapshot({ ranking, id }: { ranking: RankingContent; id: stri
       })}
 
       {!VALUE_GROUPS.some(({ key }) => (ranking[key]?.length ?? 0) > 0) && (
-        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>Nothing has been placed yet.</p>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>Nothing has been placed yet.</p>
       )}
 
       {hasReflection && (
@@ -519,7 +519,7 @@ function ValuesCardSnapshot({ ranking, id }: { ranking: RankingContent; id: stri
             fontSize: 11,
             fontWeight: 500,
             letterSpacing: '0.08em',
-            color: 'rgba(26,26,26,0.56)',
+            color: 'var(--color-text-muted)',
             marginTop: 24,
             marginBottom: 8,
             textTransform: 'uppercase' as const,
@@ -571,12 +571,12 @@ function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
       })}
 
       {!FEAR_GROUPS.some(({ key }) => (ranking[key]?.length ?? 0) > 0) && (
-        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>Nothing has been placed yet.</p>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>Nothing has been placed yet.</p>
       )}
 
       {hasReflection && (
         <div style={{ marginTop: 8, paddingTop: 24, borderTop: '1px solid rgba(26,26,26,0.08)' }}>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'rgba(26,26,26,0.56)', marginBottom: 8, textTransform: 'uppercase' as const }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 8, textTransform: 'uppercase' as const }}>
             REFLECTION NOTE
           </p>
           <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
@@ -633,7 +633,7 @@ function AdvanceDirectiveSnapshot({ entry }: { entry: EntryRow }) {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, string | undefined>
   const fields = AD_FIELDS.filter(f => c[f.key]?.trim())
   if (fields.length === 0) {
-    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No content saved yet.</p>
   }
   return (
     <div>
@@ -727,7 +727,7 @@ function FuneralWishesSnapshot({ entry }: { entry: EntryRow }) {
     return typeof c[f.key] === 'string' && (c[f.key] as string).trim()
   }))
   if (!hasAny) {
-    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No content saved yet.</p>
   }
   let firstSection = true
   return (
@@ -773,18 +773,18 @@ function FuneralWishesSnapshot({ entry }: { entry: EntryRow }) {
 function GenericDocumentSnapshot({ entry }: { entry: EntryRow }) {
   const content = entry.content
   if (!content || typeof content !== 'object') {
-    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No content saved yet.</p>
   }
   const fields = (Object.entries(content as Record<string, unknown>)
     .filter(([, v]) => typeof v === 'string' && (v as string).trim().length > 0)) as [string, string][]
   if (fields.length === 0) {
-    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No content saved yet.</p>
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No content saved yet.</p>
   }
   return (
     <div>
       {fields.map(([key, value], i) => (
         <div key={key} style={{ marginBottom: i < fields.length - 1 ? 28 : 0 }}>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', color: 'rgba(26,26,26,0.56)', textTransform: 'uppercase' as const, marginBottom: 6 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', color: 'var(--color-text-muted)', textTransform: 'uppercase' as const, marginBottom: 6 }}>
             {camelCaseToLabel(key)}
           </p>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
@@ -798,7 +798,7 @@ function GenericDocumentSnapshot({ entry }: { entry: EntryRow }) {
 
 function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
   const content = entry.content as Record<string, unknown> | null
-  if (!content) return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No contacts saved yet.</p>
+  if (!content) return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No contacts saved yet.</p>
 
   // New array-based format
   if (Array.isArray(content.healthcare) || Array.isArray(content.legal) || Array.isArray(content.relatives) || Array.isArray(content.friends)) {
@@ -813,7 +813,7 @@ function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
       { key: 'other', label: 'Other Important Contacts' },
     ]
     const hasAny = sections.some(s => ((content[s.key] as NewContact[]) ?? []).some(c => c.name?.trim() || c.phone?.trim() || c.email?.trim()))
-    if (!hasAny) return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No contacts saved yet.</p>
+    if (!hasAny) return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No contacts saved yet.</p>
     let first = true
     return (
       <div>
@@ -830,7 +830,7 @@ function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
                 {entries.map((c, ci) => (
                   <div key={c.id || ci}>
                     {c.name?.trim() && <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 500, color: '#1A1A1A' }}>{c.name}</p>}
-                    {c.role?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>{c.role}</p>}
+                    {c.role?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>{c.role}</p>}
                     {c.phone?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{c.phone}</p>}
                     {c.email?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)' }}>{c.email}</p>}
                     {c.address?.trim() && <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', whiteSpace: 'pre-wrap' }}>{c.address}</p>}
@@ -903,7 +903,7 @@ function KeepsakeInventorySnapshot({ entry }: { entry: EntryRow }) {
   const content = entry.content as { entries?: KeepsakeItem[] } | null
   const items = content?.entries?.filter((e) => e.object?.trim()) ?? []
   if (items.length === 0) {
-    return <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No keepsakes saved yet.</p>
+    return <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No keepsakes saved yet.</p>
   }
   return (
     <div>
@@ -956,13 +956,13 @@ function GenericEntryView({ entry }: { entry: EntryRow }) {
     return (
       <div>
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: 'rgba(26,26,26,0.56)', marginBottom: 8 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: 'var(--color-text-muted)', marginBottom: 8 }}>
             Prompt
           </p>
           <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(26,26,26,0.8)', lineHeight: 1.6 }}>{reflection.prompt}</p>
         </div>
         <div>
-          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: 'rgba(26,26,26,0.56)', marginBottom: 8 }}>
+          <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: 'var(--color-text-muted)', marginBottom: 8 }}>
             Response
           </p>
           <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{reflection.response}</p>
@@ -976,7 +976,7 @@ function GenericEntryView({ entry }: { entry: EntryRow }) {
       {text ? (
         <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{text}</p>
       ) : (
-        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.56)' }}>No saved content found.</p>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)' }}>No saved content found.</p>
       )}
     </div>
   )

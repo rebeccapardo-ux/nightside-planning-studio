@@ -7,6 +7,7 @@ import { createPromptNote, updateNote } from '@/lib/notes'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import type { VoiceNoteSaveMode } from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 const DEFAULT_CONTAINER_ID = '98bbddf4-bc0c-495f-b3cf-99c65cf7ebc8'
 const REVIEWED_PROMPTS_STORAGE_KEY = 'reflect-reviewed-prompts'
@@ -277,7 +278,7 @@ function ReflectPromptsInner() {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #BBABF4 0%, #F8F4EB 100%)' }}>
       <style>{`
-        #reflect-note-input::placeholder { color: rgba(0,0,0,0.38); font-size: 15px; line-height: 24px; }
+        #reflect-note-input::placeholder { color: rgba(19,4,38,0.65); font-size: 15px; line-height: 24px; }
       `}</style>
 
       {/* Breadcrumb */}
@@ -313,9 +314,7 @@ function ReflectPromptsInner() {
           {/* Card bottom — navy, note UI */}
           <div style={{ background: '#2C3777', padding: '28px' }}>
 
-            <p style={{ fontFamily: fontHelvetica, fontSize: 14, fontStyle: 'italic', color: 'rgba(248,244,235,0.75)', margin: '0 0 12px 0' }}>
-              Notes save automatically to Your Plan.
-            </p>
+            <AutosaveNotice theme="dark" style={{ marginBottom: 12 }} />
 
             <textarea
               id="reflect-note-input"

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
@@ -551,9 +552,7 @@ function FuneralWishesPage() {
               </span>
             ))}
           </div>
-          <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', lineHeight: 1.5, color: 'rgba(19,4,38,0.6)', marginTop: 16, marginBottom: 0 }}>
-            Your answers will save automatically to Your Plan.
-          </p>
+          <AutosaveNotice style={{ marginTop: 16 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}
@@ -1009,7 +1008,7 @@ function TF({
         onKeyUp={e => fieldKey && onCursorChange?.(fieldKey, e.currentTarget.selectionStart)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full bg-white text-[#130426] placeholder:text-[#130426]/40 px-4 py-3 rounded-lg focus:outline-none resize-y"
+        className="w-full bg-white text-[#130426] placeholder:text-[#130426]/65 px-4 py-3 rounded-lg focus:outline-none resize-y"
         style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14 }}
       />
     </div>
@@ -1344,7 +1343,7 @@ function FWMaterialsPanel({
 const CARD_STYLE: React.CSSProperties = { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' }
 const TITLE_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '20px', fontWeight: 500, color: '#130426' }
 const PRIMARY_ACTION_STYLE: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: '#130426', background: 'rgba(19,4,38,0.07)', padding: '3px 9px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.15)', cursor: 'pointer' }
-const SECTION_LABEL_STYLE: React.CSSProperties = { fontSize: 13, lineHeight: '18px', fontWeight: 500, color: '#DB5835', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }
+const SECTION_LABEL_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '18px', fontWeight: 700, color: '#DB5835', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }
 
 const FW_FLAT_SHOW_LIMIT = 10
 

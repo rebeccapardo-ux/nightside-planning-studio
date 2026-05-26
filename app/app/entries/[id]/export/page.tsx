@@ -533,7 +533,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
                   </div>
                 ) : null
               ) : (
-                <div style={{ fontSize: 10, color: 'rgba(19,4,38,0.35)', fontStyle: 'italic' }}>No notes added.</div>
+                <div style={{ fontSize: 12, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic' }}>No notes added.</div>
               )}
             </div>
           </div>

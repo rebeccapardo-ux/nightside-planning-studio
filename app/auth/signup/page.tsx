@@ -150,9 +150,6 @@ export default function SignUpPage() {
           border-color: #2d3a6b;
           box-shadow: 0 0 0 3px rgba(45,58,107,0.1);
         }
-        .auth-input::placeholder {
-          color: rgba(26,26,26,0.28);
-        }
         .auth-input.has-error {
           border-color: #c0392b;
         }

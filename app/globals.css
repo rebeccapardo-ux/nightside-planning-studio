@@ -37,22 +37,32 @@
   --foreground: #171717;
 
   /* Dark surface tokens */
-  --text-primary:    #ffffff;
-  --text-subsection: #EDE7FF;
   --text-body:       #D1CBE8;
   --text-secondary:  #A9A3C5;
   --text-tertiary:   #8F88B3;
-  --text-label:      #8F88B3;
 
   /* Light surface tokens */
-  --text-light-primary:   #1a1a1a;
   --text-light-secondary: rgba(0, 0, 0, 0.70);
-  --text-light-tertiary:  rgba(0, 0, 0, 0.50);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Brand color tokens — additive, not yet covering all platform colors */
+  --color-sunset-deep: #C04828;
+  --color-dusk-light:  #C5BFE8;
+  --color-text-muted:  #6B6B6B;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   FORM CONTROLS — placeholder default
+   Component-scoped rules (e.g. .auth-input::placeholder) override this.
+   ───────────────────────────────────────────────────────────────────── */
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(19, 4, 38, 0.65);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -60,16 +70,11 @@
    ───────────────────────────────────────────────────────────────────── */
 
 @layer utilities {
-  .text-app-primary    { @apply text-white; }
-  .text-app-subsection { color: var(--text-subsection); }
   .text-app-body       { color: var(--text-body); }
   .text-app-secondary  { color: var(--text-secondary); }
   .text-app-tertiary   { color: var(--text-tertiary); }
-  .text-app-label      { color: var(--text-label); }
 
-  .text-light-primary   { color: var(--text-light-primary); }
   .text-light-secondary { color: var(--text-light-secondary); }
-  .text-light-tertiary  { color: var(--text-light-tertiary); }
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -77,23 +82,9 @@
    ───────────────────────────────────────────────────────────────────── */
 
 @layer components {
-  .text-display {
-    font-family: 'Apfel Grotezk', sans-serif !important;
-    font-size: 72px;
-    line-height: 1.1;
-    font-weight: 400;
-  }
-
   .text-h1 {
     font-family: 'Apfel Grotezk', sans-serif !important;
     font-size: 48px;
-    line-height: 1.2;
-    font-weight: 400;
-  }
-
-  .text-h2 {
-    font-family: 'Apfel Grotezk', sans-serif !important;
-    font-size: 32px;
     line-height: 1.2;
     font-weight: 400;
   }
@@ -109,13 +100,6 @@
     font-family: 'Helvetica Neue', sans-serif !important;
     font-size: 16px;
     line-height: 1.6;
-    font-weight: 400;
-  }
-
-  .text-small {
-    font-family: 'Helvetica Neue', sans-serif !important;
-    font-size: 14px;
-    line-height: 1.5;
     font-weight: 400;
   }
 
@@ -151,16 +135,6 @@
     margin: 0 0 14px 0;
   }
 
-  /* Lead text — below section title */
-  .ns-lead-section {
-    font-family: 'Helvetica Neue', sans-serif;
-    font-size: clamp(20px, 2vw, 32px);
-    line-height: 1.35;
-    font-weight: 400;
-    max-width: 880px;
-    margin: 0;
-  }
-
   /* Lead text — below activity title */
   .ns-lead-activity {
     font-family: 'Helvetica Neue', sans-serif;
@@ -183,15 +157,6 @@
 }
 
 @layer utilities {
-  /* Orange accent underline — apply selectively, not on every title */
-  .ns-accent-line {
-    display: block;
-    width: 52px;
-    height: 5px;
-    background: #F29836;
-    border-radius: 999px;
-    margin-top: 14px;
-  }
 }
 
 
