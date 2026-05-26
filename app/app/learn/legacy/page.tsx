@@ -49,14 +49,14 @@ export default async function LegacyLearnPage() {
         }
         .lg-source-link {
           font-size: 13px;
-          color: #F29836;
+          color: var(--color-sunset-deep);
           text-decoration: underline;
           text-underline-offset: 2px;
           margin-left: 4px;
           white-space: nowrap;
         }
         .lg-source-link:hover {
-          color: #C47820;
+          color: #130426;
         }
         @media (max-width: 767px) {
           .learn-next-steps-row { grid-template-columns: 1fr !important; gap: 20px !important; }
@@ -115,7 +115,7 @@ export default async function LegacyLearnPage() {
 
             {/* Did You Know? panel */}
             <div style={{ marginTop: '48px', maxWidth: '640px', background: '#FFFFFF', borderRadius: '16px', padding: '32px 36px' }}>
-              <div style={{ fontFamily: hv, fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', color: '#F29836', textTransform: 'uppercase', marginBottom: '16px' }}>
+              <div style={{ fontFamily: hv, fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em', color: '#DB5835', textTransform: 'uppercase', marginBottom: '16px' }}>
                 Did You Know?
               </div>
               <p style={{ fontFamily: hv, fontSize: '16px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '16px' }}>

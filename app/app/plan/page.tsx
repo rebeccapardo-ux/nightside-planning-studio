@@ -161,17 +161,6 @@ export default async function PlanPage() {
     marginTop: 0,
   }
 
-  const columnHeader: React.CSSProperties = {
-    fontFamily: inter,
-    fontSize: 11,
-    fontWeight: 600,
-    color: '#DB5835',
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-    marginBottom: 16,
-    marginTop: 0,
-  }
-
   const docButton: React.CSSProperties = {
     position: 'relative',
     width: '100%',
@@ -284,7 +273,7 @@ export default async function PlanPage() {
                 ))}
               </div>
             ) : (
-              <p style={{ fontFamily: inter, fontSize: 16, color: 'rgba(19,4,38,0.45)', margin: 0 }}>
+              <p style={{ fontFamily: inter, fontSize: 16, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
                 No areas yet.
               </p>
             )}

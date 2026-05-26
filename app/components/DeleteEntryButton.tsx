@@ -7,11 +7,9 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 export default function DeleteEntryButton({
   entryId,
   theme = 'dark',
-  compact = false,
 }: {
   entryId: string
   theme?: 'dark' | 'light'
-  compact?: boolean
 }) {
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -46,21 +44,10 @@ export default function DeleteEntryButton({
     )
   }
 
-  if (compact) {
-    return (
-      <button
-        onClick={() => setConfirming(true)}
-        className="text-xs text-[#DB5835]/60 hover:text-[#DB5835] transition-colors"
-      >
-        Delete
-      </button>
-    )
-  }
-
   return (
     <button
       onClick={() => setConfirming(true)}
-      className={`text-sm font-medium underline underline-offset-2 transition-colors ${lt ? 'text-[#DB5835]' : 'text-[#DB5835]'}`}
+      className={`text-xs transition-colors ${lt ? 'text-light-secondary hover:text-[#130426]' : 'text-[#f8f4eb]/70 hover:text-[#f8f4eb]'}`}
     >
       Delete
     </button>

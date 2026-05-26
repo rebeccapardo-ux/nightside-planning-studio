@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { getSupportedMimeType, formatDuration } from '@/lib/voice-notes'
+import ErrorMessagePill from './ErrorMessagePill'
 
 export const MAX_RECORDING_SECONDS = 180 // 3 minutes
 
@@ -164,9 +165,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
         </div>
 
         {limitReached && (
-          <p style={{ fontSize: 12, color: '#DB5835', margin: 0 }}>
-            3-minute limit reached — recording stopped.
-          </p>
+          <ErrorMessagePill style={{ alignSelf: 'flex-start' }}>3-minute limit reached — recording stopped.</ErrorMessagePill>
         )}
 
         {remaining <= 30 && !limitReached && (
@@ -208,9 +207,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
     ? 'Saving…'
     : saveStatus === 'transcribing'
     ? 'Transcribing…'
-    : saveStatus === 'saved'
-    ? ''
-    : "Couldn't save — try again"
+    : ''
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0' }}>
@@ -231,9 +228,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
       </div>
 
       {limitReached && (
-        <p style={{ fontSize: 12, color: '#DB5835', margin: 0 }}>
-          Recording stopped at the 3-minute limit.
-        </p>
+        <ErrorMessagePill style={{ alignSelf: 'flex-start' }}>Recording stopped at the 3-minute limit.</ErrorMessagePill>
       )}
 
       {/* Save status + delete in a single row */}
@@ -246,6 +241,8 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
             </svg>
             <span style={{ fontSize: 13, fontWeight: 500, color: c.status }}>Saved to Your Plan</span>
           </div>
+        ) : saveStatus === 'failed' ? (
+          <ErrorMessagePill>Couldn&apos;t save — try again</ErrorMessagePill>
         ) : (
           <p style={{ fontSize: 13, fontWeight: 500, color: c.status, margin: 0 }}>
             {statusText}

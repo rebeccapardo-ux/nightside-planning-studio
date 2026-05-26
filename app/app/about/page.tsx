@@ -3,7 +3,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 export default function AboutPage() {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh', padding: '64px 24px 80px' }}>
-      <style>{`.nightside-link { color: #DB5835; text-decoration: none; } .nightside-link:hover { text-decoration: underline; }`}</style>
+      <style>{`.nightside-link { color: #DB5835; font-size: 15px; font-weight: 700; text-decoration: none; } .nightside-link:hover { text-decoration: underline; }`}</style>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
 
         <h1 style={{ fontFamily: hv, fontSize: 32, fontWeight: 600, color: '#130426', margin: '0 0 32px' }}>
@@ -44,7 +44,7 @@ export default function AboutPage() {
         </div>
 
         <div style={{ borderTop: '1px solid rgba(19,4,38,0.1)', marginTop: 40, paddingTop: 24 }}>
-          <p style={{ fontFamily: hv, fontSize: 14, color: '#5F5E5A', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: hv, fontSize: 15, color: '#5F5E5A', margin: 0, lineHeight: 1.6 }}>
             Rebecca Pardo, PhD · Anthropologist · Designer · Death Doula<br />
             Founder,{' '}
             <a href="https://thenightside.net/" target="_blank" rel="noopener noreferrer" className="nightside-link">

@@ -232,7 +232,7 @@ function HelpContent() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 56 }}>
           {CATEGORIES.map((cat) => (
             <div key={cat.title}>
-              <h2 style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: '#DB5835', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' }}>
+              <h2 style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#DB5835', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' }}>
                 {cat.title}
               </h2>
               <div style={{ borderTop: '2px solid rgba(219,88,53,0.2)' }}>

@@ -187,7 +187,7 @@ function DocumentCard({
               Open
             </Link>
             <span className="text-[#130426]/20 text-[11px]">·</span>
-            <DeleteEntryButton entryId={entry.id} theme="light" compact />
+            <DeleteEntryButton entryId={entry.id} theme="light" />
             <span className="text-[#130426]/20 text-[11px]">·</span>
             <DomainAssigner
               itemId={entry.id}
@@ -240,7 +240,7 @@ function OutputCard({
               </>
             )}
             <span className="text-[#130426]/20 text-[11px]">·</span>
-            <DeleteEntryButton entryId={entry.id} theme="light" compact />
+            <DeleteEntryButton entryId={entry.id} theme="light" />
             <span className="text-[#130426]/20 text-[11px]">·</span>
             <DomainAssigner
               itemId={entry.id}

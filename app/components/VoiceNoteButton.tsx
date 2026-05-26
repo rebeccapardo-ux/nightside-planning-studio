@@ -5,6 +5,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { createVoiceNote, createVoicePromptNote, updateNoteAudioUrl, deleteNote, resetVoiceNote } from '@/lib/notes'
 import { uploadAudioBlob } from '@/lib/voice-notes'
 import VoiceNoteRecorder from './VoiceNoteRecorder'
+import ErrorMessagePill from './ErrorMessagePill'
 import type { Note } from '@/lib/notes'
 import type { SaveStatus } from './VoiceNoteRecorder'
 
@@ -204,7 +205,9 @@ export default function VoiceNoteButton({
   // Error
   return (
     <div style={{ padding: '8px 0' }}>
-      <p style={{ fontSize: 12, color: '#DB5835', marginBottom: 6 }}>{errorMsg}</p>
+      <div style={{ marginBottom: 6 }}>
+        <ErrorMessagePill>{errorMsg}</ErrorMessagePill>
+      </div>
       <button
         onClick={() => { setPhase('idle'); setErrorMsg('') }}
         style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
