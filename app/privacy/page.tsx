@@ -38,7 +38,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           padding: '20px 0 16px', textAlign: 'left', gap: 12,
         }}
       >
-        <span style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, color: '#130426' }}>{title}</span>
+        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, color: '#130426', margin: 0 }}>{title}</h2>
         <Chevron open={open} />
       </button>
       {open && <div style={{ paddingBottom: 24 }}>{children}</div>}
@@ -50,7 +50,7 @@ function StaticSection({ title, children }: { title: string; children: React.Rea
   return (
     <div style={{ borderTop: divider, marginTop: 8 }}>
       <div style={{ padding: '20px 0 16px' }}>
-        <span style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, color: '#130426' }}>{title}</span>
+        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, color: '#130426', margin: 0 }}>{title}</h2>
       </div>
       <div style={{ paddingBottom: 24 }}>{children}</div>
     </div>
