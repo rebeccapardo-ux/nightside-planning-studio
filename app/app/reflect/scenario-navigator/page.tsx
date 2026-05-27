@@ -523,7 +523,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -865,7 +865,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1160,7 +1160,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
         {/* "You chose" + title */}
         <div style={{ marginBottom: 48 }}>
-          <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 12 }}>
+          <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
             You chose
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
@@ -1185,7 +1185,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1771,7 +1771,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
             {/* Did you know */}
             {choice.didYouKnow.length > 0 && (
               <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,26,26,0.12)', borderRadius: 16, padding: 24 }}>
-                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#DB5835', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 16 }}>
                   Did you know?
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

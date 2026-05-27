@@ -115,7 +115,7 @@ export default async function LegacyLearnPage() {
 
             {/* Did You Know? panel */}
             <div style={{ marginTop: '48px', maxWidth: '640px', background: '#FFFFFF', borderRadius: '16px', padding: '32px 36px' }}>
-              <div style={{ fontFamily: hv, fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em', color: '#DB5835', textTransform: 'uppercase', marginBottom: '16px' }}>
+              <div style={{ fontFamily: hv, fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em', color: '#130426', textTransform: 'uppercase', marginBottom: '16px' }}>
                 Did You Know?
               </div>
               <p style={{ fontFamily: hv, fontSize: '16px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '16px' }}>

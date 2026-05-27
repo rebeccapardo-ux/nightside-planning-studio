@@ -1224,7 +1224,7 @@ const SECTION_LABEL_STYLE: React.CSSProperties = {
   fontSize: 14,
   lineHeight: '18px',
   fontWeight: 700,
-  color: '#DB5835',
+  color: '#130426',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   marginBottom: 10,

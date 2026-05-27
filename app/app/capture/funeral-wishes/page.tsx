@@ -1350,7 +1350,7 @@ function FWMaterialsPanel({
 const CARD_STYLE: React.CSSProperties = { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' }
 const TITLE_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '20px', fontWeight: 500, color: '#130426' }
 const PRIMARY_ACTION_STYLE: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: '#130426', background: 'rgba(19,4,38,0.07)', padding: '3px 9px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.15)', cursor: 'pointer' }
-const SECTION_LABEL_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '18px', fontWeight: 700, color: '#DB5835', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }
+const SECTION_LABEL_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '18px', fontWeight: 700, color: '#130426', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }
 
 const FW_FLAT_SHOW_LIMIT = 10
 

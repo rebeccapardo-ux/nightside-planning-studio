@@ -57,7 +57,7 @@ export default function OnboardingStepIndicator({ currentStep, allComplete = fal
           const isFlourishTarget = flourishIndex === i
 
           let circleBg = 'transparent'
-          let circleBorder = '1.5px solid rgba(19,4,38,0.25)'
+          let circleBorder = '1.5px solid rgba(19,4,38,0.5)'
           let circleBoxShadow = 'none'
 
           if (isCompleted) {
@@ -78,7 +78,7 @@ export default function OnboardingStepIndicator({ currentStep, allComplete = fal
             circleBoxShadow = `${baseGlow ? baseGlow + ', ' : ''}0 0 0 6px rgba(242,152,54,0.4), 0 0 0 12px rgba(242,152,54,0.15)`
           }
 
-          let numberColor = 'rgba(19,4,38,0.4)'
+          let numberColor = 'rgba(19,4,38,0.65)'
           if (isCurrent) numberColor = '#130426'
 
           let stepLabel = ''
@@ -175,7 +175,7 @@ export default function OnboardingStepIndicator({ currentStep, allComplete = fal
           const isCompleted = allComplete || stepNum < displayStep
           const isCurrent = !allComplete && stepNum === displayStep
 
-          let labelColor = 'rgba(19,4,38,0.4)'
+          let labelColor = 'rgba(19,4,38,0.65)'
           let labelWeight: number | string = 400
           if (isCompleted) {
             labelColor = '#130426'

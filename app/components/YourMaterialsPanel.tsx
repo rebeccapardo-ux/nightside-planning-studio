@@ -110,7 +110,7 @@ export default function YourMaterialsPanel({
     fontFamily: hv, fontSize: 18, fontWeight: 600, color: '#130426', marginBottom: 16, marginTop: 0,
   }
   const columnHeader: React.CSSProperties = {
-    fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#DB5835',
+    fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#130426',
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16, marginTop: 0,
   }
   const docButton: React.CSSProperties = {
