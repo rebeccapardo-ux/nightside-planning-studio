@@ -30,7 +30,7 @@ export default function DeleteEntryButton({
         <button
           onClick={handleDelete}
           disabled={deleting}
-          className="rounded-full bg-[#DB5835] text-[#f8f4eb] px-4 py-1.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="rounded-full bg-[#DB5835] text-[#130426] px-4 py-1.5 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           {deleting ? 'Deleting…' : 'Yes, delete'}
         </button>

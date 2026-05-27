@@ -110,7 +110,7 @@ export default function YourMaterialsPanel({
     fontFamily: hv, fontSize: 18, fontWeight: 600, color: '#130426', marginBottom: 16, marginTop: 0,
   }
   const columnHeader: React.CSSProperties = {
-    fontFamily: hv, fontSize: 12, fontWeight: 600, color: '#DB5835',
+    fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#DB5835',
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 16, marginTop: 0,
   }
   const docButton: React.CSSProperties = {
@@ -249,7 +249,7 @@ export default function YourMaterialsPanel({
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)', margin: 0 }}>None yet</p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }}>None yet</p>
                   )}
                 </div>
                 <div style={{ paddingRight: 10 }}>
@@ -308,7 +308,7 @@ export default function YourMaterialsPanel({
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)', margin: 0 }}>None yet</p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }}>None yet</p>
                   )}
                 </div>
                 <div style={{ paddingRight: 10 }}>
@@ -364,7 +364,7 @@ export default function YourMaterialsPanel({
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)', margin: 0 }}>None yet</p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }}>None yet</p>
                   )}
                 </div>
                 <div style={{ paddingRight: 10 }}>
@@ -400,7 +400,7 @@ export default function YourMaterialsPanel({
                 <PlanNotesGridComp notes={allNotes} allDomains={allDomains} />
               ) : (
                 <div style={{ position: 'relative' }}>
-                  <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)', margin: 0, textAlign: 'center', padding: '12px 0' }}>
+                  <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0, textAlign: 'center', padding: '12px 0' }}>
                     No notes yet
                   </p>
                   {showTooltip && (

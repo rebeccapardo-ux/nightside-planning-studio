@@ -163,7 +163,7 @@ export default function SignUpPage() {
           cursor: pointer;
         }
         .auth-select.placeholder-shown {
-          color: rgba(26,26,26,0.28);
+          color: rgba(26,26,26,0.65);
         }
         .auth-btn {
           width: 100%;

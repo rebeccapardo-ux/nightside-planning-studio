@@ -710,7 +710,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
         fontSize: 14,
         fontWeight: 600,
         background: '#DB5835',
-        color: '#F8F4EB',
+        color: '#130426',
         border: 'none',
         cursor: disabled ? 'default' : 'pointer',
         whiteSpace: 'nowrap',
@@ -718,8 +718,8 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
       }}
     >
       <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-        <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M1.5 10.5h10" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
       <span className="hidden md:inline">Preview &amp; </span>Export
     </button>

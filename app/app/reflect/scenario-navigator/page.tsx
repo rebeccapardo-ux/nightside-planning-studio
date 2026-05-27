@@ -258,7 +258,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
         <div className="grid gap-6 md:grid-cols-2" style={{ maxWidth: 900, marginTop: 40, marginLeft: 'auto', marginRight: 'auto' }}>
           {SCENARIOS.map((scenario, i) => {
             const style = scenario.id === 'cognitive-decline'
-              ? { bg: 'bg-[#DB5835]', text: 'text-[#ffffff]', pill: 'bg-[#f8f4eb] text-[#130426]' }
+              ? { bg: 'bg-[#DB5835]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' }
               : CARD_STYLES[i % CARD_STYLES.length]
             return (
               <button key={scenario.id} type="button" onClick={() => onSelectScenario(scenario.id)}

@@ -9,7 +9,7 @@ const CARD_STYLES = [
   { bg: 'bg-[#f29836]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },
   { bg: 'bg-[#f8f4eb]', text: 'text-[#130426]', pill: 'bg-[#2C3777] text-[#f8f4eb]' },
   { bg: 'bg-[#2C3777]', text: 'text-[#f8f4eb]', pill: 'bg-[#f8f4eb] text-[#130426]' },
-  { bg: 'bg-[#DB5835]', text: 'text-[#ffffff]', pill: 'bg-[#f8f4eb] text-[#130426]' },
+  { bg: 'bg-[#DB5835]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },
   { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', pill: 'bg-[#2C3777] text-[#f8f4eb]' },
 ]
 

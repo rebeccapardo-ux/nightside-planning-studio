@@ -236,7 +236,7 @@ export default async function DeathcareLearnPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block hover:opacity-90 transition-opacity"
-                  style={{ background: '#DB5835', color: '#FFFFFF', fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px' }}
+                  style={{ background: '#DB5835', color: '#130426', fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px' }}
                 >
                   View resources →
                 </a>

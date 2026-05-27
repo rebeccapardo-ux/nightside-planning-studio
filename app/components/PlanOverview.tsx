@@ -165,7 +165,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
   const sectionLabel: React.CSSProperties = {
     fontFamily: hv, fontSize: 11, fontWeight: 600,
-    color: 'rgba(19,4,38,0.45)', textTransform: 'uppercase',
+    color: 'rgba(19,4,38,0.65)', textTransform: 'uppercase',
     letterSpacing: '0.06em', marginBottom: 10, marginTop: 0,
   }
 

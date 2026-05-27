@@ -824,6 +824,7 @@ function FuneralWishesPage() {
                               <HelperText>This is optional. It can be addressed to whoever will be coordinating these arrangements — a family member, friend, executor, or anyone else. It will be included in your export.</HelperText>
                               <TF
                                 label=""
+                                ariaLabel="Note to others"
                                 value={form.noteToOthers}
                                 onChange={v => updateField('noteToOthers', v)}
                                 rows={6}
@@ -934,7 +935,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
       onClick={onClick}
       disabled={disabled}
       className="hover:opacity-90 transition-opacity mobile-sticky-export"
-      style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#F8F4EB', border: 'none', cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#130426', border: 'none', cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}
     >
       <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
         <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -979,6 +980,7 @@ function TF({
   rows = 4,
   fieldKey,
   onCursorChange,
+  ariaLabel,
 }: {
   label: string
   value: string
@@ -987,6 +989,7 @@ function TF({
   rows?: number
   fieldKey?: StringKey
   onCursorChange?: (field: StringKey, pos: number) => void
+  ariaLabel?: string
 }) {
   const [active, setActive] = useState(false)
   const reactId = useId()
@@ -1003,6 +1006,7 @@ function TF({
       )}
       <textarea
         id={id}
+        aria-label={!label && ariaLabel ? ariaLabel : undefined}
         value={value}
         onChange={e => onChange(e.target.value)}
         onFocus={e => { setActive(true); fieldKey && onCursorChange?.(fieldKey, e.currentTarget.selectionStart) }}

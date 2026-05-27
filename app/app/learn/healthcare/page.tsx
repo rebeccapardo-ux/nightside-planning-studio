@@ -277,8 +277,8 @@ export default async function HealthcareLearnPage() {
                   href="https://thenightside.net/resources"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block text-white hover:opacity-90 transition-opacity"
-                  style={{ background: '#DB5835', fontFamily: inter, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px' }}
+                  className="inline-block hover:opacity-90 transition-opacity"
+                  style={{ background: '#DB5835', color: '#130426', fontFamily: inter, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px' }}
                 >
                   View resources →
                 </a>

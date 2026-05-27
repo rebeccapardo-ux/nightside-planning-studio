@@ -215,7 +215,7 @@ export default function CapturePage() {
         }}>
 
           <div className="ns-title-wrap">
-            <h1 className="ns-title-section text-white" style={{ fontSize: 64, fontWeight: 500, lineHeight: 1.08, margin: 0 }}>
+            <h1 className="ns-title-section text-[#130426]" style={{ fontSize: 64, fontWeight: 500, lineHeight: 1.08, margin: 0 }}>
               <span className="ns-title-underline">Capture</span>
             </h1>
           </div>
