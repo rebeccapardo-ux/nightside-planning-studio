@@ -40,29 +40,41 @@ export default function ResetPasswordPage() {
         return
       }
 
-      // PKCE flow: ?code=... in URL
+      // If a session already exists (Supabase SDK auto-detected #access_token=...
+      // in the hash on init, OR a prior partial attempt set one), treat the page
+      // as in-recovery and show the form directly.
+      const { data: { session: existingSession } } = await supabase.auth.getSession()
+      if (cancelled) return
+      if (existingSession) {
+        if (code) window.history.replaceState({}, '', '/auth/reset-password')
+        setPhase('ready')
+        return
+      }
+
+      // PKCE flow: ?code=... in URL, no session yet → exchange.
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (cancelled) return
         if (error) {
+          // Exchange failed (verifier mismatch, code already consumed, etc.) —
+          // but a session may have been set by a parallel attempt. Re-check.
+          const { data: { session: postSession } } = await supabase.auth.getSession()
+          if (cancelled) return
+          if (postSession) {
+            window.history.replaceState({}, '', '/auth/reset-password')
+            setPhase('ready')
+            return
+          }
+          console.error('[reset-password] exchangeCodeForSession failed:', error)
           setPhase('invalid')
           return
         }
-        // Clean URL so refresh doesn't re-exchange the (now-spent) code
         window.history.replaceState({}, '', '/auth/reset-password')
         setPhase('ready')
         return
       }
 
-      // Implicit / hash flow: Supabase SDK auto-detects #access_token=... on init.
-      // Listen for the PASSWORD_RECOVERY event or an existing session.
-      const { data: { session } } = await supabase.auth.getSession()
-      if (cancelled) return
-      if (session) {
-        setPhase('ready')
-        return
-      }
-
+      // Hash flow: wait for PASSWORD_RECOVERY event or session set by SDK.
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (cancelled) return
         if (event === 'PASSWORD_RECOVERY' || session) {

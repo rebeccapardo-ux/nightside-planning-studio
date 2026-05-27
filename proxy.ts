@@ -49,7 +49,8 @@ export async function proxy(request: NextRequest) {
       pathname.startsWith('/auth/') &&
       !pathname.startsWith('/auth/signup/payment') &&
       !pathname.startsWith('/auth/signup/success') &&
-      !pathname.startsWith('/auth/signup/cancel')
+      !pathname.startsWith('/auth/signup/cancel') &&
+      !pathname.startsWith('/auth/reset-password')
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/app'
