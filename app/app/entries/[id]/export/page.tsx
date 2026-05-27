@@ -241,7 +241,7 @@ function ExportHeader({ title, userName }: { title: string; userName?: string })
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 22 }} />
         {userName && (
-          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.5)' }}>{userName}</span>
+          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.65)' }}>{userName}</span>
         )}
       </div>
       <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 16 }} />
@@ -529,7 +529,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
                 m.note?.trim() ? (
                   <div key={m.id} style={{ marginBottom: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: '#2C3777', marginBottom: 2 }}>{i + 1} · {m.title}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5 }}>{m.note}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5 }}>{m.note}</div>
                   </div>
                 ) : null
               ) : (
@@ -542,7 +542,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
           <div style={{ borderTop: '0.5px solid #e8e4d8', paddingTop: 10, marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 14, filter: 'brightness(0) saturate(100%) invert(5%) sepia(60%) saturate(2000%) hue-rotate(240deg) brightness(40%)' }} />
-            <span style={{ fontSize: 10, color: 'rgba(19,4,38,0.55)' }}>Generated {monthYear}</span>
+            <span style={{ fontSize: 10, color: 'rgba(19,4,38,0.65)' }}>Generated {monthYear}</span>
           </div>
         </div>
       </div>

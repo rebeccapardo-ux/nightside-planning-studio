@@ -264,7 +264,7 @@ export default function LegacyContactForm() {
     fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', margin: '0 0 4px',
   }
   const sectionSub: React.CSSProperties = {
-    fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.55)', margin: '0 0 14px', lineHeight: 1.5,
+    fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', margin: '0 0 14px', lineHeight: 1.5,
   }
   const divider: React.CSSProperties = {
     border: 'none', borderTop: '1px solid rgba(19,4,38,0.12)', margin: '0 0 28px',
@@ -346,7 +346,7 @@ export default function LegacyContactForm() {
           <div style={{ marginBottom: 28 }}>
             <p style={sectionHead}>
               Secondary Legacy Contact{' '}
-              <span style={{ fontWeight: 400, color: 'rgba(19,4,38,0.5)' }}>(optional)</span>
+              <span style={{ fontWeight: 400, color: 'rgba(19,4,38,0.65)' }}>(optional)</span>
             </p>
             {!showSecondary ? (
               <>
@@ -410,12 +410,13 @@ export default function LegacyContactForm() {
 
           {/* ── Personal message ── */}
           <div style={{ marginBottom: 36 }}>
-            <p style={sectionHead}>
+            <label htmlFor="legacy-contact-message" style={sectionHead}>
               Personal message{' '}
-              <span style={{ fontWeight: 400, color: 'rgba(19,4,38,0.5)' }}>(optional, up to 1,000 characters)</span>
-            </p>
+              <span style={{ fontWeight: 400, color: 'rgba(19,4,38,0.65)' }}>(optional, up to 1,000 characters)</span>
+            </label>
             <p style={sectionSub}>This will be included in the notification email sent to your Legacy Contact.</p>
             <textarea
+              id="legacy-contact-message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={5}

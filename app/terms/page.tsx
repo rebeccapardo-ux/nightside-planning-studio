@@ -65,7 +65,7 @@ export default function TermsPage() {
         <h1 style={{ fontFamily: hv, fontSize: 32, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>
           Terms of Service
         </h1>
-        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.55)', lineHeight: 1.6, margin: '0 0 40px' }}>
+        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.6, margin: '0 0 40px' }}>
           Effective date: {EFFECTIVE_DATE}<br />
           Last updated: {LAST_UPDATED}
         </p>

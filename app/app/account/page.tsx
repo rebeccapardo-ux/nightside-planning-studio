@@ -552,7 +552,7 @@ export default function AccountPage() {
             <Row label="Member since" value={formattedDate} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-                <span style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.5)', flexShrink: 0 }}>Last sign-in</span>
+                <span style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', flexShrink: 0 }}>Last sign-in</span>
                 <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', textAlign: 'right' }}>{formattedLastSignIn}</span>
               </div>
               <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0, lineHeight: 1.5 }}>
@@ -777,7 +777,7 @@ export default function AccountPage() {
                 {updateMode === 'replace' && (
                   <>
                     {activeFlow.existing && (
-                      <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.5)', margin: '0 0 18px', lineHeight: 1.5 }}>
+                      <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '0 0 18px', lineHeight: 1.5 }}>
                         You are designating a new person to replace <strong style={{ color: '#130426' }}>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong>.
                       </p>
                     )}
@@ -1012,7 +1012,7 @@ export default function AccountPage() {
                 <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 24px' }}>
                   We've sent a confirmation link to <strong>{newEmail.trim()}</strong>. Click the link in that email to complete the change. We've also notified your current email about this request.
                 </p>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.5)', lineHeight: 1.5, margin: '0 0 24px' }}>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 24px' }}>
                   Your current email stays active until you confirm the new one.
                 </p>
                 <button onClick={closeEmailModal} style={{ width: '100%', background: '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Got it</button>
@@ -1020,7 +1020,7 @@ export default function AccountPage() {
             ) : (
               <>
                 <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>Change email</h3>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5, margin: '0 0 24px' }}>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 24px' }}>
                   You'll receive a confirmation link at your new address. Your current email stays active until you confirm.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>

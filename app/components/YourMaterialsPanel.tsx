@@ -207,7 +207,7 @@ export default function YourMaterialsPanel({
 
         {/* Summary line — visible only when collapsed */}
         {!open && summaryLine && (
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', margin: '6px 0 0', lineHeight: 1.4 }}>
+          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0', lineHeight: 1.4 }}>
             {summaryLine}
           </p>
         )}

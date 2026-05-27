@@ -202,7 +202,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
             {row.primaryValue}
           </span>
         ) : (
-          <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.5)', fontStyle: 'italic', flexShrink: 0 }}>
+          <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic', flexShrink: 0 }}>
             {row.notRecordedLabel ?? 'Not recorded'}
           </span>
         )}
@@ -216,7 +216,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   function renderContactField({ label, value }: ContactField) {
     return (
       <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.5, margin: 0 }}>
-        <span style={{ color: 'rgba(19,4,38,0.55)' }}>{label}: </span>
+        <span style={{ color: 'rgba(19,4,38,0.65)' }}>{label}: </span>
         {value ? (
           <span style={{ color: 'rgba(19,4,38,0.7)' }}>{value}</span>
         ) : (
@@ -311,7 +311,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
                     </Link>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.5, margin: 0 }}>
-                        <span style={{ color: 'rgba(19,4,38,0.55)' }}>Name: </span>
+                        <span style={{ color: 'rgba(19,4,38,0.65)' }}>Name: </span>
                         <span style={{ color: 'rgba(19,4,38,0.7)' }}>{block.name}</span>
                       </p>
                       {block.fields.map((val, j) => (

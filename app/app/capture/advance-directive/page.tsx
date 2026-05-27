@@ -455,7 +455,7 @@ function AdvanceDirectivePage() {
             </div>
             <AutosaveNotice style={{ marginTop: 16 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
             {saveStatusText && (
-              <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+              <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
             )}
           </div>
 
@@ -551,6 +551,7 @@ function AdvanceDirectivePage() {
                                 )
                               })()}
                               <textarea
+                                aria-label={q.label}
                                 value={form[q.key]}
                                 onChange={(e) => updateField(q.key, e.target.value)}
                                 onSelect={(e) => handleCursorChange(q.key, e.currentTarget.selectionStart)}
@@ -572,16 +573,16 @@ function AdvanceDirectivePage() {
                               />
                               {savingSectionIdx === i && (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
-                                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+                                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saving…</span>
                                 </div>
                               )}
                               {savedSectionIdx === i && (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 8, opacity: savedSectionFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
                                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                    <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
-                                    <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.65)" strokeWidth="1.3" />
+                                    <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.65)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
-                                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+                                  <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your Plan</span>
                                 </div>
                               )}
                             </div>
@@ -1374,7 +1375,7 @@ function PanelContent({
                 display: 'block',
                 fontSize: 12,
                 fontWeight: 500,
-                color: 'rgba(19,4,38,0.55)',
+                color: 'rgba(19,4,38,0.65)',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -1425,7 +1426,7 @@ function FlatPanelContent({ items, onInsert }: { items: TieredItem[]; onInsert: 
       {items.length > OTHER_SHOW_LIMIT && !expanded && (
         <button
           onClick={() => setExpanded(true)}
-          style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}
+          style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}
         >
           Show all ({items.length})
         </button>
@@ -1882,7 +1883,7 @@ function LegacyMapCard({
         style={{
           fontSize: 12,
           lineHeight: '18px',
-          color: 'rgba(19,4,38,0.55)',
+          color: 'rgba(19,4,38,0.65)',
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',

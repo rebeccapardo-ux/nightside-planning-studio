@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
@@ -554,7 +554,7 @@ function FuneralWishesPage() {
           </div>
           <AutosaveNotice style={{ marginTop: 16 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: 'rgba(19,4,38,0.55)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+            <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}
         </div>
 
@@ -835,16 +835,16 @@ function FuneralWishesPage() {
 
                           {savingSectionIdx === i && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
-                              <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saving…</span>
+                              <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saving…</span>
                             </div>
                           )}
                           {savedSectionIdx === i && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, opacity: savedSectionFading ? 0 : 1, transition: 'opacity 0.4s ease' }}>
                               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.5)" strokeWidth="1.3" />
-                                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.5)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.65)" strokeWidth="1.3" />
+                                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.65)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
-                              <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.5)' }}>Saved to Your Plan</span>
+                              <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your Plan</span>
                             </div>
                           )}
 
@@ -989,17 +989,20 @@ function TF({
   onCursorChange?: (field: StringKey, pos: number) => void
 }) {
   const [active, setActive] = useState(false)
+  const reactId = useId()
+  const id = fieldKey ?? reactId
   return (
     <div
       className="rounded-xl p-2 -mx-2 transition-all duration-200"
       style={active ? { border: '2px solid #BBABF4', background: 'rgba(255,255,255,0.28)', boxShadow: '0 0 0 2px rgba(187,171,244,0.18)' } : { border: '2px solid transparent' }}
     >
       {label && (
-        <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 17, fontWeight: active ? 600 : 500, color: active ? '#130426' : '#130426', marginBottom: 10, lineHeight: 1.4, transition: 'font-weight 100ms ease' }}>
+        <label htmlFor={id} style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 17, fontWeight: active ? 600 : 500, color: active ? '#130426' : '#130426', marginBottom: 10, lineHeight: 1.4, transition: 'font-weight 100ms ease' }}>
           {label}
         </label>
       )}
       <textarea
+        id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
         onFocus={e => { setActive(true); fieldKey && onCursorChange?.(fieldKey, e.currentTarget.selectionStart) }}
@@ -1367,7 +1370,7 @@ function FWFlatPanelContent({ items, onInsert }: { items: TieredItem[]; onInsert
       {items.length > FW_FLAT_SHOW_LIMIT && !expanded && (
         <button
           onClick={() => setExpanded(true)}
-          style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}
+          style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}
         >
           Show all ({items.length})
         </button>
@@ -1411,7 +1414,7 @@ function FWPanelContent({ recommended, other, onInsert }: {
             <FWTieredPanelItem key={item.data.id} item={item} onInsert={onInsert} />
           ))}
           {other.length > OTHER_SHOW_LIMIT && !otherExpanded && (
-            <button onClick={() => setOtherExpanded(true)} style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}>
+            <button onClick={() => setOtherExpanded(true)} style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}>
               Show all ({other.length})
             </button>
           )}
@@ -1584,7 +1587,7 @@ function FWLegacyMapCard({ entry, readOnly, onInsert }: { entry: PanelEntry; rea
         <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
         <p style={TITLE_STYLE}>Legacy Map Reflections</p>
       </div>
-      <p style={{ fontSize: 12, lineHeight: '18px', color: 'rgba(19,4,38,0.55)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: readOnly ? 0 : 10 } as React.CSSProperties}>
+      <p style={{ fontSize: 12, lineHeight: '18px', color: 'rgba(19,4,38,0.65)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: readOnly ? 0 : 10 } as React.CSSProperties}>
         {reflectionText}
       </p>
       {!readOnly && (

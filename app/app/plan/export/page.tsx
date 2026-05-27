@@ -847,7 +847,7 @@ export default function PlanExportPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
           <Link
             href="/app/plan"
-            style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', textDecoration: 'none' }}
+            style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', textDecoration: 'none' }}
           >
             ← Back to Plan
           </Link>
@@ -966,7 +966,7 @@ export default function PlanExportPage() {
                   {domainStatuses.map((domain, i) => (
                     <div key={i}>
                       <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 4px' }}>{domain.title}</p>
-                      <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.5)', margin: '0 0 8px' }}>{domain.label}</p>
+                      <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', margin: '0 0 8px' }}>{domain.label}</p>
                       {domain.topicsStarted > 0 && [...domain.checkboxItems].sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? -1 : 1)).map((item, j) => (
                         <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>
                           {item.checked ? (
@@ -978,7 +978,7 @@ export default function PlanExportPage() {
                           ) : (
                             <div style={{ width: 13, height: 13, border: '1.5px solid rgba(19,4,38,0.25)', borderRadius: 3, flexShrink: 0 }} />
                           )}
-                          <span style={{ fontFamily: hv, fontSize: 12, color: item.checked ? '#130426' : 'rgba(19,4,38,0.5)' }}>
+                          <span style={{ fontFamily: hv, fontSize: 12, color: item.checked ? '#130426' : 'rgba(19,4,38,0.65)' }}>
                             {item.label}
                           </span>
                         </div>

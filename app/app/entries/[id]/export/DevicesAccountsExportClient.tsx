@@ -251,7 +251,7 @@ export default function DevicesAccountsExportClient({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/The-Nightside-Wordmark-Black.svg" alt="Nightside" style={{ height: 22 }} />
-            {userName && <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.5)' }}>{userName}</span>}
+            {userName && <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 400, color: 'rgba(19,4,38,0.65)' }}>{userName}</span>}
           </div>
           <div style={{ height: 1, background: 'rgba(0,0,0,0.14)', marginBottom: 16 }} />
         </div>

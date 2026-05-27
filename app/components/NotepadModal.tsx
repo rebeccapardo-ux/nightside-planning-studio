@@ -276,7 +276,7 @@ export default function NotepadModal({
               cursor: 'pointer',
               whiteSpace: 'nowrap' as const,
               background: buttonStyle === 'cream' ? '#f8f4eb' : buttonStyle === 'orange' ? '#DB5835' : buttonStyle === 'midnight' ? '#130426' : buttonStyle === 'navy' ? '#2C3777' : buttonStyle === 'sunrise' ? '#F29836' : '#BBABF4',
-              color: buttonStyle === 'orange' || buttonStyle === 'midnight' || buttonStyle === 'navy' ? '#f8f4eb' : '#130426',
+              color: buttonStyle === 'midnight' || buttonStyle === 'navy' ? '#f8f4eb' : '#130426',
             }}
           >
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
@@ -292,7 +292,7 @@ export default function NotepadModal({
               buttonStyle === 'cream'
                 ? 'bg-[#f8f4eb] text-[#130426] hover:bg-[#BBABF4]'
                 : buttonStyle === 'orange'
-                ? 'bg-[#DB5835] text-[#f8f4eb] hover:bg-[#C04828]'
+                ? 'bg-[#DB5835] text-[#130426] hover:bg-[#C04828]'
                 : buttonStyle === 'midnight'
                 ? 'bg-[#130426] text-[#f8f4eb] hover:bg-[#200840]'
                 : buttonStyle === 'navy'

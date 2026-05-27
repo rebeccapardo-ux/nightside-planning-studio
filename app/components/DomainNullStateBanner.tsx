@@ -111,7 +111,7 @@ export default function DomainNullStateBanner({
     <p style={{
       fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
       fontSize: 15,
-      color: 'rgba(19,4,38,0.55)',
+      color: 'rgba(19,4,38,0.65)',
       margin: '0 0 20px 0',
       lineHeight: 1.55,
     }}>

@@ -1690,7 +1690,7 @@ function ReadinessCard({
                 </span>
               </label>
               {item.checkboxHelpers?.[idx] && (
-                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontStyle: 'italic', color: 'rgba(19,4,38,0.5)', margin: '3px 0 0 22px', lineHeight: 1.4 }}>
+                <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 12, fontStyle: 'italic', color: 'rgba(19,4,38,0.65)', margin: '3px 0 0 22px', lineHeight: 1.4 }}>
                   {item.checkboxHelpers[idx]}
                 </p>
               )}
@@ -1994,7 +1994,7 @@ function RowNotesPanel({
           <button
             type="button"
             onClick={() => setPickerOpen(false)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 20 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 20 }}
             className="hover:text-[#130426] transition-colors"
           >
             ← Back
@@ -2372,7 +2372,7 @@ function RowPickerModal({
             <p style={{ fontSize: 16, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.35, marginBottom: 8, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
               {note.content}
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.55)', margin: 0 }}>Add this note to:</p>
+            <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0 }}>Add this note to:</p>
           </div>
           <button
             type="button"

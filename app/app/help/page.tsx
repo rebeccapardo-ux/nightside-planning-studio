@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-const subHead: React.CSSProperties = { margin: '18px 0 4px', fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.5)', lineHeight: 1.4 }
+const subHead: React.CSSProperties = { margin: '18px 0 4px', fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.65)', lineHeight: 1.4 }
 
 const PRIVACY_ANSWER = (
   <div style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.75)', lineHeight: 1.7, paddingRight: 32, paddingBottom: 20 }}>
