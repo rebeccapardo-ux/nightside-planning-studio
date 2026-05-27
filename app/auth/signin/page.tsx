@@ -78,10 +78,11 @@ function SignInForm() {
 
         {/* Email */}
         <div>
-          <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+          <label htmlFor="signin-email" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
             Email
           </label>
           <input
+            id="signin-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -93,10 +94,11 @@ function SignInForm() {
 
         {/* Password */}
         <div style={{ marginTop: '20px' }}>
-          <label style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+          <label htmlFor="signin-password" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
             Password
           </label>
           <input
+            id="signin-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

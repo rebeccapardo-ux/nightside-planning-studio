@@ -373,8 +373,9 @@ export default function SignUpPage() {
 
                   {/* Terms consent */}
                   <div style={{ marginTop: '20px' }}>
-                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+                    <label htmlFor="signup-terms" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
                       <input
+                        id="signup-terms"
                         type="checkbox"
                         checked={termsAccepted}
                         onChange={e => { setTermsAccepted(e.target.checked); clearFieldError('terms') }}
