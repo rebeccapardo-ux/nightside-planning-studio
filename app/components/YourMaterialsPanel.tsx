@@ -272,7 +272,7 @@ export default function YourMaterialsPanel({
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>All started</p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }}>All started</p>
                   )}
                 </div>
               </div>
@@ -331,7 +331,7 @@ export default function YourMaterialsPanel({
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>All started</p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }}>All started</p>
                   )}
                 </div>
               </div>
@@ -387,7 +387,7 @@ export default function YourMaterialsPanel({
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>All started</p>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }}>All started</p>
                   )}
                 </div>
               </div>

@@ -106,13 +106,13 @@ export default function PlanNotesGrid({
                     />
                     <button
                       onClick={() => setConfirmDeleteId(note.id)}
-                      style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(0,0,0,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(19,4,38,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       className="hover:opacity-75 transition-opacity"
                     >
                       {confirmDeleteId === note.id ? (
                         <span style={{ display: 'inline-flex', gap: 6 }}>
                           <button onClick={(e) => { e.stopPropagation(); confirmDelete(note.id) }} style={{ fontSize: 12, fontWeight: 600, color: '#C0392B', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Delete</button>
-                          <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }} style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
+                          <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null) }} style={{ fontSize: 12, color: 'rgba(19,4,38,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Cancel</button>
                         </span>
                       ) : 'Delete'}
                     </button>
@@ -174,7 +174,7 @@ export default function PlanNotesGrid({
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          style={{ fontFamily: inter, fontSize: 12, color: 'rgba(0,0,0,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          style={{ fontFamily: inter, fontSize: 12, color: 'rgba(19,4,38,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                         >
                           Cancel
                         </button>
@@ -229,7 +229,7 @@ export default function PlanNotesGrid({
                           style={{
                             fontFamily: inter,
                             fontSize: 11,
-                            color: 'rgba(0,0,0,0.45)',
+                            color: 'rgba(19,4,38,0.7)',
                             marginTop: 6,
                             marginBottom: 0,
                             borderTop: '1px solid rgba(0,0,0,0.08)',
@@ -265,14 +265,14 @@ export default function PlanNotesGrid({
                     </div>
                     <button
                       onClick={() => startEdit(note)}
-                      style={{ fontFamily: inter, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}
+                      style={{ fontFamily: inter, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}
                       className="hover:opacity-70 transition-opacity"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setConfirmDeleteId(note.id)}
-                      style={{ fontFamily: inter, fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}
+                      style={{ fontFamily: inter, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1, display: 'flex', alignItems: 'center' }}
                       className="hover:opacity-70 transition-opacity"
                     >
                       Delete

@@ -301,7 +301,7 @@ export default function TermsPage() {
         </StaticSection>
 
         <div style={{ borderTop: divider, marginTop: 16, paddingTop: 24 }}>
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)', margin: 0, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0, lineHeight: 1.6 }}>
             Effective {EFFECTIVE_DATE} · Last updated {LAST_UPDATED}
           </p>
         </div>

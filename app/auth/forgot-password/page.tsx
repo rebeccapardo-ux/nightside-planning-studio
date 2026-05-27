@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
           width: 100%;
           box-sizing: border-box;
           padding: 12px 16px;
-          border: 1.5px solid #d8d4c8;
+          border: 1.5px solid rgba(19,4,38,0.5);
           border-radius: 8px;
           font-size: 15px;
           font-family: ${hv};

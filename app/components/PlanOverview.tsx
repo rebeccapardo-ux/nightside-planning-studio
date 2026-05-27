@@ -220,7 +220,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         {value ? (
           <span style={{ color: 'rgba(19,4,38,0.7)' }}>{value}</span>
         ) : (
-          <span style={{ color: 'rgba(19,4,38,0.45)', fontStyle: 'italic' }}>Not recorded</span>
+          <span style={{ color: 'rgba(19,4,38,0.65)', fontStyle: 'italic' }}>Not recorded</span>
         )}
       </p>
     )
@@ -327,7 +327,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
                     >
                       {block.header}
                     </Link>
-                    <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.45)', fontStyle: 'italic', flexShrink: 0 }}>
+                    <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic', flexShrink: 0 }}>
                       Not recorded
                     </span>
                   </div>
