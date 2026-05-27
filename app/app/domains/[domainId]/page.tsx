@@ -1294,7 +1294,7 @@ function PlanningStatusSection({
                 href="/app/capture/advance-directive"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#130426', textDecoration: 'underline', textUnderlineOffset: 3, flexShrink: 0 }}
                 className="hover:opacity-80 transition-opacity"
               >
                 Open document →
@@ -1323,7 +1323,7 @@ function PlanningStatusSection({
                 href="/app/capture/funeral-wishes"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#DB5835', textDecoration: 'none', flexShrink: 0 }}
+                style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 700, color: '#130426', textDecoration: 'underline', textUnderlineOffset: 3, flexShrink: 0 }}
                 className="hover:opacity-80 transition-opacity"
               >
                 Open document →

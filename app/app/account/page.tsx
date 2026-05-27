@@ -575,7 +575,7 @@ export default function AccountPage() {
               <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', flexShrink: 0 }}>Email</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', wordBreak: 'break-all' }}>{user?.email ?? '—'}</span>
-                <button onClick={openEmailModal} style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 14, color: '#DB5835', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Change</button>
+                <button onClick={openEmailModal} style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 14, color: '#130426', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textUnderlineOffset: 3 }}>Change</button>
               </div>
             </div>
             {/* Divider */}

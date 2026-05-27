@@ -260,7 +260,7 @@ function HelpContent() {
           </p>
           <a
             href="mailto:contact@thenightside.net"
-            style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#DB5835', textDecoration: 'none' }}
+            style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'underline', textUnderlineOffset: 3 }}
             className="help-email-link"
           >
             contact@thenightside.net →

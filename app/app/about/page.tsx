@@ -3,7 +3,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 export default function AboutPage() {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh', padding: '64px 24px 80px' }}>
-      <style>{`.nightside-link { color: #DB5835; font-size: 15px; font-weight: 700; text-decoration: none; } .nightside-link:hover { text-decoration: underline; }`}</style>
+      <style>{`.nightside-link { color: #130426; font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }`}</style>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
 
         <h1 style={{ fontFamily: hv, fontSize: 32, fontWeight: 600, color: '#130426', margin: '0 0 32px' }}>
