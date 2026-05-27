@@ -10,7 +10,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
   if (pathname.startsWith('/app/onboarding')) {
     return (
       <>
-        {children}
+        <main>{children}</main>
         <AppFooter />
       </>
     )
