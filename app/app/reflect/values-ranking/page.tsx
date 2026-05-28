@@ -1000,52 +1000,73 @@ function ValuesRankingContent() {
               ]).map((b) => {
                 const placeable = cardRevealed && !!current
                 return (
-                  <button
+                  <div
                     key={b.key}
-                    ref={(el) => { bucketRefs.current[b.key] = el }}
-                    type="button"
-                    onClick={() => {
-                      if (placeable) {
-                        handleMobilePlace(b.key)
-                      } else {
-                        setExpandedBucket(b.key)
-                      }
-                    }}
                     style={{
                       flex: '1 1 30%', minWidth: 95,
-                      background: b.bg, color: '#130426',
-                      borderRadius: 14, border: 'none',
-                      padding: '14px 10px',
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between',
-                      minHeight: 110,
-                      cursor: 'pointer',
-                      textAlign: 'left',
+                      background: b.bg,
+                      borderRadius: 14,
+                      overflow: 'hidden',
+                      display: 'flex', flexDirection: 'column',
                       outline: placeable ? '2px dashed #F29836' : 'none',
                       outlineOffset: 3,
                       transition: 'outline-color 160ms',
                     }}
                   >
-                    <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426', lineHeight: 1.2 }}>
-                      {b.label}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', width: '100%', marginTop: 10 }}>
+                    {/* Body — place card (when drawn) OR expand */}
+                    <button
+                      ref={(el) => { bucketRefs.current[b.key] = el }}
+                      type="button"
+                      onClick={() => {
+                        if (placeable) {
+                          handleMobilePlace(b.key)
+                        } else {
+                          setExpandedBucket(b.key)
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        background: 'none', color: '#130426',
+                        border: 'none',
+                        padding: '14px 10px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between',
+                        minHeight: 95,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426', lineHeight: 1.2 }}>
+                        {b.label}
+                      </span>
                       <span
                         ref={(el) => { countRefs.current[b.key] = el }}
-                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center' }}
+                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center', marginTop: 10 }}
                       >
                         {b.count}
                       </span>
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => { e.stopPropagation(); setExpandedBucket(b.key) }}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setExpandedBucket(b.key) } }}
-                        style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.7)', textDecoration: 'underline', cursor: 'pointer' }}
-                      >
-                        View
-                      </span>
-                    </div>
-                  </button>
+                    </button>
+                    {/* Footer — view (sibling of body, not nested) */}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedBucket(b.key)}
+                      style={{
+                        width: '100%',
+                        minHeight: 48,
+                        background: 'none',
+                        border: 'none',
+                        borderTop: '1px solid rgba(19,4,38,0.12)',
+                        color: '#130426',
+                        fontFamily: hv, fontSize: 13, fontWeight: 500,
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      View
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
                 )
               })}
             </div>
@@ -1075,10 +1096,12 @@ function ValuesRankingContent() {
                   <button
                     type="button"
                     onClick={() => { setExpandedBucket(null); setMobileMovePicker(null) }}
-                    aria-label="Close"
-                    style={{ background: 'none', border: 'none', color: '#130426', fontSize: 22, lineHeight: 1, cursor: 'pointer', padding: 4 }}
+                    aria-label="Collapse"
+                    style={{ background: 'none', border: 'none', color: '#130426', cursor: 'pointer', width: 48, height: 48, padding: 0, margin: '-12px -12px -12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    ×
+                    <svg width="14" height="9" viewBox="0 0 14 9" fill="none" aria-hidden="true">
+                      <path d="M1 7.5L7 1.5L13 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </button>
                 </div>
                 {items.length === 0 ? (
