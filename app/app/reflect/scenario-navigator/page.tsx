@@ -493,10 +493,10 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
           />
         </div>
 
-        {/* "You chose" + title */}
+        {/* "This Path" + title */}
         <div style={{ marginBottom: 48 }}>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
-            You chose
+            This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
             {choice.label}
@@ -835,10 +835,10 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
           />
         </div>
 
-        {/* "You chose" + title */}
+        {/* "This Path" + title */}
         <div style={{ marginBottom: 48 }}>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#F29836', marginBottom: 12 }}>
-            You chose
+            This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
             {choice.label}
@@ -1155,10 +1155,10 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           />
         </div>
 
-        {/* "You chose" + title */}
+        {/* "This Path" + title */}
         <div style={{ marginBottom: 48 }}>
           <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
-            You chose
+            This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
             {choice.label}
@@ -1593,7 +1593,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
         />
       </div>
       <div className="mb-10">
-        <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-3 font-semibold">You chose</p>
+        <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-3 font-semibold">This Path</p>
         <h1 className="ns-title-internal text-[#f8f4eb]">{choice.label}</h1>
       </div>
       <div className="grid gap-6 md:grid-cols-2 mb-8">
@@ -1739,10 +1739,10 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           />
         </div>
 
-        {/* "You chose" + title — full width above columns */}
+        {/* "This Path" + title — full width above columns */}
         <div style={{ marginBottom: 48 }}>
           <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#2C3777', marginBottom: 12 }}>
-            You chose
+            This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
             {choice.label}
