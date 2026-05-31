@@ -2404,7 +2404,7 @@ function RowPickerModal({
 
         {readinessRows.length > 0 && (
           <div style={{ background: '#F8F4EB', borderRadius: 12, padding: 16, border: '1px solid rgba(242,152,54,0.35)' }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#F29836', marginBottom: 10 }}>Practical Readiness</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#130426', marginBottom: 10 }}>Practical Readiness</p>
             {readinessRows.map(row => (
               <button
                 key={row.key}
