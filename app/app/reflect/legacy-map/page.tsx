@@ -860,7 +860,7 @@ export default function LegacyMapPage() {
             Legacy Map
           </h1>
           <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 14, lineHeight: 1.5 }}>
-            Life review is the practice of looking back at your life as a whole and noticing what has shaped you. People who engage in structured life review report reduced anxiety and depression, a strengthened sense of identity, and increased life satisfaction.{' '}
+            Life review is the practice of looking back at your life as a whole and noticing what has shaped you. <strong style={{ fontWeight: 600 }}>People who engage in structured life review report reduced anxiety and depression, a strengthened sense of identity, and increased life satisfaction.</strong>{' '}
             <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2664509/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.85)', textDecoration: 'underline' }}>(source)</a>
           </p>
           <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 0, marginBottom: 0, lineHeight: 1.5 }}>
