@@ -86,7 +86,7 @@ export default async function HealthcareLearnPage() {
           flex-shrink: 0;
         }
         .sdm-question::before {
-          content: '–';
+          content: '•';
           position: absolute;
           left: 0;
           color: #F28C38;
@@ -129,7 +129,7 @@ export default async function HealthcareLearnPage() {
             <p className="ns-lead-activity"
               style={{ color: '#FFFFFF', maxWidth: '520px' }}
             >
-              Advance care planning helps prepare for a time when you may be seriously ill or unable to speak for yourself. It involves reflecting on and communicating your wishes, appointing a Substitute Decision Maker, and documenting your preferences (legal documentation varies by province; see below).
+              Advance care planning helps prepare for a time when you may be seriously ill or unable to speak for yourself. It involves reflecting on and communicating your wishes, appointing a Substitute Decision-Maker, and documenting your preferences (legal documentation varies by province; see below).
             </p>
           </div>
         </section>
@@ -161,7 +161,7 @@ export default async function HealthcareLearnPage() {
                   Without clear communication, your loved ones and care providers may face painful choices, uncertainty, and conflict.
                 </p>
                 <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                  Many people approach advance care planning as a checklist—listing treatments they would or wouldn&apos;t want. While that can be helpful, {em('it has limits', '#130426')}.
+                  Many people approach advance care planning by listing treatments they would or wouldn&apos;t want. While that can be helpful, {em('it has limits', '#130426')}.
                 </p>
                 <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: 0 }}>
                   That&apos;s why this platform goes beyond checklists, with activities designed to help you reflect on the values behind those choices.
@@ -174,10 +174,10 @@ export default async function HealthcareLearnPage() {
                   It&apos;s hard to predict how you&apos;d feel in a situation you&apos;ve never been in, and <strong style={{ fontWeight: 600 }}>ableist assumptions about what life with illness or disability might be like can distort decisions.</strong>
                 </p>
                 <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                  For example, someone might say &ldquo;no machines&rdquo; without knowing the range of options or experiences, or assume they wouldn&apos;t want to live without being able to speak—without realizing what assistive tools exist.
+                  For example, someone might say &ldquo;no machines&rdquo; without knowing the range of options or experiences, or assume they wouldn&apos;t want to live without being able to speak, without realizing what assistive tools exist.
                 </p>
                 <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: '18px', lineHeight: '1.55', color: '#130426', marginTop: 0, marginBottom: 0 }}>
-                  By reflecting on what matters most to you, you can give your Substitute Decision Maker the context they need to make thoughtful decisions on your behalf—even in unexpected situations.
+                  By reflecting on your values and priorities, you can give your Substitute Decision-Maker the context they need to make thoughtful decisions on your behalf—even in unexpected situations.
                 </p>
               </div>
 
@@ -196,7 +196,7 @@ export default async function HealthcareLearnPage() {
                 padding: '32px',
               }}>
                 <h2 style={{ fontFamily: apfel, fontSize: '26px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginTop: 0, marginBottom: '16px' }}>
-                  Choosing your Substitute Decision Maker
+                  Choosing your Substitute Decision-Maker
                 </h2>
                 <p style={{ fontFamily: inter, fontSize: '16px', lineHeight: '1.65', color: '#130426', marginTop: 0, marginBottom: '20px' }}>
                   If someone had to speak on your behalf, what would you want them to understand?
@@ -294,7 +294,7 @@ export default async function HealthcareLearnPage() {
                     Continue in your plan
                   </h3>
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0' }}>
-                    {['Identify a decision maker', 'Document your healthcare preferences'].map((item) => (
+                    {['Identify a decision-maker', 'Document your healthcare preferences'].map((item) => (
                       <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' }}>
                         <span style={{ color: '#130426', fontWeight: 700, flexShrink: 0, lineHeight: '1.75' }}>·</span>
                         <span style={{ fontFamily: inter, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426' }}>{item}</span>

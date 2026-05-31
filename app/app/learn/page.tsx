@@ -121,11 +121,11 @@ export default function LearnPage() {
               <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '8px' }}>
                 You might have questions like:
               </p>
-              <div style={{ paddingLeft: 20, marginBottom: '20px' }}>
-                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '2px' }}>What makes a will valid?</p>
-                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '2px' }}>What are the rules for organ donation?</p>
-                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: 0 }}>What burial or cremation options are available in my province?</p>
-              </div>
+              <ul style={{ paddingLeft: 40, marginBottom: '20px', listStyleType: 'disc' }}>
+                <li style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '2px' }}>What makes a will valid?</li>
+                <li style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '2px' }}>What are the rules for organ donation?</li>
+                <li style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: 0 }}>What burial or cremation options are available in my province?</li>
+              </ul>
               <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginTop: 0, marginBottom: '20px' }}>
                 Some of the most important details in end-of-life planning depend on where you live, and learning about your options helps ensure your plans are practical, legally sound, and aligned with your values. This section helps make those questions more manageable by combining a general overview with tools that point you to province-specific guidance. The resources linked throughout this section are designed to complement the platform by helping you find relevant templates, forms, and explanations for decisions about advance directives, decision-makers, wills, powers of attorney, and more.
               </p>
