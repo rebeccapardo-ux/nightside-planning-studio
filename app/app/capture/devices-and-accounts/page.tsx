@@ -385,7 +385,7 @@ export default function DevicesAndAccountsPage() {
             Devices &amp; Accounts
           </h1>
           <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            A place to record your digital footprint; accounts, subscriptions, and devices the people handling your affairs will need to know about. Your email, social media, photo libraries, subscriptions, and other online accounts may need to be accessed, memorialized, or closed. Without a written record, accounts get locked, recurring charges continue, and digital memories become inaccessible.
+            Your email, social media, photo libraries, subscriptions, and other online accounts may need to be accessed, memorialized, or closed. Without a written record, accounts get locked, recurring charges continue, and digital memories become inaccessible.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
             Financial account details (account numbers, balances) belong in{' '}

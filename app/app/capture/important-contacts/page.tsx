@@ -399,9 +399,6 @@ function ImportantContactsPage() {
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
             Important Contacts
           </h1>
-          <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            A place to gather the people who&apos;ll need to be reached, and who they are to you.
-          </p>
           <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
             When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
           </p>

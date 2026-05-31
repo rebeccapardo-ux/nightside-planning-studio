@@ -271,15 +271,6 @@ function AdvanceDirectivePage() {
     }
   }
 
-  function goNext() {
-    if (expandedIndex === null) return
-    if (expandedIndex >= QUESTIONS.length - 1) {
-      router.push('/app/capture/advance-directive', { scroll: false })
-    } else {
-      router.push(`/app/capture/advance-directive?q=${expandedIndex + 2}`, { scroll: false })
-    }
-  }
-
   function goPrev() {
     if (expandedIndex === null || expandedIndex === 0) return
     router.push(`/app/capture/advance-directive?q=${expandedIndex}`, { scroll: false })
@@ -407,7 +398,6 @@ function AdvanceDirectivePage() {
     </div>
   ) : null
 
-  const isLast = expandedIndex === QUESTIONS.length - 1
 
   return (
     <div className="min-h-screen bg-[#BBABF4] relative">
@@ -608,18 +598,6 @@ function AdvanceDirectivePage() {
                 ) : (
                   <span />
                 )}
-                <button
-                  onClick={goNext}
-                  style={{
-                    fontSize: 15, fontWeight: 600,
-                    color: isLast ? '#FFFFFF' : '#130426',
-                    background: isLast ? '#130426' : 'rgba(19,4,38,0.10)',
-                    border: 'none', borderRadius: 10, padding: '10px 20px',
-                    cursor: 'pointer', fontFamily: hv,
-                  }}
-                >
-                  {isLast ? 'Finish' : 'Next →'}
-                </button>
               </div>
             )}
           </div>

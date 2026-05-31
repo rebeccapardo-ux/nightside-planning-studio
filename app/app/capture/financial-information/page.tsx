@@ -424,9 +424,6 @@ export default function FinancialInformationPage() {
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
             Financial Information
           </h1>
-          <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            A place to capture the financial picture your executor will need.
-          </p>
           <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
             Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
           </p>
