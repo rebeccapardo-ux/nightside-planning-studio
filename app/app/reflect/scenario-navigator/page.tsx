@@ -837,7 +837,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 
         {/* "This Path" + title */}
         <div style={{ marginBottom: 48 }}>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#F29836', marginBottom: 12 }}>
+          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
             This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
@@ -1157,7 +1157,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
         {/* "This Path" + title */}
         <div style={{ marginBottom: 48 }}>
-          <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
+          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
             This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
@@ -1741,7 +1741,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
         {/* "This Path" + title — full width above columns */}
         <div style={{ marginBottom: 48 }}>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#2C3777', marginBottom: 12 }}>
+          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#130426', marginBottom: 12 }}>
             This Path
           </p>
           <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#1A1A1A', margin: 0 }}>
