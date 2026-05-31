@@ -22,10 +22,10 @@ const PRIVACY_ANSWER = (
     <p style={{ margin: '0 0 0' }}>Even the information that is stored — names, birthdates, addresses, family details, contact information — is sensitive. Together, these pieces can be used to verify identity in financial, governmental, and online contexts. Once you export your plan, the PDF contains all of this in one document. We recommend storing exported copies somewhere secure, and being thoughtful about who you share them with.</p>
 
     <p style={subHead}>Your work is yours to revisit.</p>
-    <p style={{ margin: '0 0 0' }}>Everything you save is yours to return to. You can update any document, activity, or note at any time — and what you&apos;ve saved stays private to your account until you choose to share or export it.</p>
+    <p style={{ margin: '0 0 0' }}>Everything you save is yours to return to. You can update any document, activity, or note at any time; what you&apos;ve saved stays private to your account until you choose to share or export it.</p>
 
     <p style={subHead}>Your role.</p>
-    <p style={{ margin: '0 0 14px' }}>You decide what to fill in and when. Some users prefer to keep certain information off the platform and add it only at export — the platform is designed to support that choice.</p>
+    <p style={{ margin: '0 0 14px' }}>You decide what to fill in and when. Some users prefer to keep certain information off the platform and add it only at export; the platform is designed to support that choice.</p>
 
     <p style={{ margin: 0 }}>For full details, see our <Link href="/privacy" style={{ color: 'rgba(19,4,38,0.75)', textDecoration: 'underline' }}>Privacy Policy →</Link></p>
   </div>
@@ -65,7 +65,7 @@ const CATEGORIES: { title: string; items: FaqItem[] }[] = [
       {
         key: 'edit',
         q: 'Can I come back and edit things later?',
-        a: 'Yes. Everything you save is yours to return to. You can update any document, activity, or note at any time. The platform is designed for return — not for one-time completion.',
+        a: 'Yes. Everything you save is yours to return to. You can update any document, activity, or note at any time. The platform is designed for return, not for one-time completion.',
       },
       {
         key: 'export',
@@ -75,7 +75,7 @@ const CATEGORIES: { title: string; items: FaqItem[] }[] = [
       {
         key: 'voice',
         q: 'What happens to my voice notes?',
-        a: 'Voice notes are automatically transcribed and saved to your Plan. They appear in Your Materials alongside your written notes and documents.',
+        a: 'Voice notes are automatically transcribed and saved to Your Plan. They appear in Your Materials alongside your written notes and documents.',
       },
       {
         key: 'legal',
@@ -95,7 +95,7 @@ const CATEGORIES: { title: string; items: FaqItem[] }[] = [
       {
         key: 'inactive',
         q: 'What happens to my account if I stop using it?',
-        a: 'Your account stays active indefinitely. We don\'t deactivate accounts for inactivity — the platform is designed for return, and your work waits for you whenever you come back.',
+        a: 'Your account stays active indefinitely. We don\'t deactivate accounts for inactivity; the platform is designed for return, and your work waits for you whenever you come back.',
       },
       {
         key: 'shutdown',
