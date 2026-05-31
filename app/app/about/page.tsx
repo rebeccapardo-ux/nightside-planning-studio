@@ -33,13 +33,13 @@ export default function AboutPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
-            I&apos;m Rebecca Pardo — an anthropologist, technologist, and death doula. For over 15 years I&apos;ve worked in research, design, and technology, exploring how technology shapes human behavior. My focus shifted when I began working in end-of-life spaces, bringing my expertise in design and interaction to help create more supportive and compassionate experiences around dying, death, and grief.
+            I&apos;m Rebecca Pardo, an anthropologist, technologist, and death doula. For nearly two decades I&apos;ve worked in research, design, and technology, exploring how technology shapes human behavior. My focus shifted when I began working in end-of-life spaces, bringing my expertise in design and interaction to help create more supportive and compassionate experiences around dying, death, and grief.
           </p>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
             My perspective changed dramatically when I joined Facebook&apos;s Memorialization team, studying what happens when account holders die. Through international ethnographic research — observing and participating in death rituals in Indonesia, India, and Mexico — I saw firsthand how deeply personal and complex death planning is. I also saw how avoidance and a lack of planning leave families in distress, with unanswered questions and uncertainty.
           </p>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
-            And then, my dog Quincy got sick. Suddenly, what I had been researching became deeply personal. Drawing on my research and leaning into rituals, I transformed what could have been a devastating experience into one of peace, meaning, and love. It changed how I approached death and life forever. This platform is the culmination of that journey — designed to empower you to make informed, compassionate choices, not just for yourself but for the people you care about most.
+            And then, my dog Quincy got sick. Suddenly, what I had been researching became deeply personal. Drawing on what I had learned through my research, I leaned into conscious planning and ritual. It transformed what could have been a devastating experience into one of peace, meaning, and love. It changed how I approached death and life forever. This platform is the culmination of that journey, designed to empower you to make informed, compassionate choices, not just for yourself but for the people you care about most.
           </p>
         </div>
 
