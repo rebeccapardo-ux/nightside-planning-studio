@@ -109,9 +109,9 @@ export const SCENARIOS: Scenario[] = [
     id: 'cpr-decision',
     title: 'The CPR Decision',
     tileOverview:
-      'You experience a sudden health crisis (cardiac arrest, stroke). Emergency responders arrive and need to know: Should they attempt CPR and full life support?',
+      'You experience a sudden cardiac arrest. Emergency responders arrive and need to know: Should they attempt CPR and full life support?',
     fullOverview:
-      'You experience a sudden health crisis (cardiac arrest, stroke).\n\nEmergency responders arrive and need to know: Should they attempt CPR and full life support?',
+      'You experience a sudden cardiac arrest.\n\nEmergency responders arrive and need to know: Should they attempt CPR and full life support?',
     choices: [
       {
         id: 'full-resuscitation',
@@ -274,7 +274,7 @@ export const SCENARIOS: Scenario[] = [
         label: 'Continue aggressive treatments (chemotherapy, radiation, surgery)',
         outcomeTitle: 'Aggressive Treatment',
         summary: [
-          'Your substitute decision-maker chooses to continue aggressive treatments, including chemotherapy, radiation, or surgery.',
+          'Your substitute decision-maker chooses to continue aggressive treatments, which may include chemotherapy, radiation, or surgery.',
           'These treatments may offer a chance to prolong your life, but they will likely come with side effects such as fatigue, pain, nausea, and a reduced ability to participate in daily activities.',
         ],
         didYouKnow: [
@@ -321,7 +321,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         reflectionQuestions: [
           'Would you want to stop treatments if it meant spending more quality time at home?',
-          'What aspects of comfort (e.g., pain relief, emotional support) are most important to you as you near the end of your illness?',
+          'What aspects of comfort (e.g., pain relief, emotional support) would be most important to you as you near the end of your illness?',
         ],
         resources: [
           {
@@ -404,7 +404,7 @@ export const SCENARIOS: Scenario[] = [
         outcomeTitle: 'Comfort-Focused Care',
         summary: [
           'Your substitute decision-maker has chosen to prioritize comfort over life-prolonging interventions.',
-          'If you develop infections, doctors do not hospitalize you or give IV antibiotics—instead, they focus on comfort.',
+          'If you develop infections, doctors do not hospitalize you or give IV antibiotics; instead, they focus on comfort.',
           'You remain at home, surrounded by familiar people and spaces, with hospice teams visiting to provide care.',
         ],
         didYouKnow: [
@@ -434,7 +434,7 @@ export const SCENARIOS: Scenario[] = [
         label: 'Transition to a long-term care facility',
         outcomeTitle: 'Long-Term Care',
         summary: [
-          'Your substitute decision-maker has opted for a long-term care facility, with an emphasis on managing your day-to-day needs in a setting that can provide ongoing support. where trained staff manage your daily needs.',
+          'Your substitute decision-maker has opted for a long-term care facility, where trained staff manage your day-to-day needs in a setting that can provide ongoing support.\n\nYour family visits but is not responsible for your medical care.',
           'Your family visits but is not responsible for your medical care.',
         ],
         didYouKnow: [

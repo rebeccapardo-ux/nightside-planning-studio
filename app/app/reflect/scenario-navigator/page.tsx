@@ -201,7 +201,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
           Work through realistic situations to explore how different decisions might feel in practice.
         </p>
         <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
-          Comparing different paths can help clarify what matters most to you, especially when tradeoffs become more concrete.
+          You don&apos;t need to arrive with your decisions made. Each scenario lets you try a choice on, so you can see where it leads and notice how it sits with you. Then you can back up and explore a different path to feel the difference.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
           {['Choose any scenario to start', 'Explore different paths to compare outcomes', 'Notes save to your plan'].map((text) => (
@@ -241,9 +241,6 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
                 You may notice that your reactions are shaped by personal experiences, caregiving roles, medical situations you've witnessed, cultural expectations, or conversations you've had with others over time.
-              </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
-                Try exploring more than one path within the same scenario to compare how different outcomes feel.
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
                 This activity can also be useful to do with a partner, family member, or substitute decision maker to surface differences in assumptions, preferences, or expectations.
@@ -1385,7 +1382,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
           You have been living with ALS for several years. The disease has progressed to the point where you can no longer speak, swallow, or move independently. You rely on a feeding tube for nutrition and need full assistance with daily activities. Your respiratory muscles are weakening; breathing is becoming increasingly difficult, and your medical team has told your substitute decision-maker that you will likely need more breathing support soon.
         </p>
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-          You cannot communicate your wishes in this moment. Your substitute decision maker must decide how to proceed, knowing that each path involves a different set of tradeoffs between length of life, comfort, and the level of medical intervention required.
+          You cannot communicate your wishes in this moment. Your substitute decision-maker must decide how to proceed, knowing that each path involves a different set of tradeoffs between length of life, comfort, and the level of medical intervention required.
         </p>
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
           <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
