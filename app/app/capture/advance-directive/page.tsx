@@ -271,11 +271,6 @@ function AdvanceDirectivePage() {
     }
   }
 
-  function goPrev() {
-    if (expandedIndex === null || expandedIndex === 0) return
-    router.push(`/app/capture/advance-directive?q=${expandedIndex}`, { scroll: false })
-  }
-
   async function associateWithHealthcare(id: string) {
     try {
       const supabase = createSupabaseBrowserClient()
@@ -585,21 +580,6 @@ function AdvanceDirectivePage() {
               })}
             </div>
 
-            {/* Nav — visible only when an item is expanded */}
-            {expandedIndex !== null && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 28, paddingTop: 8 }}>
-                {expandedIndex > 0 ? (
-                  <button
-                    onClick={goPrev}
-                    style={{ fontSize: 15, fontWeight: 500, color: '#130426', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: hv }}
-                  >
-                    ← Previous
-                  </button>
-                ) : (
-                  <span />
-                )}
-              </div>
-            )}
           </div>
 
           {/* Right: materials — desktop only. Mobile uses inline trigger + SlidePanel drawer. */}
