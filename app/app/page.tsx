@@ -164,7 +164,10 @@ export default function AppHomePage() {
                 Your thinking, organized
               </h2>
               <p style={{ fontFamily: hv, fontSize: 19, fontWeight: 400, color: '#F8F4EB', lineHeight: 1.7, margin: 0 }}>
-                End-of-life planning rarely happens all at once. It unfolds over time — a thought here, a conversation there, something you learned last week. This platform automatically saves reflections, notes, and planning work into your Plan as you go, helping you organize and build on your thinking over time.
+                End-of-life planning rarely happens all at once. It unfolds over time, and often in disparate moments: a thought here, a conversation there, something you learned last week.
+              </p>
+              <p style={{ fontFamily: hv, fontSize: 19, fontWeight: 400, color: '#F8F4EB', lineHeight: 1.7, marginTop: 20, marginBottom: 0 }}>
+                This platform automatically saves reflections, notes, and planning work into Your Plan as you go, helping you shape and build on your thinking over time.
               </p>
             </div>
 
@@ -173,12 +176,12 @@ export default function AppHomePage() {
 
               <div style={{ background: 'transparent', border: '1px solid rgba(240,160,48,0.4)', borderRadius: 12, padding: '24px' }}>
                 <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 8px 0' }}>Captured automatically</p>
-                <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.65, color: '#F8F4EB', margin: 0 }}>Notes, voice notes, and activity outputs are saved to your Plan as you go — wherever they happen in the platform. Voice notes are transcribed automatically.</p>
+                <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.65, color: '#F8F4EB', margin: 0 }}>Notes, voice notes, and activity outputs are saved to Your Plan as you go, wherever they happen in the platform. Voice notes are transcribed automatically.</p>
               </div>
 
               <div style={{ background: 'transparent', border: '1px solid rgba(240,160,48,0.4)', borderRadius: 12, padding: '24px' }}>
-                <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 8px 0' }}>Organized and surfaced intelligently</p>
-                <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.65, color: '#F8F4EB', margin: 0 }}>Your Plan sorts everything into areas and surfaces related materials in context — so when you&apos;re working through a topic, your relevant notes and outputs are already there.</p>
+                <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 8px 0' }}>Surfaced intelligently</p>
+                <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.65, color: '#F8F4EB', margin: 0 }}>Your Plan sorts everything into areas and gathers related materials in context — so when you&apos;re working through a topic, your relevant notes and outputs are already there.</p>
               </div>
 
             </div>
@@ -187,7 +190,7 @@ export default function AppHomePage() {
           {/* Bottom — divider + area list */}
           <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.12)', margin: '0 0 28px' }} />
           <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#f0a030', margin: '0 0 16px 0' }}>
-            Organized by area
+            your plan, by area
           </p>
           <div className="yto-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
             {['Healthcare Wishes', 'Deathcare', 'Legacy', 'Wills & Estates', 'Personal Admin', 'Ritual & Ceremony'].map((area) => (
