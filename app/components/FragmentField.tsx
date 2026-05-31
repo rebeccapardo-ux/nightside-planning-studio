@@ -35,7 +35,7 @@ function getDomainAllowedTypes(domainTitle: string): FragmentType[] {
 const DOMAIN_FRAGMENT_PROMPTS: Record<string, string[]> = {
   legacy: [
     'What matters most to you right now?',
-    'What are a few of your favorite rituals or special traditions?',
+    'What are a few of your favorite special traditions?',
     'If you could leave behind a time capsule for future generations of your family, what 3 items would you include and why?',
     'If you could write your own obituary, what key elements would you include?',
     'What are three things that bring you the most joy in life?',
@@ -50,7 +50,7 @@ const DOMAIN_FRAGMENT_PROMPTS: Record<string, string[]> = {
   deathcare: [
     'What matters most to you right now?',
     'If you could choose the setting for your final moments, where would you be and who would be with you?',
-    'What are a few of your favorite rituals or special traditions?',
+    'What are a few of your favorite special traditions?',
     'Have you ever witnessed someone have a "good death"? What made it good?',
     "What's one thing you hope people will always remember about you, no matter how much time has passed?",
     'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',

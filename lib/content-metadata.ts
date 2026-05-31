@@ -122,7 +122,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
   },
   {
     id: 'prompt_7',
-    label: 'What are a few of your favorite rituals or special traditions?',
+    label: 'What are a few of your favorite special traditions?',
     domainRelevance: ['deathcare', 'legacy'],
     supplementaryDocumentRelevance: { fw_s4: 'primary' },
   },

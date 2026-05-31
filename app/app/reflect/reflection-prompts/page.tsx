@@ -12,7 +12,7 @@ const PROMPTS = [
   { id: 'prompt_4',  label: 'What was your earliest experience with death? What do you remember about it?' },
   { id: 'prompt_5',  label: 'If you could choose the setting for your final moments, where would you be and who would be with you?' },
   { id: 'prompt_6',  label: 'If you were unable to make decisions for yourself, who would you want to make those decisions, and why?' },
-  { id: 'prompt_7',  label: 'What are a few of your favorite rituals or special traditions?' },
+  { id: 'prompt_7',  label: 'What are a few of your favorite special traditions?' },
   { id: 'prompt_8',  label: 'What do you believe happens when we die? How does this influence your relationship to death?' },
   { id: 'prompt_9',  label: 'How would you want your body to be handled after death, and why?' },
   { id: 'prompt_10', label: 'If you could leave behind a time capsule for future generations of your family, what 3 items would you include and why?' },
