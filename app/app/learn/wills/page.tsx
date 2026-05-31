@@ -120,7 +120,7 @@ export default async function WillsLearnPage() {
             <p className="ns-lead-activity"
               style={{ color: '#FFFFFF', maxWidth: '640px' }}
             >
-              A will is a legal document that outlines how your assets, debts, and belongings will be handled after your death. It names an executor, identifies beneficiaries, appoints guardians for minor children or pets, and can include provisions for charitable donations or trusts. While essential, a will is just one part of estate planning—a broader process for managing your assets and property during your lifetime and beyond.
+              A will is a legal document that outlines how your assets, debts, and belongings will be handled after your death. It names an executor, identifies beneficiaries, appoints guardians for minor children or pets, and can include provisions for charitable donations or trusts. Estate planning refers to a broader process for managing your assets and property.
             </p>
 
           </div>
@@ -170,13 +170,13 @@ export default async function WillsLearnPage() {
               <h2 className="wl-animate" style={{ fontFamily: apfel, fontSize: '36px', fontWeight: 600, lineHeight: '1.05', color: '#130426', marginTop: 0, marginBottom: '40px' }}>
                 An estate plan may also include
               </h2>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <ul style={{ listStyle: 'disc', paddingLeft: 24, margin: 0 }}>
                 {[
-                  { term: 'Powers of Attorney', detail: 'managing financial or legal decisions if you\'re unable to.' },
-                  { term: 'Trusts', detail: 'managing assets for specific purposes or beneficiaries.' },
-                  { term: 'Life Insurance', detail: 'providing financial support for loved ones.' },
-                  { term: 'Asset and Liability Documentation', detail: 'listing property, debts, and accounts.' },
-                  { term: 'Tax Strategies', detail: 'supporting efficient distribution of your estate.' },
+                  { term: 'Powers of Attorney', detail: 'managing financial or legal decisions if you\'re unable to' },
+                  { term: 'Trusts', detail: 'managing assets for specific purposes or beneficiaries' },
+                  { term: 'Life Insurance', detail: 'providing financial support for loved ones' },
+                  { term: 'Asset and Liability Documentation', detail: 'listing property, debts, and accounts' },
+                  { term: 'Tax Strategies', detail: 'supporting efficient distribution of your estate' },
                 ].map(({ term, detail }) => (
                   <li key={term} style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginBottom: '16px' }}>
                     <strong style={{ fontWeight: 600 }}>{term}:</strong>{' '}{detail}

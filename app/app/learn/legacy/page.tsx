@@ -84,10 +84,10 @@ export default async function LegacyLearnPage() {
             </h1>
 
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '680px', marginBottom: '24px' }}>
-              The word &ldquo;legacy&rdquo; can feel like it belongs only to people with long careers, complicated estates, or their names on buildings. But legacy belongs to everyone, and can include simple things like the way you made people laugh, or the lessons you taught someone without meaning to.
+              The word &ldquo;legacy&rdquo; can feel like it belongs only to people with long careers, complicated estates, or their names on buildings. But legacy belongs to everyone, and can include simple things like the way you made people laugh, or a story you told that resonated with someone.
             </p>
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '680px' }}>
-              Legacy planning is the practice of consciously reflecting on what you want to leave behind, and doing that reflecting while you&apos;re still here to shape it. This can mean creating artifacts, like writing letters, recording stories, or other projects. This can also mean simply deciding how you want your values and relationships to be remembered, and having intentional conversations to share this with the people in your life.
+              Legacy planning is the practice of consciously reflecting on what you want to leave behind, and doing that reflecting while you&apos;re still here to shape it. This can mean creating artifacts, like writing letters, recording stories, or other projects. It can also mean simply deciding how you want your values and relationships to be remembered, and having intentional conversations to share this with the people in your life.
             </p>
 
           </div>
@@ -106,7 +106,7 @@ export default async function LegacyLearnPage() {
                 Without intentional reflection, the most meaningful parts of a life often go undocumented, or may be interpreted by others after the fact. Legacy work is a way of telling your own story, in your own words, on your own terms.
               </p>
               <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                Psychologist David Kessler, who collaborated with Elisabeth K&uuml;bler-Ross, identified meaning-making as a distinct part of how we process loss — not just for those left behind, but for the person dying. Shifting focus from a life being lost to a life that has been lived is one of the more significant things legacy work can do.
+                Psychologist David Kessler, who collaborated with Elisabeth K&uuml;bler-Ross, identified <strong style={{ fontWeight: 600 }}>meaning-making as a distinct part of how we process loss</strong> — not just for those left behind, but for the person dying. Shifting focus from a life being lost to a life that has been lived is one of the more significant things legacy work can do.
               </p>
               <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: 0 }}>
                 It also tends to change the quality of conversations. People who engage in this kind of reflection often find themselves having exchanges with family that wouldn&apos;t have happened otherwise, hearing stories for the first time, or finally saying things that had gone unsaid.
@@ -119,10 +119,10 @@ export default async function LegacyLearnPage() {
                 Did You Know?
               </div>
               <p style={{ fontFamily: hv, fontSize: '16px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: '16px' }}>
-                Research on legacy work in end-of-life care has found that people who engage in structured life reflection experience reduced anticipatory grief. Families report feeling more connected to the dying person, and less anxious about what&apos;s ahead.
+                Research on legacy work in end-of-life care has found that <strong style={{ fontWeight: 600 }}>people who engage in structured life reflection experience reduced anticipatory grief</strong>. Families report feeling more connected to the dying person, and less anxious about what&apos;s ahead.
               </p>
               <p style={{ fontFamily: hv, fontSize: '16px', lineHeight: '1.7', color: '#130426', marginTop: 0, marginBottom: 0 }}>
-                In some studies, people who engaged in meaning-making practices reported that physical symptoms — such as pain and difficulty breathing — felt more manageable, likely connected to reduced psychological distress.<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2664509/" target="_blank" rel="noopener noreferrer" className="lg-source-link">[source]</a>
+                In some studies, people who engaged in meaning-making practices reported that physical symptoms, such as pain and difficulty breathing, felt more manageable, likely connected to reduced psychological distress.<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2664509/" target="_blank" rel="noopener noreferrer" className="lg-source-link">[source]</a>
               </p>
             </div>
 
@@ -198,7 +198,7 @@ export default async function LegacyLearnPage() {
                     Continue in your plan
                   </h3>
                   <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginBottom: '32px' }}>
-                    Document your legacy preferences, messages, and personal reflections so they can be preserved and shared as intended.
+                    Document your legacy preferences and personal reflections so they can be preserved and shared as intended.
                   </p>
                   <Link
                     href={legacyDomainHref}

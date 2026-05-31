@@ -148,7 +148,7 @@ export default async function DeathcareLearnPage() {
               {/* Left column */}
               <div className="dc-animate">
                 <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
-                  Many people don&apos;t realize how many options exist for body disposition, or assume decisions will be straightforward. In reality, choices are often shaped by default practices, family expectations, or logistical constraints—especially when preferences haven&apos;t been clearly expressed.
+                  Many people don&apos;t realize how many options exist for body disposition, or assume decisions will be straightforward. In reality, choices are often shaped by default practices, family expectations, or logistical constraints.
                 </p>
                 <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: '#130426', marginTop: 0, marginBottom: '24px' }}>
                   Planning ahead ensures your choices reflect your values—spiritual, environmental, cultural, or personal—and reduces stress for loved ones.
@@ -189,7 +189,7 @@ export default async function DeathcareLearnPage() {
             <p
               style={{ fontFamily: hv, fontSize: '16px', fontWeight: 400, lineHeight: '1.5', color: 'rgba(255,255,255,0.90)', maxWidth: '620px', marginBottom: '40px' }}
             >
-              Use these activities and resources to keep moving.
+              Use these activities and resources to keep moving in your deathcare planning.
             </p>
 
             {/* Row 1: Relevant Activities + Resources */}
