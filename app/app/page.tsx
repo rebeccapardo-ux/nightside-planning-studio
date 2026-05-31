@@ -211,7 +211,7 @@ export default function AppHomePage() {
               <span className="ns-title-underline">More than paperwork</span>
             </h2>
           </div>
-          <div className="approach-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 48, alignItems: 'start' }}>
+          <div className="approach-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
             <div>
               <p style={{ fontFamily: hv, fontSize: 19, color: '#130426', lineHeight: 1.7, marginTop: 0, marginBottom: 0 }}>
                 End-of-life planning is often treated as just filling out forms, checking boxes, and getting it over with as fast as possible.
@@ -223,11 +223,11 @@ export default function AppHomePage() {
                 By leaning into curiosity and reflection, this process can bring clarity, comfort, and even a sense of peace — both for you, and the people who care about you.
               </p>
             </div>
-            <div className="home-approach-aside" style={{ background: '#EEEDFE', borderRadius: 12, padding: '24px 28px', marginLeft: 24 }}>
-              <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#26215C', margin: '0 0 10px' }}>
+            <div className="home-approach-aside" style={{ background: '#EEEDFE', borderRadius: 12, padding: '32px 36px', marginLeft: 24 }}>
+              <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 700, color: '#26215C', margin: '0 0 10px' }}>
                 Use on your own, or with others
               </p>
-              <p style={{ fontFamily: hv, fontSize: 14, color: '#26215C', lineHeight: 1.7, margin: 0 }}>
+              <p style={{ fontFamily: hv, fontSize: 15, color: '#26215C', lineHeight: 1.7, margin: 0 }}>
                 This platform is also designed for flexibility, so that any activity can be done alone or with others.<br/><br/>The included activities — reflection prompts, the scenario navigator, the trivia game, legacy conversations — can help you understand each other&apos;s values and fears, start important conversations, and deepen your connections with the people in your life.
               </p>
             </div>
