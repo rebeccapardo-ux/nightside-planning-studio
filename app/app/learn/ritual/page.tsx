@@ -84,7 +84,7 @@ export default async function RitualLearnPage() {
             </div>
 
             <p className="ns-lead-activity" style={{ color: '#FFFFFF', maxWidth: '640px' }}>
-              Rituals and ceremonies are meaningful ways to honor life, process loss, and create connection. They can take many forms — from formal services to small, personal moments — and reflect cultural, spiritual, or personal values.
+              Rituals and ceremonies are meaningful ways to honor life, process loss, and create connection. They may draw from religious, spiritual, cultural, or secular traditions — or any combination of these that is meaningful to the dying person and their loved ones.
             </p>
 
           </div>
@@ -135,7 +135,7 @@ export default async function RitualLearnPage() {
                 End-of-life planning matters for everyone, but individuals from marginalized communities often face additional barriers. Documenting your wishes clearly can help ensure they are respected.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '16px', listStyleType: 'disc', paddingLeft: 24, margin: 0 }}>
                 {[
                   {
                     heading: 'Healthcare discrimination',
@@ -154,13 +154,13 @@ export default async function RitualLearnPage() {
                     body: 'legal rights around funerals, body care, and ceremonies vary by province; knowing your options helps ensure your wishes are followed.',
                   },
                 ].map(({ heading, body }) => (
-                  <div key={heading}>
+                  <li key={heading}>
                     <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', margin: 0 }}>
                       <strong style={{ fontWeight: 600 }}>{heading}:</strong>{' '}{body}
                     </p>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
         </section>
