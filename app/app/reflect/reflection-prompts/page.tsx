@@ -158,7 +158,7 @@ export default function ReflectPage() {
           Reflection Prompts
         </h1>
         <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
-          These prompts are designed to help you reflect on what matters most to you. Some focus directly on illness, loss, grief, or end-of-life experiences, while others explore broader questions about relationships, identity, values, routines, and meaning.
+          These prompts are designed to help you reflect on your priorities. Some focus directly on illness, loss, grief, or end-of-life experiences, while others explore broader questions about relationships, identity, values, routines, and meaning.
         </p>
         <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
           Together, they help surface the connections between what matters to you in life and what may matter most in times of illness or at the end of life.
@@ -206,7 +206,7 @@ export default function ReflectPage() {
                 You can respond briefly, write at length, record a voice note, or revisit them as your thoughts and circumstances change.
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
-                Exploring prompts with others can deepen understanding, strengthen connection, or surface things that surprise you about each other.
+                Exploring prompts with others can deepen understanding, strengthen connection, or uncover surprising insights.
               </p>
             </div>
           </div>

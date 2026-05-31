@@ -1253,13 +1253,10 @@ function ValuesRankingContent() {
             </div>
             <div style={{ fontFamily: hv }}>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
-                You can approach this in different ways. Some people move quickly and follow instinctive reactions, while others prefer to reflect carefully before placing each card.
-              </p>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
-                The goal isn't to create a perfect hierarchy, but to notice what feels easy, difficult, surprising, or emotionally charged.
+                The goal isn&apos;t to create a perfect hierarchy, but to notice what feels easy, difficult, surprising, or emotionally charged.
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 8 }}>
-                If you get stuck between two values, try asking:
+                Expect to get stuck: only five cards fit in the essential category, so as you draw you&apos;ll have to keep moving values that you&apos;ve already placed. When this happens, try asking:
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}>
                 {[

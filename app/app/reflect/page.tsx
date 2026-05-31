@@ -141,8 +141,8 @@ export default function ExplorePage() {
           </div>
 
           <p style={{
-            fontSize: 20,
-            fontWeight: 400,
+            fontSize: 22,
+            fontWeight: 500,
             lineHeight: 1.55,
             color: 'rgba(255,255,255,0.94)',
             maxWidth: 760,
@@ -161,7 +161,7 @@ export default function ExplorePage() {
               Activities in this section are designed to help you imagine what a "good death" looks like for you, clarify how your values translate into real choices, and consider what you want to leave behind.
             </p>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
-              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you're working in your Plan.</span>
+              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you're working in Your Plan.</span>
             </p>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 0 }}>
               Start anywhere, and move at your own pace.
@@ -171,7 +171,7 @@ export default function ExplorePage() {
           <div className="explore-grid">
             <ExploreActivityCard
               title="Reflection Prompts"
-              description="Use guided prompts to reflect on your values, wishes, relationships, and what matters most."
+              description="Use guided prompts to reflect on your priorities, experiences, and what a good death means to you."
               href="/app/reflect/reflection-prompts"
               status="available"
               index={0}
@@ -179,7 +179,7 @@ export default function ExplorePage() {
             />
             <ExploreActivityCard
               title="Values & Fears Ranking"
-              description="Prioritize what matters most to you, using a guided card sort activity."
+              description="Prioritize what matters most, using a guided card sort activity."
               href="/app/reflect/values-and-fears"
               status="available"
               index={1}

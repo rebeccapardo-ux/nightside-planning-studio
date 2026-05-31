@@ -156,24 +156,24 @@ export default async function PersonalAdminLearnPage() {
           </div>
         </section>
 
-        {/* ── 3. WHAT PERSONAL ADMIN COVERS ── deep purple */}
-        <section style={{ width: '100%', background: '#130426', paddingTop: '96px', paddingBottom: '96px' }}>
+        {/* ── 3. WHAT PERSONAL ADMIN COVERS ── lavender */}
+        <section style={{ width: '100%', background: '#BBABF4', paddingTop: '96px', paddingBottom: '96px' }}>
           <div className="px-5 md:px-16" style={inner}>
             <div style={{ maxWidth: '620px' }}>
               <div className="pa-animate">
-                <h2 style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#FFFFFF', marginTop: 0, marginBottom: '28px' }}>
+                <h2 style={{ fontFamily: apfel, fontSize: '40px', fontWeight: 600, lineHeight: '1.15', letterSpacing: '-0.01em', color: '#130426', marginTop: 0, marginBottom: '28px' }}>
                   What personal admin covers
                 </h2>
               </div>
-              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: 'rgba(255,255,255,0.85)', marginBottom: '28px' }}>
+              <p style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: 'rgba(19,4,38,0.80)', marginBottom: '28px' }}>
                 Personal admin in the context of death planning is about making sure the practical details of your life are documented somewhere accessible. That includes:
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {coverItems.map(({ term, detail }) => (
                   <li key={term} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '24px' }}>
-                    <span style={{ color: '#F29836', flexShrink: 0, lineHeight: '1.8', fontWeight: 700 }}>·</span>
-                    <span style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: 'rgba(255,255,255,0.85)' }}>
-                      <strong style={{ color: '#FFFFFF', fontWeight: 600 }}>{term}:</strong>{' '}{detail}
+                    <span style={{ color: '#C04828', flexShrink: 0, lineHeight: '1.8', fontWeight: 700 }}>·</span>
+                    <span style={{ fontFamily: hv, fontSize: '19px', fontWeight: 400, lineHeight: '1.8', color: 'rgba(19,4,38,0.80)' }}>
+                      <strong style={{ color: '#130426', fontWeight: 600 }}>{term}:</strong>{' '}{detail}
                     </span>
                   </li>
                 ))}

@@ -105,7 +105,7 @@ export default function LearnPage() {
                 <span className="ln-underline">Learn</span>
               </h1>
             </div>
-            <p style={{ fontSize: 20, fontWeight: 400, lineHeight: 1.55, color: 'rgba(19,4,38,0.78)', marginTop: 20, marginBottom: 0, maxWidth: 760 }}>
+            <p style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.55, color: 'rgba(19,4,38,0.78)', marginTop: 20, marginBottom: 0, maxWidth: 760 }}>
               Build the knowledge you need to make informed, practical decisions.
             </p>
           </div>

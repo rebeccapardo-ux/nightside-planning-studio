@@ -249,7 +249,7 @@ export default async function PlanPage() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         {/* ── Areas heading ── */}
-        <h2 data-tour-anchor="tour-areas-header" style={{ fontFamily: apfel, fontSize: 24, fontWeight: 400, color: '#130426', marginBottom: 12, marginTop: 0 }}>Areas of planning</h2>
+        <h2 data-tour-anchor="tour-areas-header" style={{ fontFamily: apfel, fontSize: 22, fontWeight: 500, color: '#130426', marginBottom: 12, marginTop: 0 }}>Areas of planning</h2>
         <p style={{ fontFamily: inter, fontSize: 17, color: 'rgba(19,4,38,0.85)', maxWidth: 600, marginBottom: 24, marginTop: 0, lineHeight: 1.6 }}>
           Click into an area to track your progress, view key tasks, and access related materials.
         </p>

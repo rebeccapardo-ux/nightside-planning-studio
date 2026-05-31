@@ -23,9 +23,8 @@ export default function ValuesAndFearsPage() {
           </h1>
 
           <p className="mt-4 text-[17px] leading-relaxed md:text-[18px]" style={{ color: 'rgba(19,4,38,0.72)' }}>
-            This exercise helps you reflect on what matters most to you — and what
-            you most want to avoid — as you think about serious illness or the end
-            of life.
+            These exercises help you clarify what&apos;s most important to you as
+            you think about serious illness or the end of life.
           </p>
         </section>
 
@@ -58,7 +57,7 @@ export default function ValuesAndFearsPage() {
               </h2>
 
               <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-[#140028]/82 md:text-[18px]">
-                Reflect on what concerns or worries you most, so they can be
+                Reflect on what worries you most, so your concerns can be
                 acknowledged and addressed.
               </p>
 
