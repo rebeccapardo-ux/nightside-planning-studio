@@ -424,7 +424,7 @@ export default function FinancialInformationPage() {
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
             Financial Information
           </h1>
-          <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
+          <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
             Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
@@ -597,7 +597,7 @@ export default function FinancialInformationPage() {
 
         </div>
 
-        <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', lineHeight: 1.6, marginTop: 32, marginBottom: 0, maxWidth: 600 }}>
+        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.65)', lineHeight: 1.6, marginTop: 32, marginBottom: 20, maxWidth: 600 }}>
           The content here is for planning and organizing. For financial decisions or estate planning, consult a financial advisor or lawyer in your province.
         </p>
       </div>

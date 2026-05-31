@@ -437,7 +437,7 @@ export default function KeepsakeDocumentPage() {
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.5, fontWeight: 400, color: '#130426', maxWidth: 720, marginBottom: 20 }}>
           This is where you can record objects that matter to you, and any guidance you want to share about them.
         </p>
-        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.5, fontWeight: 400, color: '#130426', maxWidth: 720, marginBottom: 40 }}>
+        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', maxWidth: 720, marginBottom: 20 }}>
           <strong style={{ fontWeight: 700 }}>This is not a legal document.</strong> For items of financial or legal importance, include them in your will or speak with a lawyer.
         </p>
 
