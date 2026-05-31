@@ -155,7 +155,7 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Who will make decisions for me',
           explanation: '',
           checkboxes: [
-            'I have identified a substitute decision maker for my care',
+            'I have identified a substitute decision-maker for my care',
             'They have agreed to take on this role',
             'I have legally documented my decision-maker',
           ],
@@ -166,12 +166,12 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           explanation: '',
           staticLinks: [{ href: '/app/capture/advance-directive', label: 'My Care Wishes' }],
           checkboxes: [
-            'I have communicated my wishes to my decision maker',
+            'I have communicated my wishes to my decision-maker',
             'I have formally documented my wishes',
           ],
           checkboxHelpers: [
             null,
-            'This may include an advance directive or equivalent document in your province. See the resource hub for guidance.',
+            'This may include an advance directive or equivalent document in your province. See the learn section for guidance.',
           ],
         },
       ],
@@ -872,13 +872,6 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               </Link>
             )}
 
-            {/* Empty state — shows only before any notes exist */}
-            {!loading && !hasEverHadNotes && notes.length === 0 && (
-              <p style={{ fontSize: 16, color: 'rgba(19,4,38,0.60)', marginTop: 28, marginBottom: 0 }}>
-                Your thoughts about this area will appear here.
-              </p>
-            )}
-
             {/* Sticky notes grid */}
             {yourThoughtsNotes.length > 0 && (
               <div className="grid grid-cols-6 gap-3 items-start" style={{ marginTop: 28, marginBottom: 40 }}>
@@ -932,7 +925,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
                 value={composerText}
                 onChange={(e) => handleScratchpadChange(e.target.value)}
                 onBlur={handleScratchpadBlur}
-                placeholder="Capture anything that comes up about this area..."
+                placeholder="Capture anything that comes up..."
                 className="placeholder:text-[#130426]/65"
                 style={{
                   display: 'block',
