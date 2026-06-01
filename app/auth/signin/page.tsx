@@ -8,6 +8,19 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
+// Whitelist post-signin redirect targets. The middleware emits ?next=<path>
+// when it bounces an unauthenticated user; we only honor it if the path is
+// safely local AND inside /app — which is the only place the middleware
+// would have redirected from anyway.
+function safeNextPath(raw: string | null): string {
+  if (!raw) return '/app'
+  if (!raw.startsWith('/')) return '/app'
+  if (raw.startsWith('//')) return '/app'
+  if (raw.includes('..')) return '/app'
+  if (raw !== '/app' && !raw.startsWith('/app/')) return '/app'
+  return raw
+}
+
 function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,7 +56,7 @@ function SignInForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventName: 'sign_in' }),
       }).catch(() => {})
-      window.location.href = '/app'
+      window.location.href = safeNextPath(searchParams.get('next'))
     }
   }
 
