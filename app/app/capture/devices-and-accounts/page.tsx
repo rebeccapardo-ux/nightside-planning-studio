@@ -61,6 +61,31 @@ const MAX = 5
 const afG = "'Apfel Grotezk', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
+// Strip ephemeral fields before persisting. Passwords / PINs / access details
+// are entered at export time via the Snapshot → sessionStorage → ExportClient
+// flow; they must never be saved to the entries table. Matches the toSaveable
+// pattern in financial-information (accountNumber) and personal-admin
+// (socialInsuranceNumber, healthCardNumber). Defensive: the capture UI does
+// not currently render inputs for these fields, but this function is the
+// safety net if one is added.
+function toSaveable(f: FormState): Omit<
+  FormState,
+  | 'device1PasswordPin' | 'device2PasswordPin' | 'device3PasswordPin' | 'device4PasswordPin' | 'device5PasswordPin'
+  | 'socialMedia1Password' | 'socialMedia2Password' | 'socialMedia3Password' | 'socialMedia4Password' | 'socialMedia5Password'
+  | 'otherAccount1Password' | 'otherAccount2Password' | 'otherAccount3Password' | 'otherAccount4Password' | 'otherAccount5Password'
+  | 'digitalAsset1AccessDetails' | 'digitalAsset2AccessDetails' | 'digitalAsset3AccessDetails' | 'digitalAsset4AccessDetails' | 'digitalAsset5AccessDetails'
+> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {
+    device1PasswordPin, device2PasswordPin, device3PasswordPin, device4PasswordPin, device5PasswordPin,
+    socialMedia1Password, socialMedia2Password, socialMedia3Password, socialMedia4Password, socialMedia5Password,
+    otherAccount1Password, otherAccount2Password, otherAccount3Password, otherAccount4Password, otherAccount5Password,
+    digitalAsset1AccessDetails, digitalAsset2AccessDetails, digitalAsset3AccessDetails, digitalAsset4AccessDetails, digitalAsset5AccessDetails,
+    ...safe
+  } = f
+  return safe
+}
+
 export default function DevicesAndAccountsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const formRef = useRef<FormState>(EMPTY_FORM)
@@ -187,12 +212,12 @@ export default function DevicesAndAccountsPage() {
       if (userError || !user) { setSaveStatus('error'); setSavingEntryKey(null); return }
       if (!entryIdRef.current) {
         const { data: created, error } = await supabase.from('entries')
-          .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: currentForm })
+          .insert({ user_id: user.id, title: DOCUMENT_TITLE, section: 'capture', document_type: DOCUMENT_TYPE, content: toSaveable(currentForm) })
           .select('id').single()
         if (error) { setSaveStatus('error'); setSavingEntryKey(null); return }
         if (created) { entryIdRef.current = created.id; setSavedEntryId(created.id) }
       } else {
-        const { error } = await supabase.from('entries').update({ content: currentForm }).eq('id', entryIdRef.current)
+        const { error } = await supabase.from('entries').update({ content: toSaveable(currentForm) }).eq('id', entryIdRef.current)
         if (error) { setSaveStatus('error'); setSavingEntryKey(null); return }
       }
       if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
