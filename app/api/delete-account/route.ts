@@ -41,22 +41,13 @@ export async function POST(req: NextRequest) {
     // Non-fatal — proceed with DB deletion
   }
 
-  // Delete junction tables first (notes and entries linked to containers)
-  const { data: containerIds } = await supabase
-    .from('containers')
-    .select('id')
-    .eq('user_id', uid)
-
-  if (containerIds && containerIds.length > 0) {
-    const ids = containerIds.map((c) => c.id)
-    await supabase.from('container_notes').delete().in('container_id', ids)
-    await supabase.from('container_entries').delete().in('container_id', ids)
-  }
-
-  // Delete notes and entries belonging to this user
-  await supabase.from('notes').delete().eq('user_id', uid)
-  await supabase.from('entries').delete().eq('user_id', uid)
-  await supabase.from('containers').delete().eq('user_id', uid)
+  // All user-owned rows (containers, container_notes, container_entries,
+  // notes, entries, entry_notes, domain_topic_notes, hidden_row_notes,
+  // user_profiles, legacy_contacts, user_release_preferences, analytics_events,
+  // etc.) are cleaned up via ON DELETE CASCADE on auth.users(id) when the
+  // admin client deletes the auth user below. No explicit table-level deletes
+  // are needed. The account_deleted analytics event is logged earlier (above)
+  // so its user_id reference survives the cascade.
 
   // Delete the auth user (requires service role key)
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
