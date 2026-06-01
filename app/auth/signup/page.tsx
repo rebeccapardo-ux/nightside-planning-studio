@@ -109,7 +109,12 @@ export default function SignUpPage() {
       }
       setLoading(false)
     } else if (data.session) {
-      // Email confirmation is disabled — user is signed in directly.
+      // Defensive — unreachable under current Supabase Auth config (email
+      // confirmation is required at the project level, so signUp never
+      // returns a session synchronously; the user comes back through
+      // /auth/callback after clicking the email link). Kept as a safety
+      // net in case the dashboard setting is ever toggled off: routes the
+      // user straight to payment without the email-confirmation step.
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
