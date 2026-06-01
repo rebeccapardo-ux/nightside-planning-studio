@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, Image, StyleSheet, Svg, Path, LinearGradient, Stop, Defs, Line } from '@react-pdf/renderer'
-import type { PDFData, PDFFinancialAccount, PDFFinancialDebt, PDFContactEntry } from './pdfTypes'
+import type { PDFData, PDFFinancialAccount, PDFFinancialDebt, PDFContactEntry } from './types'
 
 // ---------------------------------------------------------------------------
 // Styles

@@ -12,8 +12,8 @@ import {
   DevicesAccountsContent,
   LegacyMapContent,
   LegacyMapLandscapePage,
-} from '../../entries/[id]/export/ExportPDFDocument'
-import type { PDFData } from '../../entries/[id]/export/pdfTypes'
+} from './ExportPDFDocument'
+import type { PDFData } from './types'
 
 // ---------------------------------------------------------------------------
 // Constants

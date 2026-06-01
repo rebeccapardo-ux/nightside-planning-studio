@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState, getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
-import type { PDFData, PDFContactEntry } from '../../entries/[id]/export/pdfTypes'
-import type { PlanKeyDetail, PlanDomainStatus, PlanCheckboxItem, PlanMaterial, PlanPDFProps } from './PlanPDFDocument'
+import type { PDFData, PDFContactEntry } from '@/lib/pdf/types'
+import type { PlanKeyDetail, PlanDomainStatus, PlanCheckboxItem, PlanMaterial, PlanPDFProps } from '@/lib/pdf/PlanPDFDocument'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apf = "'Apfel Grotezk', sans-serif"
@@ -764,7 +764,7 @@ export default function PlanExportPage() {
     setDownloading(true)
     try {
       const { pdf } = await import('@react-pdf/renderer')
-      const { default: PlanPDFDocument } = await import('./PlanPDFDocument')
+      const { default: PlanPDFDocument } = await import('@/lib/pdf/PlanPDFDocument')
 
       const today = new Date()
       const exportDate = today.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })

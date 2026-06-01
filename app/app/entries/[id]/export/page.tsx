@@ -4,7 +4,7 @@ import DownloadPDFButton from './DownloadPDFButton'
 import FinancialExportClient from './FinancialExportClient'
 import PersonalAdminExportClient from './PersonalAdminExportClient'
 import DevicesAccountsExportClient from './DevicesAccountsExportClient'
-import type { PDFData, PDFContactEntry } from './pdfTypes'
+import type { PDFData, PDFContactEntry } from '@/lib/pdf/types'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'Apfel Grotezk', sans-serif"

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { PDFData } from './pdfTypes'
+import type { PDFData } from '@/lib/pdf/types'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'Apfel Grotezk', sans-serif"
@@ -76,7 +76,7 @@ export default function FinancialExportClient({
 
       const [{ pdf }, { default: ExportPDFDocument }] = await Promise.all([
         import('@react-pdf/renderer'),
-        import('./ExportPDFDocument'),
+        import('@/lib/pdf/ExportPDFDocument'),
       ])
 
       const blob = await pdf(<ExportPDFDocument data={pdfData} />).toBlob()
