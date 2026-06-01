@@ -5,7 +5,10 @@ import LegacyContactForm from './LegacyContactForm'
 export default async function LegacyContactOnboardingPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/signin')
+  // proxy.ts middleware enforces auth on /app/*; this branch is unreachable.
+  // The throw preserves type narrowing for user.id below.
+  // (redirect() is still used legitimately at the "already designated" check.)
+  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/onboarding/legacy-contact')
 
   // Already designated — send them into the platform
   const { data: existing } = await supabase

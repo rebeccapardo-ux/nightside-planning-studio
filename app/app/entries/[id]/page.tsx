@@ -103,7 +103,10 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   const supabase = await createSupabaseServerClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) notFound()
+  // proxy.ts middleware enforces auth on /app/*; this branch is unreachable.
+  // The throw preserves type narrowing for user.id below.
+  // (notFound() is still used legitimately further down for missing-entry cases.)
+  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/entries/[id]')
 
   const { data: entry, error } = await supabase
     .from('entries')

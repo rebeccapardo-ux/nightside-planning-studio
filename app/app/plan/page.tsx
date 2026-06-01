@@ -43,7 +43,9 @@ export default async function PlanPage() {
   const supabase = await createSupabaseServerClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return <div>Not authenticated</div>
+  // proxy.ts middleware enforces auth on /app/*; this branch is unreachable.
+  // The throw preserves type narrowing for user.id below.
+  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/plan')
 
   // Ensure all six canonical domains exist for this user, with no duplicates
   const CANONICAL_DOMAINS = [

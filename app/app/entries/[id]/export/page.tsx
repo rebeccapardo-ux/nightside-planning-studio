@@ -116,7 +116,10 @@ export default async function ExportPage({ params }: ExportPageProps) {
   const supabase = await createSupabaseServerClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) notFound()
+  // proxy.ts middleware enforces auth on /app/*; this branch is unreachable.
+  // The throw preserves type narrowing for user.id / user.user_metadata below.
+  // (notFound() is still used legitimately further down for missing-entry cases.)
+  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/entries/[id]/export')
 
   const _firstName = (user.user_metadata?.first_name as string | undefined)?.trim() ?? ''
   const _lastName  = (user.user_metadata?.last_name  as string | undefined)?.trim() ?? ''
