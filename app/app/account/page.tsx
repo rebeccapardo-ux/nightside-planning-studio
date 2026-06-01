@@ -82,17 +82,17 @@ function isValidEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
 }
 
-function clearLocalStorage(uid: string) {
+function clearLocalStorage() {
   const lsKeys: string[] = []
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i)
-    if (k && STORAGE_PREFIXES.some(p => k.startsWith(p)) && !k.includes(uid)) lsKeys.push(k)
+    if (k && STORAGE_PREFIXES.some(p => k.startsWith(p))) lsKeys.push(k)
   }
   lsKeys.forEach(k => localStorage.removeItem(k))
   const ssKeys: string[] = []
   for (let i = 0; i < sessionStorage.length; i++) {
     const k = sessionStorage.key(i)
-    if (k && SS_PREFIXES.some(p => k.startsWith(p)) && !k.includes(uid)) ssKeys.push(k)
+    if (k && SS_PREFIXES.some(p => k.startsWith(p))) ssKeys.push(k)
   }
   ssKeys.forEach(k => sessionStorage.removeItem(k))
 }
@@ -483,7 +483,7 @@ export default function AccountPage() {
       setDeleteStatus('error')
       return
     }
-    clearLocalStorage(user?.id ?? '')
+    clearLocalStorage()
     const supabase = createSupabaseBrowserClient()
     await supabase.auth.signOut()
     window.location.href = '/account-deleted'
