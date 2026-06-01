@@ -19,7 +19,7 @@ const UNGUARDED_APP_PREFIXES = [
 ]
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname, search } = request.nextUrl
 
   let response = NextResponse.next({ request })
 
@@ -38,67 +38,76 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
 
-  // ── Always-public paths ──────────────────────────────────────────────────
-  if (ALWAYS_PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
-    // Redirect authenticated users away from plain auth pages (signin, signup)
-    // but not from the payment flow pages (/auth/signup/payment etc.).
-    if (
-      user &&
-      pathname.startsWith('/auth/') &&
-      !pathname.startsWith('/auth/signup/payment') &&
-      !pathname.startsWith('/auth/signup/success') &&
-      !pathname.startsWith('/auth/signup/cancel') &&
-      !pathname.startsWith('/auth/reset-password')
-    ) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/app'
-      return NextResponse.redirect(url)
+    // ── Always-public paths ──────────────────────────────────────────────────
+    if (ALWAYS_PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
+      // Redirect authenticated users away from plain auth pages (signin, signup)
+      // but not from the payment flow pages (/auth/signup/payment etc.).
+      if (
+        user &&
+        pathname.startsWith('/auth/') &&
+        !pathname.startsWith('/auth/signup/payment') &&
+        !pathname.startsWith('/auth/signup/success') &&
+        !pathname.startsWith('/auth/signup/cancel') &&
+        !pathname.startsWith('/auth/reset-password')
+      ) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/app'
+        return NextResponse.redirect(url)
+      }
+      return response
+    }
+
+    // ── /app/* routes ────────────────────────────────────────────────────────
+    if (pathname.startsWith('/app')) {
+      // Must be authenticated. Preserve destination via ?next= for post-signin redirect.
+      if (!user) {
+        const next = encodeURIComponent(pathname + search)
+        return NextResponse.redirect(new URL(`/auth/signin?next=${next}`, request.url), 307)
+      }
+
+      // Must have paid. maybeSingle() so a missing profile row is "not paid"
+      // instead of throwing (handles the brief race with the
+      // handle_new_user_profile trigger at signup time).
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('paid_at')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!profile?.paid_at) {
+        return NextResponse.redirect(new URL('/auth/signup/payment', request.url), 307)
+      }
+
+      // Must have a Legacy Contact (except for unguarded pages).
+      if (!UNGUARDED_APP_PREFIXES.some(p => pathname.startsWith(p))) {
+        const { data: lc } = await supabase
+          .from('legacy_contacts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('contact_type', 'primary')
+          .maybeSingle()
+
+        if (!lc) {
+          return NextResponse.redirect(new URL('/app/onboarding/legacy-contact', request.url), 307)
+        }
+      }
+    }
+
+    return response
+  } catch (err) {
+    // Fail closed for /app/* — auth or DB errors bounce the user to signin
+    // rather than serving a 500. Public paths pass through so a Supabase
+    // outage doesn't take down /privacy, /terms, the auth pages, etc.
+    console.error('[proxy] error:', err)
+    if (pathname.startsWith('/app')) {
+      const next = encodeURIComponent(pathname + search)
+      return NextResponse.redirect(new URL(`/auth/signin?next=${next}`, request.url), 307)
     }
     return response
   }
-
-  // ── /app/* routes ────────────────────────────────────────────────────────
-  if (pathname.startsWith('/app')) {
-    // Must be authenticated.
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/auth/signin'
-      return NextResponse.redirect(url)
-    }
-
-    // Must have paid.
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('paid_at')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!profile?.paid_at) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/auth/signup/payment'
-      return NextResponse.redirect(url)
-    }
-
-    // Must have a Legacy Contact (except for unguarded pages).
-    if (!UNGUARDED_APP_PREFIXES.some(p => pathname.startsWith(p))) {
-      const { data: lc } = await supabase
-        .from('legacy_contacts')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('contact_type', 'primary')
-        .maybeSingle()
-
-      if (!lc) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/app/onboarding/legacy-contact'
-        return NextResponse.redirect(url)
-      }
-    }
-  }
-
-  return response
 }
 
 export const config = {
