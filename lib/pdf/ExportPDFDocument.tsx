@@ -2,6 +2,49 @@ import { Document, Page, Text, View, Image, StyleSheet, Svg, Path, LinearGradien
 import type { PDFData, PDFFinancialAccount, PDFFinancialDebt, PDFContactEntry } from './types'
 
 // ---------------------------------------------------------------------------
+// Logo URL resolution — works in browser (uses window.location.origin as a
+// fallback) and in Node (release script must supply a fully-qualified URL).
+// ---------------------------------------------------------------------------
+
+function resolveLogoUrl(override?: string): string | null {
+  if (override) return override
+  if (typeof window !== 'undefined') return `${window.location.origin}/nightside-wordmark-black.png`
+  return null
+}
+
+// ---------------------------------------------------------------------------
+// WatermarkBanner — fixed top-of-page banner rendered when the release script
+// runs in --dry-run mode. Returns null when no watermark text is supplied,
+// so production rendering is unaffected.
+// ---------------------------------------------------------------------------
+
+export function WatermarkBanner({ text }: { text?: string }) {
+  if (!text) return null
+  return (
+    <View fixed style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: '#C04828',
+      paddingTop: 4,
+      paddingBottom: 4,
+      paddingLeft: 10,
+      paddingRight: 10,
+      zIndex: 1000,
+    }}>
+      <Text style={{
+        fontFamily: 'Helvetica-Bold',
+        fontSize: 10,
+        color: '#FFFFFF',
+        textAlign: 'center',
+        letterSpacing: 1,
+      }}>{text}</Text>
+    </View>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
 
@@ -237,13 +280,15 @@ const S = StyleSheet.create({
 // Shared layout fragments
 // ---------------------------------------------------------------------------
 
-export function DocHeader({ userName }: { userName?: string }) {
-  const logoUrl = `${window.location.origin}/nightside-wordmark-black.png`
+export function DocHeader({ userName, logoUrl }: { userName?: string; logoUrl?: string }) {
+  const resolvedLogo = resolveLogoUrl(logoUrl)
   return (
     <View fixed style={S.header}>
       <View style={S.headerRow}>
-        {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM */}
-        <Image src={logoUrl} style={{ height: 15 }} />
+        {resolvedLogo ? (
+          // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM
+          <Image src={resolvedLogo} style={{ height: 15 }} />
+        ) : null}
         {userName ? (
           <Text style={{ fontFamily: 'Helvetica', fontSize: 9, color: 'rgba(19,4,38,0.5)' }}>{userName}</Text>
         ) : null}
@@ -709,14 +754,15 @@ export function LegacyMapContent({ data }: { data: Extract<PDFData, { kind: 'leg
 // Legacy Map landscape page (A4 landscape)
 // ---------------------------------------------------------------------------
 
-export function LegacyMapLandscapePage({ data }: { data: Extract<PDFData, { kind: 'legacy_map' }> }) {
+export function LegacyMapLandscapePage({ data, logoUrl, watermark }: { data: Extract<PDFData, { kind: 'legacy_map' }>; logoUrl?: string; watermark?: string }) {
   const sorted = [...data.moments].sort((a, b) => a.xPercent - b.xPercent)
   const n = sorted.length
   const reflection = data.legacyProjects
-  const logoUrl = `${window.location.origin}/nightside-wordmark-black.png`
+  const resolvedLogo = resolveLogoUrl(logoUrl)
 
   return (
     <Page size="A4" orientation="landscape" style={SLand.page}>
+      <WatermarkBanner text={watermark} />
       {/* Header */}
       <View style={SLand.header}>
         <View style={SLand.headerInner}>
@@ -844,8 +890,10 @@ export function LegacyMapLandscapePage({ data }: { data: Extract<PDFData, { kind
       <View style={SLand.landFooter}>
         <View style={{ height: 0.5, backgroundColor: '#E8E4D8', marginBottom: 8 }} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM */}
-          <Image src={logoUrl} style={{ height: 10 }} />
+          {resolvedLogo ? (
+            // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM
+            <Image src={resolvedLogo} style={{ height: 10 }} />
+          ) : <View style={{ height: 10 }} />}
           <Text style={{ fontFamily: 'Helvetica', fontSize: 7.5, color: '#555555' }}>
             Generated {data.monthYear || ''}
           </Text>
@@ -859,9 +907,9 @@ export function LegacyMapLandscapePage({ data }: { data: Extract<PDFData, { kind
 // Main document export
 // ---------------------------------------------------------------------------
 
-export default function ExportPDFDocument({ data }: { data: PDFData }) {
+export default function ExportPDFDocument({ data, logoUrl, watermark }: { data: PDFData; logoUrl?: string; watermark?: string }) {
   if (data.kind === 'legacy_map') {
-    return <Document><LegacyMapLandscapePage data={data} /></Document>
+    return <Document><LegacyMapLandscapePage data={data} logoUrl={logoUrl} watermark={watermark} /></Document>
   }
 
   const isActivity = data.kind === 'values_ranking' || data.kind === 'fears_ranking'
@@ -869,7 +917,8 @@ export default function ExportPDFDocument({ data }: { data: PDFData }) {
   return (
     <Document>
       <Page size="A4" style={S.page}>
-        <DocHeader userName={data.userName} />
+        <WatermarkBanner text={watermark} />
+        <DocHeader userName={data.userName} logoUrl={logoUrl} />
         <DocFooter />
 
         <TitleBlock

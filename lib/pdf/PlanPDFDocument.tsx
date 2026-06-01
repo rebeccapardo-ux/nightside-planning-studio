@@ -12,6 +12,7 @@ import {
   DevicesAccountsContent,
   LegacyMapContent,
   LegacyMapLandscapePage,
+  WatermarkBanner,
 } from './ExportPDFDocument'
 import type { PDFData } from './types'
 
@@ -69,6 +70,13 @@ export type PlanPDFProps = {
   domainStatuses: PlanDomainStatus[]
   materials: PlanMaterial[]
   mode: 'summary' | 'full'
+  // Optional: explicit logo URL for SSR contexts (release script). Browser
+  // contexts fall back to window.location.origin via resolveLogoUrl.
+  logoUrl?: string
+  // Optional: visible top-of-page banner (e.g. "DRAFT") rendered on every
+  // page when the release script runs in --dry-run mode. Unset for normal
+  // in-app exports.
+  watermark?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -291,15 +299,20 @@ const MP = StyleSheet.create({
 // ---------------------------------------------------------------------------
 
 function SummaryPage({ planProps }: { planProps: PlanPDFProps }) {
-  const logoUrl = `${window.location.origin}/nightside-wordmark-black.png`
+  const resolvedLogo = planProps.logoUrl
+    ?? (typeof window !== 'undefined' ? `${window.location.origin}/nightside-wordmark-black.png` : null)
 
   return (
     <Page size="A4" style={SP.page}>
+      <WatermarkBanner text={planProps.watermark} />
+
       {/* Fixed header */}
       <View fixed style={SP.fixedHeader}>
         <View style={SP.headerRow}>
-          {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM */}
-          <Image src={logoUrl} style={{ height: 14 }} />
+          {resolvedLogo ? (
+            // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image renders to PDF, not DOM
+            <Image src={resolvedLogo} style={{ height: 14 }} />
+          ) : <View style={{ height: 14 }} />}
           <Text style={{ fontFamily: 'Helvetica', fontSize: 9, color: 'rgba(19,4,38,0.45)' }}>
             {planProps.userName}
           </Text>
@@ -436,13 +449,14 @@ function SummaryPage({ planProps }: { planProps: PlanPDFProps }) {
 // Material page (portrait, one per non-legacy-map material)
 // ---------------------------------------------------------------------------
 
-function MaterialPage({ material }: { material: PlanMaterial }) {
+function MaterialPage({ material, logoUrl, watermark }: { material: PlanMaterial; logoUrl?: string; watermark?: string }) {
   const data = material.pdfData
   const isActivity = data.kind === 'values_ranking' || data.kind === 'fears_ranking'
 
   return (
     <Page size="A4" style={MP.page}>
-      <DocHeader userName={data.userName} />
+      <WatermarkBanner text={watermark} />
+      <DocHeader userName={data.userName} logoUrl={logoUrl} />
       <DocFooter />
       <TitleBlock
         displayTitle={data.displayTitle}
@@ -471,9 +485,9 @@ export default function PlanPDFDocument({ planProps }: { planProps: PlanPDFProps
       <SummaryPage planProps={planProps} />
       {planProps.mode === 'full' && planProps.materials.map((material, i) => {
         if (material.pdfData.kind === 'legacy_map') {
-          return <LegacyMapLandscapePage key={i} data={material.pdfData} />
+          return <LegacyMapLandscapePage key={i} data={material.pdfData} logoUrl={planProps.logoUrl} watermark={planProps.watermark} />
         }
-        return <MaterialPage key={i} material={material} />
+        return <MaterialPage key={i} material={material} logoUrl={planProps.logoUrl} watermark={planProps.watermark} />
       })}
     </Document>
   )
