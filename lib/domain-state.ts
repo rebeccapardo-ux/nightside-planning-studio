@@ -259,6 +259,20 @@ function deepEqual(a: DomainState, b: DomainState): boolean {
 
 // ---------- public API --------------------------------------------------
 
+// DB-only read of a user's domain_state, for server / Node contexts (e.g. the
+// Legacy Contact release script) where there is no browser localStorage to
+// merge. The user_profiles.domain_state column is the authoritative source of
+// truth; loadDomainState()'s localStorage + user_metadata backfill exists only
+// to migrate a user's own device and is irrelevant — and unreachable — when
+// rendering on a deceased user's behalf. Requires an explicit client (a Node
+// caller must pass a service-role client; there is no browser fallback here).
+export async function loadDomainStateFromDB(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<DomainState> {
+  return fetchRaw(supabase, userId)
+}
+
 // Load the user's domain_state, performing one-time backfill from legacy
 // localStorage keys and auth.user_metadata.sync_* flags if needed.
 // Idempotent across reloads; safe to call from any consumer.
