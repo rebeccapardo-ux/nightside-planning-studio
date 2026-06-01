@@ -565,7 +565,7 @@ export default function AccountPage() {
 
         {/* ── Account access ── */}
         <section style={{ marginBottom: 48 }}>
-          <h2 style={sectionH2}>Account Access</h2>
+          <h2 id="account-access" style={sectionH2}>Account Access</h2>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 16px' }}>
             These credentials require additional verification when changed.
           </p>

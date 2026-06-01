@@ -33,9 +33,27 @@ export default function ResetPasswordPage() {
     async function init() {
       const url = new URL(window.location.href)
       const code = url.searchParams.get('code')
+      const hashHasToken = window.location.hash.includes('access_token=')
       const errParam = url.searchParams.get('error') || url.hash.includes('error=')
 
       if (errParam) {
+        if (!cancelled) setPhase('invalid')
+        return
+      }
+
+      // Recovery-intent precheck: if the URL has neither a PKCE code nor a
+      // hash access token, this isn't a real reset flow. Logged-in users
+      // get sent to the proper change-password section of My Account
+      // (which requires their current password); logged-out users see the
+      // invalid-link state.
+      const hasRecoveryIntent = !!code || hashHasToken
+      if (!hasRecoveryIntent) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (cancelled) return
+        if (session) {
+          router.replace('/app/account#account-access')
+          return
+        }
         if (!cancelled) setPhase('invalid')
         return
       }
