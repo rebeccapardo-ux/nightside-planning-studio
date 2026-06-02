@@ -50,12 +50,17 @@ export type PlanCheckboxItem = {
   checked: boolean
 }
 
+export type PlanReadinessGroup = {
+  title: string
+  items: PlanCheckboxItem[]
+}
+
 export type PlanDomainStatus = {
   title: string
   label: string
   topicsStarted: number
   totalTopics: number
-  checkboxItems: PlanCheckboxItem[]
+  readinessGroups: PlanReadinessGroup[]
 }
 
 export type PlanMaterial = {
@@ -217,6 +222,13 @@ const SP = StyleSheet.create({
     fontSize: 9,
     color: 'rgba(19,4,38,0.5)',
     flex: 1,
+  },
+  psRowTitle: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 9,
+    color: 'rgba(19,4,38,0.7)',
+    marginTop: 4,
+    marginBottom: 3,
   },
   psCheckboxChecked: {
     width: 9,
@@ -380,18 +392,23 @@ function SummaryPage({ planProps }: { planProps: PlanPDFProps }) {
                   <View key={di} style={{ flex: 1, paddingRight: di === 0 ? 12 : 0, paddingLeft: di === 1 ? 12 : 0 }}>
                     <Text style={SP.psDomainName}>{domain.title}</Text>
                     <Text style={SP.psDomainLabel}>{domain.label}</Text>
-                    {domain.topicsStarted > 0 && [...domain.checkboxItems].sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? -1 : 1)).map((item, ti) => (
-                      <View key={ti} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
-                        {item.checked ? (
-                          <View style={SP.psCheckboxChecked}>
-                            <Svg width="6" height="5" viewBox="0 0 8 6">
-                              <Path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </Svg>
+                    {domain.topicsStarted > 0 && domain.readinessGroups.map((group, gi) => (
+                      <View key={gi}>
+                        <Text style={SP.psRowTitle}>{group.title}</Text>
+                        {group.items.map((item, ti) => (
+                          <View key={ti} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+                            {item.checked ? (
+                              <View style={SP.psCheckboxChecked}>
+                                <Svg width="6" height="5" viewBox="0 0 8 6">
+                                  <Path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </Svg>
+                              </View>
+                            ) : (
+                              <View style={SP.psCheckboxUnchecked} />
+                            )}
+                            <Text style={item.checked ? SP.psTopicName : SP.psTopicNameMuted}>{item.label}</Text>
                           </View>
-                        ) : (
-                          <View style={SP.psCheckboxUnchecked} />
-                        )}
-                        <Text style={item.checked ? SP.psTopicName : SP.psTopicNameMuted}>{item.label}</Text>
+                        ))}
                       </View>
                     ))}
                   </View>

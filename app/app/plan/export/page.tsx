@@ -291,20 +291,25 @@ export default function PlanExportPage() {
                     <div key={i}>
                       <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 4px' }}>{domain.title}</p>
                       <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', margin: '0 0 8px' }}>{domain.label}</p>
-                      {domain.topicsStarted > 0 && [...domain.checkboxItems].sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? -1 : 1)).map((item, j) => (
-                        <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>
-                          {item.checked ? (
-                            <div style={{ width: 13, height: 13, background: '#2C3777', borderRadius: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                                <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
+                      {domain.topicsStarted > 0 && domain.readinessGroups.map((group, gi) => (
+                        <div key={gi} style={{ marginTop: 6 }}>
+                          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 600, color: 'rgba(19,4,38,0.7)', margin: '0 0 3px' }}>{group.title}</p>
+                          {group.items.map((item, j) => (
+                            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>
+                              {item.checked ? (
+                                <div style={{ width: 13, height: 13, background: '#2C3777', borderRadius: 3, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                    <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                </div>
+                              ) : (
+                                <div style={{ width: 13, height: 13, border: '1.5px solid rgba(19,4,38,0.25)', borderRadius: 3, flexShrink: 0 }} />
+                              )}
+                              <span style={{ fontFamily: hv, fontSize: 12, color: item.checked ? '#130426' : 'rgba(19,4,38,0.65)' }}>
+                                {item.label}
+                              </span>
                             </div>
-                          ) : (
-                            <div style={{ width: 13, height: 13, border: '1.5px solid rgba(19,4,38,0.25)', borderRadius: 3, flexShrink: 0 }} />
-                          )}
-                          <span style={{ fontFamily: hv, fontSize: 12, color: item.checked ? '#130426' : 'rgba(19,4,38,0.65)' }}>
-                            {item.label}
-                          </span>
+                          ))}
                         </div>
                       ))}
                     </div>

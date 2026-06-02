@@ -5,7 +5,7 @@
 import { getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
 import type { DomainState } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from './types'
-import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanCheckboxItem } from './PlanPDFDocument'
+import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanReadinessGroup } from './PlanPDFDocument'
 import { DOMAIN_STRUCTURES } from '@/lib/domain-structure'
 
 // ---------------------------------------------------------------------------
@@ -608,23 +608,23 @@ export function buildDomainStatuses(
       }
     }
 
-    // Individual checkbox items for display (flat)
-    const checkboxItems: PlanCheckboxItem[] = []
-    for (const r of readiness) {
+    // Checkbox items grouped under their readiness row title, in definition order.
+    const readinessGroups: PlanReadinessGroup[] = readiness.map(r => {
       const vals = dbDomain
         ? getCheckboxes(domainState, dbDomain.id, r.key, r.checkboxes.length)
         : r.checkboxes.map(() => false)
-      for (let i = 0; i < r.checkboxes.length; i++) {
-        checkboxItems.push({ label: r.checkboxes[i], checked: vals[i] === true })
+      return {
+        title: r.title,
+        items: r.checkboxes.map((label, i) => ({ label, checked: vals[i] === true })),
       }
-    }
+    })
 
     return {
       title: dbDomain?.title ?? def.displayName,
       label: qualitativeLabel(topicsStarted, totalTopics),
       topicsStarted,
       totalTopics,
-      checkboxItems,
+      readinessGroups,
     }
   })
 }
