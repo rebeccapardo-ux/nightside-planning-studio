@@ -89,7 +89,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           explanation: '',
           checkboxes: [
             'I have identified a substitute decision-maker for my care',
-            'They have agreed to take on this role',
+            'My substitute decision-maker has agreed to take on this role',
             'I have legally documented my decision-maker',
           ],
         },
