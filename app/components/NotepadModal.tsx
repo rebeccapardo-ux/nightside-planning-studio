@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { createNote } from '@/lib/notes'
 import VoiceNoteButton from './VoiceNoteButton'
 import AutosaveNotice from './AutosaveNotice'
@@ -24,37 +23,19 @@ export default function NotepadModal({
 
   const composerRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const pathname = usePathname()
 
-  // Pages with dark backgrounds — ghost panel should be cream with dark text
-  const darkPageBg =
-    pathname?.startsWith('/app/reflect') ||
-    pathname?.startsWith('/app/reflect/prompts') ||
-    pathname?.startsWith('/app/capture') ||
-    pathname?.startsWith('/app/plan') ||
-    pathname?.startsWith('/app/domains')
-
-  const ghost = darkPageBg
-    ? {
-        bg: '#F8F4EB',
-        border: '1px solid rgba(19,4,38,0.20)',
-        shadow: '0 8px 32px rgba(0,0,0,0.30)',
-        textareaBg: 'rgba(19,4,38,0.07)',
-        textareaBorder: '1px solid rgba(19,4,38,0.18)',
-        placeholderClass: 'placeholder:text-[#130426]/70',
-        iconColor: '#130426',
-        labelColor: '#130426',
-      }
-    : {
-        bg: '#2d3a6b',
-        border: '1px solid rgba(187,171,244,0.55)',
-        shadow: '0 8px 32px rgba(0,0,0,0.45)',
-        textareaBg: 'rgba(255,255,255,0.1)',
-        textareaBorder: '1px solid rgba(255,255,255,0.2)',
-        placeholderClass: 'placeholder:text-white/60',
-        iconColor: 'rgba(255,255,255,0.75)',
-        labelColor: 'rgba(255,255,255,0.75)',
-      }
+  // Ghost hover preview is always cream with dark text (matches the plan page),
+  // on every route — so the placeholder is legible regardless of page theme.
+  const ghost = {
+    bg: '#F8F4EB',
+    border: '1px solid rgba(19,4,38,0.20)',
+    shadow: '0 8px 32px rgba(0,0,0,0.30)',
+    textareaBg: 'rgba(19,4,38,0.07)',
+    textareaBorder: '1px solid rgba(19,4,38,0.18)',
+    placeholderClass: 'placeholder:text-[#130426]/70',
+    iconColor: '#130426',
+    labelColor: '#130426',
+  }
 
   // Auto-resize panel composer textarea
   useEffect(() => {
