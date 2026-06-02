@@ -380,9 +380,14 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
   },
 ]
 
-// Fast lookup: prompt label → metadata
+// Fast lookup: prompt label → metadata (legacy key; retained as a fallback for
+// in-memory notes that don't yet carry prompt_id)
 export const PROMPT_META_BY_LABEL: Record<string, ReflectPromptMeta> =
   Object.fromEntries(REFLECT_PROMPT_META.map((p) => [p.label, p]))
+
+// Fast lookup: stable prompt id → metadata (preferred key)
+export const PROMPT_META_BY_ID: Record<string, ReflectPromptMeta> =
+  Object.fromEntries(REFLECT_PROMPT_META.map((p) => [p.id, p]))
 
 // ---------------------------------------------------------------------------
 // ACTIVITY METADATA

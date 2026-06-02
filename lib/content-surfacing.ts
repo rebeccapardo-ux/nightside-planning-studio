@@ -23,26 +23,47 @@ import {
   type Domain,
   type SupplementaryDocQuestion,
   type Relevance,
+  type ReflectPromptMeta,
   PROMPT_META_BY_LABEL,
+  PROMPT_META_BY_ID,
   ACTIVITY_META_BY_ID,
 } from './content-metadata'
 
 export type Tier = 1 | 2 | 3
 
 export type NoteSourceKind =
-  | 'reflect_prompt'   // origin_type === 'prompt', prompt_context resolves to known prompt
+  | 'reflect_prompt'   // origin_type === 'prompt', resolves to a known prompt
   | 'activity'         // origin_type tied to a known activity (future)
   | 'notepad'          // origin_type === 'freeform' or unknown
+
+// ---------------------------------------------------------------------------
+// Prompt metadata resolution
+//
+// Resolve a prompt note to its metadata by the stable prompt_id first; fall back
+// to the legacy label (prompt_context) only for in-memory notes that don't yet
+// carry prompt_id (e.g. selects/DTOs not migrated to fetch it). The database is
+// fully backfilled, so the id path is the live one; the label fallback is
+// transitional and can be removed once every note source selects prompt_id.
+// ---------------------------------------------------------------------------
+
+function metaForNote(note: Note): ReflectPromptMeta | undefined {
+  if (note.prompt_id) {
+    const byId = PROMPT_META_BY_ID[note.prompt_id]
+    if (byId) return byId
+  }
+  if (note.prompt_context) return PROMPT_META_BY_LABEL[note.prompt_context]
+  return undefined
+}
 
 // ---------------------------------------------------------------------------
 // Source classification
 // ---------------------------------------------------------------------------
 
 export function classifyNoteSource(note: Note): NoteSourceKind {
-  if (note.origin_type === 'prompt' && note.prompt_context) {
-    // Verify the label actually maps to known metadata
-    if (PROMPT_META_BY_LABEL[note.prompt_context]) return 'reflect_prompt'
-    // Has prompt origin but label not in metadata — treat as unknown
+  if (note.origin_type === 'prompt') {
+    // Verify it resolves to known metadata (by id, then label)
+    if (metaForNote(note)) return 'reflect_prompt'
+    // Has prompt origin but doesn't resolve — treat as unknown
     return 'notepad'
   }
   // freeform or no origin_type
@@ -62,8 +83,8 @@ export function getNoteSupDocTier(
   // Notepad notes are never auto-surfaced — always Tier 3
   if (kind === 'notepad') return 3
 
-  if (kind === 'reflect_prompt' && note.prompt_context) {
-    const meta = PROMPT_META_BY_LABEL[note.prompt_context]
+  if (kind === 'reflect_prompt') {
+    const meta = metaForNote(note)
     if (!meta?.supplementaryDocumentRelevance) return 3
     const relevance: Relevance | undefined = meta.supplementaryDocumentRelevance[question]
     if (relevance === 'primary') return 1
@@ -93,8 +114,8 @@ export function getNotedomainTier(
     return linkedNoteIds?.has(note.id) ? 1 : 3
   }
 
-  if (kind === 'reflect_prompt' && note.prompt_context) {
-    const meta = PROMPT_META_BY_LABEL[note.prompt_context]
+  if (kind === 'reflect_prompt') {
+    const meta = metaForNote(note)
     if (!meta) return 3
     if (meta.domainRelevance.includes(domain)) return 1
     return 3

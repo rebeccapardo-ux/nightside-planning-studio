@@ -28,33 +28,17 @@ function getDomainAllowedTypes(domainTitle: string): FragmentType[] {
 }
 
 // ---------------------------------------------------------------------------
-// Source D — reflect prompt notes, domain-specific allowed lists
-// Exact prompt_context strings must match REFLECT_PROMPT_META labels exactly.
+// Source D — reflect prompt notes, domain-specific allowed lists.
+// Keyed by stable REFLECT_PROMPT_META id (prompt_N), matched against notes.prompt_id.
 // ---------------------------------------------------------------------------
 
-const DOMAIN_FRAGMENT_PROMPTS: Record<string, string[]> = {
+const DOMAIN_FRAGMENT_PROMPT_IDS: Record<string, string[]> = {
   legacy: [
-    'What matters most to you right now?',
-    'What are a few of your favorite special traditions?',
-    'If you could leave behind a time capsule for future generations of your family, what 3 items would you include and why?',
-    'If you could write your own obituary, what key elements would you include?',
-    'What are three things that bring you the most joy in life?',
-    "Think of a mentor or role model who has passed. What's the most valuable lesson they left you with?",
-    'If you could relive one moment in your life, not to change it but to experience it again, what moment would you choose?',
-    "If you had the chance to write a letter to your younger self about life's most important lessons, what would you include?",
-    "What's one thing you hope people will always remember about you, no matter how much time has passed?",
-    'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
-    'If you could be remembered for one specific contribution to your community, family, or loved ones, what would it be?',
-    "You have the opportunity to donate to one cause in your will. What's the focus of your legacy gift?",
+    'prompt_1', 'prompt_7', 'prompt_10', 'prompt_12', 'prompt_35', 'prompt_36',
+    'prompt_37', 'prompt_38', 'prompt_39', 'prompt_40', 'prompt_42', 'prompt_43',
   ],
   deathcare: [
-    'What matters most to you right now?',
-    'If you could choose the setting for your final moments, where would you be and who would be with you?',
-    'What are a few of your favorite special traditions?',
-    'Have you ever witnessed someone have a "good death"? What made it good?',
-    "What's one thing you hope people will always remember about you, no matter how much time has passed?",
-    'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
-    'If you could choose one personal item to be included in your final resting place, what would it be?',
+    'prompt_1', 'prompt_5', 'prompt_7', 'prompt_11', 'prompt_39', 'prompt_40', 'prompt_41',
   ],
 }
 
@@ -189,7 +173,7 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
 
   // Source D — reflect prompt notes for this domain
   const domainKey = getDomainKeyForFragments(domainTitle)
-  const allowedPrompts = domainKey ? (DOMAIN_FRAGMENT_PROMPTS[domainKey] ?? []) : []
+  const allowedPromptIds = domainKey ? (DOMAIN_FRAGMENT_PROMPT_IDS[domainKey] ?? []) : []
 
   // Fetch all sources in parallel (Source D only runs when domain has allowed prompts)
   const [valuesRes, reflectRes, adRes, promptNotesRes] = await Promise.all([
@@ -208,13 +192,13 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
       .select('id, title, content, activity, document_type')
       .eq('user_id', user.id)
       .eq('document_type', 'advance_directive_supplement'),
-    allowedPrompts.length > 0
+    allowedPromptIds.length > 0
       ? supabase
           .from('notes')
-          .select('id, content, prompt_context')
+          .select('id, content, prompt_id')
           .eq('user_id', user.id)
           .eq('origin_type', 'prompt')
-          .in('prompt_context', allowedPrompts)
+          .in('prompt_id', allowedPromptIds)
       : Promise.resolve({ data: null, error: null }),
   ])
 
@@ -258,8 +242,8 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
     }
   }
 
-  // SOURCE D — Reflect prompt notes: exact prompt_context match, domain-specific list
-  for (const note of ((promptNotesRes.data ?? []) as { id: string; content: string; prompt_context: string | null }[])) {
+  // SOURCE D — Reflect prompt notes: filtered by prompt_id, domain-specific list
+  for (const note of ((promptNotesRes.data ?? []) as { id: string; content: string; prompt_id: string | null }[])) {
     if (typeof note.content === 'string' && note.content.trim()) {
       const phrase = extractReflectPhrase(note.content)
       if (phrase) addCandidate(phrase, 'B')

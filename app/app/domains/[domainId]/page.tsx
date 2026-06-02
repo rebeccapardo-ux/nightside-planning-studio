@@ -90,7 +90,7 @@ type OrientationItemDef = {
   relatedActivities?: string[]
   relatedDocumentTypes?: string[]
   learnHref?: string
-  allowedReflectPrompts?: string[]
+  allowedReflectPromptIds?: string[]
 }
 
 type ReadinessItemDef = {
@@ -102,7 +102,7 @@ type ReadinessItemDef = {
   checkboxes: string[]
   checkboxHelpers?: (string | null)[]
   staticLinks?: { href: string; label: string }[]
-  // allowedReflectPrompts is intentionally absent — Practical Readiness rows never auto-surface notes
+  // allowedReflectPromptIds is intentionally absent — Practical Readiness rows never auto-surface notes
 }
 
 type DomainStructure = {
@@ -121,16 +121,9 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           explanation: '',
           relatedActivities: ['values_ranking', 'fears_ranking'],
           learnHref: '/app/learn/healthcare',
-          allowedReflectPrompts: [
-            'What would you want someone making decisions for you to understand?',
-            'What matters most to you right now?',
-            'If you could choose the setting for your final moments, where would you be and who would be with you?',
-            'What do you worry most about when thinking about your future health and care?',
-            'If you needed help going to the bathroom or bathing, who would you feel most comfortable asking?',
-            'Fill in the blank: I want to live in my body as long as…',
-            'What does quality of life mean to you?',
-            'What does a good day look like for you?',
-            'If you could control one aspect of your death, what would it be?',
+          allowedReflectPromptIds: [
+            'prompt_2', 'prompt_1', 'prompt_5', 'prompt_20', 'prompt_19',
+            'prompt_25', 'prompt_26', 'prompt_22', 'prompt_30',
           ],
         },
         {
@@ -144,8 +137,8 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Consider who I would want to make decisions for me if I were not able to',
           explanation: '',
           learnHref: '/app/learn/healthcare',
-          allowedReflectPrompts: [
-            'If you were unable to make decisions for yourself, who would you want to make those decisions, and why?',
+          allowedReflectPromptIds: [
+            'prompt_6',
           ],
         },
       ],
@@ -186,9 +179,8 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Reflect on my wishes for my body\'s final resting place',
           explanation: '',
           learnHref: '/app/learn/deathcare',
-          allowedReflectPrompts: [
-            'How would you want your body to be handled after death, and why?',
-            'If you could choose one personal item to be included in your final resting place, what would it be?',
+          allowedReflectPromptIds: [
+            'prompt_9', 'prompt_41',
           ],
         },
         {
@@ -288,8 +280,8 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Reflect on rituals or ceremonies that are meaningful to me',
           explanation: '',
           learnHref: '/app/learn/ritual',
-          allowedReflectPrompts: [
-            'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
+          allowedReflectPromptIds: [
+            'prompt_40',
           ],
         },
         {
@@ -323,11 +315,8 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           explanation: '',
           relatedActivities: ['legacy_map'],
           learnHref: '/app/learn/legacy',
-          allowedReflectPrompts: [
-            "Reflecting on challenges you've had in the past, what has brought you strength and comfort?",
-            'Who knows the best stories about you?',
-            'If you could relive one moment in your life, not to change it but to experience it again, what moment would you choose?',
-            "If you had the chance to write a letter to your younger self about life's most important lessons, what would you include?",
+          allowedReflectPromptIds: [
+            'prompt_24', 'prompt_31', 'prompt_37', 'prompt_38',
           ],
         },
         {
@@ -335,9 +324,8 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Consider how I want to be remembered',
           explanation: '',
           learnHref: '/app/learn/legacy',
-          allowedReflectPrompts: [
-            "What's one thing you hope people will always remember about you, no matter how much time has passed?",
-            'If you could be remembered for one specific contribution to your community, family, or loved ones, what would it be?',
+          allowedReflectPromptIds: [
+            'prompt_39', 'prompt_42',
           ],
         },
         {
@@ -345,10 +333,8 @@ const DOMAIN_STRUCTURE_MAP: { match: string; structure: DomainStructure }[] = [
           title: 'Reflect on meaningful relationships and personal impact',
           explanation: '',
           learnHref: '/app/learn/legacy',
-          allowedReflectPrompts: [
-            'Is there anything you would want to be forgiven for before you die?',
-            'Is there anyone or anything you would want to forgive before you die?',
-            'Who do you trust with your secrets?',
+          allowedReflectPromptIds: [
+            'prompt_27', 'prompt_28', 'prompt_32',
           ],
         },
       ],
@@ -1020,7 +1006,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 type OpenRowPanel = {
   rowKey: string
   rowTitle: string
-  allowedReflectPrompts?: string[]
+  allowedReflectPromptIds?: string[]
 } | null
 
 function PlanningStatusSection({
@@ -1061,15 +1047,15 @@ function PlanningStatusSection({
   const [openRowPanel, setOpenRowPanel] = useState<OpenRowPanel>(null)
   const [checkboxes, setCheckboxes] = useState<Record<string, boolean[]>>({})
 
-  function resolveRowNotes(itemKey: string, allowedReflectPrompts?: string[]): {
+  function resolveRowNotes(itemKey: string, allowedReflectPromptIds?: string[]): {
     notes: Note[]
     manualNoteIds: Set<string>
   } {
-    const autoNotes = allowedReflectPrompts?.length
+    const autoNotes = allowedReflectPromptIds?.length
       ? eligibleNotes.filter(n =>
           n.origin_type === 'prompt' &&
-          n.prompt_context != null &&
-          allowedReflectPrompts.includes(n.prompt_context)
+          n.prompt_id != null &&
+          allowedReflectPromptIds.includes(n.prompt_id)
         )
       : []
 
@@ -1091,13 +1077,13 @@ function PlanningStatusSection({
     return { notes: result, manualNoteIds }
   }
 
-  function rowNoteCount(itemKey: string, allowedReflectPrompts?: string[]): number {
-    return resolveRowNotes(itemKey, allowedReflectPrompts).notes.length
+  function rowNoteCount(itemKey: string, allowedReflectPromptIds?: string[]): number {
+    return resolveRowNotes(itemKey, allowedReflectPromptIds).notes.length
   }
 
   function openPanel(item: OrientationItemDef | ReadinessItemDef) {
-    const allowedReflectPrompts = 'allowedReflectPrompts' in item ? item.allowedReflectPrompts : undefined
-    setOpenRowPanel({ rowKey: item.key, rowTitle: item.title, allowedReflectPrompts })
+    const allowedReflectPromptIds = 'allowedReflectPromptIds' in item ? item.allowedReflectPromptIds : undefined
+    setOpenRowPanel({ rowKey: item.key, rowTitle: item.title, allowedReflectPromptIds })
   }
   const [orientStatuses, setOrientStatuses] = useState<Record<string, DomainItemStatus>>({})
 
@@ -1230,7 +1216,7 @@ function PlanningStatusSection({
     }
 
     const resolvedPanel = openRowPanel
-      ? resolveRowNotes(openRowPanel.rowKey, openRowPanel.allowedReflectPrompts)
+      ? resolveRowNotes(openRowPanel.rowKey, openRowPanel.allowedReflectPromptIds)
       : null
 
     return (
@@ -1340,7 +1326,7 @@ function PlanningStatusSection({
               </p>
               <div className="space-y-3">
                 {structure.orientation.map((item) => {
-                  const count = rowNoteCount(item.key, item.allowedReflectPrompts)
+                  const count = rowNoteCount(item.key, item.allowedReflectPromptIds)
                   return (
                     <OrientationCard
                       key={item.key}

@@ -152,7 +152,7 @@ function ReflectPromptsInner() {
         .select('id')
         .eq('user_id', user.id)
         .eq('origin_type', 'prompt')
-        .eq('prompt_context', currentPrompt.label)
+        .eq('prompt_id', currentPrompt.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle()
