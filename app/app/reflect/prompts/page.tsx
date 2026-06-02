@@ -9,7 +9,6 @@ import type { VoiceNoteSaveMode } from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 
-const DEFAULT_CONTAINER_ID = '98bbddf4-bc0c-495f-b3cf-99c65cf7ebc8'
 const REVIEWED_PROMPTS_STORAGE_KEY = 'reflect-reviewed-prompts'
 const AUTOSAVE_DELAY_MS = 1500
 
@@ -177,7 +176,7 @@ function ReflectPromptsInner() {
     if (!user) return null
     const { data: entry, error } = await supabase
       .from('entries')
-      .insert({ title: promptLabel, content, container_id: DEFAULT_CONTAINER_ID, user_id: user.id, section: 'reflect', activity: 'reflection_prompts' })
+      .insert({ title: promptLabel, content, user_id: user.id, section: 'reflect', activity: 'reflection_prompts' })
       .select('id').single()
     if (error) { console.error('ENTRY SAVE ERROR:', JSON.stringify(error, null, 2)); return null }
     return entry
