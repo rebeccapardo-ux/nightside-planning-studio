@@ -7,6 +7,9 @@ export type Note = {
   updated_at: string
   origin_type?: 'prompt' | 'freeform'
   prompt_context?: string | null
+  // Stable prompt identifier (REFLECT_PROMPT_META id, e.g. 'prompt_2'). Replaces
+  // prompt_context as the join key; prompt_context is retained for display.
+  prompt_id?: string | null
   // Voice note fields — undefined/null on all text notes
   note_mode?: 'text' | 'audio'
   audio_url?: string | null
@@ -16,7 +19,7 @@ export type Note = {
 }
 
 const NOTE_SELECT_FIELDS =
-  'id, content, created_at, updated_at, origin_type, prompt_context, note_mode, audio_url, transcript, duration_seconds, transcription_status'
+  'id, content, created_at, updated_at, origin_type, prompt_context, prompt_id, note_mode, audio_url, transcript, duration_seconds, transcription_status'
 
 export type Container = {
   id: string
@@ -102,7 +105,8 @@ export async function fetchNotes(): Promise<Note[]> {
 export async function createPromptNote(
   content: string,
   promptContext: string,
-  entryId: string
+  entryId: string,
+  promptId: string
 ): Promise<Note | null> {
   const trimmed = content.trim()
   if (!trimmed) return null
@@ -122,6 +126,7 @@ export async function createPromptNote(
       content: trimmed,
       origin_type: 'prompt',
       prompt_context: promptContext,
+      prompt_id: promptId,
     })
     .select(NOTE_SELECT_FIELDS)
     .single()
@@ -200,6 +205,7 @@ export async function createVoicePromptNote(params: {
   audioUrl: string
   durationSeconds: number
   promptContext: string
+  promptId: string
   entryId: string
 }): Promise<Note | null> {
   const supabase = createSupabaseBrowserClient()
@@ -213,6 +219,7 @@ export async function createVoicePromptNote(params: {
       content: '',
       origin_type: 'prompt',
       prompt_context: params.promptContext,
+      prompt_id: params.promptId,
       note_mode: 'audio',
       audio_url: params.audioUrl || null,
       duration_seconds: params.durationSeconds,

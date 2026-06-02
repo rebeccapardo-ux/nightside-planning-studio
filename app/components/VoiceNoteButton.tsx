@@ -15,7 +15,7 @@ import type { SaveStatus } from './VoiceNoteRecorder'
 
 export type VoiceNoteSaveMode =
   | { kind: 'freeform' }
-  | { kind: 'prompt'; promptContext: string; entryId: string }
+  | { kind: 'prompt'; promptContext: string; promptId: string; entryId: string }
 
 // ---------------------------------------------------------------------------
 // Props
@@ -80,6 +80,7 @@ export default function VoiceNoteButton({
           audioUrl: '',
           durationSeconds,
           promptContext: saveMode.promptContext,
+          promptId: saveMode.promptId,
           entryId: saveMode.entryId,
         })
         if (!created) throw new Error('Failed to create note record')

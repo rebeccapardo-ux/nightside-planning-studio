@@ -207,7 +207,7 @@ function ReflectPromptsInner() {
         if (!entry) throw new Error('Failed to create entry')
         savedEntryIdRef.current = entry.id
 
-        const note = await createPromptNote(text, promptLabel, entry.id)
+        const note = await createPromptNote(text, promptLabel, entry.id, promptId)
         if (note) savedNoteIdRef.current = note.id
       }
 
@@ -221,12 +221,12 @@ function ReflectPromptsInner() {
 
   async function buildVoicePromptSaveMode(): Promise<VoiceNoteSaveMode | null> {
     if (savedEntryIdRef.current) {
-      return { kind: 'prompt', promptContext: currentPrompt.label, entryId: savedEntryIdRef.current }
+      return { kind: 'prompt', promptContext: currentPrompt.label, promptId: currentPrompt.id, entryId: savedEntryIdRef.current }
     }
     const entry = await createReflectEntry(currentPrompt.label, '')
     if (!entry) return null
     savedEntryIdRef.current = entry.id
-    return { kind: 'prompt', promptContext: currentPrompt.label, entryId: entry.id }
+    return { kind: 'prompt', promptContext: currentPrompt.label, promptId: currentPrompt.id, entryId: entry.id }
   }
 
   function handleTextChange(value: string) {
