@@ -3,75 +3,11 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { loadDomainState, getOrient, getReadyStatus, type DomainState } from '@/lib/domain-state'
+import { getDomainSegments, type DomainSegment } from '@/lib/domain-structure'
 
 // ---------------------------------------------------------------------------
 // Domain segment configs — topic keys in page order (orientation then readiness)
 // ---------------------------------------------------------------------------
-
-type SegmentDef = { key: string; type: 'orient' | 'ready' }
-
-const DOMAIN_SEGMENT_CONFIGS: { match: string; segments: SegmentDef[] }[] = [
-  {
-    match: 'healthcare',
-    segments: [
-      { key: 'values_care_priorities',   type: 'orient' },
-      { key: 'decision_making_framework', type: 'orient' },
-      { key: 'who_would_speak',          type: 'orient' },
-      { key: 'who_will_decide',          type: 'ready'  },
-      { key: 'wishes_clear_shared',      type: 'ready'  },
-    ],
-  },
-  {
-    match: 'deathcare',
-    segments: [
-      { key: 'final_resting_place_wishes', type: 'orient' },
-      { key: 'legal_options_province',     type: 'orient' },
-      { key: 'final_resting_place_wishes', type: 'ready'  },
-    ],
-  },
-  {
-    match: 'will',
-    segments: [
-      { key: 'legal_will_requirements',     type: 'orient' },
-      { key: 'executor_choice',             type: 'orient' },
-      { key: 'asset_wishes',               type: 'orient' },
-      { key: 'care_children_pets',         type: 'orient' },
-      { key: 'additional_estate_planning', type: 'orient' },
-      { key: 'legal_will_in_place',        type: 'ready'  },
-      { key: 'other_estate_planning',      type: 'ready'  },
-      { key: 'professional_support',       type: 'ready'  },
-      { key: 'meaningful_objects',         type: 'ready'  },
-    ],
-  },
-  {
-    match: 'ritual',
-    segments: [
-      { key: 'meaningful_rituals',           type: 'orient' },
-      { key: 'mark_or_remember',             type: 'orient' },
-      { key: 'ritual_ceremony_preferences',  type: 'ready'  },
-    ],
-  },
-  {
-    match: 'legacy',
-    segments: [
-      { key: 'life_story_shaped',    type: 'orient' },
-      { key: 'how_remembered',       type: 'orient' },
-      { key: 'relationships_impact', type: 'orient' },
-      { key: 'sharing_what_matters', type: 'ready'  },
-    ],
-  },
-  {
-    match: 'personal',
-    segments: [
-      { key: 'understand_personal_admin',    type: 'orient' },
-      { key: 'personal_information',         type: 'ready'  },
-      { key: 'important_contacts',           type: 'ready'  },
-      { key: 'financial_information',        type: 'ready'  },
-      { key: 'devices_and_accounts',         type: 'ready'  },
-      { key: 'social_media_digital_assets',  type: 'ready'  },
-    ],
-  },
-]
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -79,7 +15,7 @@ const DOMAIN_SEGMENT_CONFIGS: { match: string; segments: SegmentDef[] }[] = [
 
 type Status = 'not_started' | 'in_progress' | 'complete'
 
-function getSegmentStatusFromState(domainId: string, seg: SegmentDef, state: DomainState): Status {
+function getSegmentStatusFromState(domainId: string, seg: DomainSegment, state: DomainState): Status {
   if (seg.type === 'orient') return getOrient(state, domainId, seg.key)
   return getReadyStatus(state, domainId, seg.key)
 }
@@ -93,14 +29,6 @@ function qualitativeLabel(exploredCount: number, totalCount: number): string {
   return 'Just beginning'
 }
 
-function getDomainSegments(title: string): SegmentDef[] {
-  const lower = title.toLowerCase()
-  for (const config of DOMAIN_SEGMENT_CONFIGS) {
-    if (lower.includes(config.match)) return config.segments
-  }
-  return []
-}
-
 // ---------------------------------------------------------------------------
 // MiniSegmentBar — always 5 segments, proportional fill
 // ---------------------------------------------------------------------------
@@ -111,7 +39,7 @@ function MiniSegmentBar({
   labelColor,
 }: {
   domainId: string
-  segments: SegmentDef[]
+  segments: DomainSegment[]
   labelColor: string
 }) {
   const [statuses, setStatuses] = useState<Status[]>(() =>

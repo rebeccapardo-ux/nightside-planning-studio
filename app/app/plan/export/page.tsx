@@ -283,7 +283,7 @@ export default function PlanExportPage() {
 
           {/* Planning Status */}
           {(() => {
-            // Already ordered by DOMAIN_SEGMENT_CONFIGS (DOMAIN_DISPLAY_ORDER) — no re-sort needed
+            // Already ordered by DOMAIN_STRUCTURES (DOMAIN_DISPLAY_ORDER) — no re-sort needed
             return (
               <SummarySection title="Practical Readiness">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 24px', alignItems: 'start' }}>

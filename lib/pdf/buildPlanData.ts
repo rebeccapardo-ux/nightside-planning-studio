@@ -6,6 +6,7 @@ import { getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
 import type { DomainState } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from './types'
 import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanCheckboxItem } from './PlanPDFDocument'
+import { DOMAIN_STRUCTURES } from '@/lib/domain-structure'
 
 // ---------------------------------------------------------------------------
 // Entry type
@@ -451,93 +452,7 @@ export function buildMaterials(entries: EntryRow[], userName: string): PlanMater
 // in the browser and in a Node release script.
 // ---------------------------------------------------------------------------
 
-type SegmentDef = { key: string; type: 'orient' | 'ready'; label: string; checkboxes?: string[] }
-
 export type DomainContainer = { id: string; title: string }
-
-const DOMAIN_SEGMENT_CONFIGS: { match: string; displayName: string; segments: SegmentDef[] }[] = [
-  { match: 'healthcare', displayName: 'Healthcare Wishes', segments: [
-    { key: 'values_care_priorities',    type: 'orient', label: 'My values and priorities for care at end of life' },
-    { key: 'decision_making_framework', type: 'orient', label: 'Understand how substitute decision-making for care works in my province' },
-    { key: 'who_would_speak',           type: 'orient', label: 'Consider who I would want to make decisions for me if I were not able to' },
-    { key: 'who_will_decide',           type: 'ready',  label: 'Who will make decisions for me', checkboxes: [
-      'I have identified a substitute decision maker for my care',
-      'They have agreed to take on this role',
-      'I have legally documented my decision-maker',
-    ]},
-    { key: 'wishes_clear_shared',       type: 'ready',  label: 'My wishes are clear and shared', checkboxes: [
-      'I have communicated my wishes to my decision maker',
-      'I have formally documented my wishes',
-    ]},
-  ]},
-  { match: 'deathcare', displayName: 'Deathcare', segments: [
-    { key: 'final_resting_place_wishes', type: 'orient', label: "Reflect on my wishes for my body's final resting place" },
-    { key: 'legal_options_province',     type: 'orient', label: 'Understand the legal options in my province' },
-    { key: 'final_resting_place_wishes', type: 'ready',  label: 'Final resting place wishes', checkboxes: [
-      'I have documented what I want to happen with my body after my death',
-      'I have shared these wishes with people in my life',
-      "If applicable, I have registered with my province's organ and tissue donation registry",
-    ]},
-  ]},
-  { match: 'will', displayName: 'Wills & Estates', segments: [
-    { key: 'legal_will_requirements',    type: 'orient', label: 'Understand the requirements for a legal will in my province' },
-    { key: 'executor_choice',            type: 'orient', label: 'Consider who I want to name as executor' },
-    { key: 'asset_wishes',               type: 'orient', label: 'Reflect on wishes for my assets' },
-    { key: 'care_children_pets',         type: 'orient', label: 'Care of children or pets' },
-    { key: 'additional_estate_planning', type: 'orient', label: 'Consider whether additional estate planning may apply to my situation' },
-    { key: 'legal_will_in_place',        type: 'ready',  label: 'Legal will', checkboxes: [
-      'I have a valid, up-to-date legal will',
-    ]},
-    { key: 'other_estate_planning',      type: 'ready',  label: 'Other estate planning needs (if applicable)', checkboxes: [
-      'I have identified any additional planning needs relevant to my situation',
-      'I have taken steps to address them',
-    ]},
-    { key: 'professional_support',       type: 'ready',  label: 'Professional support (if needed)', checkboxes: [
-      'I have consulted professional support if needed',
-    ]},
-    { key: 'meaningful_objects',         type: 'ready',  label: 'What should happen to my belongings', checkboxes: [
-      'I have documented what should happen to items that matter to me',
-      'I have shared these wishes with people who may need to act',
-    ]},
-  ]},
-  { match: 'ritual', displayName: 'Ritual & Ceremony', segments: [
-    { key: 'meaningful_rituals',          type: 'orient', label: 'Reflect on rituals or ceremonies that are meaningful to me' },
-    { key: 'mark_or_remember',            type: 'orient', label: 'Consider how I want my death to be marked or remembered' },
-    { key: 'ritual_ceremony_preferences', type: 'ready',  label: 'Ritual and ceremony preferences', checkboxes: [
-      'I have shared my preferences for ritual and ceremony with people in my life',
-      'My preferences are documented somewhere accessible (if I choose to)',
-    ]},
-  ]},
-  { match: 'legacy', displayName: 'Legacy', segments: [
-    { key: 'life_story_shaped',    type: 'orient', label: 'Reflect on the story of my life and what has shaped me' },
-    { key: 'how_remembered',       type: 'orient', label: 'Consider how I want to be remembered' },
-    { key: 'relationships_impact', type: 'orient', label: 'Reflect on meaningful relationships and personal impact' },
-    { key: 'sharing_what_matters', type: 'ready',  label: 'Sharing what matters to me', checkboxes: [
-      'I have created or captured something I want to leave behind (if I choose to)',
-      'I have documented my obituary wishes or what I want said about my life',
-      'I have noted causes or organizations I want remembered or supported',
-    ]},
-  ]},
-  { match: 'personal', displayName: 'Personal Admin', segments: [
-    { key: 'understand_personal_admin',   type: 'orient', label: 'Understand personal admin involved in death planning' },
-    { key: 'personal_information',        type: 'ready',  label: 'Personal records', checkboxes: [
-      'I have documented my personal identification, legal designations, and important documents',
-    ]},
-    { key: 'important_contacts',          type: 'ready',  label: 'Important contacts', checkboxes: [
-      'I have recorded the people someone may need to contact',
-    ]},
-    { key: 'financial_information',       type: 'ready',  label: 'Financial information', checkboxes: [
-      'I have documented my financial accounts and insurance',
-    ]},
-    { key: 'devices_and_accounts',        type: 'ready',  label: 'Devices and accounts', checkboxes: [
-      'I have documented my devices and account access information',
-    ]},
-    { key: 'social_media_digital_assets', type: 'ready',  label: 'Social media and digital assets', checkboxes: [
-      'I have decided what should happen to my social media accounts and digital assets (if applicable)',
-      'I have shared or documented these wishes',
-    ]},
-  ]},
-]
 
 function qualitativeLabel(started: number, total: number): string {
   if (started === 0 || total === 0) return 'Not yet started'
@@ -669,41 +584,46 @@ export function buildKeyDetails(
 }
 
 // Build the plan summary's per-domain readiness rows from DB domain_state.
-// Iterates the canonical DOMAIN_SEGMENT_CONFIGS (all 6 domains) and matches to
-// the user's DB domain containers where they exist; status comes from domain_state.
+// Iterates the canonical DOMAIN_STRUCTURES (all 6 domains) and matches to the
+// user's DB domain containers where they exist; status comes from domain_state.
 export function buildDomainStatuses(
   domainState: DomainState,
   domains: DomainContainer[],
 ): PlanDomainStatus[] {
-  return DOMAIN_SEGMENT_CONFIGS.map(config => {
-    const dbDomain = domains.find(d => d.title.toLowerCase().includes(config.match))
+  return DOMAIN_STRUCTURES.map(def => {
+    const dbDomain = domains.find(d => d.title.toLowerCase().includes(def.match))
+    const { orientation, readiness } = def.structure
+    const totalTopics = orientation.length + readiness.length
 
     // Topic-level engagement for qualitative status label
-    const topicsStarted = config.segments.filter(seg => {
-      if (!dbDomain) return false
-      const status = seg.type === 'orient'
-        ? getOrient(domainState, dbDomain.id, seg.key)
-        : getReadyStatus(domainState, dbDomain.id, seg.key)
-      return status === 'complete' || status === 'in_progress'
-    }).length
+    let topicsStarted = 0
+    if (dbDomain) {
+      for (const o of orientation) {
+        const status = getOrient(domainState, dbDomain.id, o.key)
+        if (status === 'complete' || status === 'in_progress') topicsStarted++
+      }
+      for (const r of readiness) {
+        const status = getReadyStatus(domainState, dbDomain.id, r.key)
+        if (status === 'complete' || status === 'in_progress') topicsStarted++
+      }
+    }
 
-    // Individual checkbox items for display
+    // Individual checkbox items for display (flat)
     const checkboxItems: PlanCheckboxItem[] = []
-    for (const seg of config.segments) {
-      if (seg.type !== 'ready' || !seg.checkboxes) continue
+    for (const r of readiness) {
       const vals = dbDomain
-        ? getCheckboxes(domainState, dbDomain.id, seg.key, seg.checkboxes.length)
-        : seg.checkboxes.map(() => false)
-      for (let i = 0; i < seg.checkboxes.length; i++) {
-        checkboxItems.push({ label: seg.checkboxes[i], checked: vals[i] === true })
+        ? getCheckboxes(domainState, dbDomain.id, r.key, r.checkboxes.length)
+        : r.checkboxes.map(() => false)
+      for (let i = 0; i < r.checkboxes.length; i++) {
+        checkboxItems.push({ label: r.checkboxes[i], checked: vals[i] === true })
       }
     }
 
     return {
-      title: dbDomain?.title ?? config.displayName,
-      label: qualitativeLabel(topicsStarted, config.segments.length),
+      title: dbDomain?.title ?? def.displayName,
+      label: qualitativeLabel(topicsStarted, totalTopics),
       topicsStarted,
-      totalTopics: config.segments.length,
+      totalTopics,
       checkboxItems,
     }
   })
