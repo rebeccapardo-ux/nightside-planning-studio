@@ -33,23 +33,16 @@ export default function AboutPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
-            I&apos;m Rebecca Pardo, an anthropologist, technologist, and death doula. For nearly two decades I&apos;ve worked in research, design, and technology, exploring how technology shapes human behavior. My focus shifted when I began working in end-of-life spaces, bringing my expertise in design and interaction to help create more supportive and compassionate experiences around dying, death, and grief.
+            I&apos;m Rebecca Pardo, an anthropologist, technologist, and death doula. For nearly two decades I&apos;ve worked in research, design, and technology, exploring how technology mediates human behavior. I was introduced to the subject of death and digital legacy when I joined Facebook&apos;s Memorialization team, working on what happens when account holders die. Through international ethnographic research — observing and participating in death practices in Indonesia, India, and Mexico — I learned how variable beliefs and practices about death are cross-culturally, but also how much they have in common. Across my work I have seen that consciously engaging with death, rather than avoiding it, helps, and that avoidance and lack of planning leave families in distress, with compounded uncertainty and logistics on top of their grief.
           </p>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
-            My perspective changed dramatically when I joined Facebook&apos;s Memorialization team, studying what happens when account holders die. Through international ethnographic research — observing and participating in death rituals in Indonesia, India, and Mexico — I saw firsthand how deeply personal and complex death planning is. I also saw how avoidance and a lack of planning leave families in distress, with unanswered questions and uncertainty.
+            When my dog Quincy got sick a few months later, what I had been researching became deeply personal. Drawing on what I had learned, and with the help of a mentor and friend, I leaned into conscious planning and ritual to give Quincy a good death, which involved bringing him to the beach, creating rituals that felt meaningful to me around the death, and spending time with him. This experience was transformative for me.
           </p>
           <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
-            And then, my dog Quincy got sick. Suddenly, what I had been researching became deeply personal. Drawing on what I had learned through my research, and with the help of a mentor and friend, I leaned into conscious planning and ritual. It transformed what could have been a devastating experience into one of peace, meaning, and love. It changed how I approached death and life forever. This platform is the culmination of that journey, designed to empower you to make informed, compassionate choices, not just for yourself but for the people you care about most.
+            Not everyone can have the kind of death Quincy had. Some choices will be taken away by sudden illness or circumstance. And not everyone would want a death like his. There&apos;s no single version of a good death. But I have learned that when we understand our options, reflect on what is meaningful to us, and make intentional choices, we can transform our deaths, and our lives.
           </p>
-        </div>
-
-        <div style={{ borderTop: '1px solid rgba(19,4,38,0.1)', marginTop: 40, paddingTop: 24 }}>
-          <p style={{ fontFamily: hv, fontSize: 15, color: '#5F5E5A', margin: 0, lineHeight: 1.6 }}>
-            Rebecca Pardo, PhD · Anthropologist · Designer · Death Doula<br />
-            Founder,{' '}
-            <a href="https://thenightside.net/" target="_blank" rel="noopener noreferrer" className="nightside-link">
-              The Nightside
-            </a>
+          <p style={{ fontFamily: hv, fontSize: 16, color: '#130426', lineHeight: 1.75, margin: 0 }}>
+            This platform is designed to help you do that work. I hope it brings relief, comfort, and empowerment to you and the people you care about.
           </p>
         </div>
 
