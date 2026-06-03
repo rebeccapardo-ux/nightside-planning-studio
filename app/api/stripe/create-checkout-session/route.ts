@@ -48,6 +48,17 @@ export async function POST(request: NextRequest) {
       cancel_url: `${origin}/auth/signup/payment`,
     })
 
+    // Persist the session id for later reconciliation. Best-effort: a failed
+    // write must NOT block checkout — the session is still recoverable via the
+    // email/metadata fallback in reconcilePayment().
+    const { error: sidErr } = await supabaseAdmin
+      .from('user_profiles')
+      .update({ stripe_session_id: session.id })
+      .eq('user_id', user.id)
+    if (sidErr) {
+      console.error('Failed to persist stripe_session_id for user', user.id, sidErr.message)
+    }
+
     return NextResponse.json({ url: session.url })
   } catch (err) {
     console.error('Stripe session creation error:', err)
