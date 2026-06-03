@@ -10,6 +10,8 @@
 // ---------------------------------------------------------------------------
 
 import type { Domain } from './content-metadata'
+import { DOCUMENT_TYPE_META, DOCUMENT_TYPE } from './content-metadata'
+import { ACTIVITY } from './content-metadata'
 
 export type OrientationItem = {
   key: string
@@ -61,7 +63,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'values_care_priorities',
           title: 'My values and priorities for care at end of life',
           explanation: '',
-          relatedActivities: ['values_ranking', 'fears_ranking'],
+          relatedActivities: [ACTIVITY.VALUES_RANKING, ACTIVITY.FEARS_RANKING],
           learnHref: '/app/learn/healthcare',
           allowedReflectPromptIds: [
             'prompt_2', 'prompt_1', 'prompt_5', 'prompt_20', 'prompt_19',
@@ -99,7 +101,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'wishes_clear_shared',
           title: 'My wishes are clear and shared',
           explanation: '',
-          staticLinks: [{ href: '/app/capture/advance-directive', label: 'My Care Wishes' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label }],
           checkboxes: [
             'I have communicated my wishes to my decision-maker',
             'I have formally documented my wishes',
@@ -143,7 +145,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
             'I have shared these wishes with people in my life',
             "If applicable, I have registered with my province's organ and tissue donation registry",
           ],
-          staticLinks: [{ href: '/app/capture/funeral-wishes', label: 'Funeral & Ceremony Wishes' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.shortLabel ?? DOCUMENT_TYPE_META.funeral_wishes.label }],
         },
       ],
     },
@@ -163,14 +165,14 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'executor_choice',
           title: 'Consider who I want to name as executor',
           explanation: '',
-          relatedDocumentTypes: ['important_contacts'],
+          relatedDocumentTypes: [DOCUMENT_TYPE.IMPORTANT_CONTACTS],
           learnHref: '/app/learn/wills',
         },
         {
           key: 'asset_wishes',
           title: 'Reflect on wishes for my assets',
           explanation: '',
-          relatedDocumentTypes: ['financial_information'],
+          relatedDocumentTypes: [DOCUMENT_TYPE.FINANCIAL_INFORMATION],
           learnHref: '/app/learn/wills',
         },
         {
@@ -209,7 +211,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'meaningful_objects',
           title: 'What should happen to my belongings',
           explanation: '',
-          staticLinks: [{ href: '/app/capture/keepsake-inventory', label: 'Keepsake Inventory' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.keepsake_inventory.href, label: DOCUMENT_TYPE_META.keepsake_inventory.label }],
           checkboxes: ['I have documented what should happen to items that matter to me', 'I have shared these wishes with people who may need to act'],
         },
       ],
@@ -245,7 +247,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
             'I have shared my preferences for ritual and ceremony with people in my life',
             'My preferences are documented somewhere accessible (if I choose to)',
           ],
-          staticLinks: [{ href: '/app/capture/funeral-wishes', label: 'Funeral & Ceremony Wishes' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.shortLabel ?? DOCUMENT_TYPE_META.funeral_wishes.label }],
         },
       ],
     },
@@ -259,7 +261,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'life_story_shaped',
           title: 'Reflect on the story of my life and what has shaped me',
           explanation: '',
-          relatedActivities: ['legacy_map'],
+          relatedActivities: [ACTIVITY.LEGACY_MAP],
           learnHref: '/app/learn/legacy',
           allowedReflectPromptIds: [
             'prompt_24', 'prompt_31', 'prompt_37', 'prompt_38',
@@ -316,28 +318,28 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           title: 'Personal records',
           explanation: '',
           checkboxes: ['I have documented my personal identification, legal designations, and important documents'],
-          staticLinks: [{ href: '/app/capture/personal-admin', label: 'Personal Admin Information' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.personal_admin_info.href, label: DOCUMENT_TYPE_META.personal_admin_info.label }],
         },
         {
           key: 'important_contacts',
           title: 'Important contacts',
           explanation: '',
           checkboxes: ['I have recorded the people someone may need to contact'],
-          staticLinks: [{ href: '/app/capture/important-contacts', label: 'Important Contacts' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.important_contacts.href, label: DOCUMENT_TYPE_META.important_contacts.label }],
         },
         {
           key: 'financial_information',
           title: 'Financial information',
           explanation: '',
           checkboxes: ['I have documented my financial accounts and insurance'],
-          staticLinks: [{ href: '/app/capture/financial-information', label: 'Financial Information' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.financial_information.href, label: DOCUMENT_TYPE_META.financial_information.label }],
         },
         {
           key: 'devices_and_accounts',
           title: 'Devices and accounts',
           explanation: '',
           checkboxes: ['I have documented my devices and account access information'],
-          staticLinks: [{ href: '/app/capture/devices-and-accounts', label: 'Devices & Accounts' }],
+          staticLinks: [{ href: DOCUMENT_TYPE_META.devices_and_accounts.href, label: DOCUMENT_TYPE_META.devices_and_accounts.label }],
         },
         {
           key: 'social_media_digital_assets',

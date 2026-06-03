@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { ACTIVITY, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 // ---------------------------------------------------------------------------
@@ -181,17 +182,17 @@ async function buildFragments(domainTitle: string): Promise<Fragment[]> {
       .from('entries')
       .select('id, title, content, activity, document_type')
       .eq('user_id', user.id)
-      .eq('activity', 'values_ranking'),
+      .eq('activity', ACTIVITY.VALUES_RANKING),
     supabase
       .from('entries')
       .select('id, title, content, activity, document_type')
       .eq('user_id', user.id)
-      .eq('activity', 'reflection_prompts'),
+      .eq('activity', ACTIVITY.REFLECTION_PROMPTS),
     supabase
       .from('entries')
       .select('id, title, content, activity, document_type')
       .eq('user_id', user.id)
-      .eq('document_type', 'advance_directive_supplement'),
+      .eq('document_type', DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT),
     allowedPromptIds.length > 0
       ? supabase
           .from('notes')

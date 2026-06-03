@@ -8,7 +8,7 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
-import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
+import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
 
@@ -17,11 +17,7 @@ import type { Note } from '@/lib/notes'
 // ---------------------------------------------------------------------------
 
 
-const STRUCTURED_ACTIVITIES = ['values_ranking', 'fears_ranking', 'legacy_map']
-const EXCLUDED_DOMAIN_DOC_TYPES = [
-  'personal_admin_info', 'important_contacts', 'financial_information',
-  'devices_and_accounts', 'keepsake_inventory', 'advance_directive_supplement',
-]
+const EXCLUDED_DOMAIN_DOC_TYPES: string[] = DOCUMENT_TYPES.filter(c => c !== DOCUMENT_TYPE.FUNERAL_WISHES)
 
 // ---------------------------------------------------------------------------
 // Types
@@ -255,7 +251,7 @@ function FuneralWishesPage() {
           .from('entries')
           .select('id, content, created_at')
           .eq('user_id', user.id)
-          .eq('document_type', 'funeral_wishes')
+          .eq('document_type', DOCUMENT_TYPE.FUNERAL_WISHES)
           .order('created_at', { ascending: false })
           .limit(1)
 
@@ -451,7 +447,7 @@ function FuneralWishesPage() {
       if (!entryIdRef.current) {
         const { data: created, error } = await supabase
           .from('entries')
-          .insert({ user_id: user.id, title: 'Wishes for My Body, Funeral & Ceremony', section: 'capture', document_type: 'funeral_wishes', content })
+          .insert({ user_id: user.id, title: DOCUMENT_TYPE_META.funeral_wishes.label, section: 'capture', document_type: DOCUMENT_TYPE.FUNERAL_WISHES, content })
           .select('id, created_at').single()
         if (error || !created) { setSaveState('error'); return }
         setEntryId(created.id)
@@ -1110,7 +1106,7 @@ function computePanelTiers(
   const seenActivities = new Set<string>(outputs.map(o => o.representative.activity).filter((a): a is string => !!a))
   for (const entry of domainAndManualItems) {
     if (seenIds.has(entry.id)) continue
-    if (entry.document_type === 'funeral_wishes') continue
+    if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) continue
     if (entry.activity && seenActivities.has(entry.activity)) continue
     seenIds.add(entry.id)
     tier3.push({ kind: 'entry', data: entry, insertBehavior: 'selectable_then_insert' })
@@ -1163,7 +1159,7 @@ function useFWMaterialsData() {
           if (entryLinks && entryLinks.length > 0) {
             const entryIds = [...new Set(entryLinks.map(l => l.entry_id))]
             const { data: entries } = await supabase.from('entries').select('id, title, content, activity, document_type').in('id', entryIds).eq('user_id', user.id).order('created_at', { ascending: false })
-            const filtered = (entries || []).filter(e => !STRUCTURED_ACTIVITIES.includes(e.activity ?? '') && e.document_type !== 'funeral_wishes' && !EXCLUDED_DOMAIN_DOC_TYPES.includes(e.document_type ?? ''))
+            const filtered = (entries || []).filter(e => !STRUCTURED_ACTIVITIES.includes(e.activity ?? '') && e.document_type !== DOCUMENT_TYPE.FUNERAL_WISHES && !EXCLUDED_DOMAIN_DOC_TYPES.includes(e.document_type ?? ''))
             setDomainItems(filtered.map(e => ({ ...e, group: 'domain' as const })))
           }
         }
@@ -1263,7 +1259,7 @@ function FWMaterialsPanel({
       }
       const seenActivities = new Set(deduplicatedOutputs.map(o => o.representative.activity).filter(Boolean) as string[])
       for (const entry of allDomainAndManualItems) {
-        if (seen.has(entry.id) || entry.document_type === 'funeral_wishes') continue
+        if (seen.has(entry.id) || entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) continue
         if (entry.activity && seenActivities.has(entry.activity)) continue
         seen.add(entry.id)
         items.push({ kind: 'entry', data: entry, insertBehavior: 'selectable_then_insert' })
@@ -1433,9 +1429,9 @@ function FWTieredPanelItem({ item, readOnly, onInsert }: { item: TieredItem; rea
   if (item.kind === 'note') return <FWNotePanelCard note={item.data} readOnly={readOnly} onInsert={onInsert} />
   const { data: entry, insertBehavior } = item
   const activityId = entry.activity ?? ''
-  if (activityId === 'values_ranking') return <FWValuesCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
-  if (activityId === 'fears_ranking') return <FWFearsCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
-  if (activityId === 'legacy_map') {
+  if (activityId === ACTIVITY.VALUES_RANKING) return <FWValuesCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
+  if (activityId === ACTIVITY.FEARS_RANKING) return <FWFearsCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
+  if (activityId === ACTIVITY.LEGACY_MAP) {
     const text = formatLegacyMapReflections(entry)
     if (!text) return null
     return <FWLegacyMapCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
@@ -1648,7 +1644,7 @@ function FWMaterialsBrowser({ existingEntryIds, existingNoteIds, onAdd, onClose 
     fetchAll()
   }, [])
 
-  const available = allEntries.filter(e => !existingEntryIds.has(e.id) && e.document_type !== 'funeral_wishes')
+  const available = allEntries.filter(e => !existingEntryIds.has(e.id) && e.document_type !== DOCUMENT_TYPE.FUNERAL_WISHES)
   const availableNotes = allNotes.filter(n => !existingNoteIds.has(n.id))
 
   return (
@@ -1713,23 +1709,23 @@ function hasSectionProgress(key: SectionKey, form: FormState): boolean {
 }
 
 function fwGetDisplayTitle(entry: PanelEntry): string {
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
-  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
-  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.label
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
   if (entry.title?.trim()) return entry.title.trim()
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
-  if (entry.document_type === 'important_contacts') return 'Important Contacts'
-  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'financial_information') return 'Financial Information'
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
   return 'Untitled'
 }
 
 function fwGetTypeLabel(entry: PanelEntry): string {
-  if (entry.activity === 'values_ranking') return 'Working output · Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Working output · Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Working output · Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Working output · Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Working output · Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Working output · Legacy Map'
   if (entry.document_type) return `Document · ${entry.document_type.replace(/_/g, ' ')}`
   return 'Entry'
 }
@@ -1751,13 +1747,13 @@ function fwFormatForInsert(entry: PanelEntry): string {
   if (typeof c === 'string') return c
   if (typeof c !== 'object') return ''
   const obj = c as Record<string, unknown>
-  if (entry.activity === 'values_ranking') {
+  if (entry.activity === ACTIVITY.VALUES_RANKING) {
     const parts: string[] = []
     if (Array.isArray(obj.essential) && obj.essential.length) parts.push((obj.essential as string[]).join(', '))
     if (Array.isArray(obj.important) && obj.important.length) parts.push((obj.important as string[]).join(', '))
     return parts.join('\n\n')
   }
-  if (entry.activity === 'fears_ranking') {
+  if (entry.activity === ACTIVITY.FEARS_RANKING) {
     const parts: string[] = []
     if (Array.isArray(obj.essential) && obj.essential.length) parts.push(`Primary concerns: ${(obj.essential as string[]).join(', ')}`)
     if (Array.isArray(obj.important) && obj.important.length) parts.push(`Also worried about: ${(obj.important as string[]).join(', ')}`)

@@ -1,15 +1,16 @@
 import { createSupabaseBrowserClient } from './supabase-browser'
+import { DOCUMENT_TYPE, DOCUMENT_TYPE_META } from './content-metadata'
 
 // ---------------------------------------------------------------------------
 // Keepsake Inventory — single structured document per user
 //
 // Stored in `entries` table:
 //   document_type = 'keepsake_inventory'
-//   title         = 'Meaningful Keepsakes'
+//   title         = DOCUMENT_TYPE_META.keepsake_inventory.label ('Keepsakes Inventory')
 //   content       = { entries: KeepsakeEntry[] }
 // ---------------------------------------------------------------------------
 
-export const KEEPSAKE_DOCUMENT_TYPE = 'keepsake_inventory'
+export const KEEPSAKE_DOCUMENT_TYPE = DOCUMENT_TYPE.KEEPSAKE_INVENTORY
 
 export type KeepsakeEntry = {
   id: string          // client-generated UUID, stable within the document
@@ -71,7 +72,7 @@ export async function createKeepsakeInventory(entries: KeepsakeEntry[]): Promise
     .from('entries')
     .insert({
       user_id: user.id,
-      title: 'Meaningful Keepsakes',
+      title: DOCUMENT_TYPE_META.keepsake_inventory.label,
       document_type: KEEPSAKE_DOCUMENT_TYPE,
       section: 'capture',
       content: { entries },
@@ -87,7 +88,7 @@ export async function saveKeepsakeInventory(id: string, entries: KeepsakeEntry[]
   const supabase = createSupabaseBrowserClient()
   const { error } = await supabase
     .from('entries')
-    .update({ content: { entries }, title: 'Meaningful Keepsakes' })
+    .update({ content: { entries }, title: DOCUMENT_TYPE_META.keepsake_inventory.label })
     .eq('id', id)
 
   if (error) { console.error('saveKeepsakeInventory:', error.message); return false }

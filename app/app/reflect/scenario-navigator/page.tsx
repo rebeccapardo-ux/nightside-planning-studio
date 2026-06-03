@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { ACTIVITY } from '@/lib/content-metadata'
 import Link from 'next/link'
 import {
   SCENARIOS,
@@ -86,7 +87,7 @@ export default function ScenarioNavigatorPage() {
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'scenario_navigator' } }),
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: ACTIVITY.SCENARIO_NAVIGATOR } }),
     }).catch(() => {})
   }, [])
 
@@ -101,7 +102,7 @@ export default function ScenarioNavigatorPage() {
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'scenario_navigator' } }),
+        body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: ACTIVITY.SCENARIO_NAVIGATOR } }),
       }).catch(() => {})
     }
   }

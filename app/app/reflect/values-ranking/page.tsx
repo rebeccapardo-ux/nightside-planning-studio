@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
+import { ACTIVITY } from '@/lib/content-metadata'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -169,13 +170,13 @@ function ValuesRankingContent() {
           .select('id, content, activity, created_at')
           .eq('id', entryIdFromUrl)
           .single()
-        if (!result.error && result.data?.activity === 'values_ranking') data = result.data
+        if (!result.error && result.data?.activity === ACTIVITY.VALUES_RANKING) data = result.data
       } else {
         const result = await supabase
           .from('entries')
           .select('id, content, activity, created_at')
           .eq('user_id', user.id)
-          .eq('activity', 'values_ranking')
+          .eq('activity', ACTIVITY.VALUES_RANKING)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
@@ -208,7 +209,7 @@ function ValuesRankingContent() {
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'values_ranking' } }),
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: ACTIVITY.VALUES_RANKING } }),
     }).catch(() => {})
   }, [])
 
@@ -251,7 +252,7 @@ function ValuesRankingContent() {
       title: 'Values Ranking',
       user_id: user.id,
       section: 'explore',
-      activity: 'values_ranking',
+      activity: ACTIVITY.VALUES_RANKING,
       content: {
         essential: assignments.essential,
         important: assignments.important,
@@ -275,7 +276,7 @@ function ValuesRankingContent() {
         fetch('/api/analytics/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'values_ranking' } }),
+          body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.VALUES_RANKING } }),
         }).catch(() => {})
       }
       setIsDirty(false)
@@ -330,7 +331,7 @@ function ValuesRankingContent() {
             title: 'Values Ranking',
             user_id: user.id,
             section: 'explore',
-            activity: 'values_ranking',
+            activity: ACTIVITY.VALUES_RANKING,
             content: {
               essential: assignments.essential,
               important: assignments.important,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
@@ -8,8 +9,8 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 
-const DOCUMENT_TYPE = 'financial_information'
-const DOCUMENT_TITLE = 'Financial Information'
+const DOCUMENT_TYPE = DOCUMENT_TYPE_META.financial_information.code
+const DOCUMENT_TITLE = DOCUMENT_TYPE_META.financial_information.label
 const afG = "'Apfel Grotezk', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
@@ -8,8 +9,8 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 
-const DOCUMENT_TYPE = 'devices_and_accounts'
-const DOCUMENT_TITLE = 'Devices & Accounts'
+const DOCUMENT_TYPE = DOCUMENT_TYPE_META.devices_and_accounts.code
+const DOCUMENT_TITLE = DOCUMENT_TYPE_META.devices_and_accounts.label
 
 type FormState = {
   device1Name: string; device1LoginAccount: string; device1PasswordPin: string; device1Notes: string

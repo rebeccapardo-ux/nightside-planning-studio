@@ -4,6 +4,11 @@
 -- Safe to re-run: uses entry_notes as an idempotency guard.
 -- Any entry already linked via entry_notes is skipped.
 --
+-- NOTE: the activity slug literals below ('reflection_prompts', 'values_ranking',
+-- 'fears_ranking') are the same controlled vocabulary centralized in
+-- lib/content-metadata.ts (ACTIVITY / ActivityId). SQL can't import the TS
+-- source, so they're hardcoded here — keep them in sync if a slug ever changes.
+--
 -- Included entry types:
 --   activity = 'reflection_prompts'  → origin_type = 'prompt',   prompt_context = title
 --   activity = 'notepad'             → origin_type = 'freeform',  prompt_context = NULL

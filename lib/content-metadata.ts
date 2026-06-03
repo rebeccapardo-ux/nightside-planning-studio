@@ -69,8 +69,99 @@ export type ReflectPromptMeta = {
   secondaryTags?: InternalTag[]
 }
 
+// ---------------------------------------------------------------------------
+// ACTIVITY SLUGS — controlled vocabulary for entries.activity.
+//
+// These string values are persisted in the DB (entries.activity) and emitted as
+// analytics event dimensions, so the VALUES must never change — this is the
+// single source of truth for *referencing* them in code, not for changing them.
+// The PDF `kind` discriminator (lib/pdf/types.ts) reuses some of these strings
+// but is a separate concept — keep it independent.
+// ---------------------------------------------------------------------------
+
+export const ACTIVITY = {
+  VALUES_RANKING: 'values_ranking',
+  FEARS_RANKING: 'fears_ranking',
+  LEGACY_MAP: 'legacy_map',
+  SCENARIO_NAVIGATOR: 'scenario_navigator',
+  REFLECTION_PROMPTS: 'reflection_prompts',
+} as const
+
+export type ActivityId = typeof ACTIVITY[keyof typeof ACTIVITY]
+
+// Structured exercise outputs (values/fears/legacy) — the recurring trio that
+// gets filtered, surfaced, and rendered together across the plan + capture UIs.
+export const STRUCTURED_ACTIVITIES: readonly ActivityId[] = [
+  ACTIVITY.VALUES_RANKING,
+  ACTIVITY.FEARS_RANKING,
+  ACTIVITY.LEGACY_MAP,
+]
+
+export function isStructuredActivity(activity: string | null | undefined): boolean {
+  return !!activity && STRUCTURED_ACTIVITIES.includes(activity as ActivityId)
+}
+
+// The two ranking exercises (values + fears) that get identical treatment.
+export function isRankingActivity(activity: string | null | undefined): boolean {
+  return activity === ACTIVITY.VALUES_RANKING || activity === ACTIVITY.FEARS_RANKING
+}
+
+// ---------------------------------------------------------------------------
+// DOCUMENT TYPES — controlled vocabulary for entries.document_type, plus the
+// canonical (label, href, category) metadata for each. Single source of truth:
+// label, short label, capture route, and practical/wishes grouping all live
+// here instead of being duplicated across ~12 maps/dispatch chains.
+//
+// Slug values are DB-persisted — never change them. Order matches the plan's
+// document display order.
+// ---------------------------------------------------------------------------
+
+export const DOCUMENT_TYPE = {
+  ADVANCE_DIRECTIVE_SUPPLEMENT: 'advance_directive_supplement',
+  FUNERAL_WISHES: 'funeral_wishes',
+  PERSONAL_ADMIN_INFO: 'personal_admin_info',
+  IMPORTANT_CONTACTS: 'important_contacts',
+  FINANCIAL_INFORMATION: 'financial_information',
+  DEVICES_AND_ACCOUNTS: 'devices_and_accounts',
+  KEEPSAKE_INVENTORY: 'keepsake_inventory',
+} as const
+
+export type DocumentType = typeof DOCUMENT_TYPE[keyof typeof DOCUMENT_TYPE]
+
+export type DocumentTypeMeta = {
+  code: DocumentType
+  label: string
+  // Compact label for visually-constrained surfaces (e.g. domain readiness
+  // links). Falls back to `label` when absent — only funeral_wishes needs one.
+  shortLabel?: string
+  href: string
+  category: 'practical' | 'wishes'
+}
+
+export const DOCUMENT_TYPE_META: Record<DocumentType, DocumentTypeMeta> = {
+  advance_directive_supplement: { code: 'advance_directive_supplement', label: 'My Care Wishes', href: '/app/capture/advance-directive', category: 'wishes' },
+  funeral_wishes:               { code: 'funeral_wishes', label: 'Wishes for My Body, Funeral & Ceremony', shortLabel: 'Funeral & Ceremony Wishes', href: '/app/capture/funeral-wishes', category: 'wishes' },
+  personal_admin_info:          { code: 'personal_admin_info', label: 'Personal Admin Information', href: '/app/capture/personal-admin', category: 'practical' },
+  important_contacts:           { code: 'important_contacts', label: 'Important Contacts', href: '/app/capture/important-contacts', category: 'practical' },
+  financial_information:        { code: 'financial_information', label: 'Financial Information', href: '/app/capture/financial-information', category: 'practical' },
+  devices_and_accounts:         { code: 'devices_and_accounts', label: 'Devices & Accounts', href: '/app/capture/devices-and-accounts', category: 'practical' },
+  keepsake_inventory:           { code: 'keepsake_inventory', label: 'Keepsakes Inventory', href: '/app/capture/keepsake-inventory', category: 'practical' },
+}
+
+export const DOCUMENT_TYPES = Object.keys(DOCUMENT_TYPE_META) as DocumentType[]
+
+export function isCaptureDocument(documentType: string | null | undefined): boolean {
+  return !!documentType && documentType in DOCUMENT_TYPE_META
+}
+
+// Resolve a (possibly null/unknown) document_type to its metadata, or undefined.
+export function documentTypeMeta(documentType: string | null | undefined): DocumentTypeMeta | undefined {
+  if (!documentType) return undefined
+  return (DOCUMENT_TYPE_META as Partial<Record<string, DocumentTypeMeta>>)[documentType]
+}
+
 export type ActivityMeta = {
-  id: string
+  id: ActivityId
   domainRelevance: Domain[]
   supplementaryDocumentRelevance?: SupplementaryDocRelevance
   // Controls what the UI is allowed to do with content from this activity

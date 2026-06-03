@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ACTIVITY, isStructuredActivity, isRankingActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE, isCaptureDocument } from '@/lib/content-metadata'
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import FadeIn from '@/app/components/FadeIn'
@@ -135,27 +136,27 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   if (isDocument && formattedDate) {
     dateLine = `Last saved ${formattedDate}`
   }
-  if ((entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && formattedDate) {
+  if ((isStructuredActivity(entry.activity)) && formattedDate) {
     dateLine = `Last saved ${formattedDate}`
   }
 
-  const showExport = entry.activity === 'values_ranking' || entry.activity === 'legacy_map' || isDocument
-  const editLabel = entry.document_type === 'financial_information'
+  const showExport = entry.activity === ACTIVITY.VALUES_RANKING || entry.activity === ACTIVITY.LEGACY_MAP || isDocument
+  const editLabel = entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION
     ? '← Continue editing'
     : isDocument
       ? 'Continue editing →'
-      : entry.activity === 'legacy_map'
+      : entry.activity === ACTIVITY.LEGACY_MAP
         ? 'Keep working →'
         : 'Revisit exercise →'
 
   const maxWidth = isDocument ? 680 : 800
 
   return (
-    <div className="min-h-screen" style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#CBBBEA' : '#F8F4EB' }}>
+    <div className="min-h-screen" style={{ background: (isCaptureDocument(entry.document_type) || isStructuredActivity(entry.activity)) ? '#CBBBEA' : '#F8F4EB' }}>
       <div style={{ maxWidth, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         {/* Back link — not shown on document or ranking snapshot views */}
-        {entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.document_type !== 'funeral_wishes' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+        {!isCaptureDocument(entry.document_type) && !isStructuredActivity(entry.activity) && (
           <Link
             href={backHref}
             style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.72)', display: 'block', marginBottom: 32, textDecoration: 'none' }}
@@ -175,7 +176,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             ← Continue working in document
           </Link>
         )}
-        {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && editHref && (
+        {(isStructuredActivity(entry.activity)) && editHref && (
           <Link
             href={editHref}
             style={{ fontFamily: hv, fontSize: 16, color: '#1A1A1A', display: 'block', marginBottom: 24, textDecoration: 'none' }}
@@ -188,7 +189,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
         <FadeIn>
           {/* Card */}
           <div
-            style={{ background: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes' || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? '#F8F4EB' : '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
+            style={{ background: (isCaptureDocument(entry.document_type) || isStructuredActivity(entry.activity)) ? '#F8F4EB' : '#FFFFFF', border: '1px solid rgba(26,26,26,0.1)', borderRadius: 12 }}
             className="p-6 md:py-10 md:px-12"
           >
             {/* Title */}
@@ -203,7 +204,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
               }}>
                 {displayTitle}
               </h1>
-              {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') && (
+              {(isStructuredActivity(entry.activity)) && (
                 <Link
                   href={`/app/entries/${entry.id}/export`}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 10, padding: '9px 16px', textDecoration: 'none', display: 'inline-block', flexShrink: 0 }}
@@ -215,7 +216,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
             {/* Date line */}
             {dateLine && (
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-text-muted)', marginBottom: (isDocument || entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map') ? 16 : 24 }}>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-text-muted)', marginBottom: (isDocument || isStructuredActivity(entry.activity)) ? 16 : 24 }}>
                 {dateLine}
               </p>
             )}
@@ -223,20 +224,20 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             {/* Disclaimer — documents only */}
             {isDocument && (
               <>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: (entry.document_type === 'financial_information' || entry.document_type === 'personal_admin_info' || entry.document_type === 'devices_and_accounts' || entry.document_type === 'important_contacts' || entry.document_type === 'keepsake_inventory' || entry.document_type === 'advance_directive_supplement' || entry.document_type === 'funeral_wishes') ? 8 : 24, lineHeight: 1.55 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: (isCaptureDocument(entry.document_type)) ? 8 : 24, lineHeight: 1.55 }}>
                   This is a record of your responses at the time of your last save. It is not a legal document.
                 </p>
-                {entry.document_type === 'financial_information' && (
+                {entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION && (
                   <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
                     Account numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
                   </p>
                 )}
-                {entry.document_type === 'personal_admin_info' && (
+                {entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO && (
                   <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
                     SIN and health card numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
                   </p>
                 )}
-                {entry.document_type === 'devices_and_accounts' && (
+                {entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS && (
                   <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
                     Passwords and PIN numbers added here will be included in this export, but <strong>won&apos;t be saved to your plan.</strong>
                   </p>
@@ -244,12 +245,12 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
               </>
             )}
 
-            {(entry.activity === 'values_ranking' || entry.activity === 'fears_ranking') && (
+            {isRankingActivity(entry.activity) && (
               <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 8, lineHeight: 1.55 }}>
                 This is a record of your responses at the time of your last save. It is not a legal document.
               </p>
             )}
-            {entry.activity === 'legacy_map' && (
+            {entry.activity === ACTIVITY.LEGACY_MAP && (
               <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 8, lineHeight: 1.55 }}>
                 This document maps meaningful moments and reflections from across your life.
               </p>
@@ -259,8 +260,8 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             <div style={{ height: 1, background: 'rgba(26,26,26,0.1)', margin: '24px 0' }} />
 
             {/* Action links */}
-            {entry.activity !== 'legacy_map' && <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
-              {editHref && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.document_type !== 'funeral_wishes' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+            {entry.activity !== ACTIVITY.LEGACY_MAP && <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
+              {editHref && !isCaptureDocument(entry.document_type) && !isStructuredActivity(entry.activity) && (
                 <Link
                   href={editHref}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
@@ -269,7 +270,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
                   {editLabel}
                 </Link>
               )}
-              {showExport && entry.document_type !== 'financial_information' && entry.document_type !== 'personal_admin_info' && entry.document_type !== 'devices_and_accounts' && entry.document_type !== 'important_contacts' && entry.document_type !== 'keepsake_inventory' && entry.document_type !== 'advance_directive_supplement' && entry.document_type !== 'funeral_wishes' && entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking' && entry.activity !== 'legacy_map' && (
+              {showExport && !isCaptureDocument(entry.document_type) && !isStructuredActivity(entry.activity) && (
                 <Link
                   href={`/app/entries/${entry.id}/export`}
                   style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#1A1A1A', textDecoration: 'none' }}
@@ -415,7 +416,7 @@ function LegacyMapSnapshot({ content, id, userName }: { content: LegacyMapConten
 // ---------------------------------------------------------------------------
 
 function RankingSnapshot({ ranking, activity, id }: { ranking: RankingContent; activity: string; id: string }) {
-  if (activity === 'values_ranking') {
+  if (activity === ACTIVITY.VALUES_RANKING) {
     return <ValuesCardSnapshot ranking={ranking} id={id} />
   }
   return <FearsTextSnapshot ranking={ranking} />
@@ -599,25 +600,25 @@ type ContactFields = { name: string; phone: string; email: string; address: stri
 type KeepsakeItem = { id: string; object: string; recipient: string; meaning: string }
 
 function DocumentSnapshot({ entry }: { entry: EntryRow }) {
-  if (entry.document_type === 'important_contacts') {
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) {
     return <ImportantContactsSnapshot entry={entry} />
   }
-  if (entry.document_type === 'financial_information') {
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) {
     return <FinancialInformationSnapshot entry={entry} />
   }
-  if (entry.document_type === 'personal_admin_info') {
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) {
     return <PersonalAdminSnapshot entry={entry} />
   }
-  if (entry.document_type === 'devices_and_accounts') {
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) {
     return <DevicesAndAccountsSnapshot entry={entry} />
   }
-  if (entry.document_type === 'keepsake_inventory') {
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) {
     return <KeepsakeInventorySnapshot entry={entry} />
   }
-  if (entry.document_type === 'advance_directive_supplement') {
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) {
     return <AdvanceDirectiveSnapshot entry={entry} />
   }
-  if (entry.document_type === 'funeral_wishes') {
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) {
     return <FuneralWishesSnapshot entry={entry} />
   }
   return <GenericDocumentSnapshot entry={entry} />
@@ -990,7 +991,7 @@ function GenericEntryView({ entry }: { entry: EntryRow }) {
 // ---------------------------------------------------------------------------
 
 function getStructuredReflection(entry: EntryRow): { prompt: string; response: string } | null {
-  if (entry.activity !== 'reflection_prompts') return null
+  if (entry.activity !== ACTIVITY.REFLECTION_PROMPTS) return null
   if (!entry.title || typeof entry.content !== 'string') return null
   const response = entry.content.trim()
   if (!response) return null
@@ -998,7 +999,7 @@ function getStructuredReflection(entry: EntryRow): { prompt: string; response: s
 }
 
 function getLegacyMapContent(entry: EntryRow): LegacyMapContent | null {
-  if (entry.activity !== 'legacy_map') return null
+  if (entry.activity !== ACTIVITY.LEGACY_MAP) return null
   if (!entry.content || typeof entry.content !== 'object') return null
   const c = entry.content as Record<string, unknown>
   return {
@@ -1022,7 +1023,7 @@ function getLegacyMapContent(entry: EntryRow): LegacyMapContent | null {
 }
 
 function getRankingContent(entry: EntryRow): RankingContent | null {
-  if (entry.activity !== 'values_ranking' && entry.activity !== 'fears_ranking') return null
+  if (!isRankingActivity(entry.activity)) return null
   if (!entry.content || typeof entry.content !== 'object') return null
   const content = entry.content as Record<string, unknown>
   return {
@@ -1037,31 +1038,31 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
 }
 
 function getContinueHref(entry: EntryRow): string | null {
-  if (entry.document_type === 'advance_directive_supplement') return '/app/capture/advance-directive'
-  if (entry.document_type === 'funeral_wishes') return '/app/capture/funeral-wishes'
-  if (entry.document_type === 'personal_admin_info') return '/app/capture/personal-admin'
-  if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
-  if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
-  if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
-  if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
-  if (entry.activity === 'values_ranking') return `/app/reflect/values-ranking?entry=${entry.id}`
-  if (entry.activity === 'fears_ranking') return `/app/reflect/fears-ranking?entry=${entry.id}`
-  if (entry.activity === 'legacy_map') return '/app/reflect/legacy-map'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.href
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.href
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.href
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.href
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.href
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.href
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.href
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/reflect/values-ranking?entry=${entry.id}`
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/reflect/fears-ranking?entry=${entry.id}`
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return '/app/reflect/legacy-map'
   return null
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
-  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
-  if (entry.document_type === 'important_contacts') return 'Important Contacts'
-  if (entry.document_type === 'financial_information') return 'Financial Information'
-  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.label
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.label
   if (entry.title?.trim()) return entry.title.trim()
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
   return 'Untitled'
 }
 

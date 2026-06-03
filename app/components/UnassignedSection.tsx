@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ACTIVITY } from '@/lib/content-metadata'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import DomainAssigner from './DomainAssigner'
@@ -233,7 +234,7 @@ function OutputCard({
           </Link>
           <div className="flex items-center gap-2.5 mt-2 pt-2 border-t border-[#130426]/[0.07]">
             <Link href={viewHref} className="text-[11px] text-light-secondary hover:text-[#130426] transition-colors">Open</Link>
-            {entry.activity === 'values_ranking' && (
+            {entry.activity === ACTIVITY.VALUES_RANKING && (
               <>
                 <span className="text-[#130426]/20 text-[11px]">·</span>
                 <Link href={`/app/entries/${entry.id}/export`} className="text-[11px] text-light-secondary hover:text-[#130426] transition-colors">Export</Link>
