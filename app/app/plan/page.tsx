@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { ACTIVITY } from '@/lib/content-metadata'
 import DomainStateCard from '@/app/components/DomainStateCard'
 import DomainNullStateBanner from '@/app/components/DomainNullStateBanner'
 import PlanOverview from '@/app/components/PlanOverview'
@@ -32,9 +33,9 @@ const KNOWN_DOCUMENTS = [
 ]
 
 const KNOWN_ACTIVITIES = [
-  { activity: 'values_ranking', label: 'Values Ranking', href: '/app/reflect/values-ranking' },
-  { activity: 'fears_ranking',  label: 'Fears Ranking',  href: '/app/reflect/fears-ranking'  },
-  { activity: 'legacy_map',     label: 'Legacy Map',     href: '/app/reflect/legacy-map'      },
+  { activity: ACTIVITY.VALUES_RANKING, label: 'Values Ranking', href: '/app/reflect/values-ranking' },
+  { activity: ACTIVITY.FEARS_RANKING,  label: 'Fears Ranking',  href: '/app/reflect/fears-ranking'  },
+  { activity: ACTIVITY.LEGACY_MAP,     label: 'Legacy Map',     href: '/app/reflect/legacy-map'      },
 ]
 
 // ---------------------------------------------------------------------------
@@ -349,9 +350,9 @@ function getDisplayTitle(entry: EntryRow): string {
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
   if (entry.title?.trim()) return entry.title.trim()
   return 'Untitled'
 }

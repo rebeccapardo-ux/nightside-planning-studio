@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { ACTIVITY } from '@/lib/content-metadata'
 import Link from 'next/link'
 import { use } from 'react'
 import {
@@ -52,8 +53,8 @@ function entryLabel(entry: EntryRef): string {
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
   return 'Untitled'
 }
 
@@ -65,8 +66,8 @@ function getEntryHref(entry: EntryRef, domainId?: string): string {
   if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
   if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
   const returnTo = domainId ? `?returnTo=/app/domains/${domainId}` : ''
-  if (entry.activity === 'values_ranking') return `/app/entries/${entry.id}${returnTo}`
-  if (entry.activity === 'fears_ranking') return `/app/entries/${entry.id}${returnTo}`
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/entries/${entry.id}${returnTo}`
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/entries/${entry.id}${returnTo}`
   return `/app/entries/${entry.id}`
 }
 
@@ -1946,7 +1947,7 @@ function EntryCard({
             </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(44,55,119,0.08)' }}>
               <Link href={href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Open</Link>
-              {entry.activity === 'values_ranking' && (
+              {entry.activity === ACTIVITY.VALUES_RANKING && (
                 <>
                   <span style={{ color: 'rgba(19,4,38,0.25)', fontSize: '12px' }}>·</span>
                   <Link href={`/app/entries/${entry.id}/export`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '13px', fontWeight: 400, lineHeight: '1.25', color: 'rgba(19,4,38,0.80)' }} className="hover:opacity-75 transition-opacity">Export</Link>

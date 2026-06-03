@@ -8,13 +8,12 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
-import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
+import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
 
 const RESOURCE_HUB_URL = 'https://thenightside.net/resources'
 
-const STRUCTURED_ACTIVITIES = ['values_ranking', 'fears_ranking', 'legacy_map']
 
 type FormState = {
   perfectDeath: string
@@ -729,7 +728,7 @@ function computePanelTiers(
       insertBehavior: behavior.insertionBehavior,
     }
 
-    if (activityId === 'fears_ranking') {
+    if (activityId === ACTIVITY.FEARS_RANKING) {
       if (relevance === 'primary') tier1.push(item)
       else if (relevance === 'secondary') tier2.push(item)
       else tier3.push(item)
@@ -996,7 +995,7 @@ function MaterialsPanel({
   const visibleRecommended = useMemo(
     () => recommended.filter(
       (item) =>
-        (item.kind === 'entry' && item.data.activity === 'legacy_map') ||
+        (item.kind === 'entry' && item.data.activity === ACTIVITY.LEGACY_MAP) ||
         !insertedIds.has(item.data.id),
     ),
     [recommended, insertedIds],
@@ -1435,7 +1434,7 @@ function TieredPanelItem({
   const entry = item.data
   const activityId = entry.activity ?? ''
 
-  if (activityId === 'values_ranking') {
+  if (activityId === ACTIVITY.VALUES_RANKING) {
     return (
       <ValuesCard
         entry={entry}
@@ -1448,7 +1447,7 @@ function TieredPanelItem({
       />
     )
   }
-  if (activityId === 'fears_ranking') {
+  if (activityId === ACTIVITY.FEARS_RANKING) {
     return (
       <FearsCard
         entry={entry}
@@ -1461,7 +1460,7 @@ function TieredPanelItem({
       />
     )
   }
-  if (activityId === 'legacy_map') {
+  if (activityId === ACTIVITY.LEGACY_MAP) {
     const reflectionText = formatLegacyMapReflections(entry)
     if (!reflectionText) return null
     return (
@@ -2082,9 +2081,9 @@ function MaterialsBrowser({
 function getDisplayTitle(entry: PanelEntry): string {
   if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
   if (entry.title?.trim()) return entry.title.trim()
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
   if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
   if (entry.document_type === 'important_contacts') return 'Important Contacts'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
@@ -2093,9 +2092,9 @@ function getDisplayTitle(entry: PanelEntry): string {
 }
 
 function getTypeLabel(entry: PanelEntry): string {
-  if (entry.activity === 'values_ranking') return 'Working output · Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Working output · Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Working output · Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Working output · Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Working output · Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Working output · Legacy Map'
   if (entry.document_type) return `Document · ${entry.document_type.replace(/_/g, ' ')}`
   return 'Entry'
 }
@@ -2129,9 +2128,9 @@ function formatForInsert(entry: PanelEntry): string {
   if (typeof c !== 'object') return ''
   const obj = c as Record<string, unknown>
 
-  if (entry.activity === 'values_ranking') return formatValuesForInsert(entry)
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return formatValuesForInsert(entry)
 
-  if (entry.activity === 'fears_ranking') {
+  if (entry.activity === ACTIVITY.FEARS_RANKING) {
     const parts: string[] = []
     if (Array.isArray(obj.essential) && obj.essential.length)
       parts.push(`Primary concerns: ${(obj.essential as string[]).join(', ')}`)
@@ -2142,7 +2141,7 @@ function formatForInsert(entry: PanelEntry): string {
     return parts.join('\n\n')
   }
 
-  if (entry.activity === 'legacy_map') {
+  if (entry.activity === ACTIVITY.LEGACY_MAP) {
     const parts: string[] = []
     if (Array.isArray(obj.moments)) {
       const lines = (obj.moments as Record<string, unknown>[])

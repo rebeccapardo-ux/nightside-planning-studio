@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------
 
 import type { Domain } from './content-metadata'
+import { ACTIVITY } from './content-metadata'
 
 export type OrientationItem = {
   key: string
@@ -61,7 +62,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'values_care_priorities',
           title: 'My values and priorities for care at end of life',
           explanation: '',
-          relatedActivities: ['values_ranking', 'fears_ranking'],
+          relatedActivities: [ACTIVITY.VALUES_RANKING, ACTIVITY.FEARS_RANKING],
           learnHref: '/app/learn/healthcare',
           allowedReflectPromptIds: [
             'prompt_2', 'prompt_1', 'prompt_5', 'prompt_20', 'prompt_19',
@@ -259,7 +260,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'life_story_shaped',
           title: 'Reflect on the story of my life and what has shaped me',
           explanation: '',
-          relatedActivities: ['legacy_map'],
+          relatedActivities: [ACTIVITY.LEGACY_MAP],
           learnHref: '/app/learn/legacy',
           allowedReflectPromptIds: [
             'prompt_24', 'prompt_31', 'prompt_37', 'prompt_38',

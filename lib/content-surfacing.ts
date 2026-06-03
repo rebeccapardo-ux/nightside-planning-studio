@@ -19,15 +19,7 @@
 
 import { createSupabaseBrowserClient } from './supabase-browser'
 import type { Note } from './notes'
-import {
-  type Domain,
-  type SupplementaryDocQuestion,
-  type Relevance,
-  type ReflectPromptMeta,
-  PROMPT_META_BY_LABEL,
-  PROMPT_META_BY_ID,
-  ACTIVITY_META_BY_ID,
-} from './content-metadata'
+import { type Domain, type SupplementaryDocQuestion, type Relevance, type ReflectPromptMeta, PROMPT_META_BY_LABEL, PROMPT_META_BY_ID, ACTIVITY_META_BY_ID, ACTIVITY } from './content-metadata'
 
 export type Tier = 1 | 2 | 3
 
@@ -138,7 +130,7 @@ export type WorkingOutputBehavior = {
 
 export function getWorkingOutputBehavior(activityId: string): WorkingOutputBehavior {
   switch (activityId) {
-    case 'values_ranking':
+    case ACTIVITY.VALUES_RANKING:
       return {
         canAutoSurface: true,
         insertionBehavior: 'insertable',
@@ -146,7 +138,7 @@ export function getWorkingOutputBehavior(activityId: string): WorkingOutputBehav
         includeImportant: true,
         includeLessCentral: false,
       }
-    case 'fears_ranking':
+    case ACTIVITY.FEARS_RANKING:
       return {
         canAutoSurface: false,  // fears must never appear without user action
         insertionBehavior: 'selectable_then_insert',
@@ -154,7 +146,7 @@ export function getWorkingOutputBehavior(activityId: string): WorkingOutputBehav
         includeImportant: true,
         includeLessCentral: false,
       }
-    case 'legacy_map':
+    case ACTIVITY.LEGACY_MAP:
       return {
         canAutoSurface: false,
         insertionBehavior: 'view_only',

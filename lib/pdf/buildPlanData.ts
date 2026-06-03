@@ -3,6 +3,7 @@
 // safe to import from a client page or a Node release script alike.
 
 import { getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
+import { ACTIVITY } from '@/lib/content-metadata'
 import type { DomainState } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from './types'
 import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanReadinessGroup } from './PlanPDFDocument'
@@ -425,9 +426,9 @@ export function buildMaterials(entries: EntryRow[], userName: string): PlanMater
   const finEntry      = entries.find(e => e.document_type === 'financial_information')
   const devicesEntry  = entries.find(e => e.document_type === 'devices_and_accounts')
   const keepsakeEntry = entries.find(e => e.document_type === 'keepsake_inventory')
-  const valuesEntry   = entries.find(e => e.activity === 'values_ranking')
-  const fearsEntry    = entries.find(e => e.activity === 'fears_ranking')
-  const legacyEntry   = entries.find(e => e.activity === 'legacy_map')
+  const valuesEntry   = entries.find(e => e.activity === ACTIVITY.VALUES_RANKING)
+  const fearsEntry    = entries.find(e => e.activity === ACTIVITY.FEARS_RANKING)
+  const legacyEntry   = entries.find(e => e.activity === ACTIVITY.LEGACY_MAP)
 
   const mats: PlanMaterial[] = []
   if (adEntry && hasAnyStringContent(adEntry.content))             mats.push({ title: 'My Care Wishes', pdfData: buildAdvanceDirectivePDF(adEntry, userName) })

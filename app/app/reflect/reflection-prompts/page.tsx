@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ACTIVITY } from '@/lib/content-metadata'
 import { useEffect, useState } from 'react'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
@@ -64,7 +65,7 @@ export default function ReflectPage() {
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'reflection_prompts' } }),
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: ACTIVITY.REFLECTION_PROMPTS } }),
     }).catch(() => {})
   }, [])
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useMemo, useState } from 'react'
+import { ACTIVITY } from '@/lib/content-metadata'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { createPromptNote, updateNote } from '@/lib/notes'
@@ -91,7 +92,7 @@ function ReflectPromptsInner() {
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: 'reflection_prompts' } }),
+      body: JSON.stringify({ eventName: 'activity_engaged', metadata: { activity: ACTIVITY.REFLECTION_PROMPTS } }),
     }).catch(() => {})
   }, [])
 
@@ -133,7 +134,7 @@ function ReflectPromptsInner() {
         .from('entries')
         .select('id, content')
         .eq('user_id', user.id)
-        .eq('activity', 'reflection_prompts')
+        .eq('activity', ACTIVITY.REFLECTION_PROMPTS)
         .eq('title', currentPrompt.label)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -176,7 +177,7 @@ function ReflectPromptsInner() {
     if (!user) return null
     const { data: entry, error } = await supabase
       .from('entries')
-      .insert({ title: promptLabel, content, user_id: user.id, section: 'reflect', activity: 'reflection_prompts' })
+      .insert({ title: promptLabel, content, user_id: user.id, section: 'reflect', activity: ACTIVITY.REFLECTION_PROMPTS })
       .select('id').single()
     if (error) { console.error('ENTRY SAVE ERROR:', JSON.stringify(error, null, 2)); return null }
     return entry

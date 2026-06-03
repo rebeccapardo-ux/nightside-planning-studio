@@ -32,6 +32,7 @@
  */
 
 import prompts from 'prompts'
+import { ACTIVITY } from '@/lib/content-metadata'
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { createHash, randomUUID } from 'node:crypto'
 import { promises as fs, existsSync } from 'node:fs'
@@ -98,9 +99,9 @@ const RELEASE_SET: ReleaseDescriptor[] = [
   { title: 'Devices & Accounts',                      kind: 'document', field: 'document_type', value: 'devices_and_accounts' },
   { title: 'Keepsakes Inventory',                     kind: 'document', field: 'document_type', value: 'keepsake_inventory' },
   { title: 'My Care Wishes', kind: 'document', field: 'document_type', value: 'advance_directive_supplement', pref: 'include_care_wishes' },
-  { title: 'Legacy Map',     kind: 'activity', field: 'activity',      value: 'legacy_map',                   pref: 'include_legacy_map' },
-  { title: 'Values Ranking', kind: 'activity', field: 'activity',      value: 'values_ranking',               pref: 'include_values_ranking' },
-  { title: 'Fears Ranking',  kind: 'activity', field: 'activity',      value: 'fears_ranking',                pref: 'include_fears_ranking' },
+  { title: 'Legacy Map',     kind: 'activity', field: 'activity',      value: ACTIVITY.LEGACY_MAP,                   pref: 'include_legacy_map' },
+  { title: 'Values Ranking', kind: 'activity', field: 'activity',      value: ACTIVITY.VALUES_RANKING,               pref: 'include_values_ranking' },
+  { title: 'Fears Ranking',  kind: 'activity', field: 'activity',      value: ACTIVITY.FEARS_RANKING,                pref: 'include_fears_ranking' },
 ]
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

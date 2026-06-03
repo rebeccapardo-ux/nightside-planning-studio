@@ -8,7 +8,7 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
-import { ACTIVITY_META_BY_ID } from '@/lib/content-metadata'
+import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
 
@@ -17,7 +17,6 @@ import type { Note } from '@/lib/notes'
 // ---------------------------------------------------------------------------
 
 
-const STRUCTURED_ACTIVITIES = ['values_ranking', 'fears_ranking', 'legacy_map']
 const EXCLUDED_DOMAIN_DOC_TYPES = [
   'personal_admin_info', 'important_contacts', 'financial_information',
   'devices_and_accounts', 'keepsake_inventory', 'advance_directive_supplement',
@@ -1433,9 +1432,9 @@ function FWTieredPanelItem({ item, readOnly, onInsert }: { item: TieredItem; rea
   if (item.kind === 'note') return <FWNotePanelCard note={item.data} readOnly={readOnly} onInsert={onInsert} />
   const { data: entry, insertBehavior } = item
   const activityId = entry.activity ?? ''
-  if (activityId === 'values_ranking') return <FWValuesCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
-  if (activityId === 'fears_ranking') return <FWFearsCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
-  if (activityId === 'legacy_map') {
+  if (activityId === ACTIVITY.VALUES_RANKING) return <FWValuesCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
+  if (activityId === ACTIVITY.FEARS_RANKING) return <FWFearsCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
+  if (activityId === ACTIVITY.LEGACY_MAP) {
     const text = formatLegacyMapReflections(entry)
     if (!text) return null
     return <FWLegacyMapCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
@@ -1713,9 +1712,9 @@ function hasSectionProgress(key: SectionKey, form: FormState): boolean {
 }
 
 function fwGetDisplayTitle(entry: PanelEntry): string {
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
   if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
   if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
   if (entry.title?.trim()) return entry.title.trim()
@@ -1727,9 +1726,9 @@ function fwGetDisplayTitle(entry: PanelEntry): string {
 }
 
 function fwGetTypeLabel(entry: PanelEntry): string {
-  if (entry.activity === 'values_ranking') return 'Working output · Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Working output · Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Working output · Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Working output · Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Working output · Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Working output · Legacy Map'
   if (entry.document_type) return `Document · ${entry.document_type.replace(/_/g, ' ')}`
   return 'Entry'
 }
@@ -1751,13 +1750,13 @@ function fwFormatForInsert(entry: PanelEntry): string {
   if (typeof c === 'string') return c
   if (typeof c !== 'object') return ''
   const obj = c as Record<string, unknown>
-  if (entry.activity === 'values_ranking') {
+  if (entry.activity === ACTIVITY.VALUES_RANKING) {
     const parts: string[] = []
     if (Array.isArray(obj.essential) && obj.essential.length) parts.push((obj.essential as string[]).join(', '))
     if (Array.isArray(obj.important) && obj.important.length) parts.push((obj.important as string[]).join(', '))
     return parts.join('\n\n')
   }
-  if (entry.activity === 'fears_ranking') {
+  if (entry.activity === ACTIVITY.FEARS_RANKING) {
     const parts: string[] = []
     if (Array.isArray(obj.essential) && obj.essential.length) parts.push(`Primary concerns: ${(obj.essential as string[]).join(', ')}`)
     if (Array.isArray(obj.important) && obj.important.length) parts.push(`Also worried about: ${(obj.important as string[]).join(', ')}`)

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ACTIVITY } from '@/lib/content-metadata'
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import VoiceNoteButton from "@/app/components/VoiceNoteButton";
@@ -430,7 +431,7 @@ export default function LegacyMapPage() {
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: 'legacy_map' } }),
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: ACTIVITY.LEGACY_MAP } }),
     }).catch(() => {})
   }, [])
 
@@ -479,7 +480,7 @@ export default function LegacyMapPage() {
               fetch('/api/analytics/track', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'legacy_map' } }),
+                body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.LEGACY_MAP } }),
               }).catch(() => {});
             }
           }
@@ -600,7 +601,7 @@ export default function LegacyMapPage() {
           fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'legacy_map' } }),
+            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.LEGACY_MAP } }),
           }).catch(() => {});
         }
       }
@@ -655,7 +656,7 @@ export default function LegacyMapPage() {
           fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: 'legacy_map' } }),
+            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.LEGACY_MAP } }),
           }).catch(() => {});
         }
       }

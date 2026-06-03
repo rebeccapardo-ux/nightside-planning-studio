@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ACTIVITY, STRUCTURED_ACTIVITIES } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import UnassignedSection from '@/app/components/UnassignedSection'
 import type { Container } from '@/lib/notes'
@@ -25,7 +26,6 @@ export default async function AllUnassignedPage() {
   // The throw preserves type narrowing for user.id below.
   if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/plan/all')
 
-  const STRUCTURED_ACTIVITIES = ['values_ranking', 'fears_ranking', 'legacy_map']
 
   const [
     { data: entries },
@@ -152,9 +152,9 @@ function getContinueHref(entry: EntryRow): string | null {
   if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
   if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
   if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
-  if (entry.activity === 'values_ranking') return `/app/entries/${entry.id}`
-  if (entry.activity === 'fears_ranking') return `/app/entries/${entry.id}`
-  if (entry.activity === 'legacy_map') return `/app/entries/${entry.id}`
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/entries/${entry.id}`
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/entries/${entry.id}`
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return `/app/entries/${entry.id}`
   if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
   return null
 }
@@ -166,9 +166,9 @@ function getDisplayTitle(entry: EntryRow): string {
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'keepsake_inventory') return 'Meaningful Keepsakes'
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
   if (entry.title?.trim()) return entry.title.trim()
   return 'Untitled'
 }

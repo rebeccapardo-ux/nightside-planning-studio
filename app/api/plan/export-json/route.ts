@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { ACTIVITY } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 
 const PRACTICAL_DOC_TYPES: Record<string, { key: string; title: string }> = {
@@ -15,9 +16,9 @@ const WISHES_DOC_TYPES: Record<string, { key: string; title: string }> = {
 }
 
 const ACTIVITY_KEYS: Record<string, string> = {
-  legacy_map:      'legacy_map',
-  values_ranking:  'values_ranking',
-  fears_ranking:   'fears_ranking',
+  [ACTIVITY.LEGACY_MAP]:      'legacy_map',
+  [ACTIVITY.VALUES_RANKING]:  'values_ranking',
+  [ACTIVITY.FEARS_RANKING]:   'fears_ranking',
 }
 
 type DocPayload = {

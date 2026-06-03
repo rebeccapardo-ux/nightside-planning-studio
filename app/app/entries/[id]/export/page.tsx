@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { ACTIVITY, isStructuredActivity } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DownloadPDFButton from './DownloadPDFButton'
 import FinancialExportClient from './FinancialExportClient'
@@ -137,7 +138,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
 
   if (error || !entry) notFound()
 
-  const isActivity = entry.activity === 'values_ranking' || entry.activity === 'fears_ranking' || entry.activity === 'legacy_map'
+  const isActivity = isStructuredActivity(entry.activity)
   const isDocument = !!entry.document_type
   if (!isActivity && !isDocument) notFound()
 
@@ -145,7 +146,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
   const displayTitle = getDisplayTitle(entry)
   const filename = getExportFilename(entry)
 
-  if (entry.activity === 'legacy_map') {
+  if (entry.activity === ACTIVITY.LEGACY_MAP) {
     const mapContent = getLegacyMapContent(entry)
     if (!mapContent) notFound()
     const monthYear = entry.created_at
@@ -168,7 +169,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
     return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} userName={userName} monthYear={monthYear} pdfData={pdfData} />
   }
 
-  if (entry.activity === 'values_ranking') {
+  if (entry.activity === ACTIVITY.VALUES_RANKING) {
     const ranking = getRankingContent(entry)
     if (!ranking) notFound()
     const pdfData: PDFData = {
@@ -188,7 +189,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
     return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} />
   }
 
-  if (entry.activity === 'fears_ranking') {
+  if (entry.activity === ACTIVITY.FEARS_RANKING) {
     const ranking = getRankingContent(entry)
     if (!ranking) notFound()
     const pdfData: PDFData = {
@@ -1132,9 +1133,9 @@ function getDisplayTitle(entry: EntryRow): string {
   if (entry.document_type === 'financial_information') return 'Financial Information'
   if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
   if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
-  if (entry.activity === 'values_ranking') return 'Values Ranking'
-  if (entry.activity === 'fears_ranking') return 'Fears Ranking'
-  if (entry.activity === 'legacy_map') return 'Legacy Map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
   if (entry.title?.trim()) return entry.title.trim()
   return 'Untitled'
 }
@@ -1150,9 +1151,9 @@ function getExportFilename(entry: EntryRow): string {
   if (entry.document_type === 'financial_information') return `nightside-financial-information-${date}`
   if (entry.document_type === 'devices_and_accounts') return `nightside-devices-and-accounts-${date}`
   if (entry.document_type === 'keepsake_inventory') return `nightside-keepsake-inventory-${date}`
-  if (entry.activity === 'values_ranking') return `nightside-values-ranking-${date}`
-  if (entry.activity === 'fears_ranking') return `nightside-fears-ranking-${date}`
-  if (entry.activity === 'legacy_map') return `nightside-legacy-map-${date}`
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return `nightside-values-ranking-${date}`
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return `nightside-fears-ranking-${date}`
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return `nightside-legacy-map-${date}`
   return `nightside-export-${date}`
 }
 
