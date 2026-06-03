@@ -88,7 +88,7 @@ export default async function PlanPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('containers')
-      .select('id, title')
+      .select('id, title, domain_code')
       .eq('type', 'domain')
       .eq('user_id', user.id)
       .order('title'),

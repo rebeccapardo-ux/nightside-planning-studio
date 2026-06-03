@@ -211,7 +211,7 @@ export async function tieredNotesByDomain(notes: Note[], domain: Domain): Promis
     const supabase = createSupabaseBrowserClient()
     const { data } = await supabase
       .from('container_notes')
-      .select('note_id, containers(title, type)')
+      .select('note_id, containers(title, type, domain_code)')
       .in('note_id', freeformIds)
 
     for (const row of data ?? []) {

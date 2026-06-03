@@ -203,7 +203,7 @@ async function resolveSyncFlagsToDomainIds(
 
   const { data: containers } = await supabase
     .from('containers')
-    .select('id, title')
+    .select('id, title, domain_code')
     .eq('type', 'domain')
 
   for (const c of containers ?? []) {

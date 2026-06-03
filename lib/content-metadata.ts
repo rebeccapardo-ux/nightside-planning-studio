@@ -17,6 +17,7 @@ export type Domain =
   | 'deathcare'
   | 'legacy'
   | 'wills_estates'
+  | 'ritual'
   | 'personal_admin'
 
 // The six fields in the My Care Wishes (advance directive) document:
@@ -123,7 +124,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
   {
     id: 'prompt_7',
     label: 'What are a few of your favorite special traditions?',
-    domainRelevance: ['deathcare', 'legacy'],
+    domainRelevance: ['deathcare', 'legacy', 'ritual'],
     supplementaryDocumentRelevance: { fw_s4: 'primary' },
   },
   {
@@ -355,7 +356,7 @@ export const REFLECT_PROMPT_META: ReflectPromptMeta[] = [
   {
     id: 'prompt_40',
     label: 'What rituals or ceremonies—personal, cultural, or religious—are meaningful to you?',
-    domainRelevance: ['deathcare', 'legacy', 'healthcare'],
+    domainRelevance: ['deathcare', 'legacy', 'healthcare', 'ritual'],
     supplementaryDocumentRelevance: { q1: 'secondary', fw_s4: 'primary' },
     primaryTag: 'environment',
     secondaryTags: ['identity_life_story', 'values'],

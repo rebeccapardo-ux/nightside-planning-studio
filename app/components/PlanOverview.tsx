@@ -21,7 +21,7 @@ type DocRow = {
   supplementaryLink?: { label?: string; text: string; href: string }
 }
 
-export default function PlanOverview({ domains }: { domains: { id: string; title: string }[] }) {
+export default function PlanOverview({ domains }: { domains: { id: string; title: string; domain_code?: string | null }[] }) {
   const [syncHasWill, setSyncHasWill]   = useState(false)
   const [syncHasCDM, setSyncHasCDM]     = useState(false)
   const [syncHasEOL, setSyncHasEOL]     = useState(false)

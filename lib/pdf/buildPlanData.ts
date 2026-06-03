@@ -452,7 +452,7 @@ export function buildMaterials(entries: EntryRow[], userName: string): PlanMater
 // in the browser and in a Node release script.
 // ---------------------------------------------------------------------------
 
-export type DomainContainer = { id: string; title: string }
+export type DomainContainer = { id: string; title: string; domain_code?: string | null }
 
 function qualitativeLabel(started: number, total: number): string {
   if (started === 0 || total === 0) return 'Not yet started'
