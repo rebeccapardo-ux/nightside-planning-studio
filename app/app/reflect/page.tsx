@@ -158,7 +158,7 @@ export default function ExplorePage() {
               Before rushing into tasks like completing an advance directive, it's helpful to pause. Taking the time to think deeply about your values, feelings, and relationship to death will help ensure your plans are grounded in what matters most to you.
             </p>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
-              Activities in this section are designed to help you imagine what a "good death" looks like for you, clarify how your values translate into real choices, and consider what you want to leave behind.
+              Activities in this section are designed to help you imagine what a good death looks like for you, clarify how your values translate into real choices, and consider what you want to leave behind.
             </p>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
               Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you're working in Your Plan.</span>
