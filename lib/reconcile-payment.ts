@@ -23,6 +23,7 @@ export type ReconcileFailReason =
   | 'stripe_unpaid'          // session found but payment_status !== 'paid'
   | 'session_not_found'      // stored session id doesn't resolve in Stripe
   | 'ambiguous_manual_review' // paid session(s) for the email but none tie to this user
+  | 'activation_failed'      // payment confirmed but the paid_at write didn't stick
   | 'stripe_error'           // Stripe API threw
 
 export type ReconcileResult =
@@ -42,8 +43,10 @@ function adminClient(): SupabaseClient {
 
 // Idempotently set paid_at (and backfill the session id so future reconciles are
 // point lookups). Logs payment_completed only if THIS call was the setter.
-async function markPaid(admin: SupabaseClient, userId: string, sessionId: string): Promise<void> {
-  const { data: updated } = await admin
+// Returns whether paid_at is actually set afterward — the caller relies on this
+// to avoid a redirect loop if the write silently fails.
+async function markPaid(admin: SupabaseClient, userId: string, sessionId: string): Promise<boolean> {
+  const { data: updated, error } = await admin
     .from('user_profiles')
     .update({ paid_at: new Date().toISOString(), stripe_session_id: sessionId })
     .eq('user_id', userId)
@@ -58,7 +61,18 @@ async function markPaid(admin: SupabaseClient, userId: string, sessionId: string
       metadata: { stripe_session_id: sessionId, via: 'reconcile' },
       includePlanningStatus: true,
     })
+    return true
   }
+
+  if (error) console.error('reconcile markPaid update failed for', userId, error.message)
+  // Either a concurrent path already set it, or our write failed — confirm the
+  // actual state so the caller doesn't report success on an unset paid_at.
+  const { data: row } = await admin
+    .from('user_profiles')
+    .select('paid_at')
+    .eq('user_id', userId)
+    .maybeSingle()
+  return !!row?.paid_at
 }
 
 export async function reconcilePayment(userId: string): Promise<ReconcileResult> {
@@ -83,8 +97,8 @@ export async function reconcilePayment(userId: string): Promise<ReconcileResult>
         .catch(() => null)
       if (!session) return { ok: false, reason: 'session_not_found' }
       if (session.payment_status === 'paid' && session.metadata?.supabase_user_id === userId) {
-        await markPaid(admin, userId, session.id)
-        return { ok: true, alreadyPaid: false }
+        const set = await markPaid(admin, userId, session.id)
+        return set ? { ok: true, alreadyPaid: false } : { ok: false, reason: 'activation_failed' }
       }
       return { ok: false, reason: 'stripe_unpaid' }
     }
@@ -109,8 +123,8 @@ export async function reconcilePayment(userId: string): Promise<ReconcileResult>
     }
 
     if (userPaidSession) {
-      await markPaid(admin, userId, userPaidSession.id)
-      return { ok: true, alreadyPaid: false }
+      const set = await markPaid(admin, userId, userPaidSession.id)
+      return set ? { ok: true, alreadyPaid: false } : { ok: false, reason: 'activation_failed' }
     }
     if (paidForEmail.length > 0) {
       // Paid session(s) match the email but none carry this user's metadata —
