@@ -6,6 +6,10 @@
 // (localStorage checkbox_*/orient_*, auth.user_metadata.sync_*) so existing
 // users don't lose progress when the DB column is empty for them.
 //
+// Precedence: DB state wins whenever present; localStorage/user_metadata are
+// read only to seed an empty DB column, never to override it — they are legacy
+// backfill, not peers.
+//
 // Conflict policy during backfill: prefer `true`. We never make a user's
 // progress regress because of a stale local copy.
 
