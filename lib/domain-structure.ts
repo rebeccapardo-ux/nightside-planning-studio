@@ -226,7 +226,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           explanation: '',
           learnHref: '/app/learn/ritual',
           allowedReflectPromptIds: [
-            'prompt_40',
+            'prompt_40', 'prompt_7',
           ],
         },
         {
