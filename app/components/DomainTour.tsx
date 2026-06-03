@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { scrollToTourTarget, TOUR_SCROLL_SETTLE_MS } from '@/lib/tour-scroll'
+import { useScrollLock } from '@/lib/use-scroll-lock'
 
 // Visual primitives mirror PlanTour so the two tours read as the same
 // pattern. Differences:
@@ -264,6 +265,11 @@ export default function DomainTour() {
   const mounted = useRef(true)
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null)
 
+  // Lock page scroll on desktop while the tour is active — the arrow geometry
+  // assumes a stable viewport, and desktop tours are intentionally not
+  // scroll-stepping. Mobile (vw < 768) scroll-steps and is left unlocked.
+  useScrollLock(active && vw >= 768)
+
   useEffect(() => {
     mounted.current = true
     return () => { mounted.current = false }
@@ -281,11 +287,7 @@ export default function DomainTour() {
     const update = () => { setVw(window.innerWidth); setVh(window.innerHeight) }
     update()
     window.addEventListener('resize', update)
-    window.addEventListener('scroll', update, { passive: true })
-    return () => {
-      window.removeEventListener('resize', update)
-      window.removeEventListener('scroll', update)
-    }
+    return () => window.removeEventListener('resize', update)
   }, [active])
 
   useEffect(() => {

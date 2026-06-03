@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { scrollToTourTarget, TOUR_SCROLL_SETTLE_MS } from '@/lib/tour-scroll'
+import { useScrollLock } from '@/lib/use-scroll-lock'
 
 const apf = "'Apfel Grotezk', sans-serif"
 const hv  = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -185,6 +186,11 @@ export default function PlanTour({ userId }: { userId: string }) {
   const [vw, setVw]                     = useState(0)
   const [vh, setVh]                     = useState(0)
   const mounted = useRef(true)
+
+  // Lock page scroll on desktop while the tour is active — the arrow geometry
+  // assumes a stable viewport, and desktop tours are intentionally not
+  // scroll-stepping. Mobile (vw < 768) scroll-steps and is left unlocked.
+  useScrollLock(active && vw >= 768)
 
   useEffect(() => {
     mounted.current = true
