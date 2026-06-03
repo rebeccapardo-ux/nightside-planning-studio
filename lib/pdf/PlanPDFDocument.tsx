@@ -33,7 +33,7 @@ const ALL_POSSIBLE_MATERIAL_TITLES = [
   'Legacy Map',
 ]
 
-const DOMAIN_DISPLAY_ORDER = ['healthcare', 'deathcare', 'legacy', 'will', 'personal', 'ritual']
+const DOMAIN_DISPLAY_ORDER = ['healthcare', 'deathcare', 'legacy', 'wills_estates', 'personal_admin', 'ritual']
 
 // ---------------------------------------------------------------------------
 // Types
@@ -57,6 +57,7 @@ export type PlanReadinessGroup = {
 
 export type PlanDomainStatus = {
   title: string
+  domainCode: string
   label: string
   topicsStarted: number
   totalTopics: number
@@ -376,8 +377,8 @@ function SummaryPage({ planProps }: { planProps: PlanPDFProps }) {
       {(() => {
         if (planProps.domainStatuses.length === 0) return null
         const sorted = [...planProps.domainStatuses].sort((a, b) => {
-          const ai = DOMAIN_DISPLAY_ORDER.findIndex(m => a.title.toLowerCase().includes(m))
-          const bi = DOMAIN_DISPLAY_ORDER.findIndex(m => b.title.toLowerCase().includes(m))
+          const ai = DOMAIN_DISPLAY_ORDER.indexOf(a.domainCode)
+          const bi = DOMAIN_DISPLAY_ORDER.indexOf(b.domainCode)
           return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
         })
         const pairs: (typeof sorted)[] = []

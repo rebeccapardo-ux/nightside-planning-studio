@@ -13,7 +13,7 @@ export default async function DeathcareLearnPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
-      .ilike('title', '%deathcare%')
+      .eq('domain_code', 'deathcare')
       .limit(1)
     if (domains && domains.length > 0) {
       deathcareDomainHref = `/app/domains/${domains[0].id}`

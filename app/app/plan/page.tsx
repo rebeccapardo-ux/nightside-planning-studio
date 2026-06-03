@@ -47,28 +47,35 @@ export default async function PlanPage() {
   // The throw preserves type narrowing for user.id below.
   if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/plan')
 
-  // Ensure all six canonical domains exist for this user, with no duplicates
-  const CANONICAL_DOMAINS = [
-    'Deathcare',
-    'Healthcare Wishes',
-    'Legacy',
-    'Personal Admin',
-    'Ritual & Ceremony',
-    'Wills & Estates',
+  // Ensure all six canonical domains exist for this user, with no duplicates.
+  // Idempotent on the stable domain_code (and title, as a safety net for any
+  // legacy row that predates the code backfill) so re-seeding never duplicates.
+  const CANONICAL_DOMAINS: { title: string; code: string }[] = [
+    { title: 'Deathcare',         code: 'deathcare' },
+    { title: 'Healthcare Wishes', code: 'healthcare' },
+    { title: 'Legacy',            code: 'legacy' },
+    { title: 'Personal Admin',    code: 'personal_admin' },
+    { title: 'Ritual & Ceremony', code: 'ritual' },
+    { title: 'Wills & Estates',   code: 'wills_estates' },
   ]
 
   const { data: existingDomains } = await supabase
     .from('containers')
-    .select('title')
+    .select('title, domain_code')
     .eq('type', 'domain')
     .eq('user_id', user.id)
 
+  const existingCodes = new Set(
+    (existingDomains ?? []).map((d) => d.domain_code).filter((c): c is string => !!c)
+  )
   const existingTitles = new Set((existingDomains ?? []).map((d) => d.title))
-  const toInsert = CANONICAL_DOMAINS.filter((title) => !existingTitles.has(title))
+  const toInsert = CANONICAL_DOMAINS.filter(
+    (d) => !existingCodes.has(d.code) && !existingTitles.has(d.title)
+  )
   if (toInsert.length > 0) {
     await supabase
       .from('containers')
-      .insert(toInsert.map((title) => ({ user_id: user.id, type: 'domain', title })))
+      .insert(toInsert.map((d) => ({ user_id: user.id, type: 'domain', title: d.title, domain_code: d.code })))
   }
 
   const [
@@ -88,7 +95,7 @@ export default async function PlanPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('containers')
-      .select('id, title')
+      .select('id, title, domain_code')
       .eq('type', 'domain')
       .eq('user_id', user.id)
       .order('title'),

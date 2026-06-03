@@ -24,6 +24,7 @@ const NOTE_SELECT_FIELDS =
 export type Container = {
   id: string
   title: string
+  domain_code?: string | null
 }
 
 export type DomainWithCount = Container & { noteCount: number }
@@ -35,7 +36,7 @@ export async function fetchDomainsWithCounts(): Promise<DomainWithCount[]> {
 
   const { data: containers, error } = await supabase
     .from('containers')
-    .select('id, title')
+    .select('id, title, domain_code')
     .eq('type', 'domain')
     .order('title')
 
@@ -290,7 +291,7 @@ export async function fetchContainers(): Promise<Container[]> {
 
   const { data, error } = await supabase
     .from('containers')
-    .select('id, title')
+    .select('id, title, domain_code')
     .eq('type', 'domain')
     .order('title', { ascending: true })
 

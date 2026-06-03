@@ -452,7 +452,7 @@ export function buildMaterials(entries: EntryRow[], userName: string): PlanMater
 // in the browser and in a Node release script.
 // ---------------------------------------------------------------------------
 
-export type DomainContainer = { id: string; title: string }
+export type DomainContainer = { id: string; title: string; domain_code?: string | null }
 
 function qualitativeLabel(started: number, total: number): string {
   if (started === 0 || total === 0) return 'Not yet started'
@@ -471,8 +471,8 @@ export function buildKeyDetails(
 ): PlanKeyDetail[] {
   // Derive syncHasWill / syncHasEOL / careStatus from the JSONB-backed
   // domain_state (no longer from user_metadata).
-  const willsDomain      = domains.find(d => d.title.toLowerCase().includes('will'))
-  const healthcareDomain = domains.find(d => d.title.toLowerCase().includes('health'))
+  const willsDomain      = domains.find(d => d.domain_code === 'wills_estates')
+  const healthcareDomain = domains.find(d => d.domain_code === 'healthcare')
   const willVals = willsDomain      ? getCheckboxes(domainState, willsDomain.id,      'legal_will_in_place', 1) : [false]
   const eolVals  = healthcareDomain ? getCheckboxes(domainState, healthcareDomain.id, 'wishes_clear_shared', 2) : [false, false]
   const syncHasWill = willVals[0] === true
@@ -516,7 +516,7 @@ export function buildKeyDetails(
   }
 
   // Resting place from domain_state (deathcare domain)
-  const deathcareDomain = domains.find(d => d.title.toLowerCase().includes('death'))
+  const deathcareDomain = domains.find(d => d.domain_code === 'deathcare')
   let restingDocumented = false
   let restingShared = false
   if (deathcareDomain) {
@@ -591,7 +591,7 @@ export function buildDomainStatuses(
   domains: DomainContainer[],
 ): PlanDomainStatus[] {
   return DOMAIN_STRUCTURES.map(def => {
-    const dbDomain = domains.find(d => d.title.toLowerCase().includes(def.match))
+    const dbDomain = domains.find(d => d.domain_code === def.code)
     const { orientation, readiness } = def.structure
     const totalTopics = orientation.length + readiness.length
 
@@ -621,6 +621,7 @@ export function buildDomainStatuses(
 
     return {
       title: dbDomain?.title ?? def.displayName,
+      domainCode: def.code,
       label: qualitativeLabel(topicsStarted, totalTopics),
       topicsStarted,
       totalTopics,

@@ -13,7 +13,7 @@ export default async function PersonalAdminLearnPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
-      .ilike('title', '%personal%')
+      .eq('domain_code', 'personal_admin')
       .limit(1)
     if (domains && domains.length > 0) {
       personalAdminDomainHref = `/app/domains/${domains[0].id}`

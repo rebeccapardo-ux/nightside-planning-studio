@@ -9,6 +9,8 @@
 // to import from both client components and the server-side PDF builder.
 // ---------------------------------------------------------------------------
 
+import type { Domain } from './content-metadata'
+
 export type OrientationItem = {
   key: string
   title: string
@@ -42,8 +44,8 @@ export type DomainStructure = {
 export type DomainSegment = { key: string; type: 'orient' | 'ready' }
 
 export type DomainDef = {
-  // Substring matched (case-insensitive) against the domain container title.
-  match: string
+  // Stable per-domain identity (containers.domain_code).
+  code: Domain
   // Canonical display name — used by the PDF builder when no DB container exists.
   displayName: string
   structure: DomainStructure
@@ -51,7 +53,7 @@ export type DomainDef = {
 
 export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
-    match: 'healthcare',
+    code: 'healthcare',
     displayName: 'Healthcare Wishes',
     structure: {
       orientation: [
@@ -111,7 +113,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     },
   },
   {
-    match: 'death',
+    code: 'deathcare',
     displayName: 'Deathcare',
     structure: {
       orientation: [
@@ -147,7 +149,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     },
   },
   {
-    match: 'will',
+    code: 'wills_estates',
     displayName: 'Wills & Estates',
     structure: {
       orientation: [
@@ -214,7 +216,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     },
   },
   {
-    match: 'ritual',
+    code: 'ritual',
     displayName: 'Ritual & Ceremony',
     structure: {
       orientation: [
@@ -224,7 +226,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           explanation: '',
           learnHref: '/app/learn/ritual',
           allowedReflectPromptIds: [
-            'prompt_40',
+            'prompt_40', 'prompt_7',
           ],
         },
         {
@@ -249,7 +251,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     },
   },
   {
-    match: 'legacy',
+    code: 'legacy',
     displayName: 'Legacy',
     structure: {
       orientation: [
@@ -297,7 +299,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     },
   },
   {
-    match: 'personal',
+    code: 'personal_admin',
     displayName: 'Personal Admin',
     structure: {
       orientation: [
@@ -351,20 +353,19 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
 ]
 
-// Resolve a domain container title to its structure via case-insensitive
-// substring match on `match`.
-export function getDomainStructure(domainTitle: string): DomainStructure | null {
-  const lower = domainTitle.toLowerCase()
-  for (const def of DOMAIN_STRUCTURES) {
-    if (lower.includes(def.match)) return def.structure
-  }
-  return null
+// Resolve a stable domain_code to its structure.
+export function getDomainStructureByCode(code: string | null | undefined): DomainStructure | null {
+  if (!code) return null
+  return DOMAIN_STRUCTURES.find(def => def.code === code)?.structure ?? null
 }
 
-// Flattened {key, type} segments for a domain, in orientation-then-readiness
-// order. For status components that only need keys + type.
-export function getDomainSegments(domainTitle: string): DomainSegment[] {
-  const structure = getDomainStructure(domainTitle)
+// Flattened {key, type} segments resolved by stable domain_code. For status
+// components that only need keys + type.
+export function getDomainSegmentsByCode(code: string | null | undefined): DomainSegment[] {
+  return segmentsOf(getDomainStructureByCode(code))
+}
+
+function segmentsOf(structure: DomainStructure | null): DomainSegment[] {
   if (!structure) return []
   return [
     ...structure.orientation.map((o): DomainSegment => ({ key: o.key, type: 'orient' })),

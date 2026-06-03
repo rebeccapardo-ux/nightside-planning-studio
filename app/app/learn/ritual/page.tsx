@@ -12,7 +12,7 @@ export default async function RitualLearnPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
-      .ilike('title', '%ritual%')
+      .eq('domain_code', 'ritual')
       .limit(1)
     if (domains && domains.length > 0) {
       ritualDomainHref = `/app/domains/${domains[0].id}`

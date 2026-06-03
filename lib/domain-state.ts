@@ -203,14 +203,14 @@ async function resolveSyncFlagsToDomainIds(
 
   const { data: containers } = await supabase
     .from('containers')
-    .select('id, title')
+    .select('id, title, domain_code')
     .eq('type', 'domain')
 
   for (const c of containers ?? []) {
-    const lower = (c.title ?? '').toLowerCase()
-    if (hints.willsHint      && lower.includes('will'))    out[c.id] = mergeEntry(out[c.id], hints.willsHint)
-    if (hints.healthcareHint && lower.includes('health'))  out[c.id] = mergeEntry(out[c.id], hints.healthcareHint)
-    if (hints.deathcareHint  && lower.includes('death'))   out[c.id] = mergeEntry(out[c.id], hints.deathcareHint)
+    const code = c.domain_code
+    if (hints.willsHint      && code === 'wills_estates') out[c.id] = mergeEntry(out[c.id], hints.willsHint)
+    if (hints.healthcareHint && code === 'healthcare')    out[c.id] = mergeEntry(out[c.id], hints.healthcareHint)
+    if (hints.deathcareHint  && code === 'deathcare')     out[c.id] = mergeEntry(out[c.id], hints.deathcareHint)
   }
   return out
 }

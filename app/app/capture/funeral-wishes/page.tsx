@@ -419,7 +419,7 @@ function FuneralWishesPage() {
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: container } = await supabase
-        .from('containers').select('id').eq('type', 'domain').ilike('title', '%death%').maybeSingle()
+        .from('containers').select('id').eq('type', 'domain').eq('domain_code', 'deathcare').maybeSingle()
       if (!container) return
       const { data: existing } = await supabase
         .from('container_entries').select('entry_id')
@@ -1096,8 +1096,8 @@ function computePanelTiers(
 
   for (const { representative } of outputs) {
     const activityId = representative.activity ?? ''
-    if (activityId === 'fears_ranking') continue
     const activityMeta = ACTIVITY_META_BY_ID[activityId]
+    if (activityMeta?.neverAutoSuggest) continue
     const behavior = getWorkingOutputBehavior(activityId)
     const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
     const item: TieredItem = { kind: 'entry', data: representative, insertBehavior: behavior.insertionBehavior }
@@ -1149,8 +1149,8 @@ function useFWMaterialsData() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        const { data: containers } = await supabase.from('containers').select('id, title').eq('type', 'domain')
-        const relevantContainerIds = (containers || []).filter(c => /death|legacy|ritual|ceremony/i.test(c.title)).map(c => c.id)
+        const { data: containers } = await supabase.from('containers').select('id, domain_code').eq('type', 'domain')
+        const relevantContainerIds = (containers || []).filter(c => ['deathcare', 'legacy', 'ritual'].includes(c.domain_code ?? '')).map(c => c.id)
 
         if (relevantContainerIds.length > 0) {
           const { data: noteLinks } = await supabase.from('container_notes').select('note_id').in('container_id', relevantContainerIds)
@@ -1254,6 +1254,7 @@ function FWMaterialsPanel({
         if (!seen.has(note.id)) { seen.add(note.id); items.push({ kind: 'note', data: note }) }
       }
       for (const { representative } of deduplicatedOutputs) {
+        if (ACTIVITY_META_BY_ID[representative.activity ?? '']?.neverAutoSuggest) continue
         if (!seen.has(representative.id)) {
           seen.add(representative.id)
           const behavior = getWorkingOutputBehavior(representative.activity ?? '')

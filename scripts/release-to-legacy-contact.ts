@@ -327,7 +327,7 @@ async function main() {
 
   const { data: domainData, error: domainErr } = await admin
     .from('containers')
-    .select('id, title')
+    .select('id, title, domain_code')
     .eq('type', 'domain')
     .eq('user_id', userId)
   if (domainErr) fail(`Could not fetch domain containers: ${domainErr.message}`)

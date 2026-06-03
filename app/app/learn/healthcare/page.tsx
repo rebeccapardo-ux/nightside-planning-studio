@@ -13,7 +13,7 @@ export default async function HealthcareLearnPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
-      .ilike('title', '%healthcare%')
+      .eq('domain_code', 'healthcare')
       .limit(1)
     if (domains && domains.length > 0) {
       healthcareDomainHref = `/app/domains/${domains[0].id}`
