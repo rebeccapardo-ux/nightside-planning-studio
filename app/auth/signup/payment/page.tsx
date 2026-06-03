@@ -68,7 +68,7 @@ export default async function PaymentPage() {
                 Complete your signup
               </h1>
               <p style={{ fontFamily: hv, fontSize: '14px', color: '#6b6b6b', textAlign: 'center', margin: '0 0 28px 0', lineHeight: 1.5 }}>
-                Your email is confirmed. The next step is payment for lifetime access. After that, you&apos;ll designate a Legacy Contact, then you can start planning.
+                Your email is confirmed. The next step is payment for lifetime access. After that, you&apos;ll designate a Legacy Contact. You&apos;ll need to do this before starting your plan.
               </p>
 
               {/* Pricing */}
