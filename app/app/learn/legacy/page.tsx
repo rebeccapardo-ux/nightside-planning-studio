@@ -12,7 +12,7 @@ export default async function LegacyLearnPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
-      .ilike('title', '%legacy%')
+      .eq('domain_code', 'legacy')
       .limit(1)
     if (domains && domains.length > 0) {
       legacyDomainHref = `/app/domains/${domains[0].id}`

@@ -216,11 +216,8 @@ export async function tieredNotesByDomain(notes: Note[], domain: Domain): Promis
 
     for (const row of data ?? []) {
       const container = Array.isArray(row.containers) ? row.containers[0] : row.containers
-      if (
-        container &&
-        (container as { type: string; title: string }).type === 'domain' &&
-        domainFromTitle((container as { type: string; title: string }).title) === domain
-      ) {
+      const c = container as { type: string; domain_code: string | null } | null
+      if (c && c.type === 'domain' && c.domain_code === domain) {
         linkedNoteIds.add(row.note_id)
       }
     }
@@ -234,21 +231,6 @@ export async function tieredNotesByDomain(notes: Note[], domain: Domain): Promis
   }
 
   return result
-}
-
-// ---------------------------------------------------------------------------
-// Domain resolution from title string
-// Matches domainTitle to a Domain enum value, same heuristic used elsewhere.
-// ---------------------------------------------------------------------------
-
-export function domainFromTitle(title: string): Domain | null {
-  const t = title.toLowerCase()
-  if (t.includes('healthcare') || t.includes('health care')) return 'healthcare'
-  if (t.includes('deathcare') || t.includes('death care')) return 'deathcare'
-  if (t.includes('legacy')) return 'legacy'
-  if (t.includes('wills') || t.includes('estate')) return 'wills_estates'
-  if (t.includes('personal admin') || t.includes('personal_admin')) return 'personal_admin'
-  return null
 }
 
 // ---------------------------------------------------------------------------

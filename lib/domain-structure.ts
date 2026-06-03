@@ -44,11 +44,8 @@ export type DomainStructure = {
 export type DomainSegment = { key: string; type: 'orient' | 'ready' }
 
 export type DomainDef = {
-  // Stable per-domain identity (containers.domain_code). The preferred key.
+  // Stable per-domain identity (containers.domain_code).
   code: Domain
-  // Substring matched (case-insensitive) against the domain container title.
-  // Legacy fallback; read sites are moving to `code`.
-  match: string
   // Canonical display name — used by the PDF builder when no DB container exists.
   displayName: string
   structure: DomainStructure
@@ -57,7 +54,6 @@ export type DomainDef = {
 export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'healthcare',
-    match: 'healthcare',
     displayName: 'Healthcare Wishes',
     structure: {
       orientation: [
@@ -118,7 +114,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
   {
     code: 'deathcare',
-    match: 'death',
     displayName: 'Deathcare',
     structure: {
       orientation: [
@@ -155,7 +150,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
   {
     code: 'wills_estates',
-    match: 'will',
     displayName: 'Wills & Estates',
     structure: {
       orientation: [
@@ -223,7 +217,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
   {
     code: 'ritual',
-    match: 'ritual',
     displayName: 'Ritual & Ceremony',
     structure: {
       orientation: [
@@ -259,7 +252,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
   {
     code: 'legacy',
-    match: 'legacy',
     displayName: 'Legacy',
     structure: {
       orientation: [
@@ -308,7 +300,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
   {
     code: 'personal_admin',
-    match: 'personal',
     displayName: 'Personal Admin',
     structure: {
       orientation: [
@@ -362,30 +353,15 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   },
 ]
 
-// Resolve a domain container title to its structure via case-insensitive
-// substring match on `match`. Legacy; prefer getDomainStructureByCode.
-export function getDomainStructure(domainTitle: string): DomainStructure | null {
-  const lower = domainTitle.toLowerCase()
-  for (const def of DOMAIN_STRUCTURES) {
-    if (lower.includes(def.match)) return def.structure
-  }
-  return null
-}
-
-// Resolve a stable domain_code to its structure. Preferred over the title-based
-// lookup once callers carry domain_code.
-export function getDomainStructureByCode(code: Domain): DomainStructure | null {
+// Resolve a stable domain_code to its structure.
+export function getDomainStructureByCode(code: string | null | undefined): DomainStructure | null {
+  if (!code) return null
   return DOMAIN_STRUCTURES.find(def => def.code === code)?.structure ?? null
 }
 
-// Flattened {key, type} segments for a domain, in orientation-then-readiness
-// order. For status components that only need keys + type.
-export function getDomainSegments(domainTitle: string): DomainSegment[] {
-  return segmentsOf(getDomainStructure(domainTitle))
-}
-
-// Flattened {key, type} segments resolved by stable domain_code. Preferred.
-export function getDomainSegmentsByCode(code: Domain): DomainSegment[] {
+// Flattened {key, type} segments resolved by stable domain_code. For status
+// components that only need keys + type.
+export function getDomainSegmentsByCode(code: string | null | undefined): DomainSegment[] {
   return segmentsOf(getDomainStructureByCode(code))
 }
 

@@ -39,9 +39,9 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   const [restingShared, setRestingShared]         = useState(false)
   const [loaded, setLoaded]             = useState(false)
 
-  const healthcareDomain = domains.find(d => d.title.toLowerCase().includes('healthcare'))
-  const willsDomain      = domains.find(d => d.title.toLowerCase().includes('will'))
-  const deathcareDomain  = domains.find(d => d.title.toLowerCase().includes('death'))
+  const healthcareDomain = domains.find(d => d.domain_code === 'healthcare')
+  const willsDomain      = domains.find(d => d.domain_code === 'wills_estates')
+  const deathcareDomain  = domains.find(d => d.domain_code === 'deathcare')
 
   useEffect(() => {
     async function fetchData() {

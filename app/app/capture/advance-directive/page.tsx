@@ -278,7 +278,7 @@ function AdvanceDirectivePage() {
         .from('containers')
         .select('id')
         .eq('type', 'domain')
-        .ilike('title', '%healthcare%')
+        .eq('domain_code', 'healthcare')
         .maybeSingle()
       if (!container) return
       const { data: existing } = await supabase
@@ -795,7 +795,7 @@ function useMaterialsData() {
           .from('containers')
           .select('id')
           .eq('type', 'domain')
-          .ilike('title', '%healthcare%')
+          .eq('domain_code', 'healthcare')
           .maybeSingle()
 
         if (container) {

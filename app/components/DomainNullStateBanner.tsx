@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { loadDomainState, getOrient, getReadyStatus } from '@/lib/domain-state'
-import { getDomainSegments } from '@/lib/domain-structure'
+import { getDomainSegmentsByCode } from '@/lib/domain-structure'
 
 export default function DomainNullStateBanner({
   domains,
 }: {
-  domains: { id: string; title: string }[]
+  domains: { id: string; title: string; domain_code?: string | null }[]
 }) {
   const [isNullState, setIsNullState] = useState(false)
 
@@ -18,7 +18,7 @@ export default function DomainNullStateBanner({
       if (cancelled) return
       let anyStarted = false
       outer: for (const domain of domains) {
-        for (const seg of getDomainSegments(domain.title)) {
+        for (const seg of getDomainSegmentsByCode(domain.domain_code)) {
           const status = seg.type === 'orient'
             ? getOrient(state, domain.id, seg.key)
             : getReadyStatus(state, domain.id, seg.key)

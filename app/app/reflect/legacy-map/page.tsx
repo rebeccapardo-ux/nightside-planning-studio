@@ -535,7 +535,7 @@ export default function LegacyMapPage() {
     try {
       const supabase = createSupabaseBrowserClient()
       const { data } = await supabase
-        .from('containers').select('id').eq('type', 'domain').ilike('title', '%legacy%').limit(1)
+        .from('containers').select('id').eq('type', 'domain').eq('domain_code', 'legacy').limit(1)
       return data?.[0]?.id ?? null
     } catch { return null }
   }

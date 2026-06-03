@@ -13,7 +13,7 @@ export default async function WillsLearnPage() {
       .from('containers')
       .select('id, title')
       .eq('type', 'domain')
-      .ilike('title', '%wills%')
+      .eq('domain_code', 'wills_estates')
       .limit(1)
     if (domains && domains.length > 0) {
       willsDomainHref = `/app/domains/${domains[0].id}`

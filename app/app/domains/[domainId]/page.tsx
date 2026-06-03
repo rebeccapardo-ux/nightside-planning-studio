@@ -81,7 +81,7 @@ type AddExistingFor = 'note' | 'document' | 'output' | null
 // ---------------------------------------------------------------------------
 
 import {
-  getDomainStructure,
+  getDomainStructureByCode,
   type DomainStructure,
   type OrientationItem as OrientationItemDef,
   type ReadinessItem as ReadinessItemDef,
@@ -347,13 +347,13 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
     })
   })()
   const c = SECTION_COLORS
-  const domainStructure = domain ? getDomainStructure(domain.title) : null
-  const isHealthcare = !!(domain && domain.title.toLowerCase().includes('healthcare'))
-  const isLegacy     = !!(domain && domain.title.toLowerCase().includes('legacy'))
-  const isDeathcare  = !!(domain && (domain.title.toLowerCase().includes('deathcare') || domain.title.toLowerCase().includes('death care')))
-  const isWills      = !!(domain && domain.title.toLowerCase().includes('will'))
-  const isRitual        = !!(domain && (domain.title.toLowerCase().includes('ritual') || domain.title.toLowerCase().includes('ceremony')))
-  const isPersonalAdmin = !!(domain && domain.title.toLowerCase().includes('personal'))
+  const domainStructure = getDomainStructureByCode(domain?.domain_code)
+  const isHealthcare    = domain?.domain_code === 'healthcare'
+  const isLegacy        = domain?.domain_code === 'legacy'
+  const isDeathcare     = domain?.domain_code === 'deathcare'
+  const isWills         = domain?.domain_code === 'wills_estates'
+  const isRitual        = domain?.domain_code === 'ritual'
+  const isPersonalAdmin = domain?.domain_code === 'personal_admin'
 
   const eligiblePromptNotes = allPromptNotes.filter(
     n => n.origin_type === 'prompt' && n.prompt_context != null

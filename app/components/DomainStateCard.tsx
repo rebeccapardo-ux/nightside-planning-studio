@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { loadDomainState, getOrient, getReadyStatus, type DomainState } from '@/lib/domain-state'
-import { getDomainSegments, type DomainSegment } from '@/lib/domain-structure'
+import { getDomainSegmentsByCode, type DomainSegment } from '@/lib/domain-structure'
 
 // ---------------------------------------------------------------------------
 // Domain segment configs — topic keys in page order (orientation then readiness)
@@ -103,11 +103,11 @@ export default function DomainStateCard({
   domain,
   colorIndex,
 }: {
-  domain: { id: string; title: string }
+  domain: { id: string; title: string; domain_code?: string | null }
   colorIndex: number
 }) {
   const style    = DOMAIN_STYLES[colorIndex % DOMAIN_STYLES.length]
-  const segments = getDomainSegments(domain.title)
+  const segments = getDomainSegmentsByCode(domain.domain_code)
   const isDark   = style.text === 'text-[#f8f4eb]'
 
   return (
