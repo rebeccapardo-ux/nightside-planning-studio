@@ -32,7 +32,7 @@
  */
 
 import prompts from 'prompts'
-import { ACTIVITY } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { createHash, randomUUID } from 'node:crypto'
 import { promises as fs, existsSync } from 'node:fs'
@@ -92,13 +92,13 @@ type ReleaseDescriptor = {
 // The default release set (6 documents) plus the four opt-in extras. Order here
 // is only used for the "will include" listing; the PDF order is buildMaterials'.
 const RELEASE_SET: ReleaseDescriptor[] = [
-  { title: 'Wishes for My Body, Funeral & Ceremony', kind: 'document', field: 'document_type', value: 'funeral_wishes' },
-  { title: 'Important Contacts',                      kind: 'document', field: 'document_type', value: 'important_contacts' },
-  { title: 'Financial Information',                   kind: 'document', field: 'document_type', value: 'financial_information' },
-  { title: 'Personal Admin Information',              kind: 'document', field: 'document_type', value: 'personal_admin_info' },
-  { title: 'Devices & Accounts',                      kind: 'document', field: 'document_type', value: 'devices_and_accounts' },
-  { title: 'Keepsakes Inventory',                     kind: 'document', field: 'document_type', value: 'keepsake_inventory' },
-  { title: 'My Care Wishes', kind: 'document', field: 'document_type', value: 'advance_directive_supplement', pref: 'include_care_wishes' },
+  { title: DOCUMENT_TYPE_META.funeral_wishes.label, kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.FUNERAL_WISHES },
+  { title: DOCUMENT_TYPE_META.important_contacts.label,                      kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.IMPORTANT_CONTACTS },
+  { title: DOCUMENT_TYPE_META.financial_information.label,                   kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.FINANCIAL_INFORMATION },
+  { title: DOCUMENT_TYPE_META.personal_admin_info.label,              kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.PERSONAL_ADMIN_INFO },
+  { title: DOCUMENT_TYPE_META.devices_and_accounts.label,                      kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS },
+  { title: DOCUMENT_TYPE_META.keepsake_inventory.label,                     kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.KEEPSAKE_INVENTORY },
+  { title: DOCUMENT_TYPE_META.advance_directive_supplement.label, kind: 'document', field: 'document_type', value: DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT, pref: 'include_care_wishes' },
   { title: 'Legacy Map',     kind: 'activity', field: 'activity',      value: ACTIVITY.LEGACY_MAP,                   pref: 'include_legacy_map' },
   { title: 'Values Ranking', kind: 'activity', field: 'activity',      value: ACTIVITY.VALUES_RANKING,               pref: 'include_values_ranking' },
   { title: 'Fears Ranking',  kind: 'activity', field: 'activity',      value: ACTIVITY.FEARS_RANKING,                pref: 'include_fears_ranking' },

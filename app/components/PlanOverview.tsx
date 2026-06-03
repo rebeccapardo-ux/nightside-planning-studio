@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState, getCheckboxes } from '@/lib/domain-state'
@@ -73,11 +74,11 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         .from('entries')
         .select('content, document_type')
         .eq('user_id', user.id)
-        .in('document_type', ['personal_admin_info', 'important_contacts', 'advance_directive_supplement', 'funeral_wishes'])
+        .in('document_type', [DOCUMENT_TYPE.PERSONAL_ADMIN_INFO, DOCUMENT_TYPE.IMPORTANT_CONTACTS, DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT, DOCUMENT_TYPE.FUNERAL_WISHES])
         .order('created_at', { ascending: false })
 
       if (entries) {
-        const adminEntry = entries.find(e => e.document_type === 'personal_admin_info')
+        const adminEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
         if (adminEntry) {
           const c = adminEntry.content as Record<string, unknown>
           const name = (c?.careDecisionMaker1Name as string | undefined)?.trim()
@@ -90,10 +91,10 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
           setWillLocation((c?.willLocation as string | undefined)?.trim() || null)
         }
 
-        setHasAdvDir(!!entries.find(e => e.document_type === 'advance_directive_supplement'))
-        setHasFuneralWishes(!!entries.find(e => e.document_type === 'funeral_wishes'))
+        setHasAdvDir(!!entries.find(e => e.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT))
+        setHasFuneralWishes(!!entries.find(e => e.document_type === DOCUMENT_TYPE.FUNERAL_WISHES))
 
-        const contactsEntry = entries.find(e => e.document_type === 'important_contacts')
+        const contactsEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS)
         if (contactsEntry) {
           const c = contactsEntry.content as Record<string, unknown>
           const hcList = (c?.healthcare as Record<string, string>[] | undefined) ?? []
@@ -121,10 +122,10 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   const healthHref     = healthcareDomain ? `/app/domains/${healthcareDomain.id}` : '#'
   const willsHref      = willsDomain      ? `/app/domains/${willsDomain.id}`      : '#'
   const deathHref      = deathcareDomain  ? `/app/domains/${deathcareDomain.id}`  : '#'
-  const adminHref           = '/app/capture/personal-admin'
-  const contactsHref        = '/app/capture/important-contacts'
-  const yourWishesHref      = '/app/capture/advance-directive'
-  const funeralWishesHref   = '/app/capture/funeral-wishes'
+  const adminHref           = DOCUMENT_TYPE_META.personal_admin_info.href
+  const contactsHref        = DOCUMENT_TYPE_META.important_contacts.href
+  const yourWishesHref      = DOCUMENT_TYPE_META.advance_directive_supplement.href
+  const funeralWishesHref   = DOCUMENT_TYPE_META.funeral_wishes.href
 
   const careLabel = careStatus === 'documented'   ? 'Formally documented'
     : careStatus === 'communicated' ? 'Communicated to decision maker'
@@ -149,7 +150,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
       primaryValue: syncHasEOL ? careLabel : null,
       href: healthHref,
       notRecordedLabel: 'Not formally recorded',
-      supplementaryLink: hasAdvDir ? { label: 'Supplementary document', text: 'My Care Wishes', href: yourWishesHref } : undefined,
+      supplementaryLink: hasAdvDir ? { label: 'Supplementary document', text: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: yourWishesHref } : undefined,
     },
     {
       label: 'Final resting place wishes',
@@ -159,7 +160,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         : restingShared   ? 'Shared with people in my life'
         : null,
       href: deathHref,
-      supplementaryLink: { label: 'Supplementary document', text: 'Wishes for My Body, Funeral & Ceremony', href: funeralWishesHref },
+      supplementaryLink: { label: 'Supplementary document', text: DOCUMENT_TYPE_META.funeral_wishes.label, href: funeralWishesHref },
     },
   ]
 

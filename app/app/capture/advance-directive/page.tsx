@@ -8,7 +8,7 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
 import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
-import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES } from '@/lib/content-metadata'
+import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
 
@@ -162,7 +162,7 @@ function AdvanceDirectivePage() {
           .from('entries')
           .select('id, content, created_at, document_type')
           .eq('user_id', user.id)
-          .eq('document_type', 'advance_directive_supplement')
+          .eq('document_type', DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT)
           .order('created_at', { ascending: false })
           .limit(1)
 
@@ -310,7 +310,7 @@ function AdvanceDirectivePage() {
             title: 'My Care Wishes',
             section: 'capture',
             activity: 'advance_directive',
-            document_type: 'advance_directive_supplement',
+            document_type: DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT,
             content: formRef.current,
           })
           .select('id, content, created_at')
@@ -744,7 +744,7 @@ function computePanelTiers(
   const seenEntryIds = new Set<string>(outputs.map((o) => o.representative.id))
   for (const entry of [...healthcareEntries, ...manualEntries]) {
     if (seenEntryIds.has(entry.id)) continue
-    if (entry.document_type === 'advance_directive_supplement') continue
+    if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) continue
     seenEntryIds.add(entry.id)
     tier3.push({ kind: 'entry', data: entry, insertBehavior: 'selectable_then_insert' })
   }
@@ -982,7 +982,7 @@ function MaterialsPanel({
       }
       const seenActivities = new Set(deduplicatedOutputs.map(o => o.representative.activity).filter(Boolean) as string[])
       for (const entry of [...healthcareItems, ...manualItems]) {
-        if (seen.has(entry.id) || entry.document_type === 'advance_directive_supplement') continue
+        if (seen.has(entry.id) || entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) continue
         if (entry.activity && seenActivities.has(entry.activity)) continue
         seen.add(entry.id)
         items.push({ kind: 'entry', data: entry, insertBehavior: 'selectable_then_insert' })
@@ -1983,7 +1983,7 @@ function MaterialsBrowser({
   }, [])
 
   const available = allEntries.filter(
-    (e) => !existingEntryIds.has(e.id) && e.document_type !== 'advance_directive_supplement',
+    (e) => !existingEntryIds.has(e.id) && e.document_type !== DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT,
   )
   const availableNotes = allNotes.filter((n) => !existingNoteIds.has(n.id))
 
@@ -2079,15 +2079,15 @@ function MaterialsBrowser({
 // ---------------------------------------------------------------------------
 
 function getDisplayTitle(entry: PanelEntry): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
   if (entry.title?.trim()) return entry.title.trim()
   if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
   if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
   if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
-  if (entry.document_type === 'important_contacts') return 'Important Contacts'
-  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'financial_information') return 'Financial Information'
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
   return 'Untitled'
 }
 

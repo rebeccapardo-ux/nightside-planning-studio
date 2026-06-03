@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
 import Link from 'next/link'
 import PlanNotesGridComp from '@/app/components/PlanNotesGrid'
 import type { Container } from '@/lib/notes'
@@ -56,7 +57,7 @@ function Chevron({ open }: { open: boolean }) {
   )
 }
 
-const WISHES_TYPES = new Set(['advance_directive_supplement', 'funeral_wishes'])
+const WISHES_TYPES = new Set<string>(DOCUMENT_TYPES.filter(c => DOCUMENT_TYPE_META[c].category === 'wishes'))
 
 export default function YourMaterialsPanel({
   inProgressDocs,

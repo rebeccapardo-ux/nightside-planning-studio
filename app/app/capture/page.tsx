@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useEffect, useState } from 'react'
 
 type CardDef = {
@@ -17,8 +18,8 @@ type CardDef = {
 
 const WISHES_CARDS: CardDef[] = [
   {
-    href: '/app/capture/advance-directive',
-    title: 'My Care Wishes',
+    href: DOCUMENT_TYPE_META.advance_directive_supplement.href,
+    title: DOCUMENT_TYPE_META.advance_directive_supplement.label,
     description: 'Express your care values and preferences in your own words. Designed to support and complement legal documents.',
     bg: '#BBABF4',
     titleColor: '#130426',
@@ -27,8 +28,8 @@ const WISHES_CARDS: CardDef[] = [
     ctaColor: '#FFFFFF',
   },
   {
-    href: '/app/capture/keepsake-inventory',
-    title: 'Meaningful Keepsakes',
+    href: DOCUMENT_TYPE_META.keepsake_inventory.href,
+    title: DOCUMENT_TYPE_META.keepsake_inventory.label,
     description: 'Document the objects you want to pass on and what others should understand about them.',
     bg: '#2C3777',
     titleColor: '#FFFFFF',
@@ -40,8 +41,8 @@ const WISHES_CARDS: CardDef[] = [
 
 const ADMIN_CARDS: CardDef[] = [
   {
-    href: '/app/capture/personal-admin',
-    title: 'Personal Admin Information',
+    href: DOCUMENT_TYPE_META.personal_admin_info.href,
+    title: DOCUMENT_TYPE_META.personal_admin_info.label,
     description: 'Biographical details, important documents, and end of life wishes.',
     bg: '#F8F4EB',
     titleColor: '#130426',
@@ -51,8 +52,8 @@ const ADMIN_CARDS: CardDef[] = [
     border: '1px solid rgba(26,26,26,0.10)',
   },
   {
-    href: '/app/capture/important-contacts',
-    title: 'Important Contacts',
+    href: DOCUMENT_TYPE_META.important_contacts.href,
+    title: DOCUMENT_TYPE_META.important_contacts.label,
     description: 'Doctors, attorneys, relatives, friends, and others to reach when needed.',
     bg: '#2C3777',
     titleColor: '#FFFFFF',
@@ -61,8 +62,8 @@ const ADMIN_CARDS: CardDef[] = [
     ctaColor: '#130426',
   },
   {
-    href: '/app/capture/devices-and-accounts',
-    title: 'Devices & Accounts',
+    href: DOCUMENT_TYPE_META.devices_and_accounts.href,
+    title: DOCUMENT_TYPE_META.devices_and_accounts.label,
     description: 'Devices, social media, and other online accounts.',
     bg: '#F29836',
     titleColor: '#130426',
@@ -71,8 +72,8 @@ const ADMIN_CARDS: CardDef[] = [
     ctaColor: '#FFFFFF',
   },
   {
-    href: '/app/capture/financial-information',
-    title: 'Financial Information',
+    href: DOCUMENT_TYPE_META.financial_information.href,
+    title: DOCUMENT_TYPE_META.financial_information.label,
     description: 'Banks, credit cards, retirement accounts, and outstanding loans.',
     bg: '#FFFFFF',
     titleColor: '#130426',

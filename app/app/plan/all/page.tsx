@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ACTIVITY, STRUCTURED_ACTIVITIES } from '@/lib/content-metadata'
+import { ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import UnassignedSection from '@/app/components/UnassignedSection'
 import type { Container } from '@/lib/notes'
@@ -147,25 +147,25 @@ function formatDate(dateString: string | null): string | null {
 }
 
 function getContinueHref(entry: EntryRow): string | null {
-  if (entry.document_type === 'advance_directive_supplement') return '/app/capture/advance-directive'
-  if (entry.document_type === 'personal_admin_info') return '/app/capture/personal-admin'
-  if (entry.document_type === 'important_contacts') return '/app/capture/important-contacts'
-  if (entry.document_type === 'devices_and_accounts') return '/app/capture/devices-and-accounts'
-  if (entry.document_type === 'financial_information') return '/app/capture/financial-information'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.href
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.href
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.href
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.href
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.href
   if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/entries/${entry.id}`
   if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/entries/${entry.id}`
   if (entry.activity === ACTIVITY.LEGACY_MAP) return `/app/entries/${entry.id}`
-  if (entry.document_type === 'keepsake_inventory') return '/app/capture/keepsake-inventory'
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.href
   return null
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
-  if (entry.document_type === 'important_contacts') return 'Important Contacts'
-  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'financial_information') return 'Financial Information'
-  if (entry.document_type === 'keepsake_inventory') return 'Meaningful Keepsakes'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.label
   if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
   if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
   if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'

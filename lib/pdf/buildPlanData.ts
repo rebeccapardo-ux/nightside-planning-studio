@@ -3,7 +3,7 @@
 // safe to import from a client page or a Node release script alike.
 
 import { getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
-import { ACTIVITY } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { DomainState } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from './types'
 import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanReadinessGroup } from './PlanPDFDocument'
@@ -169,7 +169,7 @@ export function buildAdvanceDirectivePDF(entry: EntryRow, userName: string): PDF
   const fields = AD_FIELDS.filter(f => c[f.key]?.trim()).map(f => ({ label: f.label, value: c[f.key]! }))
   return {
     kind: 'generic',
-    displayTitle: 'My Care Wishes',
+    displayTitle: DOCUMENT_TYPE_META.advance_directive_supplement.label,
     createdDate: formatDate(entry.created_at),
     filename: `nightside-your-wishes-${isoDate(entry.created_at)}`,
     fields,
@@ -197,7 +197,7 @@ export function buildFuneralWishesPDF(entry: EntryRow, userName: string): PDFDat
   }
   return {
     kind: 'generic',
-    displayTitle: 'Wishes for My Body, Funeral & Ceremony',
+    displayTitle: DOCUMENT_TYPE_META.funeral_wishes.label,
     createdDate: formatDate(entry.created_at),
     filename: `nightside-funeral-wishes-${isoDate(entry.created_at)}`,
     fields: allFields.filter(f => f.value),
@@ -226,7 +226,7 @@ export function buildPersonalAdminPDF(entry: EntryRow, userName: string): PDFDat
 
   return {
     kind: 'personal_admin',
-    displayTitle: 'Personal Admin Information',
+    displayTitle: DOCUMENT_TYPE_META.personal_admin_info.label,
     createdDate: formatDate(entry.created_at),
     filename: `nightside-personal-admin-${isoDate(entry.created_at)}`,
     sections,
@@ -283,7 +283,7 @@ export function buildContactsPDF(entry: EntryRow, userName: string): PDFData {
     }
   }
 
-  return { kind: 'important_contacts', displayTitle: 'Important Contacts', createdDate: formatDate(entry.created_at), filename: `nightside-important-contacts-${isoDate(entry.created_at)}`, sections, userName }
+  return { kind: 'important_contacts', displayTitle: DOCUMENT_TYPE_META.important_contacts.label, createdDate: formatDate(entry.created_at), filename: `nightside-important-contacts-${isoDate(entry.created_at)}`, sections, userName }
 }
 
 export function buildFinancialPDF(entry: EntryRow, userName: string): PDFData {
@@ -293,7 +293,7 @@ export function buildFinancialPDF(entry: EntryRow, userName: string): PDFData {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as FinC
   return {
     kind: 'financial',
-    displayTitle: 'Financial Information',
+    displayTitle: DOCUMENT_TYPE_META.financial_information.label,
     createdDate: formatDate(entry.created_at),
     filename: `nightside-financial-information-${isoDate(entry.created_at)}`,
     banking:     (c.banking     ?? []).filter(e => e.name?.trim()),
@@ -322,7 +322,7 @@ export function buildDevicesAccountsPDF(entry: EntryRow, userName: string): PDFD
   if (otherNums.length > 0) sections.push({ label: 'Other accounts', entries: otherNums.map(n => { const fields: { label: string; value: string }[] = []; if (c[`otherAccount${n}Username`]?.trim()) fields.push({ label: 'Username', value: c[`otherAccount${n}Username`]! }); if (c[`otherAccount${n}Notes`]?.trim()) fields.push({ label: 'Notes', value: c[`otherAccount${n}Notes`]! }); return { name: c[`otherAccount${n}Name`]?.trim() || 'Account', fields } }) })
   if (assetNums.length > 0) sections.push({ label: 'Digital assets', entries: assetNums.map(n => { const fields: { label: string; value: string }[] = []; if (c[`digitalAsset${n}Location`]?.trim()) fields.push({ label: 'Location / Platform', value: c[`digitalAsset${n}Location`]! }); if (c[`digitalAsset${n}Notes`]?.trim()) fields.push({ label: 'Notes', value: c[`digitalAsset${n}Notes`]! }); return { name: c[`digitalAsset${n}Name`]?.trim() || 'Asset', fields } }) })
 
-  return { kind: 'devices_accounts', displayTitle: 'Devices & Accounts', createdDate: formatDate(entry.created_at), filename: `nightside-devices-and-accounts-${isoDate(entry.created_at)}`, sections, userName }
+  return { kind: 'devices_accounts', displayTitle: DOCUMENT_TYPE_META.devices_and_accounts.label, createdDate: formatDate(entry.created_at), filename: `nightside-devices-and-accounts-${isoDate(entry.created_at)}`, sections, userName }
 }
 
 export function buildKeepsakePDF(entry: EntryRow, userName: string): PDFData {
@@ -331,7 +331,7 @@ export function buildKeepsakePDF(entry: EntryRow, userName: string): PDFData {
   const items = content?.entries?.filter(e => e.object?.trim()) ?? []
   return {
     kind: 'keepsake_inventory',
-    displayTitle: 'Keepsakes Inventory',
+    displayTitle: DOCUMENT_TYPE_META.keepsake_inventory.label,
     createdDate: formatDate(entry.created_at),
     filename: `nightside-keepsake-inventory-${isoDate(entry.created_at)}`,
     items: items.map(item => ({ object: item.object, recipient: item.recipient?.trim() || undefined, meaning: item.meaning?.trim() || undefined })),
@@ -419,13 +419,13 @@ export function hasAnyStringContent(value: unknown): boolean {
 // (matches the in-app full-plan export). Notes are never materials and never
 // appear here.
 export function buildMaterials(entries: EntryRow[], userName: string): PlanMaterial[] {
-  const adminEntry    = entries.find(e => e.document_type === 'personal_admin_info')
-  const contactsEntry = entries.find(e => e.document_type === 'important_contacts')
-  const adEntry       = entries.find(e => e.document_type === 'advance_directive_supplement')
-  const fwEntry       = entries.find(e => e.document_type === 'funeral_wishes')
-  const finEntry      = entries.find(e => e.document_type === 'financial_information')
-  const devicesEntry  = entries.find(e => e.document_type === 'devices_and_accounts')
-  const keepsakeEntry = entries.find(e => e.document_type === 'keepsake_inventory')
+  const adminEntry    = entries.find(e => e.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
+  const contactsEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS)
+  const adEntry       = entries.find(e => e.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT)
+  const fwEntry       = entries.find(e => e.document_type === DOCUMENT_TYPE.FUNERAL_WISHES)
+  const finEntry      = entries.find(e => e.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION)
+  const devicesEntry  = entries.find(e => e.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS)
+  const keepsakeEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY)
   const valuesEntry   = entries.find(e => e.activity === ACTIVITY.VALUES_RANKING)
   const fearsEntry    = entries.find(e => e.activity === ACTIVITY.FEARS_RANKING)
   const legacyEntry   = entries.find(e => e.activity === ACTIVITY.LEGACY_MAP)
@@ -485,8 +485,8 @@ export function buildKeyDetails(
     communicated ? 'communicated' :
     documented   ? 'documented'   : null
 
-  const adminEntry    = entries.find(e => e.document_type === 'personal_admin_info')
-  const contactsEntry = entries.find(e => e.document_type === 'important_contacts')
+  const adminEntry    = entries.find(e => e.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
+  const contactsEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS)
 
   // Extract admin content for key details
   let willLocation: string | null = null

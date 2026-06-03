@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { ACTIVITY, isStructuredActivity } from '@/lib/content-metadata'
+import { ACTIVITY, isStructuredActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DownloadPDFButton from './DownloadPDFButton'
 import FinancialExportClient from './FinancialExportClient'
@@ -566,25 +566,25 @@ function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, us
   filename: string
   userName?: string
 }) {
-  if (entry.document_type === 'important_contacts') {
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) {
     return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  if (entry.document_type === 'keepsake_inventory') {
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) {
     return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  if (entry.document_type === 'financial_information') {
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) {
     return <FinancialExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  if (entry.document_type === 'personal_admin_info') {
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) {
     return <PersonalAdminExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  if (entry.document_type === 'devices_and_accounts') {
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) {
     return <DevicesAccountsExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  if (entry.document_type === 'advance_directive_supplement') {
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) {
     return <AdvanceDirectiveExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
-  if (entry.document_type === 'funeral_wishes') {
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) {
     return <FuneralWishesExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
@@ -1126,13 +1126,13 @@ function getRankingContent(entry: EntryRow): RankingContent | null {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
-  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
-  if (entry.document_type === 'important_contacts') return 'Important Contacts'
-  if (entry.document_type === 'financial_information') return 'Financial Information'
-  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.label
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.label
   if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
   if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
   if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
@@ -1144,13 +1144,13 @@ function getExportFilename(entry: EntryRow): string {
   const date = entry.created_at
     ? new Date(entry.created_at).toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10)
-  if (entry.document_type === 'advance_directive_supplement') return `nightside-your-wishes-${date}`
-  if (entry.document_type === 'funeral_wishes') return `nightside-funeral-wishes-${date}`
-  if (entry.document_type === 'personal_admin_info') return `nightside-personal-admin-${date}`
-  if (entry.document_type === 'important_contacts') return `nightside-important-contacts-${date}`
-  if (entry.document_type === 'financial_information') return `nightside-financial-information-${date}`
-  if (entry.document_type === 'devices_and_accounts') return `nightside-devices-and-accounts-${date}`
-  if (entry.document_type === 'keepsake_inventory') return `nightside-keepsake-inventory-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return `nightside-your-wishes-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return `nightside-funeral-wishes-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return `nightside-personal-admin-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return `nightside-important-contacts-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return `nightside-financial-information-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return `nightside-devices-and-accounts-${date}`
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return `nightside-keepsake-inventory-${date}`
   if (entry.activity === ACTIVITY.VALUES_RANKING) return `nightside-values-ranking-${date}`
   if (entry.activity === ACTIVITY.FEARS_RANKING) return `nightside-fears-ranking-${date}`
   if (entry.activity === ACTIVITY.LEGACY_MAP) return `nightside-legacy-map-${date}`

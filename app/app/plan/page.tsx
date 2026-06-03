@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { ACTIVITY } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import DomainStateCard from '@/app/components/DomainStateCard'
 import DomainNullStateBanner from '@/app/components/DomainNullStateBanner'
 import PlanOverview from '@/app/components/PlanOverview'
@@ -22,15 +22,11 @@ type EntryRow = {
 // Known document types — always shown, split into in-progress / not-started
 // ---------------------------------------------------------------------------
 
-const KNOWN_DOCUMENTS = [
-  { type: 'advance_directive_supplement', label: 'My Care Wishes',                          href: '/app/capture/advance-directive'  },
-  { type: 'funeral_wishes',              label: 'Wishes for My Body, Funeral & Ceremony', href: '/app/capture/funeral-wishes'     },
-  { type: 'personal_admin_info',          label: 'Personal Admin Information',                    href: '/app/capture/personal-admin'     },
-  { type: 'important_contacts',           label: 'Important Contacts',                     href: '/app/capture/important-contacts' },
-  { type: 'financial_information',        label: 'Financial Information',                  href: '/app/capture/financial-information' },
-  { type: 'devices_and_accounts',         label: 'Devices & Accounts',                    href: '/app/capture/devices-and-accounts'  },
-  { type: 'keepsake_inventory',           label: 'Keepsakes Inventory',                   href: '/app/capture/keepsake-inventory'    },
-]
+const KNOWN_DOCUMENTS = DOCUMENT_TYPES.map((code) => ({
+  type: code,
+  label: DOCUMENT_TYPE_META[code].label,
+  href: DOCUMENT_TYPE_META[code].href,
+}))
 
 const KNOWN_ACTIVITIES = [
   { activity: ACTIVITY.VALUES_RANKING, label: 'Values Ranking', href: '/app/reflect/values-ranking' },
@@ -343,13 +339,13 @@ function hasAnyStringContent(value: unknown): boolean {
 }
 
 function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === 'advance_directive_supplement') return 'My Care Wishes'
-  if (entry.document_type === 'funeral_wishes') return 'Wishes for My Body, Funeral & Ceremony'
-  if (entry.document_type === 'personal_admin_info') return 'Personal Admin Information'
-  if (entry.document_type === 'important_contacts') return 'Important Contacts'
-  if (entry.document_type === 'devices_and_accounts') return 'Devices & Accounts'
-  if (entry.document_type === 'financial_information') return 'Financial Information'
-  if (entry.document_type === 'keepsake_inventory') return 'Keepsakes Inventory'
+  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
+  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.label
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
+  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
+  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
+  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
+  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.label
   if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
   if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
   if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'

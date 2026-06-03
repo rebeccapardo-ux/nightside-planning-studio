@@ -1,19 +1,27 @@
 import { NextResponse } from 'next/server'
-import { ACTIVITY } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPES, DOCUMENT_TYPE_META, type DocumentType } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 
-const PRACTICAL_DOC_TYPES: Record<string, { key: string; title: string }> = {
-  personal_admin_info:     { key: 'personal_admin_information', title: 'Personal Admin Information' },
-  important_contacts:      { key: 'important_contacts',         title: 'Important Contacts' },
-  keepsake_inventory:      { key: 'keepsakes_inventory',        title: 'Keepsakes Inventory' },
-  devices_and_accounts:    { key: 'devices_and_accounts',       title: 'Devices & Accounts' },
-  financial_information:   { key: 'financial_information',      title: 'Financial Information' },
+// Export-schema field name per document_type. This vocabulary is specific to
+// this route's JSON output, so it stays local; title/category come from META.
+const EXPORT_KEYS: Record<DocumentType, string> = {
+  advance_directive_supplement: 'my_care_wishes',
+  funeral_wishes:               'wishes_for_body_funeral_ceremony',
+  personal_admin_info:          'personal_admin_information',
+  important_contacts:           'important_contacts',
+  financial_information:        'financial_information',
+  devices_and_accounts:         'devices_and_accounts',
+  keepsake_inventory:           'keepsakes_inventory',
 }
 
-const WISHES_DOC_TYPES: Record<string, { key: string; title: string }> = {
-  advance_directive_supplement: { key: 'my_care_wishes',                       title: 'My Care Wishes' },
-  funeral_wishes:               { key: 'wishes_for_body_funeral_ceremony',     title: 'Wishes for My Body, Funeral & Ceremony' },
-}
+const docTypesByCategory = (category: 'practical' | 'wishes'): Record<string, { key: string; title: string }> =>
+  Object.fromEntries(
+    DOCUMENT_TYPES.filter(c => DOCUMENT_TYPE_META[c].category === category)
+      .map(c => [c, { key: EXPORT_KEYS[c], title: DOCUMENT_TYPE_META[c].label }])
+  )
+
+const PRACTICAL_DOC_TYPES = docTypesByCategory('practical')
+const WISHES_DOC_TYPES = docTypesByCategory('wishes')
 
 const ACTIVITY_KEYS: Record<string, string> = {
   [ACTIVITY.LEGACY_MAP]:      'legacy_map',
