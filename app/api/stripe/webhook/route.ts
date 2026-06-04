@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         logEvent({
           userId,
           eventName: 'payment_completed',
-          metadata: { stripe_session_id: session.id },
+          metadata: { stripe_session_id: session.id, via: 'webhook' },
           includePlanningStatus: true,
         })
       }

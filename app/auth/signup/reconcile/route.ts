@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/auth/signin?next=${encodeURIComponent(next)}`, origin), 307)
   }
 
-  const result = await reconcilePayment(user.id)
+  const result = await reconcilePayment(user.id, 'gate_reconcile')
   if (result.ok) {
     // paid_at is now set — continue to the original destination. The gate re-runs
     // and passes the payment check; the Legacy Contact gate still applies.

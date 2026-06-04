@@ -30,6 +30,11 @@ export type ReconcileResult =
   | { ok: true; alreadyPaid: boolean }
   | { ok: false; reason: ReconcileFailReason; detail?: string }
 
+// Which path triggered the reconcile — recorded as the `via` analytics dimension
+// on payment_completed so we can tell normal completion apart from recovery. A
+// rising share of 'gate_reconcile' is an early signal the normal flow is failing.
+export type ReconcileSource = 'success_page' | 'gate_reconcile' | 'checkout'
+
 function stripeClient(): Stripe {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2026-04-22.dahlia' })
 }
@@ -45,7 +50,7 @@ function adminClient(): SupabaseClient {
 // point lookups). Logs payment_completed only if THIS call was the setter.
 // Returns whether paid_at is actually set afterward — the caller relies on this
 // to avoid a redirect loop if the write silently fails.
-async function markPaid(admin: SupabaseClient, userId: string, sessionId: string): Promise<boolean> {
+async function markPaid(admin: SupabaseClient, userId: string, sessionId: string, via: ReconcileSource): Promise<boolean> {
   const { data: updated, error } = await admin
     .from('user_profiles')
     .update({ paid_at: new Date().toISOString(), stripe_session_id: sessionId })
@@ -58,7 +63,7 @@ async function markPaid(admin: SupabaseClient, userId: string, sessionId: string
     await logEvent({
       userId,
       eventName: 'payment_completed',
-      metadata: { stripe_session_id: sessionId, via: 'reconcile' },
+      metadata: { stripe_session_id: sessionId, via },
       includePlanningStatus: true,
     })
     return true
@@ -75,7 +80,7 @@ async function markPaid(admin: SupabaseClient, userId: string, sessionId: string
   return !!row?.paid_at
 }
 
-export async function reconcilePayment(userId: string): Promise<ReconcileResult> {
+export async function reconcilePayment(userId: string, via: ReconcileSource): Promise<ReconcileResult> {
   const admin = adminClient()
 
   const { data: profile } = await admin
@@ -97,7 +102,7 @@ export async function reconcilePayment(userId: string): Promise<ReconcileResult>
         .catch(() => null)
       if (!session) return { ok: false, reason: 'session_not_found' }
       if (session.payment_status === 'paid' && session.metadata?.supabase_user_id === userId) {
-        const set = await markPaid(admin, userId, session.id)
+        const set = await markPaid(admin, userId, session.id, via)
         return set ? { ok: true, alreadyPaid: false } : { ok: false, reason: 'activation_failed' }
       }
       return { ok: false, reason: 'stripe_unpaid' }
@@ -123,7 +128,7 @@ export async function reconcilePayment(userId: string): Promise<ReconcileResult>
     }
 
     if (userPaidSession) {
-      const set = await markPaid(admin, userId, userPaidSession.id)
+      const set = await markPaid(admin, userId, userPaidSession.id, via)
       return set ? { ok: true, alreadyPaid: false } : { ok: false, reason: 'activation_failed' }
     }
     if (paidForEmail.length > 0) {
