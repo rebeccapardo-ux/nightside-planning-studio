@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createNote } from '@/lib/notes'
 import VoiceNoteButton from './VoiceNoteButton'
 import AutosaveNotice from './AutosaveNotice'
@@ -20,6 +21,12 @@ export default function NotepadModal({
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [confirmVisible, setConfirmVisible] = useState(false)
+
+  // Lets a successful save re-run the underlying page's server components (e.g.
+  // the Plan page's notes query) so a note saved in-place shows up without a
+  // manual browser refresh. The modal is global (LayoutShell), so saves can
+  // happen on top of any page with no navigation to otherwise trigger a refetch.
+  const router = useRouter()
 
   const composerRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -52,11 +59,12 @@ export default function NotepadModal({
     const trimmed = composerText.trim()
     if (!trimmed || saving) return
     setSaving(true)
-    await createNote(trimmed)
+    const saved = await createNote(trimmed)
     setSaving(false)
     setComposerText('')
     setConfirmVisible(true)
     setTimeout(() => setConfirmVisible(false), 2000)
+    if (saved) router.refresh()
   }
 
   // ── Panel save ────────────────────────────────────────────────────────────────
@@ -65,9 +73,10 @@ export default function NotepadModal({
     const trimmed = composerText.trim()
     if (!trimmed || saving) return
     setSaving(true)
-    await createNote(trimmed)
+    const saved = await createNote(trimmed)
     setComposerText('')
     setSaving(false)
+    if (saved) router.refresh()
   }
 
   function handlePanelKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -126,11 +135,12 @@ export default function NotepadModal({
             if (!trimmed) return
             debounceRef.current = setTimeout(async () => {
               setSaving(true)
-              await createNote(trimmed)
+              const saved = await createNote(trimmed)
               setSaving(false)
               setComposerText('')
               setConfirmVisible(true)
               setTimeout(() => setConfirmVisible(false), 2000)
+              if (saved) router.refresh()
             }, 900)
           }}
         />
@@ -157,6 +167,9 @@ export default function NotepadModal({
             saveMode={{ kind: 'freeform' }}
             theme="dark"
             onSaved={() => {
+              // finalNote (incl. transcript, or 'failed' status) is already
+              // persisted by the time onSaved fires, so the refetch reflects it.
+              router.refresh()
               setTimeout(() => setIsOpen(false), 3000)
             }}
           />

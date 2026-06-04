@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DomainAssigner from '@/app/components/DomainAssigner'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import { deleteNote, updateNote } from '@/lib/notes'
@@ -35,6 +35,14 @@ export default function PlanNotesGrid({
   const [editDraft, setEditDraft] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [showAll, setShowAll] = useState(false)
+
+  // Adopt server-refreshed notes when the page re-renders (e.g. a notepad-modal
+  // save calls router.refresh()). Optimistic edit/delete also persist to the DB,
+  // so the refreshed list already reflects them — a brief revert of an in-flight
+  // optimistic edit is possible but self-corrects once that save lands.
+  useEffect(() => {
+    setNotes(initialNotes)
+  }, [initialNotes])
 
   const visibleNotes = showAll ? notes : notes.slice(0, MAX_VISIBLE)
   const hasMore = notes.length > MAX_VISIBLE
