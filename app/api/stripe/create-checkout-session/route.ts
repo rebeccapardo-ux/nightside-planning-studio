@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { reconcilePayment } from '@/lib/reconcile-payment'
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -24,15 +25,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Please confirm your email before proceeding to payment.' }, { status: 403 })
   }
 
-  // Idempotency: if user has already paid, don't create another session.
-  const { data: profile } = await supabaseAdmin
-    .from('user_profiles')
-    .select('paid_at')
-    .eq('user_id', user.id)
-    .single()
-
-  if (profile?.paid_at) {
-    return NextResponse.json({ error: 'This account has already been activated.' }, { status: 409 })
+  // Double-charge guard: confirm against Stripe BEFORE creating a new session.
+  // reconcilePayment is a no-op when already paid, a cheap point lookup when a
+  // session id is on record, and a scan otherwise — so it also catches the
+  // paid-but-paid_at-null case (webhook + success page both missed) and prevents
+  // a second charge.
+  const recon = await reconcilePayment(user.id, 'checkout')
+  if (recon.ok) {
+    // Already paid (and now activated if it wasn't). Send them into the app
+    // rather than opening another Checkout session; the gate routes onward.
+    return NextResponse.json({ redirect: '/app' })
+  }
+  if (recon.reason === 'ambiguous_manual_review') {
+    // A paid session matches this email but can't be tied to the account.
+    // Block the charge and route to support rather than risk a duplicate.
+    return NextResponse.json(
+      { error: 'We found a payment that needs review. Please contact contact@thenightside.net before paying again.' },
+      { status: 409 }
+    )
   }
 
   const origin = request.headers.get('origin') ?? 'https://studio.thenightside.net'
