@@ -24,7 +24,9 @@ export default function PaymentButton() {
         setLoading(false)
         return
       }
-      window.location.href = json.url
+      // Already activated (reconciled server-side) — go into the app instead of
+      // Stripe. Otherwise json.url is the Stripe Checkout URL.
+      window.location.href = json.redirect ?? json.url
     } catch {
       setError('Something went wrong. Please try again.')
       setLoading(false)

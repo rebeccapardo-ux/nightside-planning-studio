@@ -51,6 +51,7 @@ export async function proxy(request: NextRequest) {
         !pathname.startsWith('/auth/signup/payment') &&
         !pathname.startsWith('/auth/signup/success') &&
         !pathname.startsWith('/auth/signup/cancel') &&
+        !pathname.startsWith('/auth/signup/reconcile') &&
         !pathname.startsWith('/auth/reset-password')
       ) {
         const url = request.nextUrl.clone()
@@ -73,11 +74,20 @@ export async function proxy(request: NextRequest) {
       // handle_new_user_profile trigger at signup time).
       const { data: profile } = await supabase
         .from('user_profiles')
-        .select('paid_at')
+        .select('paid_at, stripe_session_id')
         .eq('user_id', user.id)
         .maybeSingle()
 
       if (!profile?.paid_at) {
+        // Paid-but-paid_at-null edge case: if a Checkout session is on record,
+        // route through the Node reconcile endpoint (it can call Stripe) to
+        // self-heal before falling back to payment. No session on record →
+        // straight to payment, so a brand-new unpaid visit never triggers a
+        // Stripe lookup in this hot path.
+        if (profile?.stripe_session_id) {
+          const next = encodeURIComponent(pathname + search)
+          return NextResponse.redirect(new URL(`/auth/signup/reconcile?next=${next}`, request.url), 307)
+        }
         return NextResponse.redirect(new URL('/auth/signup/payment', request.url), 307)
       }
 
