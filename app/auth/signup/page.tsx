@@ -71,8 +71,7 @@ export default function SignUpPage() {
     if (!email.trim()) errs.email = 'Please enter your email address.'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = 'Please enter a valid email address.'
     if (!password) errs.password = 'Please enter a password.'
-    else if (password.length < 8) errs.password = 'Password must be at least 8 characters.'
-    else if (!/\d/.test(password)) errs.password = 'Password must include at least one number.'
+    else if (password.length < 12) errs.password = 'Password must be at least 12 characters.'
     if (!province) errs.province = 'Please select your province or territory.'
     if (!termsAccepted) errs.terms = 'Please agree to the Terms of Service and Privacy Policy to continue.'
     if (Object.keys(errs).length > 0) { setFieldErrors(errs); return }

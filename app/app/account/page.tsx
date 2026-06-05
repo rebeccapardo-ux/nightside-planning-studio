@@ -448,7 +448,7 @@ export default function AccountPage() {
     e.preventDefault()
     setPwError('')
     if (newPassword !== confirmPassword) { setPwError('New passwords do not match.'); return }
-    if (newPassword.length < 8)          { setPwError('New password must be at least 8 characters.'); return }
+    if (newPassword.length < 12)         { setPwError('New password must be at least 12 characters.'); return }
     setPwStatus('loading')
     const supabase = createSupabaseBrowserClient()
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -587,6 +587,9 @@ export default function AccountPage() {
                 </div>
                 <Field label="Current password"     type="password" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
                 <Field label="New password"         type="password" value={newPassword}     onChange={setNewPassword}     autoComplete="new-password" />
+                <p style={{ fontFamily: hv, fontSize: 13, color: '#6b6b6b', margin: 0, lineHeight: 1.4 }}>
+                  Use at least 12 characters. Long, memorable passphrases work well.
+                </p>
                 <Field label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
                 {pwError && <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{pwError}</p>}
                 {pwStatus === 'success' && <p style={{ fontFamily: hv, fontSize: 14, color: '#2D7A4F', margin: 0 }}>Password updated successfully.</p>}

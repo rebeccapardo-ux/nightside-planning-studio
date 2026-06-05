@@ -11,8 +11,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 type Phase = 'verifying' | 'ready' | 'submitting' | 'success' | 'invalid'
 
 function validatePassword(pw: string): string | null {
-  if (pw.length < 8) return 'Use at least 8 characters.'
-  if (!/[a-zA-Z]/.test(pw) || !/[0-9]/.test(pw)) return 'Include at least one letter and one number.'
+  if (pw.length < 12) return 'Use at least 12 characters.'
   return null
 }
 
