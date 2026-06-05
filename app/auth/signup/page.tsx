@@ -345,7 +345,7 @@ export default function SignUpPage() {
                     </div>
                     {fieldErrors.password
                       ? <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.password}</p>
-                      : <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', margin: '5px 0 0 0', lineHeight: 1.4 }}>Use at least 8 characters, including letters and a number.</p>
+                      : <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', margin: '5px 0 0 0', lineHeight: 1.4 }}>Use at least 12 characters. Long, memorable passphrases work well.</p>
                     }
                   </div>
 

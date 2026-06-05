@@ -293,7 +293,7 @@ export default function ResetPasswordPage() {
                       </button>
                     </div>
                     <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', margin: '5px 0 0 0', lineHeight: 1.4 }}>
-                      Use at least 8 characters, including letters and a number.
+                      Use at least 12 characters. Long, memorable passphrases work well.
                     </p>
                   </div>
 
