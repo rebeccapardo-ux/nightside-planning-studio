@@ -25,18 +25,25 @@ function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (searchParams.get('error') === 'confirmation_failed') {
-      setError('The confirmation link has expired or already been used. Please sign up again or contact support.')
+    // The callback sends people here when it couldn't auto-complete confirmation
+    // for this browser — which usually means the email IS confirmed (the link was
+    // consumed elsewhere), so this is guidance, not an error. The sign-in attempt
+    // below resolves the truth either way. (?error=confirmation_failed is the
+    // legacy param; map it to the same calm copy.)
+    if (searchParams.get('notice') === 'confirm_pending' || searchParams.get('error') === 'confirmation_failed') {
+      setNotice("If you've already confirmed your email, please sign in below. Otherwise, check your inbox for your most recent confirmation link.")
     }
   }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setNotice('')
     setLoading(true)
 
     const supabase = createSupabaseBrowserClient()
@@ -125,6 +132,13 @@ function SignInForm() {
             </Link>
           </div>
         </div>
+
+        {/* Notice (informational — e.g. confirmation needs a sign-in to resolve) */}
+        {notice && (
+          <p style={{ fontFamily: hv, fontSize: '13px', color: '#2d3a6b', margin: '12px 0 0 0', lineHeight: 1.4 }}>
+            {notice}
+          </p>
+        )}
 
         {/* Error */}
         {error && (
