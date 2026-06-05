@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
       line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
       customer_email: user.email ?? undefined,
       automatic_tax: { enabled: true },
+      allow_promotion_codes: true,
       metadata: { supabase_user_id: user.id },
       success_url: `${origin}/auth/signup/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/auth/signup/payment`,
