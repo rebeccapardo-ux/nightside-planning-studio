@@ -48,6 +48,16 @@ export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin') ?? 'https://studio.thenightside.net'
 
   try {
+    // INVARIANT: payment_method_collection is intentionally unset, so it defaults
+    // to 'always' — Stripe collects a card even for a $0 total, so 100%-off promo
+    // sessions still settle as payment_status: 'paid'. If it ever changes to
+    // 'if_required', zero-dollar sessions settle as 'no_payment_required' instead,
+    // and the activation checks must accept that value in addition to 'paid':
+    //   - lib/reconcile-payment.ts — the `payment_status === 'paid'` checks
+    //     (the stored-session point lookup AND the recent-session scan)
+    //   - app/api/stripe/webhook/route.ts — the `payment_status !== 'paid'` guard
+    // Otherwise zero-dollar sessions (e.g. 100%-off promos with no card collected)
+    // complete checkout but fail to activate the user.
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
