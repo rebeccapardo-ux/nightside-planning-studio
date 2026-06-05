@@ -252,6 +252,10 @@ export default function LegacyContactForm() {
         setSubmitError(data.error ?? 'Something went wrong. Please try again.')
         return
       }
+      // The form is long and is submitted from the bottom; reset scroll before
+      // navigating so the homepage opens at the top instead of briefly inheriting
+      // this page's bottom offset and then jumping up.
+      window.scrollTo(0, 0)
       router.push('/app')
     } catch {
       setSubmitError('Something went wrong. Please check your connection and try again.')
