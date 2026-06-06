@@ -5,6 +5,7 @@ import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
@@ -671,7 +672,7 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
   return (
     <div
       ref={sectionRef}
-      style={{ borderRadius: 16, border: open ? '2px solid #2C3777' : '1px solid #2C3777', overflow: 'hidden', background: '#FFFFFF' }}
+      style={{ borderRadius: 16, border: open ? '2px solid #2C3777' : '1px solid #2C3777', overflow: 'hidden', background: '#FFFFFF', scrollMarginTop: SECTION_SCROLL_MARGIN_TOP }}
     >
       <div style={{ display: 'flex' }}>
         {open && <div style={{ width: 6, background: '#BBABF4', flexShrink: 0 }} />}

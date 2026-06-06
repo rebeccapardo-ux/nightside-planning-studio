@@ -4,6 +4,7 @@ import { Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
@@ -228,7 +229,10 @@ function FuneralWishesPage() {
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
 
-  // Auto-scroll when a section expands
+  // Auto-scroll when a section expands. Collapsed sections aren't rendered
+  // ({isExpanded && …}), so layout is final on the next render — a simple delayed
+  // scroll lands correctly, same as the practical docs. (No animation; an animated
+  // collapse would race the scroll.)
   useEffect(() => {
     if (expandedIndex === null) return
     const el = itemRefs.current[expandedIndex]
@@ -569,6 +573,7 @@ function FuneralWishesPage() {
                     border: isExpanded ? '2px solid #130426' : '1px solid rgba(19,4,38,0.22)',
                     overflow: 'hidden',
                     background: '#FFFFFF',
+                    scrollMarginTop: SECTION_SCROLL_MARGIN_TOP,
                     transition: 'border 150ms ease',
                   }}
                 >
@@ -605,14 +610,7 @@ function FuneralWishesPage() {
                           <path d="M1 1.5L7 7.5L13 1.5" stroke="#130426" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
-                      <div style={{
-                        overflow: 'hidden',
-                        maxHeight: isExpanded ? '6000px' : '0px',
-                        opacity: isExpanded ? 1 : 0,
-                        transition: isExpanded
-                          ? 'max-height 400ms ease, opacity 300ms ease 80ms'
-                          : 'opacity 250ms ease, max-height 350ms ease 60ms',
-                      }}>
+                      {isExpanded && (
                         <div style={{ padding: '0 16px 20px', background: '#FFFFFF' }}>
                         <div style={{ background: '#F8F4EB', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 28 }}>
 
@@ -847,7 +845,7 @@ function FuneralWishesPage() {
 
                         </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

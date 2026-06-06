@@ -74,6 +74,15 @@ The pattern needs **two** cooperating mechanisms — blur-discard alone is insuf
 
 ---
 
+## Scrolling an expanded section into view
+
+Documents with collapsible sections scroll the opened section to the top of the viewport. Two things to get right:
+
+- **Offset for the sticky nav.** GlobalNav is `sticky top-0`, 76px tall. A plain `scrollIntoView({ block: 'start' })` lands the title *behind* the nav. Fix: `scroll-margin-top: SECTION_SCROLL_MARGIN_TOP` (96, in `lib/ui.ts`) on the scroll-target element — `scrollIntoView` honors it. (The Key Details deep-link paths in `important-contacts`/`personal-admin` instead hardcode the same `-96` via manual `window.scrollTo`; unifying those is a tracked follow-up.)
+- **Collapse must be instant, via `{open && (…)}` conditional render — one mechanism across all six.** Every section document — the practical four *and* the two wishes docs (`advance-directive` = My Care Wishes, `funeral-wishes`) — hides a collapsed section by **not rendering it** (`{isExpanded && (<div …>…</div>)}`), so layout is final on the next render and the scroll is a simple `setTimeout(…, 80)` + `scrollIntoView`. **Do not reintroduce an animated `max-height` collapse** on a scroll-on-expand surface: the scroll then races the collapse animation, measures a stale pre-collapse layout, and produces a visible "bounce" (the page drifts as the section above collapses, then the scroll corrects). The wishes docs originally animated `max-height`; removed for exactly this reason (a `transitionend`-based wait was tried first, but the un-scrolled drift *during* the wait was itself the bounce). **`display: none` was also considered and rejected** — it's a mechanism inconsistency with the practical docs, and (the real footgun) a `display:none` ancestor gives descendant textareas `scrollHeight: 0`, silently breaking any auto-resizing field. Conditional render is the single safe pattern. Safe to unmount because all six docs lift form state to a page-level `form`/`formRef` (fields are controlled via `value`/`onChange`); collapsed fields hold no un-lifted state.
+
+---
+
 ## Database migrations
 
 - Migrations are plain SQL files in `supabase/migrations/` (e.g. `20260603_containers_domain_code.sql`).
