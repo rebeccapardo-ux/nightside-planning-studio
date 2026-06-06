@@ -96,6 +96,14 @@ function SignInForm() {
       {/* Form */}
       <form onSubmit={handleSubmit}>
 
+        {/* Notice (informational — e.g. confirmation needs a sign-in to resolve) —
+            above the fields so "sign in below" matches its position */}
+        {notice && (
+          <p style={{ fontFamily: hv, fontSize: '13px', color: '#2d3a6b', margin: '0 0 24px 0', lineHeight: 1.4 }}>
+            {notice}
+          </p>
+        )}
+
         {/* Email */}
         <div>
           <label htmlFor="signin-email" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
@@ -132,13 +140,6 @@ function SignInForm() {
             </Link>
           </div>
         </div>
-
-        {/* Notice (informational — e.g. confirmation needs a sign-in to resolve) */}
-        {notice && (
-          <p style={{ fontFamily: hv, fontSize: '13px', color: '#2d3a6b', margin: '12px 0 0 0', lineHeight: 1.4 }}>
-            {notice}
-          </p>
-        )}
 
         {/* Error */}
         {error && (
