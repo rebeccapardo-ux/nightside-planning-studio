@@ -297,6 +297,13 @@ function ImportantContactsPage() {
   }
 
   function addEntry(section: SectionKey) {
+    // Reuse an existing empty draft rather than stacking another empty card.
+    const existing = formRef.current[section].find(e => isContactEntryEmpty(e))
+    if (existing) {
+      openIdSetters[section](prev => new Set([...prev, existing.id]))
+      setPendingFocusId(existing.id)
+      return
+    }
     const entry: ContactEntry = { id: genId(), name: '', role: '', institution: '', phone: '', email: '', address: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
@@ -329,8 +336,8 @@ function ImportantContactsPage() {
     addAnotherLabel: string,
     defaultTitle: string,
   ) {
-    const entries = form[section]
     const openIds = openIdSets[section]
+    const entries = form[section]
     return (
       <AccordionSection
         idx={idx} open={openSection === idx} onToggle={toggleSection}
@@ -345,6 +352,7 @@ function ImportantContactsPage() {
               isOpen={openIds.has(entry.id)}
               onToggle={() => toggleEntry(openIdSetters[section], entry.id)}
               onDelete={() => deleteEntry(section, entry.id)}
+              isEmpty={isContactEntryEmpty(entry)}
               pendingFocusId={pendingFocusId}
               onFocused={() => setPendingFocusId(null)}
               isSaving={savingEntryId === entry.id}
@@ -360,7 +368,7 @@ function ImportantContactsPage() {
             </EntryCard>
           ))}
           <AddButton
-            label={entries.length === 0 ? emptyLabel : addAnotherLabel}
+            label={entries.filter(e => !isContactEntryEmpty(e)).length === 0 ? emptyLabel : addAnotherLabel}
             onClick={() => addEntry(section)}
           />
         </div>
@@ -485,12 +493,13 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
 // EntryCard
 // ---------------------------------------------------------------------------
 
-function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
+function EntryCard({ id, title, isOpen, onToggle, onDelete, isEmpty, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
   id: string
   title: string
   isOpen: boolean
   onToggle: () => void
   onDelete: () => void
+  isEmpty: boolean
   pendingFocusId: string | null
   onFocused: () => void
   isSaving: boolean
@@ -512,6 +521,13 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
   return (
     <div
       ref={containerRef}
+      onBlur={(e) => {
+        // Only when focus leaves the entire card (not moving between fields inside
+        // it) AND the entry is still empty: discard it. So clearing a field while
+        // you're still in the card never makes it vanish — it goes only when you
+        // actually leave an empty card.
+        if (isEmpty && !e.currentTarget.contains(e.relatedTarget as Node)) onDelete()
+      }}
       style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
     >
       <button

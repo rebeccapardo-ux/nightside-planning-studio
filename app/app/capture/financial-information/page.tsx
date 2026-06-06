@@ -330,6 +330,13 @@ export default function FinancialInformationPage() {
     section: 'banking' | 'investments' | 'retirement',
     setFn: React.Dispatch<React.SetStateAction<Set<string>>>
   ) {
+    // Reuse an existing empty draft rather than stacking another empty card.
+    const existing = formRef.current[section].find(e => isAccountEntryEmpty(e))
+    if (existing) {
+      setFn(prev => new Set([...prev, existing.id]))
+      setPendingFocusId(existing.id)
+      return
+    }
     const entry: AccountEntry = { id: genId(), name: '', typeOfAccount: '', accountNumber: '', contactInfo: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
@@ -361,6 +368,12 @@ export default function FinancialInformationPage() {
   }
 
   function addDebtEntry() {
+    const existing = formRef.current.debts.find(e => isDebtEntryEmpty(e))
+    if (existing) {
+      setOpenDebtsIds(prev => new Set([...prev, existing.id]))
+      setPendingFocusId(existing.id)
+      return
+    }
     const entry: DebtEntry = { id: genId(), name: '', type: '', amount: '', contactInfo: '' }
     const updated = { ...formRef.current, debts: [...formRef.current.debts, entry] }
     formRef.current = updated
@@ -456,6 +469,7 @@ export default function FinancialInformationPage() {
                   isOpen={openBankingIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenBankingIds, entry.id)}
                   onDelete={() => deleteAccountEntry('banking', entry.id, setOpenBankingIds)}
+                  isEmpty={isAccountEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -469,7 +483,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={form.banking.length === 0 ? 'Add account' : 'Add another account'}
+                label={form.banking.filter(e => !isAccountEntryEmpty(e)).length === 0 ? 'Add account' : 'Add another account'}
                 onClick={() => addAccountEntry('banking', setOpenBankingIds)}
               />
             </div>
@@ -491,6 +505,7 @@ export default function FinancialInformationPage() {
                   isOpen={openInvestmentsIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenInvestmentsIds, entry.id)}
                   onDelete={() => deleteAccountEntry('investments', entry.id, setOpenInvestmentsIds)}
+                  isEmpty={isAccountEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -504,7 +519,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={form.investments.length === 0 ? 'Add investment' : 'Add another investment'}
+                label={form.investments.filter(e => !isAccountEntryEmpty(e)).length === 0 ? 'Add investment' : 'Add another investment'}
                 onClick={() => addAccountEntry('investments', setOpenInvestmentsIds)}
               />
             </div>
@@ -526,6 +541,7 @@ export default function FinancialInformationPage() {
                   isOpen={openRetirementIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenRetirementIds, entry.id)}
                   onDelete={() => deleteAccountEntry('retirement', entry.id, setOpenRetirementIds)}
+                  isEmpty={isAccountEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -539,7 +555,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={form.retirement.length === 0 ? 'Add income or retirement item' : 'Add another item'}
+                label={form.retirement.filter(e => !isAccountEntryEmpty(e)).length === 0 ? 'Add income or retirement item' : 'Add another item'}
                 onClick={() => addAccountEntry('retirement', setOpenRetirementIds)}
               />
             </div>
@@ -561,6 +577,7 @@ export default function FinancialInformationPage() {
                   isOpen={openDebtsIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenDebtsIds, entry.id)}
                   onDelete={() => deleteDebtEntry(entry.id)}
+                  isEmpty={isDebtEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -575,7 +592,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={form.debts.length === 0 ? 'Add debt or loan' : 'Add another debt or loan'}
+                label={form.debts.filter(e => !isDebtEntryEmpty(e)).length === 0 ? 'Add debt or loan' : 'Add another debt or loan'}
                 onClick={addDebtEntry}
               />
             </div>
@@ -665,12 +682,13 @@ function AccordionSection({ idx, open, onToggle, title, description, note, secti
 // EntryCard
 // ---------------------------------------------------------------------------
 
-function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
+function EntryCard({ id, title, isOpen, onToggle, onDelete, isEmpty, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
   id: string
   title: string
   isOpen: boolean
   onToggle: () => void
   onDelete: () => void
+  isEmpty: boolean
   pendingFocusId: string | null
   onFocused: () => void
   isSaving: boolean
@@ -692,6 +710,13 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, pendingFocusId, onFo
   return (
     <div
       ref={containerRef}
+      onBlur={(e) => {
+        // Only when focus leaves the entire card (not moving between fields inside
+        // it) AND the entry is still empty: discard it. So clearing a field while
+        // you're still in the card never makes it vanish — it goes only when you
+        // actually leave an empty card.
+        if (isEmpty && !e.currentTarget.contains(e.relatedTarget as Node)) onDelete()
+      }}
       style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
     >
       <button

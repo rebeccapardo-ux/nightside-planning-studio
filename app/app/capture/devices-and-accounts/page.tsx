@@ -104,6 +104,14 @@ export default function DevicesAndAccountsPage() {
   const [visibleSocial, setVisibleSocial] = useState(0)
   const [visibleOther, setVisibleOther] = useState(0)
   const [visibleAsset, setVisibleAsset] = useState(0)
+  // Mirror the visible counters in refs so add/delete arithmetic is race-safe: a
+  // blur-discard (delete of an empty trailing slot) and an Add click can fire in
+  // the same tick; refs compose synchronously where the old non-functional
+  // `setVisible(visible + 1)` read a stale value and churned an extra empty card.
+  const visibleDeviceRef = useRef(0)
+  const visibleSocialRef = useRef(0)
+  const visibleOtherRef = useRef(0)
+  const visibleAssetRef = useRef(0)
   const [openDeviceIdx, setOpenDeviceIdx] = useState<Set<number>>(new Set())
   const [openSocialIdx, setOpenSocialIdx] = useState<Set<number>>(new Set())
   const [openOtherIdx, setOpenOtherIdx] = useState<Set<number>>(new Set())
@@ -144,10 +152,14 @@ export default function DevicesAndAccountsPage() {
           const merged = { ...EMPTY_FORM, ...(existing.content as object) } as FormState
           formRef.current = merged
           setForm(merged)
-          setVisibleDevice(countVisible(merged, 'device', ['Name', 'LoginAccount', 'PasswordPin', 'Notes']))
-          setVisibleSocial(countVisible(merged, 'socialMedia', ['Platform', 'Username', 'Password', 'WishesOnDeath']))
-          setVisibleOther(countVisible(merged, 'otherAccount', ['Name', 'Username', 'Password', 'Notes']))
-          setVisibleAsset(countVisible(merged, 'digitalAsset', ['Name', 'AccessDetails', 'Location', 'Notes']))
+          const vd = countVisible(merged, 'device', ['Name', 'LoginAccount', 'PasswordPin', 'Notes'])
+          const vs = countVisible(merged, 'socialMedia', ['Platform', 'Username', 'Password', 'WishesOnDeath'])
+          const vo = countVisible(merged, 'otherAccount', ['Name', 'Username', 'Password', 'Notes'])
+          const va = countVisible(merged, 'digitalAsset', ['Name', 'AccessDetails', 'Location', 'Notes'])
+          setVisibleDevice(vd); visibleDeviceRef.current = vd
+          setVisibleSocial(vs); visibleSocialRef.current = vs
+          setVisibleOther(vo); visibleOtherRef.current = vo
+          setVisibleAsset(va); visibleAssetRef.current = va
         }
       } finally {
         setLoading(false)
@@ -168,6 +180,14 @@ export default function DevicesAndAccountsPage() {
       if (fields.some(field => (f as unknown as Record<string, string>)[`${prefix}${n}${field}`])) count = n
     }
     return count
+  }
+
+  // A slot is empty when none of its fields have content — same field lists as
+  // countVisible, so live emptiness matches the load-time visible count. Drives
+  // the per-card blur-discard.
+  function isSlotEmpty(f: FormState, prefix: string, n: number, fields: string[]) {
+    const r = f as unknown as Record<string, string>
+    return !fields.some(field => r[`${prefix}${n}${field}`]?.trim())
   }
 
   function updateField(field: keyof FormState, value: string) {
@@ -267,7 +287,17 @@ export default function DevicesAndAccountsPage() {
 
   // ── Device helpers ──
   function addDevice() {
-    const next = visibleDevice + 1
+    const cur = visibleDeviceRef.current
+    // Reuse the trailing slot if it's already an empty (just-added) one, rather
+    // than stacking another. Blur-discard can't catch Add→Add here — the slot is
+    // never focused (no autofocus), so it never blurs.
+    if (cur > 0 && isSlotEmpty(formRef.current, 'device', cur, ['Name', 'LoginAccount', 'PasswordPin', 'Notes'])) {
+      setOpenDeviceIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => deviceEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
+    visibleDeviceRef.current = next
     setVisibleDevice(next)
     setOpenDeviceIdx(prev => new Set([...prev, next - 1]))
     setTimeout(() => deviceEntryRefs.current[next - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
@@ -286,14 +316,22 @@ export default function DevicesAndAccountsPage() {
     f[`device${last}Name`] = ''; f[`device${last}LoginAccount`] = ''; f[`device${last}PasswordPin`] = ''; f[`device${last}Notes`] = ''
     const newForm = f as unknown as FormState
     formRef.current = newForm; setForm(newForm)
-    setVisibleDevice(v => v - 1)
+    visibleDeviceRef.current -= 1
+    setVisibleDevice(visibleDeviceRef.current)
     setOpenDeviceIdx(prev => { const n = new Set<number>(); prev.forEach(i => { if (i < idx) n.add(i); else if (i > idx) n.add(i - 1) }); return n })
     scheduleAutosave()
   }
 
   // ── Social media helpers ──
   function addSocial() {
-    const next = visibleSocial + 1
+    const cur = visibleSocialRef.current
+    if (cur > 0 && isSlotEmpty(formRef.current, 'socialMedia', cur, ['Platform', 'Username', 'Password', 'WishesOnDeath'])) {
+      setOpenSocialIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => socialEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
+    visibleSocialRef.current = next
     setVisibleSocial(next)
     setOpenSocialIdx(prev => new Set([...prev, next - 1]))
     setTimeout(() => socialEntryRefs.current[next - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
@@ -313,14 +351,22 @@ export default function DevicesAndAccountsPage() {
     f[`socialMedia${last}Password`] = ''; f[`socialMedia${last}WishesOnDeath`] = ''
     const newForm = f as unknown as FormState
     formRef.current = newForm; setForm(newForm)
-    setVisibleSocial(v => v - 1)
+    visibleSocialRef.current -= 1
+    setVisibleSocial(visibleSocialRef.current)
     setOpenSocialIdx(prev => { const n = new Set<number>(); prev.forEach(i => { if (i < idx) n.add(i); else if (i > idx) n.add(i - 1) }); return n })
     scheduleAutosave()
   }
 
   // ── Other account helpers ──
   function addOther() {
-    const next = visibleOther + 1
+    const cur = visibleOtherRef.current
+    if (cur > 0 && isSlotEmpty(formRef.current, 'otherAccount', cur, ['Name', 'Username', 'Password', 'Notes'])) {
+      setOpenOtherIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => otherEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
+    visibleOtherRef.current = next
     setVisibleOther(next)
     setOpenOtherIdx(prev => new Set([...prev, next - 1]))
     setTimeout(() => otherEntryRefs.current[next - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
@@ -340,14 +386,22 @@ export default function DevicesAndAccountsPage() {
     f[`otherAccount${last}Password`] = ''; f[`otherAccount${last}Notes`] = ''
     const newForm = f as unknown as FormState
     formRef.current = newForm; setForm(newForm)
-    setVisibleOther(v => v - 1)
+    visibleOtherRef.current -= 1
+    setVisibleOther(visibleOtherRef.current)
     setOpenOtherIdx(prev => { const n = new Set<number>(); prev.forEach(i => { if (i < idx) n.add(i); else if (i > idx) n.add(i - 1) }); return n })
     scheduleAutosave()
   }
 
   // ── Digital asset helpers ──
   function addAsset() {
-    const next = visibleAsset + 1
+    const cur = visibleAssetRef.current
+    if (cur > 0 && isSlotEmpty(formRef.current, 'digitalAsset', cur, ['Name', 'AccessDetails', 'Location', 'Notes'])) {
+      setOpenAssetIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => assetEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
+    visibleAssetRef.current = next
     setVisibleAsset(next)
     setOpenAssetIdx(prev => new Set([...prev, next - 1]))
     setTimeout(() => assetEntryRefs.current[next - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
@@ -367,7 +421,8 @@ export default function DevicesAndAccountsPage() {
     f[`digitalAsset${last}Location`] = ''; f[`digitalAsset${last}Notes`] = ''
     const newForm = f as unknown as FormState
     formRef.current = newForm; setForm(newForm)
-    setVisibleAsset(v => v - 1)
+    visibleAssetRef.current -= 1
+    setVisibleAsset(visibleAssetRef.current)
     setOpenAssetIdx(prev => { const n = new Set<number>(); prev.forEach(i => { if (i < idx) n.add(i); else if (i > idx) n.add(i - 1) }); return n })
     scheduleAutosave()
   }
@@ -452,6 +507,7 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenDeviceIdx, i)}
                     onDelete={() => deleteDevice(i)}
+                    isEmpty={isSlotEmpty(form, 'device', n, ['Name', 'LoginAccount', 'PasswordPin', 'Notes'])}
                     isSaving={savingEntryKey === `device-${i}`}
                     isSaved={savedIndicatorKey === `device-${i}`}
                     savedFading={savedIndicatorFading}
@@ -495,6 +551,7 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenSocialIdx, i)}
                     onDelete={() => deleteSocial(i)}
+                    isEmpty={isSlotEmpty(form, 'socialMedia', n, ['Platform', 'Username', 'Password', 'WishesOnDeath'])}
                     isSaving={savingEntryKey === `social-${i}`}
                     isSaved={savedIndicatorKey === `social-${i}`}
                     savedFading={savedIndicatorFading}
@@ -532,6 +589,7 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenOtherIdx, i)}
                     onDelete={() => deleteOther(i)}
+                    isEmpty={isSlotEmpty(form, 'otherAccount', n, ['Name', 'Username', 'Password', 'Notes'])}
                     isSaving={savingEntryKey === `other-${i}`}
                     isSaved={savedIndicatorKey === `other-${i}`}
                     savedFading={savedIndicatorFading}
@@ -575,6 +633,7 @@ export default function DevicesAndAccountsPage() {
                     isOpen={isOpen}
                     onToggle={() => toggleEntry(setOpenAssetIdx, i)}
                     onDelete={() => deleteAsset(i)}
+                    isEmpty={isSlotEmpty(form, 'digitalAsset', n, ['Name', 'AccessDetails', 'Location', 'Notes'])}
                     isSaving={savingEntryKey === `asset-${i}`}
                     isSaved={savedIndicatorKey === `asset-${i}`}
                     savedFading={savedIndicatorFading}
@@ -649,11 +708,12 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
 
 // ── EntryCard ─────────────────────────────────────────────────────────────────
 
-function EntryCard({ title, isOpen, onToggle, onDelete, entryRef, isSaving, isSaved, savedFading, children }: {
+function EntryCard({ title, isOpen, onToggle, onDelete, isEmpty, entryRef, isSaving, isSaved, savedFading, children }: {
   title: string
   isOpen: boolean
   onToggle: () => void
   onDelete: () => void
+  isEmpty: boolean
   entryRef: (el: HTMLDivElement | null) => void
   isSaving: boolean
   isSaved: boolean
@@ -663,6 +723,13 @@ function EntryCard({ title, isOpen, onToggle, onDelete, entryRef, isSaving, isSa
   return (
     <div
       ref={entryRef}
+      onBlur={(e) => {
+        // Only when focus leaves the entire card (not moving between fields inside
+        // it) AND the slot is still empty: discard it via the existing onDelete.
+        // So clearing a field while focused never makes the card vanish — it goes
+        // only when you leave an empty card.
+        if (isEmpty && !e.currentTarget.contains(e.relatedTarget as Node)) onDelete()
+      }}
       style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
     >
       <button

@@ -120,9 +120,22 @@ function PersonalAdminPage() {
     searchParams.get('section') === 'legal' ? 3 : null
   )
   const [visibleDocCount, setVisibleDocCount] = useState(0)
+  // Ref mirror so add + blur-discard arithmetic composes synchronously (race-safe).
+  const visibleDocCountRef = useRef(0)
   const [openDocIndex, setOpenDocIndex] = useState<number | null>(null)
   const [showSecondCareDecisionMaker, setShowSecondCareDecisionMaker] = useState(false)
   const [showSecondPropertyDecisionMaker, setShowSecondPropertyDecisionMaker] = useState(false)
+  // Autofocus the second decision-maker block when it opens, so leaving it empty
+  // reliably fires the block's blur-discard (same focus-enables-blur principle as
+  // the reuse-empty-on-add guard).
+  const careDM2Ref = useRef<HTMLDivElement>(null)
+  const propertyDM2Ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (showSecondCareDecisionMaker) setTimeout(() => careDM2Ref.current?.querySelector('textarea')?.focus(), 50)
+  }, [showSecondCareDecisionMaker])
+  useEffect(() => {
+    if (showSecondPropertyDecisionMaker) setTimeout(() => propertyDM2Ref.current?.querySelector('textarea')?.focus(), 50)
+  }, [showSecondPropertyDecisionMaker])
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
   const lastEditedSectionIdxRef = useRef<number | null>(null)
   const [savingSectionIdx, setSavingSectionIdx] = useState<number | null>(null)
@@ -185,7 +198,7 @@ function PersonalAdminPage() {
             merged[`otherDoc${n}Location` as keyof FormState] ||
             merged[`otherDoc${n}Instructions` as keyof FormState]
           ).length
-          setVisibleDocCount(count)
+          setVisibleDocCount(count); visibleDocCountRef.current = count
           setShowSecondCareDecisionMaker(
             !!(merged.careDecisionMaker2Name || merged.careDecisionMaker2Phone || merged.careDecisionMaker2Email)
           )
@@ -267,6 +280,40 @@ function PersonalAdminPage() {
     formRef.current = newForm
     setForm(newForm)
     setShowSecondPropertyDecisionMaker(false)
+    scheduleAutosave()
+  }
+
+  function isDocEmpty(f: FormState, n: number) {
+    const r = f as unknown as Record<string, string>
+    return !r[`otherDoc${n}Name`]?.trim() && !r[`otherDoc${n}Location`]?.trim() && !r[`otherDoc${n}Instructions`]?.trim()
+  }
+
+  function addDocument() {
+    const cur = visibleDocCountRef.current
+    // Reuse the trailing doc slot if it's already an empty (just-added) one.
+    if (cur > 0 && isDocEmpty(formRef.current, cur)) {
+      setOpenDocIndex(cur - 1)
+      return
+    }
+    const next = cur + 1
+    visibleDocCountRef.current = next
+    setVisibleDocCount(next)
+    setOpenDocIndex(next - 1)
+  }
+
+  // Discard the trailing doc slot if it was added but left empty (fires on the
+  // doc card's blur). Only the trailing slot, so a filled doc above is untouched.
+  function discardEmptyTrailingDoc(n: number) {
+    if (n !== visibleDocCountRef.current) return
+    const newForm = { ...formRef.current } as unknown as Record<string, string>
+    newForm[`otherDoc${n}Name`] = ''
+    newForm[`otherDoc${n}Location`] = ''
+    newForm[`otherDoc${n}Instructions`] = ''
+    formRef.current = newForm as unknown as FormState
+    setForm(formRef.current)
+    visibleDocCountRef.current = n - 1
+    setVisibleDocCount(n - 1)
+    setOpenDocIndex(prev => (prev === n - 1 ? null : prev))
     scheduleAutosave()
   }
 
@@ -573,7 +620,20 @@ function PersonalAdminPage() {
                   <Field label="Phone" value={form.careDecisionMaker1Phone} onChange={(v) => updateField('careDecisionMaker1Phone', v)} onBlur={handleBlur} rows={2} />
                   <Field label="Email" value={form.careDecisionMaker1Email} onChange={(v) => updateField('careDecisionMaker1Email', v)} onBlur={handleBlur} rows={2} />
                   {showSecondCareDecisionMaker ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12, borderTop: '1px solid rgba(187,171,244,0.5)' }}>
+                    <div
+                      ref={careDM2Ref}
+                      onBlur={(e) => {
+                        // Hide + clear the optional second decision maker if it was
+                        // opened but left empty when focus leaves the block.
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)
+                          && !form.careDecisionMaker2Name.trim()
+                          && !form.careDecisionMaker2Phone.trim()
+                          && !form.careDecisionMaker2Email.trim()) {
+                          handleRemoveSecondDecisionMaker()
+                        }
+                      }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12, borderTop: '1px solid rgba(187,171,244,0.5)' }}
+                    >
                       <Field label="Name" value={form.careDecisionMaker2Name} onChange={(v) => updateField('careDecisionMaker2Name', v)} onBlur={handleBlur} rows={2} />
                       <Field label="Phone" value={form.careDecisionMaker2Phone} onChange={(v) => updateField('careDecisionMaker2Phone', v)} onBlur={handleBlur} rows={2} />
                       <Field label="Email" value={form.careDecisionMaker2Email} onChange={(v) => updateField('careDecisionMaker2Email', v)} onBlur={handleBlur} rows={2} />
@@ -635,7 +695,18 @@ function PersonalAdminPage() {
                   <Field label="Phone" value={form.propertyDecisionMaker1Phone} onChange={(v) => updateField('propertyDecisionMaker1Phone', v)} onBlur={handleBlur} rows={2} />
                   <Field label="Email" value={form.propertyDecisionMaker1Email} onChange={(v) => updateField('propertyDecisionMaker1Email', v)} onBlur={handleBlur} rows={2} />
                   {showSecondPropertyDecisionMaker ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12, borderTop: '1px solid rgba(187,171,244,0.5)' }}>
+                    <div
+                      ref={propertyDM2Ref}
+                      onBlur={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node)
+                          && !form.propertyDecisionMaker2Name.trim()
+                          && !form.propertyDecisionMaker2Phone.trim()
+                          && !form.propertyDecisionMaker2Email.trim()) {
+                          handleRemoveSecondPropertyDecisionMaker()
+                        }
+                      }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 12, borderTop: '1px solid rgba(187,171,244,0.5)' }}
+                    >
                       <Field label="Name" value={form.propertyDecisionMaker2Name} onChange={(v) => updateField('propertyDecisionMaker2Name', v)} onBlur={handleBlur} rows={2} />
                       <Field label="Phone" value={form.propertyDecisionMaker2Phone} onChange={(v) => updateField('propertyDecisionMaker2Phone', v)} onBlur={handleBlur} rows={2} />
                       <Field label="Email" value={form.propertyDecisionMaker2Email} onChange={(v) => updateField('propertyDecisionMaker2Email', v)} onBlur={handleBlur} rows={2} />
@@ -688,6 +759,13 @@ function PersonalAdminPage() {
                 return (
                   <div
                     key={n}
+                    onBlur={(e) => {
+                      // Discard a just-added doc left empty when focus leaves the
+                      // card (only the trailing slot — see discardEmptyTrailingDoc).
+                      if (!e.currentTarget.contains(e.relatedTarget as Node) && isDocEmpty(form, n)) {
+                        discardEmptyTrailingDoc(n)
+                      }
+                    }}
                     style={{
                       border: '1px solid #2C3777',
                       borderRadius: 12,
@@ -734,11 +812,7 @@ function PersonalAdminPage() {
               {visibleDocCount < 5 && (
                 <button
                   type="button"
-                  onClick={() => {
-                    const next = visibleDocCount + 1
-                    setVisibleDocCount(next)
-                    setOpenDocIndex(next - 1)
-                  }}
+                  onClick={addDocument}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
