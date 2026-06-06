@@ -4,6 +4,7 @@ import { Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
@@ -569,6 +570,7 @@ function FuneralWishesPage() {
                     border: isExpanded ? '2px solid #130426' : '1px solid rgba(19,4,38,0.22)',
                     overflow: 'hidden',
                     background: '#FFFFFF',
+                    scrollMarginTop: SECTION_SCROLL_MARGIN_TOP,
                     transition: 'border 150ms ease',
                   }}
                 >
