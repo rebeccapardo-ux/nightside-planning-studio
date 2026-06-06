@@ -231,9 +231,9 @@ export default function KeepsakeDocumentPage() {
           .map((e) => ({ ...e, why: e.why ?? '' }))
           .filter((e) => !isEntryEmpty(e))
         setEntries(loaded)
-        if (loaded.length > 0) {
-          setOpenIdx(new Set(loaded.map((_, i) => i)))
-        }
+        // Default to collapsed on load, consistent with every other document
+        // (the practical docs via openSection, the wishes docs via expandedIndex).
+        // Keepsakes was the sole outlier that opened every entry on load.
       }
       setLoading(false)
     }
