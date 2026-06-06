@@ -230,13 +230,41 @@ function FuneralWishesPage() {
   useEffect(() => { window.scrollTo(0, 0) }, [])
 
   // Auto-scroll when a section expands
+  const prevExpandedRef = useRef<number | null>(null)
   useEffect(() => {
+    const prev = prevExpandedRef.current
+    prevExpandedRef.current = expandedIndex
+
     if (expandedIndex === null) return
     const el = itemRefs.current[expandedIndex]
     if (!el) return
-    const timer = setTimeout(() => {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 80)
+    const scroll = () => el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+    // If another section was open it's now collapsing (animated max-height). Wait
+    // for that collapse's actual transitionend before scrolling, so the target
+    // isn't measured against a stale pre-collapse layout — and the wait can't drift
+    // from the CSS duration the way a fixed timeout would.
+    if (prev !== null && prev !== expandedIndex) {
+      const panel = itemRefs.current[prev]?.querySelector<HTMLElement>('[data-collapse]')
+      if (panel) {
+        let done = false
+        const onEnd = (e: TransitionEvent) => {
+          if (done || e.target !== panel || e.propertyName !== 'max-height') return
+          done = true
+          scroll()
+        }
+        panel.addEventListener('transitionend', onEnd)
+        // Fallback if transitionend never fires (no transition / interrupted).
+        const fallback = setTimeout(() => { if (!done) { done = true; scroll() } }, 600)
+        return () => {
+          panel.removeEventListener('transitionend', onEnd)
+          clearTimeout(fallback)
+        }
+      }
+    }
+
+    // Common case (nothing was open): unchanged short delay.
+    const timer = setTimeout(scroll, 80)
     return () => clearTimeout(timer)
   }, [expandedIndex])
 
@@ -607,7 +635,7 @@ function FuneralWishesPage() {
                           <path d="M1 1.5L7 7.5L13 1.5" stroke="#130426" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
-                      <div style={{
+                      <div data-collapse style={{
                         overflow: 'hidden',
                         maxHeight: isExpanded ? '6000px' : '0px',
                         opacity: isExpanded ? 1 : 0,

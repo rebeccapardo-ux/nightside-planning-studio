@@ -74,6 +74,17 @@ The pattern needs **two** cooperating mechanisms — blur-discard alone is insuf
 
 ---
 
+## Scrolling an expanded section into view
+
+Documents with collapsible sections scroll the opened section to the top of the viewport. Two things to get right:
+
+- **Offset for the sticky nav.** GlobalNav is `sticky top-0`, 76px tall. A plain `scrollIntoView({ block: 'start' })` lands the title *behind* the nav. Fix: `scroll-margin-top: SECTION_SCROLL_MARGIN_TOP` (96, in `lib/ui.ts`) on the scroll-target element — `scrollIntoView` honors it. (The Key Details deep-link paths in `important-contacts`/`personal-admin` instead hardcode the same `-96` via manual `window.scrollTo`; unifying those is a tracked follow-up.)
+- **Animated collapse vs instant collapse.** The *practical* docs hide a collapsing section with a conditional render (instant) — layout settles before the scroll, so a fixed `setTimeout` is fine. The *wishes* docs (`advance-directive` = My Care Wishes, `funeral-wishes`) animate `max-height` (~410ms). Scrolling on a fixed delay there measures a stale pre-collapse layout and overshoots (title above viewport). Fix: on an accordion *swap*, wait for the collapsing panel's actual `transitionend` (filtered to `propertyName === 'max-height'`, via a `data-collapse` hook) before scrolling — no coupling to the CSS duration. Track the previous `expandedIndex` in a ref; the common case (nothing was open) keeps the snappy 80ms path.
+
+**Known edge case (deliberately out of scope):** the wishes-doc swap scroll keys on the *immediate* previous `expandedIndex`. The direct swap (A open → B open) is handled. The **triple-click** sequence — A open → A close → B open within ~400ms — goes `A → null → B`, so `prev` is `null` and the scroll fires on the 80ms path while A may still be animating closed → B's title lands slightly off. Covering it would require tracking in-flight collapsing state rather than the immediate previous index; not worth it for a rare close-then-reopen-different sequence. Capture if/when users actually report it.
+
+---
+
 ## Database migrations
 
 - Migrations are plain SQL files in `supabase/migrations/` (e.g. `20260603_containers_domain_code.sql`).
