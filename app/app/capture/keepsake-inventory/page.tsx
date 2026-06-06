@@ -305,6 +305,17 @@ export default function KeepsakeDocumentPage() {
   }
 
   function addEntry() {
+    // Reuse an existing empty draft instead of stacking another empty card. The
+    // blur-discard alone can't catch Add→Add here: this surface doesn't autofocus
+    // the new card, so the first card is never focused and never blurs. (This guard
+    // was in the original Keepsakes pattern; it was wrongly dropped in the Push 1
+    // render-filter correction.)
+    const existingIdx = entries.findIndex((e) => isEntryEmpty(e))
+    if (existingIdx !== -1) {
+      setOpenIdx((old) => new Set([...old, existingIdx]))
+      setTimeout(() => entryRefs.current[existingIdx]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
     const newEntry = makeEntry()
     setEntries((prev) => {
       const next = [...prev, newEntry]

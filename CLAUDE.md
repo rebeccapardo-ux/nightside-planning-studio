@@ -55,12 +55,22 @@ On reflect prompts, **`domainRelevance` (and `primaryTag` / `secondaryTags`) is 
 
 Any surface where the user clicks "Add <thing>" to create multiple entries of the same type (capture pages, multi-entry document sections) must discard an empty just-added card **when focus leaves that card** — so an empty "Untitled X" never lingers on screen until refresh.
 
-The pattern (reference — all three array surfaces use it: `financial-information/page.tsx`, `important-contacts/page.tsx`, `keepsake-inventory/page.tsx`):
+The pattern needs **two** cooperating mechanisms — blur-discard alone is insufficient (see below). Reference: `financial-information/page.tsx`, `important-contacts/page.tsx`, `keepsake-inventory/page.tsx`, `devices-and-accounts/page.tsx`, `personal-admin/page.tsx`.
+
+**1. Discard an empty card on card-level blur:**
 - The card's root element has an `onBlur` gated by `!e.currentTarget.contains(e.relatedTarget)`, so it fires only when focus leaves the **whole** card (not when tabbing between its own fields).
 - On that blur, **if the entry is still empty, remove it** — reuse the card's existing `onDelete`. Pass the card an `isEmpty` flag computed from the same predicate used for save/load filtering.
-- **Do NOT use an emptiness-based render filter** (e.g. `entries.filter(e => !isEmpty(e) || e.id === pendingId)`). It's tempting, but it hides the entry the instant a field goes empty — so clearing a field while you're still typing makes the card vanish mid-edit. Discarding must be driven by **blur**, not by render-time emptiness.
 
-**Why:** save-time and load-time filtering keep the DB clean and fix the *next* reload, but do nothing for the live session — without blur-discard the empty card lingers until refresh. The earlier render-filter approach over-corrected: it collapsed the card while the cursor was still in it (clear a field mid-edit → card vanishes). All three array surfaces now use the corrected blur-discard pattern; the lingering bug previously existed on Financial Information, Important Contacts, Devices & Accounts, and Personal Admin. (Tracked roadmap: extract into a shared hook so it can't drift again.)
+**2. Reuse the existing empty draft on Add (or autofocus the new card — ideally both):**
+- ⚠️ **Blur-discard alone is NOT enough.** It only fires if a field in the card was ever focused. If "Add" doesn't autofocus the new card, the card is never focused, so clicking **Add → Add** never blurs the first card and you get **two stacked empty cards**.
+- So every `addX` must **reuse an existing empty draft instead of appending a new one** (re-open + scroll to it; for fixed-slot surfaces, reuse the empty trailing slot rather than incrementing the counter). Optionally also autofocus the new card (Financial/Contacts do — `pendingFocusId`), which makes blur-discard fire on the next Add too. Defense in depth: do both.
+- The decision-maker toggle blocks in Personal Admin autofocus on open for the same reason — so leaving the block empty reliably fires its blur-discard.
+
+**Do NOT use an emptiness-based render filter** (e.g. `entries.filter(e => !isEmpty(e) || e.id === pendingId)`). It's tempting, but it hides the entry the instant a field goes empty — so clearing a field while you're still typing makes the card vanish mid-edit. Discarding must be driven by **blur**, not by render-time emptiness.
+
+**Why / lessons learned:** save-time and load-time filtering keep the DB clean and fix the *next* reload, but do nothing for the live session. Two real mistakes made here, don't repeat them:
+- The original render-filter approach (in `keepsake-inventory`) over-corrected: it collapsed the card while the cursor was still in it (clear a field mid-edit → card vanishes). Removing it was correct.
+- **But the original Keepsakes pattern had TWO mechanisms — the flawed render-filter AND a load-bearing `discardEmptyPending()`-before-add guard.** The Push 1 correction removed *both*; removing the render-filter was right, removing the discard-before-add guard was a **regression** (re-introduced the Add→Add stacking bug, since Keepsakes doesn't autofocus). When you remove a flawed mechanism, check whether a *second* co-located mechanism was doing independent load-bearing work. (Tracked roadmap: extract into a shared hook so it can't drift again.)
 
 ---
 

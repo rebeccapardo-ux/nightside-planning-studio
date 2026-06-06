@@ -330,6 +330,13 @@ export default function FinancialInformationPage() {
     section: 'banking' | 'investments' | 'retirement',
     setFn: React.Dispatch<React.SetStateAction<Set<string>>>
   ) {
+    // Reuse an existing empty draft rather than stacking another empty card.
+    const existing = formRef.current[section].find(e => isAccountEntryEmpty(e))
+    if (existing) {
+      setFn(prev => new Set([...prev, existing.id]))
+      setPendingFocusId(existing.id)
+      return
+    }
     const entry: AccountEntry = { id: genId(), name: '', typeOfAccount: '', accountNumber: '', contactInfo: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
@@ -361,6 +368,12 @@ export default function FinancialInformationPage() {
   }
 
   function addDebtEntry() {
+    const existing = formRef.current.debts.find(e => isDebtEntryEmpty(e))
+    if (existing) {
+      setOpenDebtsIds(prev => new Set([...prev, existing.id]))
+      setPendingFocusId(existing.id)
+      return
+    }
     const entry: DebtEntry = { id: genId(), name: '', type: '', amount: '', contactInfo: '' }
     const updated = { ...formRef.current, debts: [...formRef.current.debts, entry] }
     formRef.current = updated

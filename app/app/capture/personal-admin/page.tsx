@@ -125,6 +125,17 @@ function PersonalAdminPage() {
   const [openDocIndex, setOpenDocIndex] = useState<number | null>(null)
   const [showSecondCareDecisionMaker, setShowSecondCareDecisionMaker] = useState(false)
   const [showSecondPropertyDecisionMaker, setShowSecondPropertyDecisionMaker] = useState(false)
+  // Autofocus the second decision-maker block when it opens, so leaving it empty
+  // reliably fires the block's blur-discard (same focus-enables-blur principle as
+  // the reuse-empty-on-add guard).
+  const careDM2Ref = useRef<HTMLDivElement>(null)
+  const propertyDM2Ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (showSecondCareDecisionMaker) setTimeout(() => careDM2Ref.current?.querySelector('textarea')?.focus(), 50)
+  }, [showSecondCareDecisionMaker])
+  useEffect(() => {
+    if (showSecondPropertyDecisionMaker) setTimeout(() => propertyDM2Ref.current?.querySelector('textarea')?.focus(), 50)
+  }, [showSecondPropertyDecisionMaker])
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
   const lastEditedSectionIdxRef = useRef<number | null>(null)
   const [savingSectionIdx, setSavingSectionIdx] = useState<number | null>(null)
@@ -278,7 +289,13 @@ function PersonalAdminPage() {
   }
 
   function addDocument() {
-    const next = visibleDocCountRef.current + 1
+    const cur = visibleDocCountRef.current
+    // Reuse the trailing doc slot if it's already an empty (just-added) one.
+    if (cur > 0 && isDocEmpty(formRef.current, cur)) {
+      setOpenDocIndex(cur - 1)
+      return
+    }
+    const next = cur + 1
     visibleDocCountRef.current = next
     setVisibleDocCount(next)
     setOpenDocIndex(next - 1)
@@ -604,6 +621,7 @@ function PersonalAdminPage() {
                   <Field label="Email" value={form.careDecisionMaker1Email} onChange={(v) => updateField('careDecisionMaker1Email', v)} onBlur={handleBlur} rows={2} />
                   {showSecondCareDecisionMaker ? (
                     <div
+                      ref={careDM2Ref}
                       onBlur={(e) => {
                         // Hide + clear the optional second decision maker if it was
                         // opened but left empty when focus leaves the block.
@@ -678,6 +696,7 @@ function PersonalAdminPage() {
                   <Field label="Email" value={form.propertyDecisionMaker1Email} onChange={(v) => updateField('propertyDecisionMaker1Email', v)} onBlur={handleBlur} rows={2} />
                   {showSecondPropertyDecisionMaker ? (
                     <div
+                      ref={propertyDM2Ref}
                       onBlur={(e) => {
                         if (!e.currentTarget.contains(e.relatedTarget as Node)
                           && !form.propertyDecisionMaker2Name.trim()

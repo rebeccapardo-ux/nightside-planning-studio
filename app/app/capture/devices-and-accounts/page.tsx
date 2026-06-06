@@ -287,7 +287,16 @@ export default function DevicesAndAccountsPage() {
 
   // ── Device helpers ──
   function addDevice() {
-    const next = visibleDeviceRef.current + 1
+    const cur = visibleDeviceRef.current
+    // Reuse the trailing slot if it's already an empty (just-added) one, rather
+    // than stacking another. Blur-discard can't catch Add→Add here — the slot is
+    // never focused (no autofocus), so it never blurs.
+    if (cur > 0 && isSlotEmpty(formRef.current, 'device', cur, ['Name', 'LoginAccount', 'PasswordPin', 'Notes'])) {
+      setOpenDeviceIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => deviceEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
     visibleDeviceRef.current = next
     setVisibleDevice(next)
     setOpenDeviceIdx(prev => new Set([...prev, next - 1]))
@@ -315,7 +324,13 @@ export default function DevicesAndAccountsPage() {
 
   // ── Social media helpers ──
   function addSocial() {
-    const next = visibleSocialRef.current + 1
+    const cur = visibleSocialRef.current
+    if (cur > 0 && isSlotEmpty(formRef.current, 'socialMedia', cur, ['Platform', 'Username', 'Password', 'WishesOnDeath'])) {
+      setOpenSocialIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => socialEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
     visibleSocialRef.current = next
     setVisibleSocial(next)
     setOpenSocialIdx(prev => new Set([...prev, next - 1]))
@@ -344,7 +359,13 @@ export default function DevicesAndAccountsPage() {
 
   // ── Other account helpers ──
   function addOther() {
-    const next = visibleOtherRef.current + 1
+    const cur = visibleOtherRef.current
+    if (cur > 0 && isSlotEmpty(formRef.current, 'otherAccount', cur, ['Name', 'Username', 'Password', 'Notes'])) {
+      setOpenOtherIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => otherEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
     visibleOtherRef.current = next
     setVisibleOther(next)
     setOpenOtherIdx(prev => new Set([...prev, next - 1]))
@@ -373,7 +394,13 @@ export default function DevicesAndAccountsPage() {
 
   // ── Digital asset helpers ──
   function addAsset() {
-    const next = visibleAssetRef.current + 1
+    const cur = visibleAssetRef.current
+    if (cur > 0 && isSlotEmpty(formRef.current, 'digitalAsset', cur, ['Name', 'AccessDetails', 'Location', 'Notes'])) {
+      setOpenAssetIdx(prev => new Set([...prev, cur - 1]))
+      setTimeout(() => assetEntryRefs.current[cur - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50)
+      return
+    }
+    const next = cur + 1
     visibleAssetRef.current = next
     setVisibleAsset(next)
     setOpenAssetIdx(prev => new Set([...prev, next - 1]))

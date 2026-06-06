@@ -297,6 +297,13 @@ function ImportantContactsPage() {
   }
 
   function addEntry(section: SectionKey) {
+    // Reuse an existing empty draft rather than stacking another empty card.
+    const existing = formRef.current[section].find(e => isContactEntryEmpty(e))
+    if (existing) {
+      openIdSetters[section](prev => new Set([...prev, existing.id]))
+      setPendingFocusId(existing.id)
+      return
+    }
     const entry: ContactEntry = { id: genId(), name: '', role: '', institution: '', phone: '', email: '', address: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
