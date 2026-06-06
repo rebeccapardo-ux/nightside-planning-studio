@@ -51,6 +51,19 @@ On reflect prompts, **`domainRelevance` (and `primaryTag` / `secondaryTags`) is 
 
 ---
 
+## Multi-entry "Add X" surfaces — the Keepsakes pattern
+
+Any surface where the user clicks "Add <thing>" to create multiple entries of the same type (capture pages, multi-entry document sections) **must use the Keepsakes pattern** — reference: `app/app/capture/keepsake-inventory/page.tsx`.
+
+The pattern, three parts:
+- **`pendingId`** tracks the just-added draft entry.
+- **`discardEmptyPending()`** runs on card blur (root `<div onBlur>` gated by `!e.currentTarget.contains(e.relatedTarget)`, so it fires only when focus leaves the whole card) — it removes the draft if it's still empty. The add handler calls it first (discard-then-add); the update handler clears `pendingId` once the entry has content; delete clears it too.
+- **Render filter**: `entries.filter(e => !isEmpty(e) || e.id === pendingId)` — shows entries that have content **or** the active draft you're typing into.
+
+**Why:** save-time filtering and load-time filtering alone do **not** fix the in-session experience. Without the render filter + blur discard, an empty "Untitled X" card **lingers on screen until a manual refresh** (it's filtered out of the DB and gone on reload, but stays in React state live). That exact bug recurred on Financial Information, Important Contacts, Devices & Accounts, and Personal Admin — every multi-entry surface *except* Keepsakes — before being propagated. Don't reintroduce it on a new surface; copy the Keepsakes pattern. (Tracked roadmap: extract it into a shared hook so it can't drift again.)
+
+---
+
 ## Database migrations
 
 - Migrations are plain SQL files in `supabase/migrations/` (e.g. `20260603_containers_domain_code.sql`).
