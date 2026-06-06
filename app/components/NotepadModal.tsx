@@ -69,6 +69,7 @@ export default function NotepadModal({
     const content = contentRef.current.trim()
     if (!content) return
     setSaving(true)
+    const startedAt = Date.now()
     try {
       let ok = false
       if (!sessionNoteIdRef.current) {
@@ -77,6 +78,10 @@ export default function NotepadModal({
       } else {
         ok = await updateNote(sessionNoteIdRef.current, content)
       }
+      // Keep "Saving…" visible long enough to register even when the save is fast,
+      // so the feedback isn't subliminal before it flips to "Saved".
+      const elapsed = Date.now() - startedAt
+      if (elapsed < 400) await new Promise((r) => setTimeout(r, 400 - elapsed))
       if (ok) {
         setConfirmVisible(true)
         if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
@@ -186,7 +191,7 @@ export default function NotepadModal({
             // Background autosave on a pause — never clears the field and updates the
             // session's single note. The final save happens on close.
             if (debounceRef.current) clearTimeout(debounceRef.current)
-            debounceRef.current = setTimeout(() => { void queueSave() }, 2500)
+            debounceRef.current = setTimeout(() => { void queueSave() }, 1200)
           }}
         />
 
