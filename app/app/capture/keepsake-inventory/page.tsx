@@ -88,7 +88,6 @@ function EntryCard({
   onToggle,
   onDelete,
   onChange,
-  onBlurCard,
   entryRef,
   isSaving,
   isSaved,
@@ -99,7 +98,6 @@ function EntryCard({
   onToggle: () => void
   onDelete: () => void
   onChange: (field: keyof KeepsakeEntry, value: string) => void
-  onBlurCard: () => void
   entryRef: (el: HTMLDivElement | null) => void
   isSaving: boolean
   isSaved: boolean
@@ -110,9 +108,12 @@ function EntryCard({
     <div
       ref={entryRef}
       onBlur={(e) => {
-        // Fire only when focus leaves the entire card (not moving between fields inside it)
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-          onBlurCard()
+        // Only when focus leaves the entire card (not moving between fields inside
+        // it) AND the entry is still empty: discard it. Clearing a field while the
+        // cursor is still in the card never makes it vanish — it goes only when you
+        // actually leave an empty card.
+        if (isEntryEmpty(entry) && !e.currentTarget.contains(e.relatedTarget as Node)) {
+          onDelete()
         }
       }}
       style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
@@ -194,8 +195,6 @@ function EntryCard({
 export default function KeepsakeDocumentPage() {
   const [entries, setEntries] = useState<KeepsakeEntry[]>([])
   const [openIdx, setOpenIdx] = useState<Set<number>>(new Set())
-  const [pendingId, setPendingId] = useState<string | null>(null)
-  const pendingIdRef = useRef<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [statusNow, setStatusNow] = useState(Date.now())
@@ -212,9 +211,7 @@ export default function KeepsakeDocumentPage() {
   const [savedIndicatorFading, setSavedIndicatorFading] = useState(false)
   const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Keep ref in sync so callbacks don't close over stale state
   useEffect(() => { window.scrollTo(0, 0) }, [])
-  useEffect(() => { pendingIdRef.current = pendingId }, [pendingId])
 
   useEffect(() => {
     async function load() {
@@ -307,29 +304,8 @@ export default function KeepsakeDocumentPage() {
     router.push(`/app/entries/${id}`)
   }
 
-  // Discard pending entry if it's still empty
-  function discardEmptyPending() {
-    const pid = pendingIdRef.current
-    if (!pid) return
-    setEntries((prev) => {
-      const entry = prev.find((e) => e.id === pid)
-      if (entry && isEntryEmpty(entry)) {
-        setPendingId(null)
-        pendingIdRef.current = null
-        return prev.filter((e) => e.id !== pid)
-      }
-      return prev
-    })
-  }
-
   function addEntry() {
-    // Clean up any existing empty pending entry first
-    discardEmptyPending()
-
     const newEntry = makeEntry()
-    setPendingId(newEntry.id)
-    pendingIdRef.current = newEntry.id
-
     setEntries((prev) => {
       const next = [...prev, newEntry]
       const newIdx = next.length - 1
@@ -341,11 +317,6 @@ export default function KeepsakeDocumentPage() {
 
   function deleteEntry(idx: number) {
     setEntries((prev) => {
-      const removed = prev[idx]
-      if (removed && removed.id === pendingIdRef.current) {
-        setPendingId(null)
-        pendingIdRef.current = null
-      }
       const next = prev.filter((_, i) => i !== idx)
       setOpenIdx((old) => {
         const n = new Set<number>()
@@ -360,13 +331,7 @@ export default function KeepsakeDocumentPage() {
   function updateEntry(idx: number, field: keyof KeepsakeEntry, value: string) {
     setEntries((prev) => {
       const next = prev.map((e, i) => i === idx ? { ...e, [field]: value } : e)
-      // Promote pending entry to committed once it has content
-      const updated = next[idx]
-      if (updated && updated.id === pendingIdRef.current && !isEntryEmpty(updated)) {
-        setPendingId(null)
-        pendingIdRef.current = null
-      }
-      lastEditedEntryIdRef.current = updated?.id ?? null
+      lastEditedEntryIdRef.current = next[idx]?.id ?? null
       scheduleSave(next)
       return next
     })
@@ -379,9 +344,6 @@ export default function KeepsakeDocumentPage() {
       return n
     })
   }
-
-  // Only render entries that have content, plus the active pending entry
-  const visibleEntries = entries.filter((e) => !isEntryEmpty(e) || e.id === pendingId)
 
   if (loading) {
     return (
@@ -480,8 +442,7 @@ export default function KeepsakeDocumentPage() {
 
         {/* Dynamic entries — only render those with content or the active pending entry */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {visibleEntries.map((entry) => {
-            const idx = entries.indexOf(entry)
+          {entries.map((entry, idx) => {
             return (
               <EntryCard
                 key={entry.id}
@@ -490,7 +451,6 @@ export default function KeepsakeDocumentPage() {
                 onToggle={() => toggleEntry(idx)}
                 onDelete={() => deleteEntry(idx)}
                 onChange={(field, value) => updateEntry(idx, field, value)}
-                onBlurCard={discardEmptyPending}
                 entryRef={(el) => { entryRefs.current[idx] = el }}
                 isSaving={savingEntryId === entry.id}
                 isSaved={savedIndicatorId === entry.id}

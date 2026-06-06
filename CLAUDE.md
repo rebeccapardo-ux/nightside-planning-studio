@@ -51,16 +51,16 @@ On reflect prompts, **`domainRelevance` (and `primaryTag` / `secondaryTags`) is 
 
 ---
 
-## Multi-entry "Add X" surfaces — the Keepsakes pattern
+## Multi-entry "Add X" surfaces — discard empty drafts on card blur
 
-Any surface where the user clicks "Add <thing>" to create multiple entries of the same type (capture pages, multi-entry document sections) **must use the Keepsakes pattern** — reference: `app/app/capture/keepsake-inventory/page.tsx`.
+Any surface where the user clicks "Add <thing>" to create multiple entries of the same type (capture pages, multi-entry document sections) must discard an empty just-added card **when focus leaves that card** — so an empty "Untitled X" never lingers on screen until refresh.
 
-The pattern, three parts:
-- **`pendingId`** tracks the just-added draft entry.
-- **`discardEmptyPending()`** runs on card blur (root `<div onBlur>` gated by `!e.currentTarget.contains(e.relatedTarget)`, so it fires only when focus leaves the whole card) — it removes the draft if it's still empty. The add handler calls it first (discard-then-add); the update handler clears `pendingId` once the entry has content; delete clears it too.
-- **Render filter**: `entries.filter(e => !isEmpty(e) || e.id === pendingId)` — shows entries that have content **or** the active draft you're typing into.
+The pattern (reference — all three array surfaces use it: `financial-information/page.tsx`, `important-contacts/page.tsx`, `keepsake-inventory/page.tsx`):
+- The card's root element has an `onBlur` gated by `!e.currentTarget.contains(e.relatedTarget)`, so it fires only when focus leaves the **whole** card (not when tabbing between its own fields).
+- On that blur, **if the entry is still empty, remove it** — reuse the card's existing `onDelete`. Pass the card an `isEmpty` flag computed from the same predicate used for save/load filtering.
+- **Do NOT use an emptiness-based render filter** (e.g. `entries.filter(e => !isEmpty(e) || e.id === pendingId)`). It's tempting, but it hides the entry the instant a field goes empty — so clearing a field while you're still typing makes the card vanish mid-edit. Discarding must be driven by **blur**, not by render-time emptiness.
 
-**Why:** save-time filtering and load-time filtering alone do **not** fix the in-session experience. Without the render filter + blur discard, an empty "Untitled X" card **lingers on screen until a manual refresh** (it's filtered out of the DB and gone on reload, but stays in React state live). That exact bug recurred on Financial Information, Important Contacts, Devices & Accounts, and Personal Admin — every multi-entry surface *except* Keepsakes — before being propagated. Don't reintroduce it on a new surface; copy the Keepsakes pattern. (Tracked roadmap: extract it into a shared hook so it can't drift again.)
+**Why:** save-time and load-time filtering keep the DB clean and fix the *next* reload, but do nothing for the live session — without blur-discard the empty card lingers until refresh. The earlier render-filter approach over-corrected: it collapsed the card while the cursor was still in it (clear a field mid-edit → card vanishes). All three array surfaces now use the corrected blur-discard pattern; the lingering bug previously existed on Financial Information, Important Contacts, Devices & Accounts, and Personal Admin. (Tracked roadmap: extract into a shared hook so it can't drift again.)
 
 ---
 

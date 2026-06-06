@@ -118,14 +118,7 @@ function ImportantContactsPage() {
   const [openFinancialIds, setOpenFinancialIds] = useState<Set<string>>(new Set())
   const [openOtherIds, setOpenOtherIds] = useState<Set<string>>(new Set())
   const [pendingFocusId, setPendingFocusId] = useState<string | null>(null)
-  // The just-added entry — renders while empty so you can type, but is discarded
-  // on blur if left untouched, so an empty "Untitled contact" never lingers until
-  // refresh. (Keepsakes pattern.)
-  const [pendingId, setPendingId] = useState<string | null>(null)
-  const pendingIdRef = useRef<string | null>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
-
-  useEffect(() => { pendingIdRef.current = pendingId }, [pendingId])
 
   const openIdSetters: Record<SectionKey, React.Dispatch<React.SetStateAction<Set<string>>>> = {
     healthcare: setOpenHealthcareIds,
@@ -292,26 +285,6 @@ function ImportantContactsPage() {
     setFn(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   }
 
-  // Remove the pending entry if it was added but left empty. Runs on card blur
-  // and before adding another; only acts while still empty (updateField promotes
-  // it to a committed entry once it has content).
-  function discardEmptyPending() {
-    const pid = pendingIdRef.current
-    if (!pid) return
-    const f = formRef.current
-    for (const section of Object.keys(f) as SectionKey[]) {
-      const e = f[section].find(x => x.id === pid)
-      if (e) {
-        if (isContactEntryEmpty(e)) {
-          const next = { ...f, [section]: f[section].filter(x => x.id !== pid) }
-          formRef.current = next; setForm(next)
-          setPendingId(null); pendingIdRef.current = null
-        }
-        return
-      }
-    }
-  }
-
   function updateField(section: SectionKey, id: string, field: keyof ContactEntry, value: string) {
     const updated = {
       ...formRef.current,
@@ -320,22 +293,16 @@ function ImportantContactsPage() {
     formRef.current = updated
     setForm(updated)
     lastEditedEntryIdRef.current = id
-    if (id === pendingIdRef.current) {
-      const e = updated[section].find(x => x.id === id)
-      if (e && !isContactEntryEmpty(e)) { setPendingId(null); pendingIdRef.current = null }
-    }
     scheduleAutosave()
   }
 
   function addEntry(section: SectionKey) {
-    discardEmptyPending() // drop any prior empty draft before opening a new one
     const entry: ContactEntry = { id: genId(), name: '', role: '', institution: '', phone: '', email: '', address: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
     setForm(updated)
     openIdSetters[section](prev => new Set([...prev, entry.id]))
     setPendingFocusId(entry.id)
-    setPendingId(entry.id); pendingIdRef.current = entry.id
     scheduleAutosave()
   }
 
@@ -344,7 +311,6 @@ function ImportantContactsPage() {
     formRef.current = updated
     setForm(updated)
     openIdSetters[section](prev => { const n = new Set(prev); n.delete(id); return n })
-    if (id === pendingIdRef.current) { setPendingId(null); pendingIdRef.current = null }
     scheduleAutosave()
   }
 
@@ -364,8 +330,7 @@ function ImportantContactsPage() {
     defaultTitle: string,
   ) {
     const openIds = openIdSets[section]
-    // Render entries with content, plus the active pending draft.
-    const entries = form[section].filter(e => !isContactEntryEmpty(e) || e.id === pendingId)
+    const entries = form[section]
     return (
       <AccordionSection
         idx={idx} open={openSection === idx} onToggle={toggleSection}
@@ -380,7 +345,7 @@ function ImportantContactsPage() {
               isOpen={openIds.has(entry.id)}
               onToggle={() => toggleEntry(openIdSetters[section], entry.id)}
               onDelete={() => deleteEntry(section, entry.id)}
-              onBlurCard={discardEmptyPending}
+              isEmpty={isContactEntryEmpty(entry)}
               pendingFocusId={pendingFocusId}
               onFocused={() => setPendingFocusId(null)}
               isSaving={savingEntryId === entry.id}
@@ -396,7 +361,7 @@ function ImportantContactsPage() {
             </EntryCard>
           ))}
           <AddButton
-            label={entries.length === 0 ? emptyLabel : addAnotherLabel}
+            label={entries.filter(e => !isContactEntryEmpty(e)).length === 0 ? emptyLabel : addAnotherLabel}
             onClick={() => addEntry(section)}
           />
         </div>
@@ -521,13 +486,13 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
 // EntryCard
 // ---------------------------------------------------------------------------
 
-function EntryCard({ id, title, isOpen, onToggle, onDelete, onBlurCard, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
+function EntryCard({ id, title, isOpen, onToggle, onDelete, isEmpty, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
   id: string
   title: string
   isOpen: boolean
   onToggle: () => void
   onDelete: () => void
-  onBlurCard: () => void
+  isEmpty: boolean
   pendingFocusId: string | null
   onFocused: () => void
   isSaving: boolean
@@ -550,9 +515,11 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, onBlurCard, pendingF
     <div
       ref={containerRef}
       onBlur={(e) => {
-        // Fire only when focus leaves the entire card (not when moving between
-        // fields inside it) — that's when we discard an untouched draft.
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) onBlurCard()
+        // Only when focus leaves the entire card (not moving between fields inside
+        // it) AND the entry is still empty: discard it. So clearing a field while
+        // you're still in the card never makes it vanish — it goes only when you
+        // actually leave an empty card.
+        if (isEmpty && !e.currentTarget.contains(e.relatedTarget as Node)) onDelete()
       }}
       style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
     >

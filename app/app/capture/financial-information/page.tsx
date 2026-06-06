@@ -168,15 +168,9 @@ export default function FinancialInformationPage() {
   const [openRetirementIds, setOpenRetirementIds] = useState<Set<string>>(new Set())
   const [openDebtsIds, setOpenDebtsIds] = useState<Set<string>>(new Set())
   const [pendingFocusId, setPendingFocusId] = useState<string | null>(null)
-  // The just-added entry. It renders while empty (so you can type into it); if you
-  // move on without entering anything it's discarded on blur, so an empty
-  // "Untitled …" card never lingers until refresh. (Keepsakes pattern.)
-  const [pendingId, setPendingId] = useState<string | null>(null)
-  const pendingIdRef = useRef<string | null>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
-  useEffect(() => { pendingIdRef.current = pendingId }, [pendingId])
 
   useEffect(() => {
     async function load() {
@@ -314,36 +308,6 @@ export default function FinancialInformationPage() {
     setFn(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   }
 
-  // Remove the pending entry if the user added it but left it empty. Runs on card
-  // blur and before adding another. Only acts while still empty — once it has
-  // content updateAccountField/updateDebtField promote it to a committed entry.
-  function discardEmptyPending() {
-    const pid = pendingIdRef.current
-    if (!pid) return
-    const f = formRef.current
-    for (const section of ['banking', 'investments', 'retirement'] as const) {
-      const e = f[section].find(x => x.id === pid)
-      if (e) {
-        if (isAccountEntryEmpty(e)) {
-          const next = { ...f, [section]: f[section].filter(x => x.id !== pid) }
-          formRef.current = next; setForm(next)
-          setPendingId(null); pendingIdRef.current = null
-        }
-        return
-      }
-    }
-    const d = f.debts.find(x => x.id === pid)
-    if (d && isDebtEntryEmpty(d)) {
-      const next = { ...f, debts: f.debts.filter(x => x.id !== pid) }
-      formRef.current = next; setForm(next)
-      setPendingId(null); pendingIdRef.current = null
-    }
-  }
-
-  // Render only entries with content, plus the active pending draft.
-  const visibleAccounts = (list: AccountEntry[]) => list.filter(e => !isAccountEntryEmpty(e) || e.id === pendingId)
-  const visibleDebts = (list: DebtEntry[]) => list.filter(e => !isDebtEntryEmpty(e) || e.id === pendingId)
-
   // ── Account section helpers ──
 
   function updateAccountField(
@@ -359,11 +323,6 @@ export default function FinancialInformationPage() {
     formRef.current = updated
     setForm(updated)
     lastEditedEntryIdRef.current = id
-    // Once the pending draft has content it's a real entry — stop tracking it.
-    if (id === pendingIdRef.current) {
-      const e = updated[section].find(x => x.id === id)
-      if (e && !isAccountEntryEmpty(e)) { setPendingId(null); pendingIdRef.current = null }
-    }
     scheduleAutosave()
   }
 
@@ -371,14 +330,12 @@ export default function FinancialInformationPage() {
     section: 'banking' | 'investments' | 'retirement',
     setFn: React.Dispatch<React.SetStateAction<Set<string>>>
   ) {
-    discardEmptyPending() // drop any prior empty draft before opening a new one
     const entry: AccountEntry = { id: genId(), name: '', typeOfAccount: '', accountNumber: '', contactInfo: '' }
     const updated = { ...formRef.current, [section]: [...formRef.current[section], entry] }
     formRef.current = updated
     setForm(updated)
     setFn(prev => new Set([...prev, entry.id]))
     setPendingFocusId(entry.id)
-    setPendingId(entry.id); pendingIdRef.current = entry.id
     scheduleAutosave()
   }
 
@@ -387,7 +344,6 @@ export default function FinancialInformationPage() {
     formRef.current = updated
     setForm(updated)
     setFn(prev => { const n = new Set(prev); n.delete(id); return n })
-    if (id === pendingIdRef.current) { setPendingId(null); pendingIdRef.current = null }
     scheduleAutosave()
   }
 
@@ -401,22 +357,16 @@ export default function FinancialInformationPage() {
     formRef.current = updated
     setForm(updated)
     lastEditedEntryIdRef.current = id
-    if (id === pendingIdRef.current) {
-      const e = updated.debts.find(x => x.id === id)
-      if (e && !isDebtEntryEmpty(e)) { setPendingId(null); pendingIdRef.current = null }
-    }
     scheduleAutosave()
   }
 
   function addDebtEntry() {
-    discardEmptyPending()
     const entry: DebtEntry = { id: genId(), name: '', type: '', amount: '', contactInfo: '' }
     const updated = { ...formRef.current, debts: [...formRef.current.debts, entry] }
     formRef.current = updated
     setForm(updated)
     setOpenDebtsIds(prev => new Set([...prev, entry.id]))
     setPendingFocusId(entry.id)
-    setPendingId(entry.id); pendingIdRef.current = entry.id
     scheduleAutosave()
   }
 
@@ -425,7 +375,6 @@ export default function FinancialInformationPage() {
     formRef.current = updated
     setForm(updated)
     setOpenDebtsIds(prev => { const n = new Set(prev); n.delete(id); return n })
-    if (id === pendingIdRef.current) { setPendingId(null); pendingIdRef.current = null }
     scheduleAutosave()
   }
 
@@ -500,14 +449,14 @@ export default function FinancialInformationPage() {
             sectionRef={(el) => { sectionRefs.current[0] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {visibleAccounts(form.banking).map((entry) => (
+              {form.banking.map((entry) => (
                 <EntryCard
                   key={entry.id} id={entry.id}
                   title={entry.name.trim() || 'Untitled account'}
                   isOpen={openBankingIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenBankingIds, entry.id)}
                   onDelete={() => deleteAccountEntry('banking', entry.id, setOpenBankingIds)}
-                  onBlurCard={discardEmptyPending}
+                  isEmpty={isAccountEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -521,7 +470,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={visibleAccounts(form.banking).length === 0 ? 'Add account' : 'Add another account'}
+                label={form.banking.filter(e => !isAccountEntryEmpty(e)).length === 0 ? 'Add account' : 'Add another account'}
                 onClick={() => addAccountEntry('banking', setOpenBankingIds)}
               />
             </div>
@@ -536,14 +485,14 @@ export default function FinancialInformationPage() {
             sectionRef={(el) => { sectionRefs.current[1] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {visibleAccounts(form.investments).map((entry) => (
+              {form.investments.map((entry) => (
                 <EntryCard
                   key={entry.id} id={entry.id}
                   title={entry.name.trim() || 'Untitled investment'}
                   isOpen={openInvestmentsIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenInvestmentsIds, entry.id)}
                   onDelete={() => deleteAccountEntry('investments', entry.id, setOpenInvestmentsIds)}
-                  onBlurCard={discardEmptyPending}
+                  isEmpty={isAccountEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -557,7 +506,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={visibleAccounts(form.investments).length === 0 ? 'Add investment' : 'Add another investment'}
+                label={form.investments.filter(e => !isAccountEntryEmpty(e)).length === 0 ? 'Add investment' : 'Add another investment'}
                 onClick={() => addAccountEntry('investments', setOpenInvestmentsIds)}
               />
             </div>
@@ -572,14 +521,14 @@ export default function FinancialInformationPage() {
             sectionRef={(el) => { sectionRefs.current[2] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {visibleAccounts(form.retirement).map((entry) => (
+              {form.retirement.map((entry) => (
                 <EntryCard
                   key={entry.id} id={entry.id}
                   title={entry.name.trim() || 'Untitled item'}
                   isOpen={openRetirementIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenRetirementIds, entry.id)}
                   onDelete={() => deleteAccountEntry('retirement', entry.id, setOpenRetirementIds)}
-                  onBlurCard={discardEmptyPending}
+                  isEmpty={isAccountEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -593,7 +542,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={visibleAccounts(form.retirement).length === 0 ? 'Add income or retirement item' : 'Add another item'}
+                label={form.retirement.filter(e => !isAccountEntryEmpty(e)).length === 0 ? 'Add income or retirement item' : 'Add another item'}
                 onClick={() => addAccountEntry('retirement', setOpenRetirementIds)}
               />
             </div>
@@ -608,14 +557,14 @@ export default function FinancialInformationPage() {
             sectionRef={(el) => { sectionRefs.current[3] = el }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {visibleDebts(form.debts).map((entry) => (
+              {form.debts.map((entry) => (
                 <EntryCard
                   key={entry.id} id={entry.id}
                   title={entry.name.trim() || 'Untitled debt or loan'}
                   isOpen={openDebtsIds.has(entry.id)}
                   onToggle={() => toggleEntry(setOpenDebtsIds, entry.id)}
                   onDelete={() => deleteDebtEntry(entry.id)}
-                  onBlurCard={discardEmptyPending}
+                  isEmpty={isDebtEntryEmpty(entry)}
                   pendingFocusId={pendingFocusId}
                   onFocused={() => setPendingFocusId(null)}
                   isSaving={savingEntryId === entry.id}
@@ -630,7 +579,7 @@ export default function FinancialInformationPage() {
                 </EntryCard>
               ))}
               <AddButton
-                label={visibleDebts(form.debts).length === 0 ? 'Add debt or loan' : 'Add another debt or loan'}
+                label={form.debts.filter(e => !isDebtEntryEmpty(e)).length === 0 ? 'Add debt or loan' : 'Add another debt or loan'}
                 onClick={addDebtEntry}
               />
             </div>
@@ -720,13 +669,13 @@ function AccordionSection({ idx, open, onToggle, title, description, note, secti
 // EntryCard
 // ---------------------------------------------------------------------------
 
-function EntryCard({ id, title, isOpen, onToggle, onDelete, onBlurCard, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
+function EntryCard({ id, title, isOpen, onToggle, onDelete, isEmpty, pendingFocusId, onFocused, isSaving, isSaved, savedFading, children }: {
   id: string
   title: string
   isOpen: boolean
   onToggle: () => void
   onDelete: () => void
-  onBlurCard: () => void
+  isEmpty: boolean
   pendingFocusId: string | null
   onFocused: () => void
   isSaving: boolean
@@ -749,9 +698,11 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, onBlurCard, pendingF
     <div
       ref={containerRef}
       onBlur={(e) => {
-        // Fire only when focus leaves the entire card (not when moving between
-        // fields inside it) — that's when we discard an untouched draft.
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) onBlurCard()
+        // Only when focus leaves the entire card (not moving between fields inside
+        // it) AND the entry is still empty: discard it. So clearing a field while
+        // you're still in the card never makes it vanish — it goes only when you
+        // actually leave an empty card.
+        if (isEmpty && !e.currentTarget.contains(e.relatedTarget as Node)) onDelete()
       }}
       style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
     >
