@@ -8,7 +8,7 @@ import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
-import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse } from '@/lib/content-surfacing'
+import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse, hasAnySupDocTag } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
@@ -155,6 +155,14 @@ const SECTIONS: Array<{ key: SectionKey; label: string; description?: string; qK
   { key: 'obituary',            label: 'Obituary and announcement', qKey: 'fw_s5' },
   { key: 'note_to_others',      label: 'A note to the people carrying this out', qKey: null },
 ]
+
+// This document's section set (funeral-wishes owns fw_s1–fw_s5; note_to_others has no
+// question id). A material with any supplementaryDocumentRelevance tag in this set has a
+// document-level signal of appropriateness, overriding neverAutoSuggest for THIS doc.
+// Fears carries no fw_s* tag, so it has no signal here and stays blocked.
+const FUNERAL_DOC_QUESTIONS: SupplementaryDocQuestion[] = SECTIONS
+  .map((s) => s.qKey)
+  .filter((q): q is SupplementaryDocQuestion => q !== null)
 
 // The form fields that belong to each section. Used to scope inserted-state
 // derivation to the active section so per-section independence holds (inserting a
@@ -1136,10 +1144,10 @@ function computePanelTiers(
     const activityId = representative.activity ?? ''
     const activityMeta = ACTIVITY_META_BY_ID[activityId]
     const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
-    // neverAutoSuggest blocks AMBIENT surfacing; an explicit per-section tag overrides
-    // it (symmetric with advance-directive). Fears carries no fw_s tag, so it stays
-    // unsurfaced here — but a future flagged material with an fw_s tag would be honored.
-    if (activityMeta?.neverAutoSuggest && !relevance) continue
+    // neverAutoSuggest blocks AMBIENT surfacing; a tag for ANY section in this document
+    // is a document-level signal that surfaces the material normally here (tier by tag,
+    // tier-3 where untagged). Fears has no fw_s* tag, so no signal → stays blocked.
+    if (activityMeta?.neverAutoSuggest && !hasAnySupDocTag(activityMeta.supplementaryDocumentRelevance, FUNERAL_DOC_QUESTIONS)) continue
     const behavior = getWorkingOutputBehavior(activityId)
     const item: TieredItem = { kind: 'entry', data: representative, insertBehavior: behavior.insertionBehavior }
     if (relevance === 'primary') tier1.push(item)
@@ -1298,7 +1306,10 @@ function FWMaterialsPanel({
         if (!seen.has(note.id)) { seen.add(note.id); items.push({ kind: 'note', data: note }) }
       }
       for (const { representative } of deduplicatedOutputs) {
-        if (ACTIVITY_META_BY_ID[representative.activity ?? '']?.neverAutoSuggest) continue
+        const meta = ACTIVITY_META_BY_ID[representative.activity ?? '']
+        // Flat overview: a neverAutoSuggest material shows only with a document-level
+        // signal (a tag for any fw_s* section). Fears has none here, so it stays blocked.
+        if (meta?.neverAutoSuggest && !hasAnySupDocTag(meta.supplementaryDocumentRelevance, FUNERAL_DOC_QUESTIONS)) continue
         if (!seen.has(representative.id)) {
           seen.add(representative.id)
           const behavior = getWorkingOutputBehavior(representative.activity ?? '')

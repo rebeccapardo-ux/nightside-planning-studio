@@ -19,7 +19,7 @@
 
 import { createSupabaseBrowserClient } from './supabase-browser'
 import type { Note } from './notes'
-import { type Domain, type SupplementaryDocQuestion, type Relevance, type ReflectPromptMeta, PROMPT_META_BY_LABEL, PROMPT_META_BY_ID, ACTIVITY_META_BY_ID, ACTIVITY } from './content-metadata'
+import { type Domain, type SupplementaryDocQuestion, type SupplementaryDocRelevance, type Relevance, type ReflectPromptMeta, PROMPT_META_BY_LABEL, PROMPT_META_BY_ID, ACTIVITY_META_BY_ID, ACTIVITY } from './content-metadata'
 
 export type Tier = 1 | 2 | 3
 
@@ -178,6 +178,21 @@ export function getWorkingOutputBehavior(activityId: string): WorkingOutputBehav
 // delete the text clears the badge automatically, and re-inserting the same item is
 // naturally prevented — across both wishes documents, with no state to manage.
 // ---------------------------------------------------------------------------
+
+// Whether a material has any supplementaryDocumentRelevance tag for a question/section
+// belonging to a given document. `SupplementaryDocQuestion` spans both docs' namespaces
+// (q1–q6 = advance-directive, fw_s1–fw_s5 = funeral-wishes) and a material can carry
+// keys from both, so callers pass THIS document's question set. Used to decide whether a
+// neverAutoSuggest material has a document-level signal of appropriateness — if so it
+// surfaces normally in that doc (tier by tag, tier-3 elsewhere, shown in flat-view);
+// with no tag for the doc it stays blocked there.
+export function hasAnySupDocTag(
+  relevance: SupplementaryDocRelevance | undefined,
+  questions: readonly SupplementaryDocQuestion[],
+): boolean {
+  if (!relevance) return false
+  return questions.some((q) => relevance[q] !== undefined)
+}
 
 export function isInsertedIntoResponse(responseText: string, itemText: string): boolean {
   const target = itemText.trim()

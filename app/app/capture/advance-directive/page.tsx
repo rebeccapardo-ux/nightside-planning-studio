@@ -8,7 +8,7 @@ import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
-import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse } from '@/lib/content-surfacing'
+import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse, hasAnySupDocTag } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
@@ -48,6 +48,11 @@ const QUESTIONS: Array<{
   { key: 'worries', label: 'When I think about death, this is what I worry about:', qKey: 'q5' },
   { key: 'caregiver', label: 'What I want my caregiver/care team to know:', qKey: 'q6' },
 ]
+
+// This document's question set (advance-directive owns q1–q6). A material with any
+// supplementaryDocumentRelevance tag in this set has a document-level signal of
+// appropriateness, which overrides neverAutoSuggest for THIS doc (see hasAnySupDocTag).
+const ADVANCE_DOC_QUESTIONS: SupplementaryDocQuestion[] = QUESTIONS.map((q) => q.qKey)
 
 // Current response text for a question — the source of truth for inserted-state in
 // the materials panel (see isInsertedIntoResponse).
@@ -733,10 +738,11 @@ function computePanelTiers(
     const activityId = representative.activity ?? ''
     const activityMeta = ACTIVITY_META_BY_ID[activityId]
     const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
-    // neverAutoSuggest blocks AMBIENT surfacing, but an explicit per-question tag
-    // overrides it (intentional, contextually-appropriate inclusion — e.g. Fears at
-    // q5). Honored symmetrically with funeral-wishes for any flagged material.
-    if (activityMeta?.neverAutoSuggest && !relevance) continue
+    // neverAutoSuggest blocks AMBIENT surfacing, but a tag for ANY question in this
+    // document is a document-level signal of appropriateness: the material then surfaces
+    // normally here — tier by tag, tier-3 where untagged (e.g. Fears, tagged q5, shows as
+    // "Also relevant" at the other questions). With no tag for this doc it stays blocked.
+    if (activityMeta?.neverAutoSuggest && !hasAnySupDocTag(activityMeta.supplementaryDocumentRelevance, ADVANCE_DOC_QUESTIONS)) continue
     const behavior = getWorkingOutputBehavior(activityId)
     const item: TieredItem = {
       kind: 'entry',
@@ -953,7 +959,11 @@ function MaterialsPanel({
         if (!seen.has(note.id)) { seen.add(note.id); items.push({ kind: 'note', data: note }) }
       }
       for (const { representative } of deduplicatedOutputs) {
-        if (ACTIVITY_META_BY_ID[representative.activity ?? '']?.neverAutoSuggest) continue
+        const meta = ACTIVITY_META_BY_ID[representative.activity ?? '']
+        // Flat (no-section) overview: a neverAutoSuggest material shows here only if it
+        // has a document-level signal (a tag for any question in this doc) — then it's
+        // one of the doc's relevant materials. Otherwise it stays blocked.
+        if (meta?.neverAutoSuggest && !hasAnySupDocTag(meta.supplementaryDocumentRelevance, ADVANCE_DOC_QUESTIONS)) continue
         if (!seen.has(representative.id)) {
           seen.add(representative.id)
           const behavior = getWorkingOutputBehavior(representative.activity ?? '')
