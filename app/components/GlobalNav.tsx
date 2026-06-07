@@ -270,6 +270,34 @@ export default function GlobalNav() {
     return `text-[15.7px] transition-colors ${style.link} ${active ? 'font-semibold underline underline-offset-[6px] decoration-2' : 'font-medium'}`
   }
 
+  // Hover-panel + dropdown surface palette. On hover/focus the parent label gets a
+  // colored panel; the dropdown flows out of its bottom edge as one continuous shape.
+  // The color contrasts the nav background, and the text follows the panel's surface
+  // (the same color the nav already uses on that background) — the platform-wide
+  // "text color follows the surface" rule. Dark navs (#200840, #2C3777) → cream panel;
+  // the single cream nav (#f8f4eb) → navy panel.
+  const panel = entry.theme === 'dark'
+    ? {
+        bg: '#F8F4EB',
+        text: '#130426',
+        border: '1px solid rgba(19,4,38,0.12)',
+        shadow: '0 14px 36px rgba(19,4,38,0.28)',
+        itemActiveBg: '#EEEDFE',
+        dividerLine: 'rgba(19,4,38,0.10)',
+        dividerLabel: 'rgba(19,4,38,0.5)',
+        itemHoverClass: 'hover:bg-[rgba(19,4,38,0.06)]',
+      }
+    : {
+        bg: '#2C3777',
+        text: '#f8f4eb',
+        border: '1px solid rgba(248,244,235,0.18)',
+        shadow: '0 14px 36px rgba(19,4,38,0.40)',
+        itemActiveBg: 'rgba(255,255,255,0.14)',
+        dividerLine: 'rgba(248,244,235,0.18)',
+        dividerLabel: 'rgba(248,244,235,0.55)',
+        itemHoverClass: 'hover:bg-[rgba(255,255,255,0.08)]',
+      }
+
   return (
     <>
       <nav className={`border-b ${style.border} ${entry.navBg} sticky top-0 z-50`}>
@@ -307,55 +335,68 @@ export default function GlobalNav() {
                 <>
                   {NAV_ITEMS.map((item) => {
                     const active = item.activePrefixes.some((p) => pathname.startsWith(p))
-                    // Plain link (Plan) — no dropdown.
-                    if (!item.rows) {
-                      return (
-                        <Link key={item.href} href={item.href} className={navLinkClass(active)}>
-                          {item.label}
-                        </Link>
-                      )
-                    }
-                    const open = openMenu === item.label
+                    const panelOn = openMenu === item.label
                     return (
+                      // Flex child wraps the label panel + its dropdown. The negative
+                      // horizontal margin cancels the label's panel padding for layout, so
+                      // the resting nav spacing is unchanged (no reflow on hover) while the
+                      // panel can still breathe 12px past the text on each side.
                       <div
                         key={item.href}
-                        style={{ position: 'relative' }}
+                        style={{ position: 'relative', alignSelf: 'stretch', display: 'flex', margin: '0 -12px' }}
                         onMouseEnter={() => setOpenMenu(item.label)}
                         onMouseLeave={() => setOpenMenu(null)}
                         onFocus={() => setOpenMenu(item.label)}
                         onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpenMenu(null) }}
                         onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null) }}
                       >
-                        {/* Label still navigates to the landing page; hover/focus opens the dropdown. */}
+                        {/* The label IS the hover panel: full nav-height, square corners,
+                            themed background on hover/focus, text recoloured to the panel's
+                            surface (the active underline rides currentColor, so it flips too
+                            and stays visible). The label still navigates to its landing page;
+                            for Plan (no rows) the panel shows but opens no menu. */}
                         <Link
                           href={item.href}
                           className={navLinkClass(active)}
-                          aria-haspopup="true"
-                          aria-expanded={open}
+                          aria-haspopup={item.rows ? 'true' : undefined}
+                          aria-expanded={item.rows ? panelOn : undefined}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            height: '100%',
+                            padding: '0 12px',
+                            background: panelOn ? panel.bg : 'transparent',
+                            ...(panelOn ? { color: panel.text, textDecorationColor: panel.text } : {}),
+                          }}
                         >
                           {item.label}
                         </Link>
-                        {open && (
-                          // Outer wrapper sits flush under the label (paddingTop bridges the
-                          // visual gap) so moving the mouse label→menu never crosses a dead zone.
-                          <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 8, zIndex: 60 }}>
+                        {item.rows && panelOn && (
+                          // A small 4px gap drops the dropdown (and its upward shadow) below
+                          // the nav's underline row, so opening a menu never clips the
+                          // current-page underline of an item to its right — consistent
+                          // regardless of which side the hovered item sits on. The gap is
+                          // paddingTop (inside this hoverable wrapper), NOT margin, so the
+                          // label→menu mouse path stays alive with no dead zone.
+                          <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 4, zIndex: 60 }}>
                             <div
                               role="menu"
                               aria-label={item.label}
                               style={{
                                 minWidth: 224,
-                                background: '#f8f4eb',
-                                border: '1px solid rgba(19,4,38,0.12)',
-                                borderRadius: 12,
-                                boxShadow: '0 14px 36px rgba(19,4,38,0.28)',
+                                background: panel.bg,
+                                border: panel.border,
+                                borderTop: 'none',
+                                borderRadius: '0 0 12px 12px',
+                                boxShadow: panel.shadow,
                                 padding: 6,
                               }}
                             >
                               {item.rows.map((row, i) => {
                                 if (row.type === 'divider') {
                                   return (
-                                    <div key={`d${i}`} style={{ borderTop: '1px solid rgba(19,4,38,0.10)', marginTop: 6, paddingTop: 8 }}>
-                                      <span style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(19,4,38,0.5)', padding: '0 8px 4px' }}>
+                                    <div key={`d${i}`} style={{ borderTop: `1px solid ${panel.dividerLine}`, marginTop: 6, paddingTop: 8 }}>
+                                      <span style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: panel.dividerLabel, padding: '0 8px 4px' }}>
                                         {row.label}
                                       </span>
                                     </div>
@@ -368,7 +409,7 @@ export default function GlobalNav() {
                                     href={row.href}
                                     role="menuitem"
                                     onClick={() => setOpenMenu(null)}
-                                    className={subActive ? undefined : 'hover:bg-[rgba(19,4,38,0.06)]'}
+                                    className={subActive ? undefined : panel.itemHoverClass}
                                     style={{
                                       display: 'block',
                                       padding: '5px 12px',
@@ -377,9 +418,9 @@ export default function GlobalNav() {
                                       fontSize: 14,
                                       lineHeight: 1.4,
                                       textDecoration: 'none',
-                                      color: '#130426',
+                                      color: panel.text,
                                       fontWeight: subActive ? 600 : 400,
-                                      ...(subActive ? { background: '#EEEDFE' } : {}),
+                                      ...(subActive ? { background: panel.itemActiveBg } : {}),
                                     }}
                                   >
                                     {row.label}
