@@ -27,11 +27,13 @@ type PersonalAdminContent = {
   employmentStatus?: string
   employerDetails?: string
   willLocation?: string
-  hasCareDecisionMaker?: string
+  // The has* flags are persisted as booleans (the capture form initializes them
+  // to false), NOT strings — calling .trim() on them is what crashed this snapshot.
+  hasCareDecisionMaker?: boolean
   careDecisionMakerDocLocation?: string
-  hasEndOfLifeWishesDoc?: string
+  hasEndOfLifeWishesDoc?: boolean
   endOfLifeWishesDocLocation?: string
-  hasPropertyDecisionMaker?: string
+  hasPropertyDecisionMaker?: boolean
   propertyDecisionMakerDocLocation?: string
   otherDoc1Name?: string; otherDoc1Location?: string; otherDoc1Instructions?: string
   otherDoc2Name?: string; otherDoc2Location?: string; otherDoc2Instructions?: string
@@ -75,6 +77,19 @@ const LEGAL_FIELDS: { key: keyof PersonalAdminContent; label: string }[] = [
   { key: 'propertyDecisionMakerDocLocation', label: 'Property decision-maker document is located' },
 ]
 
+// Legal keys whose saved value is a boolean flag, displayed as "Yes" when true
+// (mirrors buildLegalFields in lib/pdf/buildPlanData.ts). All other legal/bio/
+// family fields are free-text strings.
+const BOOLEAN_LEGAL_KEYS = new Set<keyof PersonalAdminContent>([
+  'hasCareDecisionMaker',
+  'hasEndOfLifeWishesDoc',
+  'hasPropertyDecisionMaker',
+])
+
+// Coerce a saved content value to a trimmed display string, tolerating non-string
+// values (booleans, numbers, dirty data) without throwing.
+const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '')
+
 const DOC_NUMS = [1, 2, 3, 4, 5] as const
 
 function FieldDisplay({ label, value }: { label: string; value: string | undefined }) {
@@ -111,16 +126,27 @@ export default function PersonalAdminSnapshot({
     router.push(`/app/entries/${entry.id}/export`)
   }
 
-  const bioFields  = BIO_FIELDS.filter(f => c[f.key]?.trim())
-  const famFields  = FAMILY_FIELDS.filter(f => c[f.key]?.trim())
-  const legalFields = LEGAL_FIELDS.filter(f => c[f.key]?.trim())
+  const bioFields = BIO_FIELDS
+    .map(f => ({ label: f.label, value: str(c[f.key]) }))
+    .filter(f => f.value)
+  const famFields = FAMILY_FIELDS
+    .map(f => ({ label: f.label, value: str(c[f.key]) }))
+    .filter(f => f.value)
+  const legalFields = LEGAL_FIELDS
+    .map(f => ({
+      label: f.label,
+      value: BOOLEAN_LEGAL_KEYS.has(f.key)
+        ? (c[f.key] === true ? 'Yes' : '')
+        : str(c[f.key]),
+    }))
+    .filter(f => f.value)
   const otherDocs = DOC_NUMS
     .map(n => ({
-      name:         c[`otherDoc${n}Name`         as keyof PersonalAdminContent],
-      location:     c[`otherDoc${n}Location`     as keyof PersonalAdminContent],
-      instructions: c[`otherDoc${n}Instructions` as keyof PersonalAdminContent],
+      name:         str(c[`otherDoc${n}Name`         as keyof PersonalAdminContent]),
+      location:     str(c[`otherDoc${n}Location`     as keyof PersonalAdminContent]),
+      instructions: str(c[`otherDoc${n}Instructions` as keyof PersonalAdminContent]),
     }))
-    .filter(d => d.name?.trim() || d.location?.trim() || d.instructions?.trim())
+    .filter(d => d.name || d.location || d.instructions)
 
   const sectionLabel: React.CSSProperties = {
     fontFamily: hv,
@@ -137,14 +163,14 @@ export default function PersonalAdminSnapshot({
       {bioFields.length > 0 && (
         <div style={{ marginBottom: 32 }}>
           <p style={sectionLabel}>Biographical details</p>
-          {bioFields.map(f => <FieldDisplay key={f.key} label={f.label} value={c[f.key]} />)}
+          {bioFields.map((f, i) => <FieldDisplay key={i} label={f.label} value={f.value} />)}
         </div>
       )}
 
       {famFields.length > 0 && (
         <div style={{ marginBottom: 32 }}>
           <p style={sectionLabel}>Family information</p>
-          {famFields.map(f => <FieldDisplay key={f.key} label={f.label} value={c[f.key]} />)}
+          {famFields.map((f, i) => <FieldDisplay key={i} label={f.label} value={f.value} />)}
         </div>
       )}
 
@@ -174,7 +200,7 @@ export default function PersonalAdminSnapshot({
       {legalFields.length > 0 && (
         <div style={{ marginBottom: 32 }}>
           <p style={sectionLabel}>Legal &amp; decision-making</p>
-          {legalFields.map(f => <FieldDisplay key={f.key} label={f.label} value={c[f.key]} />)}
+          {legalFields.map((f, i) => <FieldDisplay key={i} label={f.label} value={f.value} />)}
         </div>
       )}
 
@@ -190,13 +216,13 @@ export default function PersonalAdminSnapshot({
                 borderBottom: i < otherDocs.length - 1 ? '1px solid rgba(26,26,26,0.18)' : 'none',
               }}
             >
-              {doc.name?.trim() && (
+              {doc.name && (
                 <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 500, color: '#1A1A1A', marginBottom: 4 }}>{doc.name}</p>
               )}
-              {doc.location?.trim() && (
+              {doc.location && (
                 <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.85)', marginBottom: 2 }}>Location: {doc.location}</p>
               )}
-              {doc.instructions?.trim() && (
+              {doc.instructions && (
                 <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.85)', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>Instructions: {doc.instructions}</p>
               )}
             </div>
