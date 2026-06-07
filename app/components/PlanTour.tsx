@@ -179,6 +179,12 @@ function Arrow({ def }: { def: ArrowDef }) {
 
 export default function PlanTour({ userId }: { userId: string }) {
   const [active, setActive]             = useState(false)
+  // "Pending" = this user will get the tour but it hasn't activated yet. Lock scroll
+  // for this whole window (not just `active`) so the page can't drift before the tour
+  // appears. Lazy-init from localStorage — userId is a prop, so we know synchronously
+  // at the first client paint, eliminating the pre-activation scroll window entirely.
+  const [pending, setPending]           = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem(tourKey(userId)) !== 'done')
   const [stepIdx, setStepIdx]           = useState(0)
   const [btnHover, setBtnHover]         = useState<'back' | 'next' | null>(null)
   const [arrowKey, setArrowKey]         = useState(0)
@@ -190,10 +196,11 @@ export default function PlanTour({ userId }: { userId: string }) {
   const [vh, setVh]                     = useState(() => (typeof window !== 'undefined' ? window.innerHeight : 0))
   const mounted = useRef(true)
 
-  // Lock page scroll on desktop while the tour is active — the arrow geometry
-  // assumes a stable viewport, and desktop tours are intentionally not
-  // scroll-stepping. Mobile (vw < 768) scroll-steps and is left unlocked.
-  useScrollLock(active && vw >= 768)
+  // Lock page scroll on desktop from the moment the tour is pending through while it's
+  // active — the arrow geometry assumes a stable, top-of-page viewport, and desktop
+  // tours are intentionally not scroll-stepping. Mobile (vw < 768) scroll-steps and is
+  // left unlocked.
+  useScrollLock((pending || active) && vw >= 768)
 
   useEffect(() => {
     mounted.current = true
@@ -216,11 +223,16 @@ export default function PlanTour({ userId }: { userId: string }) {
 
     let timer: ReturnType<typeof setTimeout>
 
+    // Safety: if the page never becomes tour-ready (anchor never appears), give up and
+    // release the pending scroll-lock after 8s rather than leaving the user stuck.
+    const giveUp = setTimeout(() => { if (mounted.current) setPending(false) }, 8000)
+
     function checkReady() {
       if (!mounted.current) return
       const keyDetailsEl = document.getElementById('tour-key-details')
       const dialogEl     = document.querySelector('[role="dialog"]')
       if (keyDetailsEl && !dialogEl) {
+        clearTimeout(giveUp)
         if (mounted.current) setActive(true)
       } else {
         timer = setTimeout(checkReady, 350)
@@ -228,12 +240,13 @@ export default function PlanTour({ userId }: { userId: string }) {
     }
 
     timer = setTimeout(checkReady, 900)
-    return () => clearTimeout(timer)
+    return () => { clearTimeout(timer); clearTimeout(giveUp) }
   }, [userId])
 
   const dismiss = useCallback(() => {
     localStorage.setItem(tourKey(userId), 'done')
     setActive(false)
+    setPending(false)
     // On mobile, auto-scroll progressively moved the user down through
     // the page during the tour. Return them to the top so the end of
     // the tour doesn't leave them stranded mid-page.
