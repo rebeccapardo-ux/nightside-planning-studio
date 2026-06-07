@@ -1458,30 +1458,50 @@ function FWPanelContent({ recommended, other, responseText, onInsert }: {
   onInsert: (text: string) => void
 }) {
   const [otherExpanded, setOtherExpanded] = useState(false)
+  const hasRecommended = recommended.length > 0
+  const hasOther = other.length > 0
+
+  // Neither tier — neutral, non-apologetic empty state.
+  if (!hasRecommended && !hasOther) {
+    return (
+      <p className="mt-2" style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(19,4,38,0.50)' }}>
+        No materials surfaced for this section yet.
+      </p>
+    )
+  }
+
+  // "Also relevant" list body — reused with or without its subheader.
+  const otherList = (
+    <>
+      {(otherExpanded || other.length <= OTHER_SHOW_LIMIT ? other : other.slice(0, OTHER_SHOW_LIMIT)).map(item => (
+        <FWTieredPanelItem key={item.data.id} item={item} responseText={responseText} onInsert={onInsert} />
+      ))}
+      {other.length > OTHER_SHOW_LIMIT && !otherExpanded && (
+        <button onClick={() => setOtherExpanded(true)} style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}>
+          Show all ({other.length})
+        </button>
+      )}
+    </>
+  )
 
   return (
     <div className="mt-2">
-      {recommended.length > 0 ? (
+      {hasRecommended && (
         <FWPanelSection label="Recommended" isFirst>
           {recommended.map(item => <FWTieredPanelItem key={item.data.id} item={item} responseText={responseText} onInsert={onInsert} />)}
         </FWPanelSection>
-      ) : (
-        <p style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(19,4,38,0.50)', marginBottom: 12 }}>
-          No recommended materials for this section.
-        </p>
       )}
-      {other.length > 0 && (
-        <FWPanelSection label="Also relevant" isFirst={recommended.length === 0}>
-          {(otherExpanded || other.length <= OTHER_SHOW_LIMIT ? other : other.slice(0, OTHER_SHOW_LIMIT)).map(item => (
-            <FWTieredPanelItem key={item.data.id} item={item} responseText={responseText} onInsert={onInsert} />
-          ))}
-          {other.length > OTHER_SHOW_LIMIT && !otherExpanded && (
-            <button onClick={() => setOtherExpanded(true)} style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}>
-              Show all ({other.length})
-            </button>
-          )}
+      {hasOther && (hasRecommended ? (
+        // Both tiers present — the "Also relevant" subheader makes the contrast meaningful.
+        <FWPanelSection label="Also relevant">
+          {otherList}
         </FWPanelSection>
-      )}
+      ) : (
+        // Only one tier — list directly under the panel header, no subheader/divider/apology.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {otherList}
+        </div>
+      ))}
     </div>
   )
 }

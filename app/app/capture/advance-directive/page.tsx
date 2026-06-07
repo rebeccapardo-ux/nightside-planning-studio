@@ -1175,11 +1175,61 @@ function PanelContent({
   onInsert: (text: string) => void
 }) {
   const [otherExpanded, setOtherExpanded] = useState(false)
+  const hasRecommended = recommended.length > 0
+  const hasOther = other.length > 0
+
+  // Neither tier — neutral, non-apologetic empty state.
+  if (!hasRecommended && !hasOther) {
+    return (
+      <p className="mt-2" style={{ fontSize: 13, lineHeight: '20px', fontWeight: 400, color: 'rgba(19,4,38,0.50)' }}>
+        No materials surfaced for this question yet.
+      </p>
+    )
+  }
+
+  // "Also relevant" list body — reused with or without its subheader.
+  const otherList = (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {(otherExpanded || other.length <= OTHER_SHOW_LIMIT
+          ? other
+          : other.slice(0, OTHER_SHOW_LIMIT)
+        ).map((item) => (
+          <TieredPanelItem
+            key={item.data.id}
+            item={item}
+            tier={3}
+            responseText={responseText}
+            onInsert={onInsert}
+          />
+        ))}
+      </div>
+      {other.length > OTHER_SHOW_LIMIT && !otherExpanded && (
+        <button
+          onClick={() => setOtherExpanded(true)}
+          style={{
+            display: 'block',
+            fontSize: 12,
+            fontWeight: 500,
+            color: 'rgba(19,4,38,0.65)',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+            marginTop: 8,
+            textDecoration: 'underline',
+            textUnderlineOffset: 2,
+          }}
+        >
+          Show all ({other.length})
+        </button>
+      )}
+    </>
+  )
 
   return (
     <div className="mt-2">
-      {/* Recommended */}
-      {recommended.length > 0 ? (
+      {hasRecommended && (
         <PanelSection label="Recommended" isFirst>
           {recommended.map((item) => (
             <TieredPanelItem
@@ -1191,60 +1241,19 @@ function PanelContent({
             />
           ))}
         </PanelSection>
-      ) : (
-        <p
-          style={{
-            fontSize: 13,
-            lineHeight: '20px',
-            fontWeight: 400,
-            color: 'rgba(19,4,38,0.50)',
-            marginBottom: 12,
-          }}
-        >
-          No recommended materials for this question.
-        </p>
       )}
 
-      {/* Also relevant */}
-      {other.length > 0 && (
+      {hasOther && (hasRecommended ? (
+        // Both tiers present — the "Also relevant" subheader makes the contrast meaningful.
         <div style={{ marginTop: 8, borderTop: '1px solid rgba(219,88,53,0.20)', paddingTop: 20 }}>
           <p style={SECTION_LABEL_STYLE}>Also relevant</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {(otherExpanded || other.length <= OTHER_SHOW_LIMIT
-              ? other
-              : other.slice(0, OTHER_SHOW_LIMIT)
-            ).map((item) => (
-              <TieredPanelItem
-                key={item.data.id}
-                item={item}
-                tier={3}
-                responseText={responseText}
-                onInsert={onInsert}
-              />
-            ))}
-          </div>
-          {other.length > OTHER_SHOW_LIMIT && !otherExpanded && (
-            <button
-              onClick={() => setOtherExpanded(true)}
-              style={{
-                display: 'block',
-                fontSize: 12,
-                fontWeight: 500,
-                color: 'rgba(19,4,38,0.65)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                marginTop: 8,
-                textDecoration: 'underline',
-                textUnderlineOffset: 2,
-              }}
-            >
-              Show all ({other.length})
-            </button>
-          )}
+          {otherList}
         </div>
-      )}
+      ) : (
+        // Only one tier — no contrast to draw, so list the materials directly under the
+        // panel header (no subheader, no divider, no "no recommended" apology).
+        otherList
+      ))}
     </div>
   )
 }
