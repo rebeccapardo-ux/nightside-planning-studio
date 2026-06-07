@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { holdSavingIndicator } from '@/lib/ui'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import ErrorMessagePill from '@/app/components/ErrorMessagePill'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
@@ -298,6 +299,7 @@ function FearsRankingContent() {
 
     const currentEntryId = savedEntryIdRef.current
     setReflectionSaveStatus('saving')
+    const startedAt = Date.now()
 
     try {
       if (currentEntryId) {
@@ -340,6 +342,7 @@ function FearsRankingContent() {
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
       }
+      await holdSavingIndicator(startedAt)
       setReflectionSaveStatus('saved')
       if (reflectionSavedTimerRef.current) clearTimeout(reflectionSavedTimerRef.current)
       reflectionSavedTimerRef.current = setTimeout(() => setReflectionSaveStatus('idle'), 3000)

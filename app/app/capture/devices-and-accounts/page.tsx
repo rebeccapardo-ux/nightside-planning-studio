@@ -5,7 +5,7 @@ import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
+import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
@@ -228,6 +228,7 @@ export default function DevicesAndAccountsPage() {
     const currentForm = formRef.current
     setSaveStatus('saving')
     setSavingEntryKey(targetKey)
+    const startedAt = Date.now()
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -243,6 +244,7 @@ export default function DevicesAndAccountsPage() {
         if (error) { setSaveStatus('error'); setSavingEntryKey(null); return }
       }
       if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
+      await holdSavingIndicator(startedAt)
       setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveStatus('saved')
       setSavingEntryKey(null); triggerSavedIndicator(targetKey)
     } catch { setSaveStatus('error'); setSavingEntryKey(null) }

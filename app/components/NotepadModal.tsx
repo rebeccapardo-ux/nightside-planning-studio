@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createNote } from '@/lib/notes'
+import { createNote, updateNote } from '@/lib/notes'
+import { holdSavingIndicator } from '@/lib/ui'
 import VoiceNoteButton from './VoiceNoteButton'
 import AutosaveNotice from './AutosaveNotice'
 import type { Note } from '@/lib/notes'
@@ -31,6 +32,16 @@ export default function NotepadModal({
   const composerRef = useRef<HTMLTextAreaElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // ── One modal session = one note ──────────────────────────────────────────────
+  // Background autosave persists to a SINGLE note for the open session: the first
+  // save creates it, later saves update the same row (no per-pause fragmentation),
+  // and the field never auto-clears. Saves are serialized through a chain so the
+  // latest content always wins, including the final save on close.
+  const sessionNoteIdRef = useRef<string | null>(null)
+  const contentRef = useRef('')
+  const saveChainRef = useRef<Promise<void>>(Promise.resolve())
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Ghost hover preview is always cream with dark text (matches the plan page),
   // on every route — so the placeholder is legible regardless of page theme.
   const ghost = {
@@ -53,18 +64,41 @@ export default function NotepadModal({
     }
   }, [composerText])
 
-  // ── Modal save (Pattern 1 — explicit, creates new note, clears input) ─────────
-
-  async function handleModalSave() {
-    const trimmed = composerText.trim()
-    if (!trimmed || saving) return
+  // Persist the latest content: create the session's note on the first save, then
+  // update that same row on every later save (one session = one note).
+  async function persist() {
+    const content = contentRef.current.trim()
+    if (!content) return
     setSaving(true)
-    const saved = await createNote(trimmed)
-    setSaving(false)
-    setComposerText('')
-    setConfirmVisible(true)
-    setTimeout(() => setConfirmVisible(false), 2000)
-    if (saved) router.refresh()
+    const startedAt = Date.now()
+    try {
+      let ok = false
+      if (!sessionNoteIdRef.current) {
+        const note = await createNote(content)
+        if (note) { sessionNoteIdRef.current = note.id; ok = true }
+      } else {
+        ok = await updateNote(sessionNoteIdRef.current, content)
+      }
+      // Keep "Saving…" visible long enough to register even when the save is fast.
+      await holdSavingIndicator(startedAt)
+      if (ok) {
+        setConfirmVisible(true)
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => setConfirmVisible(false), 2000)
+      }
+      // On failure, the id/content are kept; the next save retries transparently.
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Serialize saves so they never overlap and run in order. The returned promise
+  // resolves once this save (and anything queued before it) has landed — close
+  // uses it to commit the final content before refreshing the plan page.
+  function queueSave(): Promise<void> {
+    const next = saveChainRef.current.then(() => persist())
+    saveChainRef.current = next.catch(() => {})
+    return next
   }
 
   // ── Panel save ────────────────────────────────────────────────────────────────
@@ -87,23 +121,45 @@ export default function NotepadModal({
   }
 
   function handleClose() {
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null }
     setIsOpen(false)
-    setComposerText('')
     setConfirmVisible(false)
+    // Commit the latest content (create or update the session's note), then refresh
+    // the plan page. Fire-and-forget so the close is instant; the save chain
+    // guarantees the final content lands even if a background save was in flight.
+    if (contentRef.current.trim() || sessionNoteIdRef.current) {
+      void queueSave().then(() => router.refresh())
+    }
   }
 
   function openModal() {
     setIsOpen(true)
     setComposerText('')
     setConfirmVisible(false)
+    // Fresh note each session — no draft restoration, no prior content shown.
+    sessionNoteIdRef.current = null
+    contentRef.current = ''
   }
+
+  // Close on Escape while the modal is open. Native textarea Escape is inert, so
+  // there's no conflict with typing.
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   // ─── Modal overlay ────────────────────────────────────────────────────────────
 
   const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   const modalOverlay = isOpen && (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4"
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+    >
       <div className="w-full max-w-xl rounded-2xl border border-white/10 p-6 shadow-2xl" style={{ background: '#2d3a6b' }}>
 
         {/* Header */}
@@ -119,7 +175,7 @@ export default function NotepadModal({
         </div>
 
         {/* Helper text */}
-        <AutosaveNotice theme="dark" style={{ marginBottom: 16 }} />
+        <AutosaveNotice theme="dark" style={{ marginBottom: 16, fontStyle: 'normal', fontSize: 15, fontWeight: 500, color: 'rgba(248,244,235,0.92)' }} />
 
         {/* Composer */}
         <textarea
@@ -130,18 +186,11 @@ export default function NotepadModal({
           onChange={(e) => {
             const text = e.target.value
             setComposerText(text)
+            contentRef.current = text
+            // Background autosave on a pause — never clears the field and updates the
+            // session's single note. The final save happens on close.
             if (debounceRef.current) clearTimeout(debounceRef.current)
-            const trimmed = text.trim()
-            if (!trimmed) return
-            debounceRef.current = setTimeout(async () => {
-              setSaving(true)
-              const saved = await createNote(trimmed)
-              setSaving(false)
-              setComposerText('')
-              setConfirmVisible(true)
-              setTimeout(() => setConfirmVisible(false), 2000)
-              if (saved) router.refresh()
-            }, 900)
+            debounceRef.current = setTimeout(() => { void queueSave() }, 1500)
           }}
         />
 

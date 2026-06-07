@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
+import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
@@ -303,6 +303,7 @@ function AdvanceDirectivePage() {
     try {
       setSaveState('saving')
       setSavingSectionIdx(lastEditedSectionIdxRef.current)
+      const startedAt = Date.now()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) { setSaveState('error'); setSavingSectionIdx(null); return }
 
@@ -327,10 +328,11 @@ function AdvanceDirectivePage() {
         localStorage.setItem(`nightside.lastSaved.${user.id}.${created.id}`, new Date().toISOString())
         setLastSavedAt(new Date())
         setStatusNow(Date.now())
+        await holdSavingIndicator(startedAt)
         setSaveState('saved')
         setSavingSectionIdx(null); triggerSavedIndicator(lastEditedSectionIdxRef.current)
         associateWithHealthcare(created.id)
-        window.setTimeout(() => setSaveState((c) => (c === 'saved' ? 'idle' : c)), 2000)
+        window.setTimeout(() => setSaveState((c) => (c === 'saved' ? 'idle' : c)), 3400)
         return
       }
 
@@ -344,10 +346,11 @@ function AdvanceDirectivePage() {
       localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
       setLastSavedAt(new Date())
       setStatusNow(Date.now())
+      await holdSavingIndicator(startedAt)
       setSaveState('saved')
       setSavingSectionIdx(null); triggerSavedIndicator(lastEditedSectionIdxRef.current)
       associateWithHealthcare(entryIdRef.current!)
-      window.setTimeout(() => setSaveState((c) => (c === 'saved' ? 'idle' : c)), 2000)
+      window.setTimeout(() => setSaveState((c) => (c === 'saved' ? 'idle' : c)), 3400)
     } catch (err) {
       console.error('UNEXPECTED SAVE ERROR:', err)
       setSaveState('error')
