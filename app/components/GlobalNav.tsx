@@ -372,11 +372,13 @@ export default function GlobalNav() {
                           {item.label}
                         </Link>
                         {item.rows && panelOn && (
-                          // No bridge gap: the dropdown attaches directly to the panel's
-                          // bottom edge (top:100% = nav bottom). marginTop:-1 laps the nav's
-                          // 1px border so panel + dropdown read as one seamless shape. The
-                          // hover container wraps both, so the label→menu path has no dead zone.
-                          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: -1, zIndex: 60 }}>
+                          // A small 4px gap drops the dropdown (and its upward shadow) below
+                          // the nav's underline row, so opening a menu never clips the
+                          // current-page underline of an item to its right — consistent
+                          // regardless of which side the hovered item sits on. The gap is
+                          // paddingTop (inside this hoverable wrapper), NOT margin, so the
+                          // label→menu mouse path stays alive with no dead zone.
+                          <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 4, zIndex: 60 }}>
                             <div
                               role="menu"
                               aria-label={item.label}
