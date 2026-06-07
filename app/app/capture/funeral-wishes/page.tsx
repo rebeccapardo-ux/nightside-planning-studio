@@ -1135,9 +1135,12 @@ function computePanelTiers(
   for (const { representative } of outputs) {
     const activityId = representative.activity ?? ''
     const activityMeta = ACTIVITY_META_BY_ID[activityId]
-    if (activityMeta?.neverAutoSuggest) continue
-    const behavior = getWorkingOutputBehavior(activityId)
     const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
+    // neverAutoSuggest blocks AMBIENT surfacing; an explicit per-section tag overrides
+    // it (symmetric with advance-directive). Fears carries no fw_s tag, so it stays
+    // unsurfaced here — but a future flagged material with an fw_s tag would be honored.
+    if (activityMeta?.neverAutoSuggest && !relevance) continue
+    const behavior = getWorkingOutputBehavior(activityId)
     const item: TieredItem = { kind: 'entry', data: representative, insertBehavior: behavior.insertionBehavior }
     if (relevance === 'primary') tier1.push(item)
     else if (relevance === 'secondary') tier2.push(item)

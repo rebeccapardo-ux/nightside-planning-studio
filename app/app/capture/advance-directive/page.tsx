@@ -732,20 +732,18 @@ function computePanelTiers(
   for (const { representative } of outputs) {
     const activityId = representative.activity ?? ''
     const activityMeta = ACTIVITY_META_BY_ID[activityId]
-    // Honor neverAutoSuggest in both wishes docs (funeral-wishes already does).
-    // Activities flagged this way (e.g. Fears Ranking) must never auto-surface.
-    if (activityMeta?.neverAutoSuggest) continue
-    const behavior = getWorkingOutputBehavior(activityId)
     const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
+    // neverAutoSuggest blocks AMBIENT surfacing, but an explicit per-question tag
+    // overrides it (intentional, contextually-appropriate inclusion — e.g. Fears at
+    // q5). Honored symmetrically with funeral-wishes for any flagged material.
+    if (activityMeta?.neverAutoSuggest && !relevance) continue
+    const behavior = getWorkingOutputBehavior(activityId)
     const item: TieredItem = {
       kind: 'entry',
       data: representative,
       insertBehavior: behavior.insertionBehavior,
     }
-
-    if (!behavior.canAutoSurface) {
-      tier3.push(item)
-    } else if (relevance === 'primary') tier1.push(item)
+    if (relevance === 'primary') tier1.push(item)
     else if (relevance === 'secondary') tier2.push(item)
     else tier3.push(item)
   }

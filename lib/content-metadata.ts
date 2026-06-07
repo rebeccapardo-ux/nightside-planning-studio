@@ -519,9 +519,11 @@ export const ACTIVITY_META: ActivityMeta[] = [
   {
     id: 'fears_ranking',
     domainRelevance: ['healthcare', 'deathcare'],
-    // No supplementaryDocumentRelevance: Fears is neverAutoSuggest, so it never
-    // surfaces in either wishes doc; a relevance tag would be dead (the q5 tag was
-    // removed because the tier loops skip neverAutoSuggest activities before reading it).
+    // neverAutoSuggest blocks AMBIENT surfacing, but an explicit per-question tag
+    // overrides it: q5 ("When I think about death, this is what I worry about") is a
+    // question the user has chosen to engage about their fears, so Fears is an
+    // intentional, contextually-appropriate suggestion there — and ONLY there.
+    supplementaryDocumentRelevance: { q5: 'primary' },
     insertionBehavior: 'selectable_then_insert',
     neverAutoSuggest: true,
   },
