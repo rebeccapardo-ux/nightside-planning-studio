@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
+import { DOCUMENT_TYPE_META, DOCUMENT_TYPES, entryExportHref } from '@/lib/content-metadata'
 import Link from 'next/link'
 import PlanNotesGridComp from '@/app/components/PlanNotesGrid'
 import type { Container } from '@/lib/notes'
@@ -242,7 +242,7 @@ export default function YourMaterialsPanel({
                             <Link href={doc.href} className="plan-primary-btn" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
                               Continue
                             </Link>
-                            <Link href={`/app/entries/${doc.entryId}`} className="plan-export-link" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                            <Link href={entryExportHref(doc.entryId, doc.type)} className="plan-export-link" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                               Export
                             </Link>
                           </div>
@@ -301,7 +301,7 @@ export default function YourMaterialsPanel({
                             <Link href={doc.href} className="plan-primary-btn" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
                               Continue
                             </Link>
-                            <Link href={`/app/entries/${doc.entryId}`} className="plan-export-link" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                            <Link href={entryExportHref(doc.entryId, doc.type)} className="plan-export-link" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                               Export
                             </Link>
                           </div>
@@ -357,7 +357,7 @@ export default function YourMaterialsPanel({
                             <Link href={act.href} className="plan-primary-btn" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', background: 'transparent', border: '1px solid #2C3777', borderRadius: 999, padding: '8px 12px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
                               Continue
                             </Link>
-                            <Link href={`/app/entries/${act.entryId}`} className="plan-export-link" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                            <Link href={`/app/entries/${act.entryId}/export`} className="plan-export-link" style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                               Export
                             </Link>
                           </div>

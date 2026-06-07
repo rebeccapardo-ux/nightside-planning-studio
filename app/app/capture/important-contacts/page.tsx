@@ -262,7 +262,8 @@ function ImportantContactsPage() {
     const id = entryIdRef.current
     if (!id) return
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; await performAutosave() }
-    router.push(`/app/entries/${id}`)
+    // Non-sensitive document: skip the snapshot, go straight to the export preview.
+    router.push(`/app/entries/${id}/export`)
   }
 
   const saveStatusText = useMemo(() => {

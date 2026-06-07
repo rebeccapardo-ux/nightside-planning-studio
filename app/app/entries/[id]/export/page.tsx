@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { ACTIVITY, isStructuredActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
+import { ACTIVITY, isStructuredActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE, documentTypeHasSensitiveFields, documentTypeMeta } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DownloadPDFButton from './DownloadPDFButton'
 import FinancialExportClient from './FinancialExportClient'
@@ -13,6 +13,10 @@ const apfel = "'Apfel Grotezk', sans-serif"
 type ExportPageProps = {
   params: Promise<{ id: string }>
 }
+
+// The export preview's "Back" link — destination + label vary by entry type
+// (see getBackLink). Threaded into BackAndExport on every export sub-page.
+type BackLink = { href: string; label: string }
 
 type EntryRow = {
   id: string
@@ -145,6 +149,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
   const createdDate = formatDate(entry.created_at)
   const displayTitle = getDisplayTitle(entry)
   const filename = getExportFilename(entry)
+  const back = getBackLink(entry, id)
 
   if (entry.activity === ACTIVITY.LEGACY_MAP) {
     const mapContent = getLegacyMapContent(entry)
@@ -166,7 +171,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
       userName,
       monthYear,
     }
-    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} userName={userName} monthYear={monthYear} pdfData={pdfData} />
+    return <LegacyMapExportPage id={id} mapContent={mapContent} createdDate={createdDate} displayTitle={displayTitle} userName={userName} monthYear={monthYear} pdfData={pdfData} back={back} />
   }
 
   if (entry.activity === ACTIVITY.VALUES_RANKING) {
@@ -186,7 +191,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
       intro: VALUES_INTRO,
       userName,
     }
-    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} />
+    return <ValuesRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} back={back} />
   }
 
   if (entry.activity === ACTIVITY.FEARS_RANKING) {
@@ -206,10 +211,24 @@ export default async function ExportPage({ params }: ExportPageProps) {
       intro: FEARS_INTRO,
       userName,
     }
-    return <FearsRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} />
+    return <FearsRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} back={back} />
   }
 
-  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
+}
+
+// Where the export preview's "Back" link should lead. Activities → revisit the
+// exercise; non-sensitive documents → continue working in the document; sensitive
+// documents still pass through the snapshot, so their preview goes "Back" to it.
+function getBackLink(entry: EntryRow, id: string): { href: string; label: string } {
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return { href: `/app/reflect/values-ranking?entry=${id}`, label: '← Revisit exercise' }
+  if (entry.activity === ACTIVITY.FEARS_RANKING)  return { href: `/app/reflect/fears-ranking?entry=${id}`,  label: '← Revisit exercise' }
+  if (entry.activity === ACTIVITY.LEGACY_MAP)     return { href: '/app/reflect/legacy-map', label: '← Revisit exercise' }
+  if (entry.document_type && !documentTypeHasSensitiveFields(entry.document_type)) {
+    const meta = documentTypeMeta(entry.document_type)
+    if (meta) return { href: meta.href, label: '← Continue working in document' }
+  }
+  return { href: `/app/entries/${id}`, label: '← Back' }
 }
 
 const VALUES_INTRO = 'This document captures how you sorted and reflected on different personal values in relation to care, identity, and what matters most to you.'
@@ -263,11 +282,11 @@ function ExportFooter() {
   )
 }
 
-function BackAndExport({ id, pdfData }: { id: string; pdfData: PDFData }) {
+function BackAndExport({ back, pdfData }: { back: BackLink; pdfData: PDFData }) {
   return (
     <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-      <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>
-        ← Back
+      <a href={back.href} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>
+        {back.label}
       </a>
       <DownloadPDFButton data={pdfData} />
     </div>
@@ -278,12 +297,13 @@ function BackAndExport({ id, pdfData }: { id: string; pdfData: PDFData }) {
 // Values Ranking export
 // ---------------------------------------------------------------------------
 
-function ValuesRankingExportPage({ id, ranking, createdDate, pdfData, userName }: {
+function ValuesRankingExportPage({ id, ranking, createdDate, pdfData, userName, back }: {
   id: string
   ranking: RankingContent
   createdDate: string | null
   pdfData: PDFData
   userName?: string
+  back: BackLink
 }) {
   const groups = [
     { key: 'essential' as const, label: 'ESSENTIAL',      items: ranking.essential },
@@ -296,7 +316,7 @@ function ValuesRankingExportPage({ id, ranking, createdDate, pdfData, userName }
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title="Values Ranking" userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
@@ -305,7 +325,7 @@ function ValuesRankingExportPage({ id, ranking, createdDate, pdfData, userName }
               <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Generated {createdDate}</p>
             )}
             <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
-              This is a generated record of your responses. It is not a legal document.
+              This is a generated record of your responses at the time of your last save. It is not a legal document.
             </p>
           </div>
           <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
@@ -352,12 +372,13 @@ function ValuesRankingExportPage({ id, ranking, createdDate, pdfData, userName }
 // Fears Ranking export
 // ---------------------------------------------------------------------------
 
-function FearsRankingExportPage({ id, ranking, createdDate, pdfData, userName }: {
+function FearsRankingExportPage({ id, ranking, createdDate, pdfData, userName, back }: {
   id: string
   ranking: RankingContent
   createdDate: string | null
   pdfData: PDFData
   userName?: string
+  back: BackLink
 }) {
   const groups = [
     { key: 'essential' as const, label: 'MOST PRESSING',     items: ranking.essential },
@@ -370,7 +391,7 @@ function FearsRankingExportPage({ id, ranking, createdDate, pdfData, userName }:
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 40px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title="Fears Ranking" userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
@@ -379,7 +400,7 @@ function FearsRankingExportPage({ id, ranking, createdDate, pdfData, userName }:
               <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B' }}>Generated {createdDate}</p>
             )}
             <p style={{ fontFamily: hv, fontSize: 12, color: '#6B6B6B', marginTop: 6, lineHeight: 1.5 }}>
-              This is a generated record of your responses. It is not a legal document.
+              This is a generated record of your responses at the time of your last save. It is not a legal document.
             </p>
           </div>
           <p style={{ fontFamily: hv, fontSize: 13, color: '#3A3A3A', lineHeight: 1.65, marginBottom: 20 }}>
@@ -426,7 +447,7 @@ function FearsRankingExportPage({ id, ranking, createdDate, pdfData, userName }:
 // Legacy Map export
 // ---------------------------------------------------------------------------
 
-function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userName, monthYear, pdfData }: {
+function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userName, monthYear, pdfData, back }: {
   id: string
   mapContent: LegacyMapContent
   createdDate: string | null
@@ -434,6 +455,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
   userName: string
   monthYear: string
   pdfData: PDFData
+  back: BackLink
 }) {
   const sorted = [...mapContent.moments].sort((a, b) => a.xPercent - b.xPercent)
   const n = sorted.length
@@ -445,7 +467,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
       <div style={{ background: '#ffffff', minHeight: '100vh', padding: '40px 24px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center' }}>
         {/* Back + Download — no-print */}
         <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, width: '100%', maxWidth: 1000 }}>
-          <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>← Back</a>
+          <a href={back.href} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>{back.label}</a>
           <DownloadPDFButton data={pdfData} />
         </div>
 
@@ -558,19 +580,20 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
 // Document export router
 // ---------------------------------------------------------------------------
 
-function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName, back }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
   userName?: string
+  back: BackLink
 }) {
   if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) {
-    return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+    return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
   }
   if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) {
-    return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+    return <KeepsakeInventoryExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
   }
   if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) {
     return <FinancialExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
@@ -582,12 +605,12 @@ function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, us
     return <DevicesAccountsExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) {
-    return <AdvanceDirectiveExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+    return <AdvanceDirectiveExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
   }
   if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) {
-    return <FuneralWishesExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+    return <FuneralWishesExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
   }
-  return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
+  return <GenericDocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
 }
 
 // ---------------------------------------------------------------------------
@@ -603,13 +626,14 @@ const AD_FIELDS: { key: string; label: string }[] = [
   { key: 'caregiver',    label: 'What I want my caregiver/care team to know:' },
 ]
 
-function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, filename, userName, back }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
   userName?: string
+  back: BackLink
 }) {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, string | undefined>
   const fields = AD_FIELDS.filter(f => c[f.key]?.trim()).map(f => ({ label: f.label, value: c[f.key]! }))
@@ -623,7 +647,7 @@ function AdvanceDirectiveExportPage({ id, entry, createdDate, displayTitle, file
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
@@ -729,13 +753,14 @@ const FW_EXPORT_SECTIONS: { title: string; fields: { key: string; label: string 
   ]},
 ]
 
-function FuneralWishesExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+function FuneralWishesExportPage({ id, entry, createdDate, displayTitle, filename, userName, back }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
   userName?: string
+  back: BackLink
 }) {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
 
@@ -765,7 +790,7 @@ function FuneralWishesExportPage({ id, entry, createdDate, displayTitle, filenam
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 16 }}>
@@ -819,13 +844,14 @@ function FuneralWishesExportPage({ id, entry, createdDate, displayTitle, filenam
 // Generic document
 // ---------------------------------------------------------------------------
 
-function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName, back }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
   userName?: string
+  back: BackLink
 }) {
   const content = entry.content
   const rawFields = (content && typeof content === 'object'
@@ -847,7 +873,7 @@ function GenericDocumentExportPage({ id, entry, createdDate, displayTitle, filen
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 20 }}>
@@ -951,13 +977,14 @@ function buildContactsPDFData(
   return { kind: 'important_contacts', displayTitle, createdDate, filename, sections, userName }
 }
 
-function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, filename, userName, back }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
   userName?: string
+  back: BackLink
 }) {
   const pdfData = buildContactsPDFData(entry, createdDate, displayTitle, filename, userName)
   const content = entry.content as Record<string, unknown> | null
@@ -972,7 +999,7 @@ function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, fil
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 20 }}>
@@ -1018,13 +1045,14 @@ function ImportantContactsExportPage({ id, entry, createdDate, displayTitle, fil
 // Keepsake Inventory
 // ---------------------------------------------------------------------------
 
-function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, filename, userName }: {
+function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, filename, userName, back }: {
   id: string
   entry: EntryRow
   createdDate: string | null
   displayTitle: string
   filename: string
   userName?: string
+  back: BackLink
 }) {
   const content = entry.content as { entries?: KeepsakeItem[] } | null
   const items = content?.entries?.filter((e) => e.object?.trim()) ?? []
@@ -1047,7 +1075,7 @@ function KeepsakeInventoryExportPage({ id, entry, createdDate, displayTitle, fil
       <style>{PRINT_STYLES}</style>
       <div className="bg-white min-h-screen">
         <div style={{ maxWidth: 600, margin: '0 auto', padding: '48px 56px' }}>
-          <BackAndExport id={id} pdfData={pdfData} />
+          <BackAndExport back={back} pdfData={pdfData} />
           <ExportHeader title={displayTitle} userName={userName} />
 
           <div style={{ marginBottom: 20 }}>

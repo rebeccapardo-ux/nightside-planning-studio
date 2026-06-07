@@ -58,16 +58,19 @@ function entryLabel(entry: EntryRef): string {
   return 'Untitled'
 }
 
-function getEntryHref(entry: EntryRef, domainId?: string): string {
+function getEntryHref(entry: EntryRef): string {
   if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.href
   if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.href
   if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.href
   if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.href
   if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.href
   if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.href
-  const returnTo = domainId ? `?returnTo=/app/domains/${domainId}` : ''
-  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/entries/${entry.id}${returnTo}`
-  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/entries/${entry.id}${returnTo}`
+  // Activity outputs open straight in the export preview (the snapshot is reserved
+  // for sensitive-document export). They open in a new tab from the domain page; the
+  // export preview's "Revisit exercise" back link returns to the activity.
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/entries/${entry.id}/export`
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/entries/${entry.id}/export`
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return `/app/entries/${entry.id}/export`
   return `/app/entries/${entry.id}`
 }
 
@@ -1406,7 +1409,7 @@ function ItemMaterials({
       {matched.map((entry) => (
         <a
           key={entry.id}
-          href={getEntryHref(entry, domainId)}
+          href={getEntryHref(entry)}
           className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-opacity hover:opacity-75"
           target="_blank"
           rel="noopener noreferrer"
@@ -1926,7 +1929,7 @@ function EntryCard({
   onToggled: (domainId: string, isNowLinked: boolean) => void
 }) {
   const label = entryLabel(entry)
-  const href = getEntryHref(entry, domainId)
+  const href = getEntryHref(entry)
 
   async function handleRemove() {
     await removeEntryFromContainer(entry.id, domainId)

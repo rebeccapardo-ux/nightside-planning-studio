@@ -304,7 +304,8 @@ export default function KeepsakeDocumentPage() {
       const saveable = entries.filter((e) => !isEntryEmpty(e))
       await saveKeepsakeInventory(id, saveable)
     }
-    router.push(`/app/entries/${id}`)
+    // Non-sensitive document: skip the snapshot, go straight to the export preview.
+    router.push(`/app/entries/${id}/export`)
   }
 
   function addEntry() {
