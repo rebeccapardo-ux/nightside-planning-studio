@@ -221,14 +221,14 @@ export default async function ExportPage({ params }: ExportPageProps) {
 // exercise; non-sensitive documents → continue working in the document; sensitive
 // documents still pass through the snapshot, so their preview goes "Back" to it.
 function getBackLink(entry: EntryRow, id: string): { href: string; label: string } {
-  if (entry.activity === ACTIVITY.VALUES_RANKING) return { href: `/app/reflect/values-ranking?entry=${id}`, label: '← Revisit exercise' }
-  if (entry.activity === ACTIVITY.FEARS_RANKING)  return { href: `/app/reflect/fears-ranking?entry=${id}`,  label: '← Revisit exercise' }
-  if (entry.activity === ACTIVITY.LEGACY_MAP)     return { href: '/app/reflect/legacy-map', label: '← Revisit exercise' }
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return { href: `/app/reflect/values-ranking?entry=${id}`, label: 'Revisit exercise' }
+  if (entry.activity === ACTIVITY.FEARS_RANKING)  return { href: `/app/reflect/fears-ranking?entry=${id}`,  label: 'Revisit exercise' }
+  if (entry.activity === ACTIVITY.LEGACY_MAP)     return { href: '/app/reflect/legacy-map', label: 'Revisit exercise' }
   if (entry.document_type && !documentTypeHasSensitiveFields(entry.document_type)) {
     const meta = documentTypeMeta(entry.document_type)
-    if (meta) return { href: meta.href, label: '← Continue working in document' }
+    if (meta) return { href: meta.href, label: 'Continue working in document' }
   }
-  return { href: `/app/entries/${id}`, label: '← Back' }
+  return { href: `/app/entries/${id}`, label: 'Back' }
 }
 
 const VALUES_INTRO = 'This document captures how you sorted and reflected on different personal values in relation to care, identity, and what matters most to you.'
@@ -285,7 +285,7 @@ function ExportFooter() {
 function BackAndExport({ back, pdfData }: { back: BackLink; pdfData: PDFData }) {
   return (
     <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-      <a href={back.href} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>
+      <a href={back.href} style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', textDecoration: 'none' }}>
         {back.label}
       </a>
       <DownloadPDFButton data={pdfData} />
@@ -467,7 +467,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
       <div style={{ background: '#ffffff', minHeight: '100vh', padding: '40px 24px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center' }}>
         {/* Back + Download — no-print */}
         <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, width: '100%', maxWidth: 1000 }}>
-          <a href={back.href} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>{back.label}</a>
+          <a href={back.href} style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', textDecoration: 'none' }}>{back.label}</a>
           <DownloadPDFButton data={pdfData} />
         </div>
 

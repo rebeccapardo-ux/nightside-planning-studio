@@ -228,8 +228,8 @@ export default function DevicesAccountsExportClient({
 
         {/* Chrome */}
         <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#6B6B6B', textDecoration: 'none' }}>
-            ← Back
+          <a href={`/app/entries/${id}`} style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', textDecoration: 'none' }}>
+            Back
           </a>
           <button
             type="button"
