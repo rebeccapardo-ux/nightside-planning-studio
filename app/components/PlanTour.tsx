@@ -183,8 +183,11 @@ export default function PlanTour({ userId }: { userId: string }) {
   const [btnHover, setBtnHover]         = useState<'back' | 'next' | null>(null)
   const [arrowKey, setArrowKey]         = useState(0)
   const [arrowVisible, setArrowVisible] = useState(true)
-  const [vw, setVw]                     = useState(0)
-  const [vh, setVh]                     = useState(0)
+  // Lazy-init from the window so the desktop scroll-lock gate (active && vw >= 768)
+  // resolves on the SAME render the tour activates — not one render later once the
+  // viewport effect runs. Safe vs hydration: this component renders null while inactive.
+  const [vw, setVw]                     = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 0))
+  const [vh, setVh]                     = useState(() => (typeof window !== 'undefined' ? window.innerHeight : 0))
   const mounted = useRef(true)
 
   // Lock page scroll on desktop while the tour is active — the arrow geometry
