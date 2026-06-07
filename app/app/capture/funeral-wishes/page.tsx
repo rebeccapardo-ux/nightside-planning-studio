@@ -4,7 +4,7 @@ import { Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
+import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
@@ -435,6 +435,7 @@ function FuneralWishesPage() {
     try {
       setSaveState('saving')
       setSavingSectionIdx(lastEditedSectionIdxRef.current)
+      const startedAt = Date.now()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setSaveState('error'); setSavingSectionIdx(null); return }
 
@@ -457,20 +458,22 @@ function FuneralWishesPage() {
         setEntryId(created.id)
         entryIdRef.current = created.id
         localStorage.setItem(`nightside.lastSaved.${user.id}.${created.id}`, new Date().toISOString())
+        await holdSavingIndicator(startedAt)
         setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveState('saved')
         setSavingSectionIdx(null); triggerSavedIndicator(lastEditedSectionIdxRef.current)
         associateWithDeathcare(created.id)
-        window.setTimeout(() => setSaveState(s => s === 'saved' ? 'idle' : s), 2000)
+        window.setTimeout(() => setSaveState(s => s === 'saved' ? 'idle' : s), 3400)
         return
       }
 
       const { error } = await supabase.from('entries').update({ content }).eq('id', entryIdRef.current)
       if (error) { setSaveState('error'); return }
       localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
+      await holdSavingIndicator(startedAt)
       setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveState('saved')
       setSavingSectionIdx(null); triggerSavedIndicator(lastEditedSectionIdxRef.current)
       associateWithDeathcare(entryIdRef.current!)
-      window.setTimeout(() => setSaveState(s => s === 'saved' ? 'idle' : s), 2000)
+      window.setTimeout(() => setSaveState(s => s === 'saved' ? 'idle' : s), 3400)
     } catch { setSaveState('error') }
   }
 

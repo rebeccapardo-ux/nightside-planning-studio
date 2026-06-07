@@ -5,6 +5,7 @@ import { ACTIVITY } from '@/lib/content-metadata'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { createPromptNote, updateNote } from '@/lib/notes'
+import { holdSavingIndicator } from '@/lib/ui'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import type { VoiceNoteSaveMode } from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
@@ -191,6 +192,7 @@ function ReflectPromptsInner() {
     if (!user) return
 
     setSaveStatus('saving')
+    const startedAt = Date.now()
 
     try {
       if (savedEntryIdRef.current) {
@@ -212,6 +214,7 @@ function ReflectPromptsInner() {
         if (note) savedNoteIdRef.current = note.id
       }
 
+      await holdSavingIndicator(startedAt)
       setSaveStatus('saved')
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
       savedTimerRef.current = setTimeout(() => setSaveStatus('idle'), 3000)

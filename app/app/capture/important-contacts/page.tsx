@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
+import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 
@@ -236,6 +236,7 @@ function ImportantContactsPage() {
     ) as FormState
     setSaveStatus('saving')
     setSavingEntryId(targetId)
+    const startedAt = Date.now()
     try {
       const supabase = createSupabaseBrowserClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -251,6 +252,7 @@ function ImportantContactsPage() {
         if (error) { setSaveStatus('error'); setSavingEntryId(null); return }
       }
       if (entryIdRef.current) localStorage.setItem(`nightside.lastSaved.${user.id}.${entryIdRef.current}`, new Date().toISOString())
+      await holdSavingIndicator(startedAt)
       setLastSavedAt(new Date()); setStatusNow(Date.now()); setSaveStatus('saved')
       setSavingEntryId(null); triggerSavedIndicator(targetId)
     } catch { setSaveStatus('error'); setSavingEntryId(null) }

@@ -10,6 +10,7 @@ import {
   type ScenarioChoice,
 } from '@/lib/scenario-navigator-data'
 import { createNote, updateNote } from '@/lib/notes'
+import { holdSavingIndicator } from '@/lib/ui'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
@@ -1467,12 +1468,14 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
     const trimmed = noteTextRef.current.trim()
     if (!trimmed) return
     setNoteSaving(true)
+    const startedAt = Date.now()
     if (savedNoteIdRef.current) {
       await updateNote(savedNoteIdRef.current, trimmed)
     } else {
       const note = await createNote(trimmed)
       if (note) savedNoteIdRef.current = note.id
     }
+    await holdSavingIndicator(startedAt)
     setNoteSaving(false)
     setNoteSaved(true)
     setTimeout(() => setNoteSaved(false), 2500)

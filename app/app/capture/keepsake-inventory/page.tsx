@@ -11,6 +11,7 @@ import {
   type KeepsakeEntry,
 } from '@/lib/keepsakes'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { holdSavingIndicator } from '@/lib/ui'
 
 const AUTOSAVE_DELAY = 1500
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -268,12 +269,14 @@ export default function KeepsakeDocumentPage() {
     debounceRef.current = setTimeout(async () => {
       const targetId = lastEditedEntryIdRef.current
       setSavingEntryId(targetId)
+      const startedAt = Date.now()
       if (docIdRef.current) {
         await saveKeepsakeInventory(docIdRef.current, saveable)
       } else if (saveable.length > 0) {
         const inv = await createKeepsakeInventory(saveable)
         if (inv) { docIdRef.current = inv.id; setSavedDocId(inv.id) }
       }
+      await holdSavingIndicator(startedAt)
       setSavingEntryId(null)
       if (saveable.length > 0) {
         if (docIdRef.current && userIdRef.current) localStorage.setItem(`nightside.lastSaved.${userIdRef.current}.${docIdRef.current}`, new Date().toISOString())

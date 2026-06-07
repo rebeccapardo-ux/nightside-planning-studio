@@ -12,3 +12,17 @@
 // (scroll-margin-top doesn't affect those). Unifying them onto this constant is a
 // tracked post-launch cleanup.
 export const SECTION_SCROLL_MARGIN_TOP = 96
+
+// Minimum time (ms) a "Saving…" indicator should stay visible. Autosaves are fast
+// (a single Supabase write), so without a floor the indicator flashes for only the
+// network round-trip and reads as subliminal — users don't register that anything
+// happened. Each autosave records when it started and awaits this floor before
+// flipping to "Saved", so the feedback is perceptible across every input surface.
+export const SAVE_INDICATOR_MIN_MS = 400
+
+// Await the remainder of SAVE_INDICATOR_MIN_MS given when the save started. Call it
+// right before clearing the "Saving…" state / showing "Saved".
+export async function holdSavingIndicator(startedAt: number, minMs = SAVE_INDICATOR_MIN_MS): Promise<void> {
+  const elapsed = Date.now() - startedAt
+  if (elapsed < minMs) await new Promise((r) => setTimeout(r, minMs - elapsed))
+}
