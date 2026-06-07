@@ -519,9 +519,12 @@ export const ACTIVITY_META: ActivityMeta[] = [
   {
     id: 'fears_ranking',
     domainRelevance: ['healthcare', 'deathcare'],
+    // neverAutoSuggest blocks AMBIENT surfacing, but an explicit per-question tag
+    // overrides it: q5 ("When I think about death, this is what I worry about") is a
+    // question the user has chosen to engage about their fears, so Fears is an
+    // intentional, contextually-appropriate suggestion there — and ONLY there.
     supplementaryDocumentRelevance: { q5: 'primary' },
     insertionBehavior: 'selectable_then_insert',
-    // Fears must never appear in ambient auto-suggest contexts
     neverAutoSuggest: true,
   },
   {
