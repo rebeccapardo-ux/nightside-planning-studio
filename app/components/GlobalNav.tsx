@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { LEARN_AREAS } from '@/lib/learn-areas'
 
 // ---------------------------------------------------------------------------
 // Nav theme definitions
@@ -119,11 +120,56 @@ function getNavEntry(pathname: string): RouteThemeEntry {
 // Component
 // ---------------------------------------------------------------------------
 
-const NAV_LINKS = [
-  { href: '/app/reflect',   label: 'Reflect' },
-  { href: '/app/learn',     label: 'Learn' },
-  { href: '/app/plan', label: 'Plan' },
+// A dropdown row is either a navigable item or a non-clickable section divider.
+type NavRow =
+  | { type: 'item'; href: string; label: string; activePrefixes?: string[] }
+  | { type: 'divider'; label: string }
+
+type NavItem = {
+  href: string            // the label itself navigates here (landing page)
+  label: string
+  activePrefixes: string[] // top-nav is active when pathname starts with any of these
+  rows?: NavRow[]          // optional hover/focus dropdown (Plan has none)
+}
+
+// Reflect + Learn carry dropdown shortcuts; the label still navigates to the
+// landing page (the dropdown is an *additional* affordance). Plan is a plain link.
+// Learn's "Areas of Planning" items reuse LEARN_AREAS (single source of truth) and
+// link to the LEARN page for each area, not to domain pages.
+const NAV_ITEMS: NavItem[] = [
+  {
+    href: '/app/reflect',
+    label: 'Reflect',
+    activePrefixes: ['/app/reflect'],
+    rows: [
+      { type: 'item', href: '/app/reflect/reflection-prompts', label: 'Reflection Prompts' },
+      { type: 'item', href: '/app/reflect/values-and-fears', label: 'Values & Fears Ranking', activePrefixes: ['/app/reflect/values-and-fears', '/app/reflect/values-ranking', '/app/reflect/fears-ranking'] },
+      { type: 'item', href: '/app/reflect/scenario-navigator', label: 'Scenario Navigator' },
+      { type: 'item', href: '/app/reflect/legacy-map', label: 'Legacy Map' },
+    ],
+  },
+  {
+    href: '/app/learn',
+    label: 'Learn',
+    activePrefixes: ['/app/learn'],
+    rows: [
+      { type: 'item', href: '/app/learn/trivia', label: 'Deathcare Trivia' },
+      { type: 'divider', label: 'Areas of Planning' },
+      ...LEARN_AREAS.map((a): NavRow => ({ type: 'item', href: `/app/learn/${a.id}`, label: a.title })),
+    ],
+  },
+  {
+    href: '/app/plan',
+    label: 'Plan',
+    // Plan is the active item across the whole planning flow: the Plan page, domain
+    // pages, and the capture documents reached from them.
+    activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
+  },
 ]
+
+// Mobile drawer (Phase 1) uses the flat top-level links only — sub-menus on mobile
+// are Phase 2.
+const NAV_LINKS = NAV_ITEMS.map(({ href, label }) => ({ href, label }))
 
 // Now that Supabase is the source of truth for every piece of user-created
 // data (documents, activity outputs, notes, domain checkboxes/orient, etc),
@@ -163,6 +209,8 @@ export default function GlobalNav() {
   // null = auth state not yet known (prevents flash between authed/unauthed UI)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // Which desktop sub-menu is open (by label), or null. Hover/focus driven.
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
   const drawerRef = useRef<HTMLDivElement>(null)
   const hamburgerBtnRef = useRef<HTMLButtonElement>(null)
 
@@ -178,9 +226,10 @@ export default function GlobalNav() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Close drawer on route change
+  // Close drawer + any open desktop sub-menu on route change
   useEffect(() => {
     setDrawerOpen(false)
+    setOpenMenu(null)
   }, [pathname])
 
   // Body scroll lock + body class for FAB to react to, ESC to close, focus management
@@ -214,6 +263,12 @@ export default function GlobalNav() {
   // so the primary nav reads with the visual weight it deserves.
   const drawerLinkClass = `block w-full text-left px-6 py-4 text-[22px] font-medium ${style.link}`
   const hamburgerLineBg = entry.theme === 'dark' ? '#f8f4eb' : '#130426'
+
+  // Top-nav link styling. Active state is color-independent (underline + weight) so
+  // it reads on every nav background; `style.link` still supplies the themed color.
+  function navLinkClass(active: boolean) {
+    return `text-[15.7px] transition-colors ${style.link} ${active ? 'font-semibold underline underline-offset-[6px] decoration-2' : 'font-medium'}`
+  }
 
   return (
     <>
@@ -250,15 +305,93 @@ export default function GlobalNav() {
             <div className="hidden md:flex items-center gap-6">
               {isAuthed === true && (
                 <>
-                  {NAV_LINKS.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={`text-[15.7px] font-medium transition-colors ${style.link}`}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  {NAV_ITEMS.map((item) => {
+                    const active = item.activePrefixes.some((p) => pathname.startsWith(p))
+                    // Plain link (Plan) — no dropdown.
+                    if (!item.rows) {
+                      return (
+                        <Link key={item.href} href={item.href} className={navLinkClass(active)}>
+                          {item.label}
+                        </Link>
+                      )
+                    }
+                    const open = openMenu === item.label
+                    return (
+                      <div
+                        key={item.href}
+                        style={{ position: 'relative' }}
+                        onMouseEnter={() => setOpenMenu(item.label)}
+                        onMouseLeave={() => setOpenMenu(null)}
+                        onFocus={() => setOpenMenu(item.label)}
+                        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpenMenu(null) }}
+                        onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null) }}
+                      >
+                        {/* Label still navigates to the landing page; hover/focus opens the dropdown. */}
+                        <Link
+                          href={item.href}
+                          className={navLinkClass(active)}
+                          aria-haspopup="true"
+                          aria-expanded={open}
+                        >
+                          {item.label}
+                        </Link>
+                        {open && (
+                          // Outer wrapper sits flush under the label (paddingTop bridges the
+                          // visual gap) so moving the mouse label→menu never crosses a dead zone.
+                          <div style={{ position: 'absolute', top: '100%', left: 0, paddingTop: 8, zIndex: 60 }}>
+                            <div
+                              role="menu"
+                              aria-label={item.label}
+                              style={{
+                                minWidth: 224,
+                                background: '#f8f4eb',
+                                border: '1px solid rgba(19,4,38,0.12)',
+                                borderRadius: 12,
+                                boxShadow: '0 14px 36px rgba(19,4,38,0.28)',
+                                padding: 6,
+                              }}
+                            >
+                              {item.rows.map((row, i) => {
+                                if (row.type === 'divider') {
+                                  return (
+                                    <div key={`d${i}`} style={{ borderTop: '1px solid rgba(19,4,38,0.10)', marginTop: 6, paddingTop: 8 }}>
+                                      <span style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(19,4,38,0.5)', padding: '0 8px 4px' }}>
+                                        {row.label}
+                                      </span>
+                                    </div>
+                                  )
+                                }
+                                const subActive = (row.activePrefixes ?? [row.href]).some((p) => pathname.startsWith(p))
+                                return (
+                                  <Link
+                                    key={row.href}
+                                    href={row.href}
+                                    role="menuitem"
+                                    onClick={() => setOpenMenu(null)}
+                                    className={subActive ? undefined : 'hover:bg-[rgba(19,4,38,0.06)]'}
+                                    style={{
+                                      display: 'block',
+                                      padding: '5px 12px',
+                                      borderRadius: 8,
+                                      fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                                      fontSize: 14,
+                                      lineHeight: 1.4,
+                                      textDecoration: 'none',
+                                      color: '#130426',
+                                      fontWeight: subActive ? 600 : 400,
+                                      ...(subActive ? { background: '#EEEDFE' } : {}),
+                                    }}
+                                  >
+                                    {row.label}
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                   <button
                     type="button"
                     onClick={handleSignOut}
