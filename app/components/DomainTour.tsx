@@ -256,19 +256,29 @@ function Arrow({ def }: { def: ArrowDef }) {
 export default function DomainTour() {
   const [userId, setUserId]             = useState<string | null>(null)
   const [active, setActive]             = useState(false)
+  // "Pending" = this user will get the tour but it hasn't activated yet. Lock scroll
+  // for this whole window so the page can't drift before the tour appears. Unlike
+  // PlanTour, userId here is fetched async (getUser), so pending can only flip true once
+  // that resolves — a small mount→getUser window stays unlocked, corrected by the
+  // scroll-to-top on activation below.
+  const [pending, setPending]           = useState(false)
   const [stepIdx, setStepIdx]           = useState(0)
   const [btnHover, setBtnHover]         = useState<'back' | 'next' | null>(null)
   const [arrowKey, setArrowKey]         = useState(0)
   const [arrowVisible, setArrowVisible] = useState(true)
-  const [vw, setVw]                     = useState(0)
-  const [vh, setVh]                     = useState(0)
+  // Lazy-init from the window so the desktop scroll-lock gate (active && vw >= 768)
+  // resolves on the SAME render the tour activates — not one render later once the
+  // viewport effect runs. Safe vs hydration: this component renders null while inactive.
+  const [vw, setVw]                     = useState(() => (typeof window !== 'undefined' ? window.innerWidth : 0))
+  const [vh, setVh]                     = useState(() => (typeof window !== 'undefined' ? window.innerHeight : 0))
   const mounted = useRef(true)
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null)
 
-  // Lock page scroll on desktop while the tour is active — the arrow geometry
-  // assumes a stable viewport, and desktop tours are intentionally not
-  // scroll-stepping. Mobile (vw < 768) scroll-steps and is left unlocked.
-  useScrollLock(active && vw >= 768)
+  // Lock page scroll on desktop from the moment the tour is pending through while it's
+  // active — the arrow geometry assumes a stable, top-of-page viewport, and desktop
+  // tours are intentionally not scroll-stepping. Mobile (vw < 768) scroll-steps and is
+  // left unlocked.
+  useScrollLock((pending || active) && vw >= 768)
 
   useEffect(() => {
     mounted.current = true
@@ -294,24 +304,34 @@ export default function DomainTour() {
     if (!userId) return
     if (localStorage.getItem(tourKey(userId)) === 'done') return
 
+    // The tour will run for this user — lock scroll now (closes the dominant pre-
+    // activation window; userId resolved async, so a small mount→getUser window
+    // already passed, which the desktop scroll-to-top below corrects).
+    setPending(true)
+
     let timer: ReturnType<typeof setTimeout>
+
+    // Safety: if the page never becomes tour-ready, give up and release the pending
+    // scroll-lock after 8s rather than leaving the user stuck.
+    const giveUp = setTimeout(() => { if (mounted.current) setPending(false) }, 8000)
 
     function checkReady() {
       if (!mounted.current) return
       const anchor   = document.querySelector('[data-tour-anchor="domain-ready"]')
       const dialogEl = document.querySelector('[role="dialog"]')
       if (anchor && !dialogEl) {
+        clearTimeout(giveUp)
         if (mounted.current) {
-          // Mobile: bring step 0's target into view before activating so
-          // the first modal renders against a settled page. Desktop: no
-          // scroll — assumes the user is at the top of the page after
-          // navigation and the desktop arrow geometry handles where
-          // targets sit relative to the modal.
+          // Mobile: bring step 0's target into view before activating so the first
+          // modal renders against a settled page. Desktop: snap to top first so the
+          // tour opens at its intended layout — a no-op when the pending lock held the
+          // page in place, but it corrects any drift from the mount→getUser window.
           const isMobile = window.innerWidth < 768
           if (isMobile) {
             scrollToTourTarget(STEPS[0].anchor)
             setTimeout(() => { if (mounted.current) setActive(true) }, TOUR_SCROLL_SETTLE_MS)
           } else {
+            window.scrollTo(0, 0)
             setActive(true)
           }
         }
@@ -321,7 +341,7 @@ export default function DomainTour() {
     }
 
     timer = setTimeout(checkReady, 900)
-    return () => clearTimeout(timer)
+    return () => { clearTimeout(timer); clearTimeout(giveUp) }
   }, [userId])
 
   useEffect(() => {
@@ -333,6 +353,7 @@ export default function DomainTour() {
   const dismiss = useCallback(() => {
     if (userId) localStorage.setItem(tourKey(userId), 'done')
     setActive(false)
+    setPending(false)
     // On mobile, auto-scroll progressively moved the user down through
     // the page during the tour. Return them to the top so the end of
     // the tour doesn't leave them stranded mid-page.

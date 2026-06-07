@@ -1,4 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
+
+// Run the lock as a layout effect so the body-overflow change commits BEFORE the
+// browser paints the active tour — no window where the tour is visible but the page
+// is still scrollable. Fall back to useEffect during SSR (useLayoutEffect would warn
+// on the server); the body work no-ops there anyway via the `typeof document` guard.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 // Locks page scroll while `locked` is true, restoring on unlock/unmount.
 //
@@ -9,9 +15,11 @@ import { useEffect } from 'react'
 // lock is meant to fix.
 //
 // Intended for desktop tours (callers pass `active && isDesktop`). Mobile tours
-// scroll-step intentionally and must not be locked.
+// scroll-step intentionally and must not be locked. Callers must resolve the desktop
+// gate synchronously (lazy-init their viewport state) so `locked` is already true on
+// the render the tour activates — otherwise the lock lags a render behind the paint.
 export function useScrollLock(locked: boolean): void {
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!locked || typeof document === 'undefined') return
 
     const body = document.body
