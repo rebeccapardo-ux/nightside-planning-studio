@@ -480,7 +480,8 @@ function FuneralWishesPage() {
   async function handlePreviewExport() {
     if (!entryIdRef.current) return
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; await handleSave() }
-    router.push(`/app/entries/${entryIdRef.current}`)
+    // Non-sensitive document: skip the snapshot, go straight to the export preview.
+    router.push(`/app/entries/${entryIdRef.current}/export`)
   }
 
   const saveStatusText = (() => {

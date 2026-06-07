@@ -154,6 +154,30 @@ export function isCaptureDocument(documentType: string | null | undefined): bool
   return !!documentType && documentType in DOCUMENT_TYPE_META
 }
 
+// Documents that collect sensitive fields (SIN / health-card / account numbers /
+// passwords) only at export time. These are the ONLY entries whose export still
+// routes through the snapshot page — that's where the user supplies the sensitive
+// fields before the export preview. See entryExportHref().
+export const SENSITIVE_DOCUMENT_TYPES: DocumentType[] = [
+  DOCUMENT_TYPE.PERSONAL_ADMIN_INFO,
+  DOCUMENT_TYPE.FINANCIAL_INFORMATION,
+  DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS,
+]
+
+export function documentTypeHasSensitiveFields(documentType: string | null | undefined): boolean {
+  return !!documentType && (SENSITIVE_DOCUMENT_TYPES as string[]).includes(documentType)
+}
+
+// Destination for an "Export" affordance on an entry. Sensitive documents go to the
+// snapshot (to collect sensitive fields first); everything else — activities and
+// non-sensitive documents — goes straight to the export preview, removing the
+// snapshot as an unnecessary intermediate step.
+export function entryExportHref(id: string, documentType?: string | null): string {
+  return documentTypeHasSensitiveFields(documentType)
+    ? `/app/entries/${id}`
+    : `/app/entries/${id}/export`
+}
+
 // Resolve a (possibly null/unknown) document_type to its metadata, or undefined.
 export function documentTypeMeta(documentType: string | null | undefined): DocumentTypeMeta | undefined {
   if (!documentType) return undefined

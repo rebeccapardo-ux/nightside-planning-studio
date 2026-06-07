@@ -710,7 +710,8 @@ export default function LegacyMapPage() {
   async function handlePreviewExport() {
     const id = supabaseEntryIdRef.current;
     if (!id) return;
-    router.push(`/app/entries/${id}`);
+    // Activity output: skip the snapshot, go straight to the export preview.
+    router.push(`/app/entries/${id}/export`);
   }
 
   // ── Modal helpers ───────────────────────────────────────────────────────────

@@ -553,7 +553,8 @@ function ValuesRankingContent() {
       cardSaveTimerRef.current = null
       await autoSaveCardState()
     }
-    router.push(`/app/entries/${id}`)
+    // Activity output: skip the snapshot, go straight to the export preview.
+    router.push(`/app/entries/${id}/export`)
   }
 
   const saveStatusText = saveStatus === 'saving' ? 'Saving…'
