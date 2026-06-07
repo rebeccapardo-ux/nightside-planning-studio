@@ -8,7 +8,7 @@ import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
-import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
+import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
@@ -155,6 +155,44 @@ const SECTIONS: Array<{ key: SectionKey; label: string; description?: string; qK
   { key: 'obituary',            label: 'Obituary and announcement', qKey: 'fw_s5' },
   { key: 'note_to_others',      label: 'A note to the people carrying this out', qKey: null },
 ]
+
+// The form fields that belong to each section. Used to scope inserted-state
+// derivation to the active section so per-section independence holds (inserting a
+// value into one section never badges it in another). Keep in sync with FormState /
+// the section layout; an unmapped field simply isn't checked (graceful, not fatal).
+const SECTION_FIELDS: Record<SectionKey, StringKey[]> = {
+  what_matters_most: ['whatMattersMost'],
+  organ_donation: ['organDonationWishes', 'organDonationSpecific', 'organDonationNotes'],
+  final_resting_place: [
+    'dispositionType', 'burialLocation', 'burialCasket', 'burialEmbalming', 'burialOtherWishes',
+    'mausoleumLocation', 'mausoleumOtherWishes',
+    'cremationDirect', 'cremationRemains', 'cremationLocation', 'cremationOtherWishes',
+    'aquamationDirect', 'aquamationRemains', 'aquamationLocation', 'aquamationOtherWishes',
+    'homeFuneralPreference', 'homeFuneralWishes',
+    'bodyDonationPreregistered', 'bodyDonationDetails', 'bodyDonationAfterWishes',
+    'dispositionOtherText',
+    'memorialMarker', 'memorialMarkerText', 'memorialMarkerLocation', 'memorialMarkerOtherWishes',
+  ],
+  ceremony: [
+    'ceremonyCulturalTraditions', 'ceremonyOfficiant',
+    'ceremonyGatheringAlive', 'ceremonyGatheringAliveDetails',
+    'ceremonyFuneralWants', 'ceremonyFuneralPublicPrivate', 'ceremonyFuneralLocation', 'ceremonyFuneralCoordinator',
+    'ceremonyFuneralPrearranged', 'ceremonyFuneralPrearrangedDetails',
+    'ceremonyFuneralSpeakers', 'ceremonyFuneralMusic', 'ceremonyFuneralFlowers', 'ceremonyFuneralDonationCause',
+    'ceremonyDoNotWant', 'ceremonyOtherWishes',
+  ],
+  obituary: ['obituaryWants', 'obituaryContent', 'obituaryWriter', 'obituaryPublications', 'obituaryOnline', 'charityDonationWants', 'charityDonationDetails'],
+  note_to_others: ['noteToOthers'],
+}
+
+// Combined response text for the section a panel question belongs to — the source of
+// truth for inserted-state in the funeral-wishes materials panel.
+function fwSectionResponse(form: FormState, qKey: SupplementaryDocQuestion | null): string {
+  if (!qKey) return ''
+  const section = SECTIONS.find((s) => s.qKey === qKey)
+  if (!section) return ''
+  return SECTION_FIELDS[section.key].map((f) => form[f]).filter(Boolean).join('\n\n')
+}
 
 const DISPOSITION_OPTIONS: { key: string; label: string }[] = [
   { key: 'underground_burial', label: 'Underground burial' },
@@ -862,6 +900,7 @@ function FuneralWishesPage() {
             <div className="lg:sticky lg:top-40 mt-12 lg:mt-0">
               <FWMaterialsPanel
                 activeQuestion={activePanelQuestion}
+                responseText={fwSectionResponse(form, activePanelQuestion)}
                 onInsert={insertIntoCurrent}
                 data={materialsData}
               />
@@ -879,6 +918,7 @@ function FuneralWishesPage() {
         {drawerQuestion !== null && (
           <FWMaterialsPanel
             activeQuestion={drawerQuestion}
+            responseText={fwSectionResponse(form, drawerQuestion)}
             onInsert={handleDrawerInsert}
             data={materialsData}
             variant="drawer"
@@ -1228,11 +1268,14 @@ type FWMaterialsData = ReturnType<typeof useFWMaterialsData>
 
 function FWMaterialsPanel({
   activeQuestion,
+  responseText,
   onInsert,
   data,
   variant = 'panel',
 }: {
   activeQuestion: SupplementaryDocQuestion | null
+  // Active section's combined response text; inserted-state derives from it.
+  responseText: string
   onInsert: (text: string) => void
   data: FWMaterialsData
   variant?: 'panel' | 'drawer'
@@ -1285,7 +1328,7 @@ function FWMaterialsPanel({
   ) : activeQuestion === null ? (
     <FWFlatPanelContent items={other} onInsert={onInsert} />
   ) : (
-    <FWPanelContent recommended={recommended} other={other} onInsert={onInsert} />
+    <FWPanelContent recommended={recommended} other={other} responseText={responseText} onInsert={onInsert} />
   )
 
   if (variant === 'drawer') {
@@ -1349,6 +1392,7 @@ function FWMaterialsPanel({
 const CARD_STYLE: React.CSSProperties = { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' }
 const TITLE_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '20px', fontWeight: 500, color: '#130426' }
 const PRIMARY_ACTION_STYLE: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: '#130426', background: 'rgba(19,4,38,0.07)', padding: '3px 9px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.15)', cursor: 'pointer' }
+const INSERTED_LABEL_STYLE: React.CSSProperties = { fontSize: 12, lineHeight: '17px', fontWeight: 500, color: 'rgba(19,4,38,0.45)' }
 const SECTION_LABEL_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '18px', fontWeight: 700, color: '#130426', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }
 
 const FW_FLAT_SHOW_LIMIT = 10
@@ -1368,7 +1412,7 @@ function FWFlatPanelContent({ items, onInsert }: { items: TieredItem[]; onInsert
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {visible.map((item) => (
-        <FWTieredPanelItem key={item.data.id} item={item} readOnly onInsert={onInsert} />
+        <FWTieredPanelItem key={item.data.id} item={item} responseText="" readOnly onInsert={onInsert} />
       ))}
       {items.length > FW_FLAT_SHOW_LIMIT && !expanded && (
         <button
@@ -1393,9 +1437,10 @@ function FWPanelSection({ label, isFirst, children }: { label: string; isFirst?:
 
 const OTHER_SHOW_LIMIT = 10
 
-function FWPanelContent({ recommended, other, onInsert }: {
+function FWPanelContent({ recommended, other, responseText, onInsert }: {
   recommended: TieredItem[]
   other: TieredItem[]
+  responseText: string
   onInsert: (text: string) => void
 }) {
   const [otherExpanded, setOtherExpanded] = useState(false)
@@ -1404,7 +1449,7 @@ function FWPanelContent({ recommended, other, onInsert }: {
     <div className="mt-2">
       {recommended.length > 0 ? (
         <FWPanelSection label="Recommended" isFirst>
-          {recommended.map(item => <FWTieredPanelItem key={item.data.id} item={item} onInsert={onInsert} />)}
+          {recommended.map(item => <FWTieredPanelItem key={item.data.id} item={item} responseText={responseText} onInsert={onInsert} />)}
         </FWPanelSection>
       ) : (
         <p style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(19,4,38,0.50)', marginBottom: 12 }}>
@@ -1414,7 +1459,7 @@ function FWPanelContent({ recommended, other, onInsert }: {
       {other.length > 0 && (
         <FWPanelSection label="Also relevant" isFirst={recommended.length === 0}>
           {(otherExpanded || other.length <= OTHER_SHOW_LIMIT ? other : other.slice(0, OTHER_SHOW_LIMIT)).map(item => (
-            <FWTieredPanelItem key={item.data.id} item={item} onInsert={onInsert} />
+            <FWTieredPanelItem key={item.data.id} item={item} responseText={responseText} onInsert={onInsert} />
           ))}
           {other.length > OTHER_SHOW_LIMIT && !otherExpanded && (
             <button onClick={() => setOtherExpanded(true)} style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 2, marginTop: 4 }}>
@@ -1427,18 +1472,18 @@ function FWPanelContent({ recommended, other, onInsert }: {
   )
 }
 
-function FWTieredPanelItem({ item, readOnly, onInsert }: { item: TieredItem; readOnly?: boolean; onInsert: (text: string) => void }) {
-  if (item.kind === 'note') return <FWNotePanelCard note={item.data} readOnly={readOnly} onInsert={onInsert} />
+function FWTieredPanelItem({ item, responseText, readOnly, onInsert }: { item: TieredItem; responseText: string; readOnly?: boolean; onInsert: (text: string) => void }) {
+  if (item.kind === 'note') return <FWNotePanelCard note={item.data} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
   const { data: entry, insertBehavior } = item
   const activityId = entry.activity ?? ''
-  if (activityId === ACTIVITY.VALUES_RANKING) return <FWValuesCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
-  if (activityId === ACTIVITY.FEARS_RANKING) return <FWFearsCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
+  if (activityId === ACTIVITY.VALUES_RANKING) return <FWValuesCard entry={entry} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
+  if (activityId === ACTIVITY.FEARS_RANKING) return <FWFearsCard entry={entry} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
   if (activityId === ACTIVITY.LEGACY_MAP) {
     const text = formatLegacyMapReflections(entry)
     if (!text) return null
-    return <FWLegacyMapCard entry={entry} readOnly={readOnly} onInsert={onInsert} />
+    return <FWLegacyMapCard entry={entry} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
   }
-  return <FWGenericEntryCard entry={entry} insertBehavior={insertBehavior} readOnly={readOnly} onInsert={onInsert} />
+  return <FWGenericEntryCard entry={entry} insertBehavior={insertBehavior} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
 }
 
 // ---------------------------------------------------------------------------
@@ -1479,8 +1524,9 @@ function PanelDocIcon() {
 // Panel card components
 // ---------------------------------------------------------------------------
 
-function FWNotePanelCard({ note, readOnly, onInsert }: { note: PanelNote; readOnly?: boolean; onInsert: (text: string) => void }) {
+function FWNotePanelCard({ note, responseText, readOnly, onInsert }: { note: PanelNote; responseText: string; readOnly?: boolean; onInsert: (text: string) => void }) {
   const hasPrompt = note.originType === 'prompt' && !!note.promptContext
+  const inserted = isInsertedIntoResponse(responseText, note.content)
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? (hasPrompt ? 4 : 0) : (hasPrompt ? 4 : 10), color: '#130426' }}>
@@ -1494,14 +1540,16 @@ function FWNotePanelCard({ note, readOnly, onInsert }: { note: PanelNote; readOn
           In response to: &ldquo;{note.promptContext}&rdquo;
         </p>
       )}
-      {!readOnly && (
+      {!readOnly && (inserted ? (
+        <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+      ) : (
         <button onClick={() => onInsert(note.content)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">Insert</button>
-      )}
+      ))}
     </div>
   )
 }
 
-function FWValuesCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOnly?: boolean; onInsert: (text: string) => void }) {
+function FWValuesCard({ entry, responseText, readOnly, onInsert }: { entry: PanelEntry; responseText: string; readOnly?: boolean; onInsert: (text: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const c = entry.content as Record<string, unknown>
   const allValues = [
@@ -1524,12 +1572,22 @@ function FWValuesCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOn
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(219,88,53,0.20)' }}>
               {allValues.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {allValues.map((value, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                      <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>{value}</p>
-                      <button onClick={() => { onInsert(value); setExpanded(false) }} style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }} className="hover:brightness-95 transition-all">Insert</button>
-                    </div>
-                  ))}
+                  {allValues.map((value, i) => {
+                    // Per-item, derived from this section's response. Inserting never
+                    // collapses the card; a value already present shows a badge so it
+                    // can't be inserted twice (and stays independent across sections).
+                    const inserted = isInsertedIntoResponse(responseText, value)
+                    return (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                        <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>{value}</p>
+                        {inserted ? (
+                          <span style={{ ...INSERTED_LABEL_STYLE, flexShrink: 0 }}>Inserted</span>
+                        ) : (
+                          <button onClick={() => onInsert(value)} style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }} className="hover:brightness-95 transition-all">Insert</button>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
                 <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.50)' }}>No individual values found.</p>
@@ -1542,7 +1600,7 @@ function FWValuesCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOn
   )
 }
 
-function FWFearsCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOnly?: boolean; onInsert: (text: string) => void }) {
+function FWFearsCard({ entry, responseText, readOnly, onInsert }: { entry: PanelEntry; responseText: string; readOnly?: boolean; onInsert: (text: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const c = entry.content as Record<string, unknown>
   const allFears = [
@@ -1564,12 +1622,19 @@ function FWFearsCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOnl
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(219,88,53,0.20)' }}>
               {allFears.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {allFears.map((fear, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                      <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>{fear}</p>
-                      <button onClick={() => { onInsert(fear); setExpanded(false) }} style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }} className="hover:brightness-95 transition-all">Insert</button>
-                    </div>
-                  ))}
+                  {allFears.map((fear, i) => {
+                    const inserted = isInsertedIntoResponse(responseText, fear)
+                    return (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                        <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>{fear}</p>
+                        {inserted ? (
+                          <span style={{ ...INSERTED_LABEL_STYLE, flexShrink: 0 }}>Inserted</span>
+                        ) : (
+                          <button onClick={() => onInsert(fear)} style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }} className="hover:brightness-95 transition-all">Insert</button>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
                 <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.50)' }}>No individual fears found.</p>
@@ -1582,8 +1647,9 @@ function FWFearsCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOnl
   )
 }
 
-function FWLegacyMapCard({ entry, readOnly, onInsert }: { entry: PanelEntry; readOnly?: boolean; onInsert: (text: string) => void }) {
+function FWLegacyMapCard({ entry, responseText, readOnly, onInsert }: { entry: PanelEntry; responseText: string; readOnly?: boolean; onInsert: (text: string) => void }) {
   const reflectionText = formatLegacyMapReflections(entry)
+  const inserted = isInsertedIntoResponse(responseText, reflectionText)
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4, color: '#130426' }}>
@@ -1593,16 +1659,19 @@ function FWLegacyMapCard({ entry, readOnly, onInsert }: { entry: PanelEntry; rea
       <p style={{ fontSize: 12, lineHeight: '18px', color: 'rgba(19,4,38,0.65)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: readOnly ? 0 : 10 } as React.CSSProperties}>
         {reflectionText}
       </p>
-      {!readOnly && (
+      {!readOnly && (inserted ? (
+        <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+      ) : (
         <button onClick={() => onInsert(reflectionText)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">Insert</button>
-      )}
+      ))}
     </div>
   )
 }
 
-function FWGenericEntryCard({ entry, insertBehavior, readOnly, onInsert }: { entry: PanelEntry; insertBehavior: 'insertable' | 'selectable_then_insert' | 'view_only'; readOnly?: boolean; onInsert: (text: string) => void }) {
+function FWGenericEntryCard({ entry, insertBehavior, responseText, readOnly, onInsert }: { entry: PanelEntry; insertBehavior: 'insertable' | 'selectable_then_insert' | 'view_only'; responseText: string; readOnly?: boolean; onInsert: (text: string) => void }) {
   const title = fwGetDisplayTitle(entry)
   const insertText = fwFormatForInsert(entry)
+  const inserted = isInsertedIntoResponse(responseText, insertText)
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? 0 : 8, color: '#130426' }}>
@@ -1610,7 +1679,11 @@ function FWGenericEntryCard({ entry, insertBehavior, readOnly, onInsert }: { ent
         <p style={TITLE_STYLE}>{title}</p>
       </div>
       {!readOnly && insertBehavior !== 'view_only' && insertText && (
-        <button onClick={() => onInsert(insertText)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">Insert</button>
+        inserted ? (
+          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+        ) : (
+          <button onClick={() => onInsert(insertText)} style={PRIMARY_ACTION_STYLE} className="hover:brightness-95 transition-all">Insert</button>
+        )
       )}
     </div>
   )

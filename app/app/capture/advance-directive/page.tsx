@@ -8,7 +8,7 @@ import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
-import { getNoteSupDocTier, getWorkingOutputBehavior } from '@/lib/content-surfacing'
+import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import type { Note } from '@/lib/notes'
@@ -48,6 +48,14 @@ const QUESTIONS: Array<{
   { key: 'worries', label: 'When I think about death, this is what I worry about:', qKey: 'q5' },
   { key: 'caregiver', label: 'What I want my caregiver/care team to know:', qKey: 'q6' },
 ]
+
+// Current response text for a question — the source of truth for inserted-state in
+// the materials panel (see isInsertedIntoResponse).
+function questionResponse(form: FormState, qKey: SupplementaryDocQuestion | null): string {
+  if (!qKey) return ''
+  const field = QUESTIONS.find((q) => q.qKey === qKey)?.key
+  return field ? form[field] : ''
+}
 
 type PanelEntry = {
   id: string
@@ -588,6 +596,7 @@ function AdvanceDirectivePage() {
             <div className="lg:sticky lg:top-40 mt-12 lg:mt-0">
               <MaterialsPanel
                 activeQuestion={expandedIndex !== null ? QUESTIONS[expandedIndex].qKey : null}
+                responseText={questionResponse(form, expandedIndex !== null ? QUESTIONS[expandedIndex].qKey : null)}
                 onInsert={insertIntoCurrent}
                 data={materialsData}
               />
@@ -605,6 +614,7 @@ function AdvanceDirectivePage() {
         {drawerQuestion !== null && (
           <MaterialsPanel
             activeQuestion={drawerQuestion}
+            responseText={questionResponse(form, drawerQuestion)}
             onInsert={handleDrawerInsert}
             data={materialsData}
             variant="drawer"
@@ -721,8 +731,11 @@ function computePanelTiers(
 
   for (const { representative } of outputs) {
     const activityId = representative.activity ?? ''
-    const behavior = getWorkingOutputBehavior(activityId)
     const activityMeta = ACTIVITY_META_BY_ID[activityId]
+    // Honor neverAutoSuggest in both wishes docs (funeral-wishes already does).
+    // Activities flagged this way (e.g. Fears Ranking) must never auto-surface.
+    if (activityMeta?.neverAutoSuggest) continue
+    const behavior = getWorkingOutputBehavior(activityId)
     const relevance = activityMeta?.supplementaryDocumentRelevance?.[question]
     const item: TieredItem = {
       kind: 'entry',
@@ -730,17 +743,11 @@ function computePanelTiers(
       insertBehavior: behavior.insertionBehavior,
     }
 
-    if (activityId === ACTIVITY.FEARS_RANKING) {
-      if (relevance === 'primary') tier1.push(item)
-      else if (relevance === 'secondary') tier2.push(item)
-      else tier3.push(item)
-    } else if (!behavior.canAutoSurface) {
+    if (!behavior.canAutoSurface) {
       tier3.push(item)
-    } else {
-      if (relevance === 'primary') tier1.push(item)
-      else if (relevance === 'secondary') tier2.push(item)
-      else tier3.push(item)
-    }
+    } else if (relevance === 'primary') tier1.push(item)
+    else if (relevance === 'secondary') tier2.push(item)
+    else tier3.push(item)
   }
 
   const seenEntryIds = new Set<string>(outputs.map((o) => o.representative.id))
@@ -769,8 +776,9 @@ function computeRecommendedAndOther(
 
 // ---------------------------------------------------------------------------
 // useMaterialsData — page-level hook so both desktop right rail and mobile
-// drawer can share data + persistent insertedByQuestion state, and so trigger
-// counts can be computed before the drawer opens.
+// drawer share one data source, and so trigger counts can be computed before the
+// drawer opens. Inserted-state is NOT held here — it's derived from the response
+// field (see isInsertedIntoResponse), so there's no session state to manage.
 // ---------------------------------------------------------------------------
 
 function useMaterialsData() {
@@ -780,10 +788,6 @@ function useMaterialsData() {
   const [healthcareNotes, setHealthcareNotes] = useState<PanelNote[]>([])
   const [manualNotes, setManualNotes] = useState<PanelNote[]>([])
   const [loadingPanel, setLoadingPanel] = useState(true)
-
-  const [insertedByQuestion, setInsertedByQuestion] = useState<
-    Map<SupplementaryDocQuestion, Set<string>>
-  >(new Map())
 
   useEffect(() => {
     async function fetchPanelData() {
@@ -902,35 +906,12 @@ function useMaterialsData() {
     setManualNotes((prev) => (prev.some((n) => n.id === note.id) ? prev : [...prev, note]))
   }
 
-  function markInserted(question: SupplementaryDocQuestion | null, itemId: string) {
-    if (!question) return
-    setInsertedByQuestion((prev) => {
-      const next = new Map(prev)
-      const existing = next.get(question) ?? new Set<string>()
-      next.set(question, new Set([...existing, itemId]))
-      return next
-    })
-  }
-
-  function markRemoved(question: SupplementaryDocQuestion | null, itemId: string) {
-    if (!question) return
-    setInsertedByQuestion((prev) => {
-      const next = new Map(prev)
-      const existing = next.get(question) ?? new Set<string>()
-      const updated = new Set([...existing])
-      updated.delete(itemId)
-      next.set(question, updated)
-      return next
-    })
-  }
-
   return {
     healthcareItems, outputItems, manualItems, healthcareNotes, manualNotes,
     loadingPanel,
     deduplicatedOutputs, allNotes,
     existingEntryIds, existingNoteIds,
     addManualItem, addManualNote,
-    insertedByQuestion, markInserted, markRemoved,
   }
 }
 
@@ -944,11 +925,15 @@ type MaterialsData = ReturnType<typeof useMaterialsData>
 
 function MaterialsPanel({
   activeQuestion,
+  responseText,
   onInsert,
   data,
   variant = 'panel',
 }: {
   activeQuestion: SupplementaryDocQuestion | null
+  // Current text of the active question's response field. Inserted-state is derived
+  // from this (see isInsertedIntoResponse) rather than tracked in session state.
+  responseText: string
   onInsert: (text: string) => void
   data: MaterialsData
   variant?: 'panel' | 'drawer'
@@ -960,13 +945,7 @@ function MaterialsPanel({
     deduplicatedOutputs, allNotes,
     existingEntryIds, existingNoteIds,
     addManualItem, addManualNote,
-    insertedByQuestion, markInserted, markRemoved,
   } = data
-
-  const insertedIds: Set<string> = useMemo(
-    () => activeQuestion ? (insertedByQuestion.get(activeQuestion) ?? new Set()) : new Set<string>(),
-    [activeQuestion, insertedByQuestion],
-  )
 
   const { recommended, other } = useMemo(() => {
     if (activeQuestion === null) {
@@ -976,6 +955,7 @@ function MaterialsPanel({
         if (!seen.has(note.id)) { seen.add(note.id); items.push({ kind: 'note', data: note }) }
       }
       for (const { representative } of deduplicatedOutputs) {
+        if (ACTIVITY_META_BY_ID[representative.activity ?? '']?.neverAutoSuggest) continue
         if (!seen.has(representative.id)) {
           seen.add(representative.id)
           const behavior = getWorkingOutputBehavior(representative.activity ?? '')
@@ -994,20 +974,6 @@ function MaterialsPanel({
     return computeRecommendedAndOther(activeQuestion, allNotes, deduplicatedOutputs, healthcareItems, manualItems)
   }, [activeQuestion, allNotes, deduplicatedOutputs, healthcareItems, manualItems])
 
-  const visibleRecommended = useMemo(
-    () => recommended.filter(
-      (item) =>
-        (item.kind === 'entry' && item.data.activity === ACTIVITY.LEGACY_MAP) ||
-        !insertedIds.has(item.data.id),
-    ),
-    [recommended, insertedIds],
-  )
-
-  const alreadyInserted = useMemo(
-    () => recommended.filter((item) => insertedIds.has(item.data.id)),
-    [recommended, insertedIds],
-  )
-
   const browser = showBrowser ? (
     <MaterialsBrowser
       existingEntryIds={existingEntryIds}
@@ -1020,9 +986,6 @@ function MaterialsPanel({
     />
   ) : null
 
-  const handleInserted = (id: string) => markInserted(activeQuestion, id)
-  const handleRemoved = (id: string) => markRemoved(activeQuestion, id)
-
   const innerContent = loadingPanel ? (
     <p className="text-[12px]" style={{ color: 'rgba(19,4,38,0.50)' }}>
       Loading...
@@ -1031,14 +994,10 @@ function MaterialsPanel({
     <FlatPanelContent items={other} onInsert={onInsert} />
   ) : (
     <PanelContent
-      recommended={visibleRecommended}
-      alreadyInserted={alreadyInserted}
+      recommended={recommended}
       other={other}
-      insertedIds={insertedIds}
+      responseText={responseText}
       onInsert={onInsert}
-      onInserted={handleInserted}
-      onRemoved={handleRemoved}
-      onBrowse={() => setShowBrowser(true)}
     />
   )
 
@@ -1130,16 +1089,6 @@ const CARD_BASE: Record<1 | 2 | 3, React.CSSProperties> = {
   2: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' },
   3: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' },
 }
-const CARD_INSERTED: React.CSSProperties = {
-  background: '#F8F4EB',
-  borderRadius: 10,
-  padding: '10px 12px',
-}
-
-function getCardStyle(tier: 1 | 2 | 3, isInserted: boolean): React.CSSProperties {
-  return isInserted ? CARD_INSERTED : CARD_BASE[tier]
-}
-
 const TITLE_STYLE: React.CSSProperties = {
   fontSize: 14,
   lineHeight: '20px',
@@ -1163,18 +1112,6 @@ const INSERTED_LABEL_STYLE: React.CSSProperties = {
   fontWeight: 500,
   color: 'rgba(19,4,38,0.45)',
 }
-const REMOVE_STYLE: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 500,
-  color: 'rgba(19,4,38,0.45)',
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  textDecoration: 'underline',
-  textUnderlineOffset: 2,
-  padding: 0,
-}
-
 // ---------------------------------------------------------------------------
 // PanelSection
 // ---------------------------------------------------------------------------
@@ -1220,24 +1157,15 @@ const OTHER_SHOW_LIMIT = 10
 
 function PanelContent({
   recommended,
-  alreadyInserted,
   other,
-  insertedIds,
+  responseText,
   onInsert,
-  onInserted,
-  onRemoved,
-  onBrowse,
 }: {
   recommended: TieredItem[]
-  alreadyInserted: TieredItem[]
   other: TieredItem[]
-  insertedIds: Set<string>
+  responseText: string
   onInsert: (text: string) => void
-  onInserted: (itemId: string) => void
-  onRemoved: (itemId: string) => void
-  onBrowse: () => void
 }) {
-  const [insertedExpanded, setInsertedExpanded] = useState(false)
   const [otherExpanded, setOtherExpanded] = useState(false)
 
   return (
@@ -1250,9 +1178,8 @@ function PanelContent({
               key={item.data.id}
               item={item}
               tier={1}
-              isInserted={false}
+              responseText={responseText}
               onInsert={onInsert}
-              onInserted={onInserted}
             />
           ))}
         </PanelSection>
@@ -1270,44 +1197,6 @@ function PanelContent({
         </p>
       )}
 
-      {/* Already inserted (collapsible) */}
-      {alreadyInserted.length > 0 && (
-        <div style={{ marginTop: 8, borderTop: '1px solid rgba(219,88,53,0.20)', paddingTop: 20 }}>
-          <button
-            onClick={() => setInsertedExpanded((v) => !v)}
-            style={{
-              ...SECTION_LABEL_STYLE,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              marginBottom: insertedExpanded ? 10 : 0,
-            }}
-          >
-            Already inserted ({alreadyInserted.length}){' '}
-            <span style={{ fontSize: 10 }}>{insertedExpanded ? '▲' : '▼'}</span>
-          </button>
-          {insertedExpanded && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {alreadyInserted.map((item) => (
-                <TieredPanelItem
-                  key={item.data.id}
-                  item={item}
-                  tier={2}
-                  isInserted
-                  onInsert={onInsert}
-                  onInserted={onInserted}
-                  onRemove={onRemoved}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Also relevant */}
       {other.length > 0 && (
         <div style={{ marginTop: 8, borderTop: '1px solid rgba(219,88,53,0.20)', paddingTop: 20 }}>
@@ -1321,9 +1210,8 @@ function PanelContent({
                 key={item.data.id}
                 item={item}
                 tier={3}
-                isInserted={insertedIds.has(item.data.id)}
+                responseText={responseText}
                 onInsert={onInsert}
-                onInserted={onInserted}
               />
             ))}
           </div>
@@ -1376,10 +1264,9 @@ function FlatPanelContent({ items, onInsert }: { items: TieredItem[]; onInsert: 
           key={item.data.id}
           item={item}
           tier={3}
-          isInserted={false}
+          responseText=""
           readOnly
           onInsert={onInsert}
-          onInserted={() => {}}
         />
       ))}
       {items.length > OTHER_SHOW_LIMIT && !expanded && (
@@ -1401,34 +1288,24 @@ function FlatPanelContent({ items, onInsert }: { items: TieredItem[]; onInsert: 
 function TieredPanelItem({
   item,
   tier,
-  isInserted,
+  responseText,
   readOnly,
   onInsert,
-  onInserted,
-  onRemove,
 }: {
   item: TieredItem
   tier: 1 | 2 | 3
-  isInserted: boolean
+  responseText: string
   readOnly?: boolean
   onInsert: (text: string) => void
-  onInserted: (itemId: string) => void
-  onRemove?: (itemId: string) => void
 }) {
-  function handleInsert(text: string) {
-    onInsert(text)
-    onInserted(item.data.id)
-  }
-
   if (item.kind === 'note') {
     return (
       <NotePanelCard
         note={item.data}
         tier={tier}
-        isInserted={isInserted}
+        responseText={responseText}
         readOnly={readOnly}
-        onInsert={handleInsert}
-        onRemove={onRemove ? () => onRemove(item.data.id) : undefined}
+        onInsert={onInsert}
       />
     )
   }
@@ -1438,42 +1315,19 @@ function TieredPanelItem({
 
   if (activityId === ACTIVITY.VALUES_RANKING) {
     return (
-      <ValuesCard
-        entry={entry}
-        tier={tier}
-        isInserted={isInserted}
-        readOnly={readOnly}
-        onInsert={onInsert}
-        onInserted={() => onInserted(entry.id)}
-        onRemove={onRemove ? () => onRemove(entry.id) : undefined}
-      />
+      <ValuesCard entry={entry} tier={tier} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
     )
   }
   if (activityId === ACTIVITY.FEARS_RANKING) {
     return (
-      <FearsCard
-        entry={entry}
-        tier={tier}
-        isInserted={isInserted}
-        readOnly={readOnly}
-        onInsert={onInsert}
-        onInserted={() => onInserted(entry.id)}
-        onRemove={onRemove ? () => onRemove(entry.id) : undefined}
-      />
+      <FearsCard entry={entry} tier={tier} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
     )
   }
   if (activityId === ACTIVITY.LEGACY_MAP) {
     const reflectionText = formatLegacyMapReflections(entry)
     if (!reflectionText) return null
     return (
-      <LegacyMapCard
-        entry={entry}
-        tier={tier}
-        isInserted={isInserted}
-        readOnly={readOnly}
-        onInsert={handleInsert}
-        onRemove={onRemove ? () => onRemove(entry.id) : undefined}
-      />
+      <LegacyMapCard entry={entry} tier={tier} responseText={responseText} readOnly={readOnly} onInsert={onInsert} />
     )
   }
 
@@ -1481,11 +1335,10 @@ function TieredPanelItem({
     <GenericEntryCard
       entry={entry}
       tier={tier}
-      isInserted={isInserted}
+      responseText={responseText}
       readOnly={readOnly}
       insertBehavior={item.insertBehavior}
-      onInsert={handleInsert}
-      onRemove={onRemove ? () => onRemove(entry.id) : undefined}
+      onInsert={onInsert}
     />
   )
 }
@@ -1531,23 +1384,22 @@ function PanelDocIcon() {
 function NotePanelCard({
   note,
   tier,
-  isInserted,
+  responseText,
   readOnly,
   onInsert,
-  onRemove,
 }: {
   note: PanelNote
   tier: 1 | 2 | 3
-  isInserted: boolean
+  responseText: string
   readOnly?: boolean
   onInsert: (text: string) => void
-  onRemove?: () => void
 }) {
   const raw = note.content.trim()
   const hasPrompt = note.originType === 'prompt' && !!note.promptContext
+  const inserted = isInsertedIntoResponse(responseText, note.content)
 
   return (
-    <div style={getCardStyle(tier, isInserted)}>
+    <div style={CARD_BASE[tier]}>
       <div
         style={{
           display: 'flex',
@@ -1586,15 +1438,8 @@ function NotePanelCard({
         </p>
       )}
 
-      {!readOnly && (isInserted ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
-          {onRemove && (
-            <button onClick={onRemove} style={REMOVE_STYLE}>
-              Remove
-            </button>
-          )}
-        </div>
+      {!readOnly && (inserted ? (
+        <span style={INSERTED_LABEL_STYLE}>Inserted</span>
       ) : (
         <button
           onClick={() => onInsert(note.content)}
@@ -1611,19 +1456,15 @@ function NotePanelCard({
 function ValuesCard({
   entry,
   tier,
-  isInserted,
+  responseText,
   readOnly,
   onInsert,
-  onInserted,
-  onRemove,
 }: {
   entry: PanelEntry
   tier: 1 | 2 | 3
-  isInserted: boolean
+  responseText: string
   readOnly?: boolean
   onInsert: (text: string) => void
-  onInserted: () => void
-  onRemove?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -1633,42 +1474,23 @@ function ValuesCard({
   const lessCentral: string[] = Array.isArray(c?.less_central) ? (c.less_central as string[]) : []
   const allValues = [...essential, ...important, ...lessCentral]
 
-  function handleValueInsert(value: string) {
-    onInsert(value)
-    onInserted()
-    setExpanded(false)
-  }
-
   return (
-    <div style={getCardStyle(tier, isInserted)}>
+    <div style={CARD_BASE[tier]}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? 0 : 8, color: '#130426' }}>
         <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
         <p style={TITLE_STYLE}>Values Ranking</p>
       </div>
       {!readOnly && (
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-          {isInserted ? (
-            <>
-              <span style={INSERTED_LABEL_STYLE}>Inserted</span>
-              {onRemove && (
-                <button onClick={onRemove} style={REMOVE_STYLE}>
-                  Remove
-                </button>
-              )}
-            </>
-          ) : (
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              style={PRIMARY_ACTION_STYLE}
-              className="hover:opacity-75 transition-opacity"
-            >
-              {expanded ? 'Close' : 'Select & Insert'}
-            </button>
-          )}
-        </div>
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          style={PRIMARY_ACTION_STYLE}
+          className="hover:opacity-75 transition-opacity"
+        >
+          {expanded ? 'Close' : 'Select & Insert'}
+        </button>
       )}
 
-      {!readOnly && expanded && !isInserted && (
+      {!readOnly && expanded && (
         <div
           style={{
             marginTop: 12,
@@ -1678,28 +1500,38 @@ function ValuesCard({
         >
           {allValues.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {allValues.map((value, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                  }}
-                >
-                  <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>
-                    {value}
-                  </p>
-                  <button
-                    onClick={() => handleValueInsert(value)}
-                    style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }}
-                    className="hover:brightness-95 transition-all"
+              {allValues.map((value, i) => {
+                // Per-item inserted state derived from the response — inserting one
+                // value never collapses the card, and an already-present value shows a
+                // badge instead of an Insert button (so it can't be inserted twice).
+                const inserted = isInsertedIntoResponse(responseText, value)
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 12,
+                    }}
                   >
-                    Insert
-                  </button>
-                </div>
-              ))}
+                    <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>
+                      {value}
+                    </p>
+                    {inserted ? (
+                      <span style={{ ...INSERTED_LABEL_STYLE, flexShrink: 0 }}>Inserted</span>
+                    ) : (
+                      <button
+                        onClick={() => onInsert(value)}
+                        style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }}
+                        className="hover:brightness-95 transition-all"
+                      >
+                        Insert
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.50)' }}>
@@ -1715,19 +1547,15 @@ function ValuesCard({
 function FearsCard({
   entry,
   tier,
-  isInserted,
+  responseText,
   readOnly,
   onInsert,
-  onInserted,
-  onRemove,
 }: {
   entry: PanelEntry
   tier: 1 | 2 | 3
-  isInserted: boolean
+  responseText: string
   readOnly?: boolean
   onInsert: (text: string) => void
-  onInserted: () => void
-  onRemove?: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -1736,42 +1564,23 @@ function FearsCard({
   const important: string[] = Array.isArray(c?.important) ? (c.important as string[]) : []
   const allFears = [...essential, ...important]
 
-  function handleFearInsert(fear: string) {
-    onInsert(fear)
-    onInserted()
-    setExpanded(false)
-  }
-
   return (
-    <div style={getCardStyle(tier, isInserted)}>
+    <div style={CARD_BASE[tier]}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? 0 : 8, color: '#130426' }}>
         <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
         <p style={TITLE_STYLE}>Fears Ranking</p>
       </div>
       {!readOnly && (
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-          {isInserted ? (
-            <>
-              <span style={INSERTED_LABEL_STYLE}>Inserted</span>
-              {onRemove && (
-                <button onClick={onRemove} style={REMOVE_STYLE}>
-                  Remove
-                </button>
-              )}
-            </>
-          ) : (
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              style={PRIMARY_ACTION_STYLE}
-              className="hover:opacity-75 transition-opacity"
-            >
-              {expanded ? 'Close' : 'Select & Insert'}
-            </button>
-          )}
-        </div>
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          style={PRIMARY_ACTION_STYLE}
+          className="hover:opacity-75 transition-opacity"
+        >
+          {expanded ? 'Close' : 'Select & Insert'}
+        </button>
       )}
 
-      {!readOnly && expanded && !isInserted && (
+      {!readOnly && expanded && (
         <div
           style={{
             marginTop: 12,
@@ -1781,28 +1590,35 @@ function FearsCard({
         >
           {allFears.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {allFears.map((fear, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 12,
-                  }}
-                >
-                  <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>
-                    {fear}
-                  </p>
-                  <button
-                    onClick={() => handleFearInsert(fear)}
-                    style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }}
-                    className="hover:brightness-95 transition-all"
+              {allFears.map((fear, i) => {
+                const inserted = isInsertedIntoResponse(responseText, fear)
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 12,
+                    }}
                   >
-                    Insert
-                  </button>
-                </div>
-              ))}
+                    <p style={{ fontSize: 14, lineHeight: '20px', color: '#130426' }}>
+                      {fear}
+                    </p>
+                    {inserted ? (
+                      <span style={{ ...INSERTED_LABEL_STYLE, flexShrink: 0 }}>Inserted</span>
+                    ) : (
+                      <button
+                        onClick={() => onInsert(fear)}
+                        style={{ ...PRIMARY_ACTION_STYLE, flexShrink: 0 }}
+                        className="hover:brightness-95 transition-all"
+                      >
+                        Insert
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.50)' }}>
@@ -1818,22 +1634,21 @@ function FearsCard({
 function LegacyMapCard({
   entry,
   tier,
-  isInserted,
+  responseText,
   readOnly,
   onInsert,
-  onRemove,
 }: {
   entry: PanelEntry
   tier: 1 | 2 | 3
-  isInserted: boolean
+  responseText: string
   readOnly?: boolean
   onInsert: (text: string) => void
-  onRemove?: () => void
 }) {
   const reflectionText = formatLegacyMapReflections(entry)
+  const inserted = isInsertedIntoResponse(responseText, reflectionText)
 
   return (
-    <div style={getCardStyle(tier, isInserted)}>
+    <div style={CARD_BASE[tier]}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4, color: '#130426' }}>
         <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
         <p style={TITLE_STYLE}>Legacy Map Reflections</p>
@@ -1852,15 +1667,8 @@ function LegacyMapCard({
       >
         {reflectionText}
       </p>
-      {!readOnly && (isInserted ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
-          {onRemove && (
-            <button onClick={onRemove} style={REMOVE_STYLE}>
-              Remove
-            </button>
-          )}
-        </div>
+      {!readOnly && (inserted ? (
+        <span style={INSERTED_LABEL_STYLE}>Inserted</span>
       ) : (
         <button
           onClick={() => onInsert(reflectionText)}
@@ -1877,50 +1685,40 @@ function LegacyMapCard({
 function GenericEntryCard({
   entry,
   tier,
-  isInserted,
+  responseText,
   readOnly,
   insertBehavior,
   onInsert,
-  onRemove,
 }: {
   entry: PanelEntry
   tier: 1 | 2 | 3
-  isInserted: boolean
+  responseText: string
   readOnly?: boolean
   insertBehavior: 'insertable' | 'selectable_then_insert' | 'view_only'
   onInsert: (text: string) => void
-  onRemove?: () => void
 }) {
   const title = getDisplayTitle(entry)
   const insertText = formatForInsert(entry)
+  const inserted = isInsertedIntoResponse(responseText, insertText)
 
   return (
-    <div style={getCardStyle(tier, isInserted)}>
+    <div style={CARD_BASE[tier]}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? 0 : 8, color: '#130426' }}>
         <div style={{ flexShrink: 0, marginTop: 2 }}><PanelDocIcon /></div>
         <p style={TITLE_STYLE}>{title}</p>
       </div>
-      {!readOnly && (
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-          {isInserted ? (
-            <>
-              <span style={INSERTED_LABEL_STYLE}>Inserted</span>
-              {onRemove && (
-                <button onClick={onRemove} style={REMOVE_STYLE}>
-                  Remove
-                </button>
-              )}
-            </>
-          ) : insertBehavior !== 'view_only' && insertText ? (
-            <button
-              onClick={() => onInsert(insertText)}
-              style={PRIMARY_ACTION_STYLE}
-              className="hover:brightness-95 transition-all"
-            >
-              Insert
-            </button>
-          ) : null}
-        </div>
+      {!readOnly && insertBehavior !== 'view_only' && insertText && (
+        inserted ? (
+          <span style={INSERTED_LABEL_STYLE}>Inserted</span>
+        ) : (
+          <button
+            onClick={() => onInsert(insertText)}
+            style={PRIMARY_ACTION_STYLE}
+            className="hover:brightness-95 transition-all"
+          >
+            Insert
+          </button>
+        )
       )}
     </div>
   )

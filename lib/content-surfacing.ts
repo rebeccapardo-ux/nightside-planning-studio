@@ -166,6 +166,36 @@ export function getWorkingOutputBehavior(activityId: string): WorkingOutputBehav
 }
 
 // ---------------------------------------------------------------------------
+// Inserted-state derivation (wishes docs Relevant Materials panels)
+//
+// The single source of truth for whether a material is "inserted into this
+// question" is the question's own response text — NOT session state. Inserts
+// (insertIntoCurrent) append the item text as a blank-line-delimited block, so we
+// detect an insert by matching whole trimmed blocks (a contiguous run of them for
+// multi-paragraph items like notes / legacy reflections), never a loose substring
+// (which would false-positive on overlapping values like "Independence" vs
+// "Financial independence"). Deriving from the field means editing the response to
+// delete the text clears the badge automatically, and re-inserting the same item is
+// naturally prevented — across both wishes documents, with no state to manage.
+// ---------------------------------------------------------------------------
+
+export function isInsertedIntoResponse(responseText: string, itemText: string): boolean {
+  const target = itemText.trim()
+  if (!target) return false
+  const respBlocks = responseText.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean)
+  const targetBlocks = target.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean)
+  if (targetBlocks.length === 0) return false
+  for (let i = 0; i + targetBlocks.length <= respBlocks.length; i++) {
+    let match = true
+    for (let j = 0; j < targetBlocks.length; j++) {
+      if (respBlocks[i + j] !== targetBlocks[j]) { match = false; break }
+    }
+    if (match) return true
+  }
+  return false
+}
+
+// ---------------------------------------------------------------------------
 // Batch classification — sorts a note list into tiers for a given context
 // ---------------------------------------------------------------------------
 

@@ -51,6 +51,16 @@ On reflect prompts, **`domainRelevance` (and `primaryTag` / `secondaryTags`) is 
 
 ---
 
+## Wishes docs Relevant Materials — two cross-doc conventions
+
+The "Relevant materials" panels in the two wishes documents (`advance-directive` = My Care Wishes, `funeral-wishes`) must stay consistent. They drifted once (advance-directive lagged behind funeral-wishes) and produced launch-blocking bugs.
+
+- **`neverAutoSuggest` must be honored in BOTH docs.** Any `ACTIVITY_META` entry with `neverAutoSuggest: true` (e.g. `fears_ranking`) must be excluded from every auto-suggest context — the section-tier loop **and** the flat (no-section) view — in *both* panels. Funeral-wishes honored it via a top-of-loop `if (activityMeta?.neverAutoSuggest) continue`; advance-directive had a stale per-activity special-case that bypassed it (Fears surfaced at q5). When you add a new auto-suggest surface anywhere, **grep `neverAutoSuggest` and replicate the guard.** A `neverAutoSuggest` activity should carry no `supplementaryDocumentRelevance` (the tag is dead — the loops skip it before reading relevance).
+- **Inserted-state is derived, never stored.** Whether a material is "inserted into this question" is computed from the question's own response text via `isInsertedIntoResponse` (`lib/content-surfacing.ts`) — there is **no `insertedByQuestion`/session state**. This makes per-item Values/Fears insertion track granularly, makes removing-by-editing-the-response clear the badge automatically, and prevents duplicate inserts. Funeral-wishes scopes the response to the active **section's** fields (`SECTION_FIELDS`) so per-section independence holds; advance-directive's questions are 1:1 with a field. Do not reintroduce whole-entry "Inserted" collapse or an "Already inserted" bucket.
+- **The funeral `SECTION_FIELDS` map is a coupling point** (`app/app/capture/funeral-wishes/page.tsx`). It lists the `FormState` fields belonging to each `fw_s*` section, so inserted-state can be scoped per section. **When you add or remove a field in any funeral-wishes section, update `SECTION_FIELDS` to match.** If you don't, inserted-state badges silently won't appear for the new field — graceful degradation (no crash) but stale UX. Verify by inserting an item into that section after editing the fields; if the badge appears, the map is current. (Advance-directive needs no such map — its `QUESTIONS` already maps each question 1:1 to a field.)
+
+---
+
 ## Multi-entry "Add X" surfaces — discard empty drafts on card blur
 
 Any surface where the user clicks "Add <thing>" to create multiple entries of the same type (capture pages, multi-entry document sections) must discard an empty just-added card **when focus leaves that card** — so an empty "Untitled X" never lingers on screen until refresh.

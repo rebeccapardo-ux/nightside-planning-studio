@@ -519,9 +519,10 @@ export const ACTIVITY_META: ActivityMeta[] = [
   {
     id: 'fears_ranking',
     domainRelevance: ['healthcare', 'deathcare'],
-    supplementaryDocumentRelevance: { q5: 'primary' },
+    // No supplementaryDocumentRelevance: Fears is neverAutoSuggest, so it never
+    // surfaces in either wishes doc; a relevance tag would be dead (the q5 tag was
+    // removed because the tier loops skip neverAutoSuggest activities before reading it).
     insertionBehavior: 'selectable_then_insert',
-    // Fears must never appear in ambient auto-suggest contexts
     neverAutoSuggest: true,
   },
   {
