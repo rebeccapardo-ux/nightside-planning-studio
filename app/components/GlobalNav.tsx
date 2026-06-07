@@ -371,7 +371,7 @@ export default function GlobalNav() {
                                     className={subActive ? undefined : 'hover:bg-[rgba(19,4,38,0.06)]'}
                                     style={{
                                       display: 'block',
-                                      padding: '8px 12px',
+                                      padding: '5px 12px',
                                       borderRadius: 8,
                                       fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                                       fontSize: 14,
