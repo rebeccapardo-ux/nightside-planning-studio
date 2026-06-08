@@ -104,6 +104,36 @@ Documents with collapsible sections scroll the opened section to the top of the 
 - Make them **idempotent**: `ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, backfills guarded by `WHERE col IS NULL`, safe to re-run.
 - Include `RAISE NOTICE` count summaries (matched / unmatched / duplicates) so the result is visible, and abort (`RAISE EXCEPTION`) rather than ship a half-migrated state.
 - Several base tables (`containers`, `entries`, `notes`) live in the Supabase dashboard, not in migration files — `ALTER` them via a new migration; don't expect a `CREATE TABLE` to exist locally.
+- **Known `user_profiles` schema drift (tracked, post-launch cleanup).** A few columns are read in app code but absent from *every* migration — `first_name`/`last_name` (`app/api/feedback/route.ts`) and `onboarding_complete_shown_at` (`app/api/plan/export-json/route.ts`). They were added via the dashboard, so the live table already differs from migration history, and there are **no generated TS types** to catch a missing column. Don't fix in passing; when adding a `user_profiles` column, write a fresh idempotent migration and verify against the **live** table, not the migration set.
+
+---
+
+## Transactional email — one transport
+
+- **All Resend sends go through `lib/email.ts` → `sendEmail({ to, subject, html?, text? })`.** It owns the single sender (`The Nightside <noreply@thenightside.net>`), the `RESEND_API_KEY` guard, and `!res.ok` error normalization (returns `{ ok, error? }`). **Never re-inline `fetch('https://api.resend.com/emails')`** — there used to be four copies; they're gone (one transport now).
+- It deliberately does **not** try/catch the fetch (a network error throws, as before). Fire-and-forget callers (e.g. the Stripe webhook admin alert) keep their own try/catch around the call.
+- Email **content** (subject + HTML/text) stays the caller's concern — the per-route HTML builders (`buildEmail`/`buildDesignationEmail`/… in the legacy-contact routes) stay where they are. A shared **branded HTML wrapper** is a tracked follow-up, to be introduced with the first recovery-email message — *not* by rewriting the existing emails (that would risk changing rendered output).
+
+---
+
+## Account recovery email (in progress — paused after Phase 1)
+
+Self-service account recovery for users who lose access to their primary email. **No manual review** — a *verified* recovery email is the only recovery path; users without one cannot recover (decided; documented in the support runbook). Distinct from a Legacy Contact (a different person, released to on death).
+
+**Storage (shipped — Phase 1a, `supabase/migrations/20260608_recovery_email.sql`):**
+- `user_profiles.recovery_email` (text, nullable) + `recovery_email_verified` (boolean, default false). An address is **inert until verified** — every consumer must check the flag.
+- `recovery_email_tokens` — single-use, time-limited ledger for both the `verify` and `recovery` flows. **Service-role only: RLS enabled with NO policies** (never readable by the browser). Stores a **SHA-256 `token_hash`** (raw token only ever in the emailed link) and an **`email` snapshot** (so editing a pending address invalidates old links). Consume with `WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()`.
+
+**Locked conventions for the remaining phases:**
+- **Must-differ-from-primary** is enforced in app code (client + server), *not* SQL — the primary lives in `auth.users`, unreachable from a CHECK.
+- **Verification is deferred until after primary-email confirmation:** capture `recovery_email` at signup via `signUp` `options.data`, then persist it + send the verify email from the `/auth/callback` post-confirmation hook (single-email focus, recent context). Success page acknowledges the verify send.
+- Recovery is **outside Supabase auth** — both the verify flow and the lost-email recovery flow need custom tokens + service-role routes; Supabase's built-in confirm/reset flows (keyed to the *primary* email) can't be reused. The lost-email reset should bootstrap a Supabase recovery session via `admin.generateLink({ type: 'recovery' })` so GoTrue's password rules (12-char min, leaked-password protection) still apply, then revoke other sessions (single-session enforcement is OFF).
+
+**Notification policy (Phase 5 — mostly gap-filling).** Supabase now auto-notifies the **primary** email for password change / email change (old address) / sign-in-method & MFA events. We add the **recovery-email** side where policy says both, plus full notifications for events Supabase doesn't cover (account deletion, plan export). Password-change notification = keep client `updateUser` + a **thin notify endpoint** (preserves Supabase's secure-change re-auth *and* its primary notification — do **not** move to a service-role admin write, which loses both); plan-export = a thin endpoint the client calls post-export (PDF stays client-side).
+
+**Deferred (post-launch — captured, not in scope):**
+- **Account-deletion 7-day soft-delete + cancellation.** Pre-launch ships *immediate* deletion with notifications to both addresses. The delay mechanism (soft-delete state, cancellation route, scheduled hard-delete cron, pending-deletion `proxy.ts` UX, legacy-contact release interaction) is post-launch hardening — protects against attacker-triggered deletion of a legitimate account.
+- **MFA / sign-in-method notifications to the recovery email** — deferred to the TOTP phase, where the broader MFA work lives. Supabase covers the primary side today.
 
 ---
 
