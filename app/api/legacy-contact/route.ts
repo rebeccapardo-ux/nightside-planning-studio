@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
+import { sendEmail } from '@/lib/email'
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -68,35 +69,18 @@ function buildEmail({
 </div>`
 }
 
-async function sendEmail(
+async function sendDesignationEmail(
   to: string,
   contactFirst: string,
   userFirst: string,
   userLast: string,
   personalMessage?: string | null,
 ): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) return { ok: false, error: 'Email service not configured (RESEND_API_KEY missing)' }
-
-  const displayFirst = toTitleCase(userFirst)
-  const displayLast  = toTitleCase(userLast)
-
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: 'The Nightside <noreply@thenightside.net>',
-      to,
-      subject: `${displayFirst} ${displayLast} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-      html: buildEmail({ userFirst, userLast, contactFirst, personalMessage }),
-    }),
+  return sendEmail({
+    to,
+    subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
+    html: buildEmail({ userFirst, userLast, contactFirst, personalMessage }),
   })
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    return { ok: false, error: (body as { message?: string }).message ?? `HTTP ${res.status}` }
-  }
-  return { ok: true }
 }
 
 interface ContactInput {
@@ -216,7 +200,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Send notification emails — rollback DB if either fails ────────────────
-  const primaryEmail = await sendEmail(primary.email, primary.firstName, userFirst, userLast, personalMessage)
+  const primaryEmail = await sendDesignationEmail(primary.email, primary.firstName, userFirst, userLast, personalMessage)
   if (!primaryEmail.ok) {
     await admin.from('legacy_contacts').delete().eq('user_id', user.id)
     return NextResponse.json(
@@ -226,7 +210,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (secondary) {
-    const secondaryEmail = await sendEmail(secondary.email, secondary.firstName, userFirst, userLast, personalMessage)
+    const secondaryEmail = await sendDesignationEmail(secondary.email, secondary.firstName, userFirst, userLast, personalMessage)
     if (!secondaryEmail.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id)
       return NextResponse.json(

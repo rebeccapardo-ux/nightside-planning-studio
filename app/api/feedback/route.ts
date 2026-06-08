@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { logEvent } from '@/lib/analytics'
+import { sendEmail } from '@/lib/email'
 
 export async function POST(request: Request) {
   const body = await request.json() as { subject?: string; message?: string; email?: string }
@@ -50,22 +51,14 @@ export async function POST(request: Request) {
     message.trim(),
   ].join('\n')
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'The Nightside <noreply@thenightside.net>',
-      to: 'contact@thenightside.net',
-      subject: `[Platform feedback] ${subjectLine}`,
-      text,
-    }),
+  const result = await sendEmail({
+    to: 'contact@thenightside.net',
+    subject: `[Platform feedback] ${subjectLine}`,
+    text,
   })
 
-  if (!res.ok) {
-    console.error('[feedback] Resend error:', await res.text())
+  if (!result.ok) {
+    console.error('[feedback] Resend error:', result.error)
     return NextResponse.json({ error: 'Failed to send.' }, { status: 500 })
   }
 
