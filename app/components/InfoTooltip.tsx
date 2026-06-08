@@ -51,7 +51,7 @@ export default function InfoTooltip({
           width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
           border: '1.5px solid rgba(19,4,38,0.45)',
           background: 'transparent', color: 'rgba(19,4,38,0.70)',
-          fontFamily: hv, fontSize: 12, fontWeight: 600, fontStyle: 'italic',
+          fontFamily: hv, fontSize: 12, fontWeight: 600,
           lineHeight: 1, cursor: 'pointer', padding: 0,
         }}
         className="hover:opacity-70 transition-opacity"
