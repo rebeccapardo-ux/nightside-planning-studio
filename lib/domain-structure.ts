@@ -361,6 +361,14 @@ export function getDomainStructureByCode(code: string | null | undefined): Domai
   return DOMAIN_STRUCTURES.find(def => def.code === code)?.structure ?? null
 }
 
+// Resolve a stable domain_code to its canonical display name. Documented fallback
+// for the DB container title (`containers.title`) when that's missing — e.g. the
+// PDF builder, and the domain tour's first-impression copy.
+export function getDomainDisplayNameByCode(code: string | null | undefined): string | null {
+  if (!code) return null
+  return DOMAIN_STRUCTURES.find(def => def.code === code)?.displayName ?? null
+}
+
 // Flattened {key, type} segments resolved by stable domain_code. For status
 // components that only need keys + type.
 export function getDomainSegmentsByCode(code: string | null | undefined): DomainSegment[] {
