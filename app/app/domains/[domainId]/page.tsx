@@ -86,6 +86,7 @@ type AddExistingFor = 'note' | 'document' | 'output' | null
 
 import {
   getDomainStructureByCode,
+  getDomainDisplayNameByCode,
   type DomainStructure,
   type OrientationItem as OrientationItemDef,
   type ReadinessItem as ReadinessItemDef,
@@ -673,7 +674,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       {/* Materials canvas block was unreachable — all configured domains hit the
           isHealthcare branch in PlanningStatusSection. Removed in cleanup pass. */}
 
-      <DomainTour />
+      <DomainTour domainName={domain?.title?.trim() || getDomainDisplayNameByCode(domain?.domain_code) || ''} />
     </div>
   )
 }

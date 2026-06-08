@@ -28,25 +28,28 @@ type Step = {
   anchor: string
 }
 
+// Bodies use a {Domain} token interpolated at render with the domain's display
+// title (see DomainTour's domainName prop). Kept as full sentences — no leading
+// fragments that could be misread as subheaders.
 const STEPS: Step[] = [
   {
     title: 'Planning Status',
-    body: 'Track your progress in this area at a glance. Your planning status updates automatically based on your activity in the panels below.',
+    body: 'Track your progress on {Domain} at a glance. Your planning status updates automatically based on your activity in the panels below.',
     anchor: 'planning-status',
   },
   {
     title: 'Reflection + Learning',
-    body: 'Topics to think through and read about for this area. Update your status manually as you explore each one. Relevant materials also surface here.',
+    body: "Explore {Domain} through the topics below. Update your status as you go. Relevant materials you've created elsewhere will appear here.",
     anchor: 'reflection-learning',
   },
   {
     title: 'Practical Readiness',
-    body: 'Document practical decisions. Check items off as you go — your progress updates automatically. Relevant materials surface here too.',
+    body: 'Here you can record practical decisions for {Domain}. Check items off as you go and your progress updates automatically.',
     anchor: 'practical-readiness',
   },
   {
     title: 'Your Thoughts',
-    body: "Capture thoughts about this area in the notes section below. They'll save to Your Plan and stay attached here.",
+    body: "Capture thoughts in the notes section below. They'll save to Your Plan and stay attached to this section.",
     anchor: 'your-thoughts',
   },
 ]
@@ -253,7 +256,7 @@ function Arrow({ def }: { def: ArrowDef }) {
 
 // ---------------------------------------------------------------------------
 
-export default function DomainTour() {
+export default function DomainTour({ domainName }: { domainName: string }) {
   const [userId, setUserId]             = useState<string | null>(null)
   const [active, setActive]             = useState(false)
   // "Pending" = this user will get the tour but it hasn't activated yet. Lock scroll
@@ -474,7 +477,7 @@ export default function DomainTour() {
           margin: '0 0 24px',
           whiteSpace: 'pre-line',
         }}>
-          {step.body}
+          {step.body.replace(/\{Domain\}/g, domainName)}
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
