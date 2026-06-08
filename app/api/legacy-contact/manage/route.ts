@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
+import { sendEmail } from '@/lib/email'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -113,29 +114,6 @@ function buildEmailUpdateEmail(
     <p style="color:#130426;line-height:1.65;"><strong>If ${userFirst} dies and you need to activate your role as Legacy Contact</strong>, contact us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>. We'll work with you to verify the death and release ${userFirst}'s planning materials.</p>
     <p style="color:#130426;line-height:1.65;">If you have any questions, you can reach us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `)
-}
-
-// ── Generic send helper ───────────────────────────────────────────────────────
-
-async function sendEmail(
-  to: string,
-  subject: string,
-  html: string,
-): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) return { ok: false, error: 'Email service not configured (RESEND_API_KEY missing)' }
-
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: 'The Nightside <noreply@thenightside.net>', to, subject, html }),
-  })
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    return { ok: false, error: (body as { message?: string }).message ?? `HTTP ${res.status}` }
-  }
-  return { ok: true }
 }
 
 // ── POST /api/legacy-contact/manage ──────────────────────────────────────────
@@ -255,7 +233,7 @@ export async function POST(req: NextRequest) {
     if (emailChanged) {
       const html    = buildEmailUpdateEmail(userFirst, userLast, contact.firstName)
       const subject = `Your email on file for ${toTitleCase(userFirst)} has been updated`
-      await sendEmail(contact.email.toLowerCase(), subject, html)
+      await sendEmail({ to: contact.email.toLowerCase(), subject, html })
       // Don't block on email failure — the edit is already saved
     }
 
@@ -338,11 +316,11 @@ export async function POST(req: NextRequest) {
     ])
 
     // Emails — rollback if either fails
-    const dedesig = await sendEmail(
-      current.email,
-      'Your Legacy Contact designation has been updated',
-      buildDedesignationEmail(userFirst, userLast, current.first_name),
-    )
+    const dedesig = await sendEmail({
+      to: current.email,
+      subject: 'Your Legacy Contact designation has been updated',
+      html: buildDedesignationEmail(userFirst, userLast, current.first_name),
+    })
     if (!dedesig.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', contactType)
       await admin.from('legacy_contacts').insert(current)
@@ -352,11 +330,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const desig = await sendEmail(
-      newContact.email.toLowerCase(),
-      `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-      buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
-    )
+    const desig = await sendEmail({
+      to: newContact.email.toLowerCase(),
+      subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
+      html: buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
+    })
     if (!desig.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', contactType)
       await admin.from('legacy_contacts').insert(current)
@@ -431,11 +409,11 @@ export async function POST(req: NextRequest) {
     })
 
     // Email — rollback if fails
-    const desig = await sendEmail(
-      newContact.email.toLowerCase(),
-      `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-      buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
-    )
+    const desig = await sendEmail({
+      to: newContact.email.toLowerCase(),
+      subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
+      html: buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
+    })
     if (!desig.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
       return NextResponse.json(
@@ -472,11 +450,11 @@ export async function POST(req: NextRequest) {
     })
 
     // Email — rollback if fails
-    const dedesig = await sendEmail(
-      current.email,
-      'Your Legacy Contact designation has been updated',
-      buildDedesignationEmail(userFirst, userLast, current.first_name),
-    )
+    const dedesig = await sendEmail({
+      to: current.email,
+      subject: 'Your Legacy Contact designation has been updated',
+      html: buildDedesignationEmail(userFirst, userLast, current.first_name),
+    })
     if (!dedesig.ok) {
       await admin.from('legacy_contacts').insert(current)
       return NextResponse.json(

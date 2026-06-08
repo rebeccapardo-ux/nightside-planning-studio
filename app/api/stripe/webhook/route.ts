@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
+import { sendEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -80,26 +81,19 @@ export async function POST(request: NextRequest) {
 
 async function alertAdmin(sessionId: string, reason: string) {
   try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'The Nightside <noreply@thenightside.net>',
-        to: 'contact@thenightside.net',
-        subject: '[ACTION REQUIRED] Stripe webhook — payment not activated',
-        text: [
-          'A Stripe payment completed but the account was not activated.',
-          '',
-          `Stripe session ID: ${sessionId}`,
-          `Reason: ${reason}`,
-          '',
-          'Check the Supabase dashboard and activate the account manually if needed.',
-        ].join('\n'),
-      }),
+    const result = await sendEmail({
+      to: 'contact@thenightside.net',
+      subject: '[ACTION REQUIRED] Stripe webhook — payment not activated',
+      text: [
+        'A Stripe payment completed but the account was not activated.',
+        '',
+        `Stripe session ID: ${sessionId}`,
+        `Reason: ${reason}`,
+        '',
+        'Check the Supabase dashboard and activate the account manually if needed.',
+      ].join('\n'),
     })
+    if (!result.ok) console.error('Failed to send admin alert email:', result.error)
   } catch (alertErr) {
     console.error('Failed to send admin alert email:', alertErr)
   }
