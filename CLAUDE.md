@@ -137,6 +137,22 @@ Self-service account recovery for users who lose access to their primary email. 
 
 ---
 
+## Legacy Contact management (account page)
+
+LCs are modeled as two typed slots (`legacy_contacts.contact_type` = `primary` | `secondary`), but users think of them as a **ranked list**. The account-page management UI (`app/app/account/page.tsx`) + `app/api/legacy-contact/manage/route.ts` are built around that, after a redesign that fixed a silent-failure bug.
+
+- **Two explicit buttons, never a buried "replace" link.** Each LC card shows a separate **"Update … contact details"** (edit the same person) and **"Replace with a different Legacy Contact"** (change who it is). The previous single-entry-point "Update" with a buried "Designate someone else" link caused users to silently overwrite a record with a new person's details *without* the dedesignation/designation notifications firing. **Do not reintroduce a combined update/replace entry point.** Modal titles must match the operation: edit → "Update Contact Details"; replace → "Replace Legacy Contact" (a static "Update Legacy Contact" title was the misleading-header bug).
+- **Notification semantics (asymmetry of consequence):**
+  - **designate / replace / remove → blocking with rollback** — if any notification fails, the whole DB change is reverted and a 502 is returned (the contact list must never diverge from who's been told).
+  - **edit → split:** an **email-address change is blocking** (the address on file must not diverge from what the contact has been notified about); **name / relationship / personal_message changes send NO notification** (silent — these are corrections, not consequence-bearing).
+  - **Role changes are first-class, honest emails:** promoting secondary→primary sends a **promotion** email; demoting primary→secondary sends a **demotion** email (subject `Your role as …'s Legacy Contact has changed`). Neither is a dedesignation — the person is still an LC. (`buildPromotionEmail` / `buildDemotionEmail`.)
+- **A secondary cannot exist without a primary.** Enforced in the `add-secondary` API branch (rejects when no primary exists) — there is **no DB constraint**, so don't rely on one. The gate (`proxy.ts`) is keyed to `primary` only.
+- **Promote-secondary-to-primary is atomic, inside the Replace-primary flow** (a checkbox that autofills + locks the form from the secondary's details). The secondary's record *becomes* the primary (its `personal_message` is **overridden** by any message entered in the promote flow); the secondary slot empties. Replace-primary also forces a decision about the old primary — **remove** (dedesignation) or **move to secondary** (demotion). "Promote + move old primary to secondary" is a clean **swap**; because the `contact_type` enum has no temp value, the demoted primary is re-inserted as a fresh secondary row (new id / `designated_at`) — fine pre-launch.
+
+Deferred (post-launch): **secondary-LC release verification protocol** (how a secondary proves the primary is unavailable — extend the release runbook); **post-promotion UX polish** (after promoting, surface an "edit their details" path instead of making the user reopen the card).
+
+---
+
 ## Git / workflow conventions
 
 - **Always push immediately after committing** (Vercel deploys from the push).
