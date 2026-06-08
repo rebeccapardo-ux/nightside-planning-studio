@@ -385,6 +385,42 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
     return <div className="min-h-screen" style={{ background: '#EDE7FF' }} />
   }
 
+  // Planning Status block, hoisted so the Wills domain can carry the tour anchor
+  // on the status block itself — below its (Wills-only) legal disclaimer — while
+  // every other domain keeps the anchor on the section wrapper. Without this the
+  // step-1 tour arrow lands on the disclaimer instead of the Planning Status header.
+  const planningStatusSection = (
+    <PlanningStatusSection
+      domainId={domainId}
+      structure={domainStructure}
+      domainTitle={domain?.title ?? ''}
+      entries={dedupedEntriesForStatus}
+      isHealthcare={isHealthcare || isLegacy || isDeathcare || isWills || isRitual || isPersonalAdmin}
+      showWishesCard={isHealthcare}
+      showFuneralWishesCard={isDeathcare}
+      onReadyStatusChange={(key, status) => setReadyStatusForHeader(prev => ({ ...prev, [key]: status }))}
+      eligibleNotes={eligiblePromptNotes}
+      allUserNotes={allUserNotes}
+      domainNoteIds={domainNoteIds}
+      domainTopicNotesList={domainTopicNotesList}
+      hiddenRowNotesList={hiddenRowNotesList}
+      onTopicNoteAdd={(noteId, topicId, note) => {
+        setDomainTopicNotesList(prev => [...prev, { note_id: noteId, topic_id: topicId }])
+        if (!notes.some(n => n.id === noteId)) setNotes(prev => [...prev, note])
+        addDomainTopicNote(noteId, domainId, topicId)
+        addNoteToContainer(noteId, domainId)
+      }}
+      onTopicNoteRemove={(noteId, topicId) => {
+        setDomainTopicNotesList(prev => prev.filter(r => !(r.note_id === noteId && r.topic_id === topicId)))
+        removeDomainTopicNote(noteId, domainId, topicId)
+      }}
+      onRowNoteHide={(noteId, topicId) => {
+        setHiddenRowNotesList(prev => [...prev, { note_id: noteId, topic_id: topicId }])
+        hideRowNote(noteId, domainId, topicId)
+      }}
+    />
+  )
+
   return (
     <div className="min-h-screen" style={{ background: '#EDE7FF' }}>
       <style>{`
@@ -471,42 +507,23 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
       {/* ── Section 1: Status ── */}
       {domainStructure && (
-        <div style={{ background: '#EDE7FF' }} data-tour-anchor="planning-status">
+        <div
+          style={{ background: '#EDE7FF' }}
+          {...(isWills ? {} : { 'data-tour-anchor': 'planning-status' })}
+        >
           <div className="max-w-6xl mx-auto px-6 py-12">
             {isWills && (
               <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 28px 0' }}>
                 The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating decision-makers, consult a lawyer in your province.
               </p>
             )}
-            <PlanningStatusSection
-              domainId={domainId}
-              structure={domainStructure}
-              domainTitle={domain?.title ?? ''}
-              entries={dedupedEntriesForStatus}
-              isHealthcare={isHealthcare || isLegacy || isDeathcare || isWills || isRitual || isPersonalAdmin}
-              showWishesCard={isHealthcare}
-              showFuneralWishesCard={isDeathcare}
-              onReadyStatusChange={(key, status) => setReadyStatusForHeader(prev => ({ ...prev, [key]: status }))}
-              eligibleNotes={eligiblePromptNotes}
-              allUserNotes={allUserNotes}
-              domainNoteIds={domainNoteIds}
-              domainTopicNotesList={domainTopicNotesList}
-              hiddenRowNotesList={hiddenRowNotesList}
-              onTopicNoteAdd={(noteId, topicId, note) => {
-                setDomainTopicNotesList(prev => [...prev, { note_id: noteId, topic_id: topicId }])
-                if (!notes.some(n => n.id === noteId)) setNotes(prev => [...prev, note])
-                addDomainTopicNote(noteId, domainId, topicId)
-                addNoteToContainer(noteId, domainId)
-              }}
-              onTopicNoteRemove={(noteId, topicId) => {
-                setDomainTopicNotesList(prev => prev.filter(r => !(r.note_id === noteId && r.topic_id === topicId)))
-                removeDomainTopicNote(noteId, domainId, topicId)
-              }}
-              onRowNoteHide={(noteId, topicId) => {
-                setHiddenRowNotesList(prev => [...prev, { note_id: noteId, topic_id: topicId }])
-                hideRowNote(noteId, domainId, topicId)
-              }}
-            />
+            {/* Wills carries the disclaimer above, so anchor the step-1 tour arrow on
+                the status block itself; other domains keep it on the section wrapper. */}
+            {isWills ? (
+              <div data-tour-anchor="planning-status">{planningStatusSection}</div>
+            ) : (
+              planningStatusSection
+            )}
           </div>
         </div>
       )}

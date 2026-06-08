@@ -173,8 +173,18 @@ function getArrow(stepIdx: number, vw: number, vh: number, modal: ModalPlacement
     sx = cx - mhw + 60;                                   sy = cy - mhh
     if (tgt) { ex = tgt.x;                                ey = Math.max(40, tgt.y - 8) }
     else     { ex = Math.max(80, cx - mhw - 80);          ey = Math.max(40, cy - 220) }
-    cp1x = sx - 30;          cp1y = sy - 80               // up-left of start (upward exit)
-    cp2x = ex;               cp2y = ey - 60               // directly above end → straight-down arrival
+    if (ey > sy) {
+      // Target sits BELOW the modal's top — happens on domains that render content
+      // above Planning Status (e.g. Wills & Estates' legal disclaimer). The default
+      // up-and-over recipe kinks for a low target, so use the same smooth swoosh as
+      // steps 1–2: arc to a peak, then a long straight vertical drop onto the header.
+      const peakY = sy - 80
+      cp1x = sx + (ex - sx) * 0.3;  cp1y = peakY
+      cp2x = ex;                    cp2y = peakY
+    } else {
+      cp1x = sx - 30;          cp1y = sy - 80             // up-left of start (upward exit)
+      cp2x = ex;               cp2y = ey - 60             // directly above end → straight-down arrival
+    }
   } else if (stepIdx === 1) {
     // Reflection + Learning — modal on right, R+L panel below-left.
     // Exit modal left, arc up then down onto the panel's top edge.
