@@ -39,7 +39,7 @@ const STEPS: Step[] = [
   },
   {
     title: 'Reflection + Learning',
-    body: "These are topics for you to think through and read about for {Domain}. Update your status as you explore each one. Relevant materials you've created elsewhere will appear here.",
+    body: "Explore {Domain} through the topics below. Update your status as you go. Relevant materials you've created elsewhere will appear here.",
     anchor: 'reflection-learning',
   },
   {
@@ -49,7 +49,7 @@ const STEPS: Step[] = [
   },
   {
     title: 'Your Thoughts',
-    body: "Capture thoughts about {Domain} in the notes section below. They'll save to Your Plan and stay attached to this section.",
+    body: "Capture thoughts in the notes section below. They'll save to Your Plan and stay attached to this section.",
     anchor: 'your-thoughts',
   },
 ]
