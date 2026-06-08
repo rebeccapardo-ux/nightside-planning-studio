@@ -194,6 +194,20 @@ export function hasAnySupDocTag(
   return questions.some((q) => relevance[q] !== undefined)
 }
 
+// Whether a note should AUTO-surface in a wishes document: true only for a reflect-
+// prompt note whose underlying prompt carries a tag for one of `questions` (this
+// document's namespace). Free-form / notepad / unresolved notes have no underlying
+// tagged source — no document-level signal — so they never auto-surface (the user can
+// still pull them in via "+ Add materials"). This mirrors the activity-output doc-signal
+// rule, applied to the notes path.
+export function noteHasSupDocSignal(
+  note: Note,
+  questions: readonly SupplementaryDocQuestion[],
+): boolean {
+  if (classifyNoteSource(note) !== 'reflect_prompt') return false
+  return hasAnySupDocTag(metaForNote(note)?.supplementaryDocumentRelevance, questions)
+}
+
 export function isInsertedIntoResponse(responseText: string, itemText: string): boolean {
   const target = itemText.trim()
   if (!target) return false
