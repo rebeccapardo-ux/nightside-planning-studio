@@ -791,7 +791,7 @@ function useMaterialsData() {
   const [healthcareItems, setHealthcareItems] = useState<PanelEntry[]>([])
   const [outputItems, setOutputItems] = useState<PanelEntry[]>([])
   const [manualItems, setManualItems] = useState<PanelEntry[]>([])
-  const [healthcareNotes, setHealthcareNotes] = useState<PanelNote[]>([])
+  const [promptNotes, setPromptNotes] = useState<PanelNote[]>([])
   const [manualNotes, setManualNotes] = useState<PanelNote[]>([])
   const [loadingPanel, setLoadingPanel] = useState(true)
 
@@ -830,29 +830,27 @@ function useMaterialsData() {
             setHealthcareItems(filtered.map((e) => ({ ...e, group: 'healthcare' as const })))
           }
 
-          const { data: noteLinks } = await supabase
-            .from('container_notes')
-            .select('note_id')
-            .eq('container_id', container.id)
-
-          if (noteLinks && noteLinks.length > 0) {
-            const noteIds = noteLinks.map((l) => l.note_id)
-            const { data: notesData } = await supabase
-              .from('notes')
-              .select('id, content, origin_type, prompt_context')
-              .in('id', noteIds)
-              .order('created_at', { ascending: false })
-
-            setHealthcareNotes(
-              (notesData || []).map((n) => ({
-                id: n.id,
-                content: n.content,
-                originType: n.origin_type ?? null,
-                promptContext: n.prompt_context ?? null,
-              })),
-            )
-          }
         }
+
+        // All reflect-prompt notes — surfaced here, then doc-signal-filtered in allNotes
+        // (only notes whose prompt is tagged for a q* question appear). Mirrors funeral-
+        // wishes so q*-tagged prompts surface regardless of domain linkage. (Previously
+        // scoped to healthcare-domain-linked notes only, which hid most tagged prompts.)
+        const { data: allPromptNotesData } = await supabase
+          .from('notes')
+          .select('id, content, origin_type, prompt_context')
+          .eq('user_id', user.id)
+          .eq('origin_type', 'prompt')
+          .not('prompt_context', 'is', null)
+          .order('created_at', { ascending: false })
+        setPromptNotes(
+          (allPromptNotesData || []).map((n) => ({
+            id: n.id,
+            content: n.content,
+            originType: n.origin_type ?? null,
+            promptContext: n.prompt_context ?? null,
+          })),
+        )
 
         const { data: outputs } = await supabase
           .from('entries')
@@ -891,15 +889,15 @@ function useMaterialsData() {
   )
 
   const existingNoteIds = useMemo(
-    () => new Set([...healthcareNotes, ...manualNotes].map((n) => n.id)),
-    [healthcareNotes, manualNotes],
+    () => new Set([...promptNotes, ...manualNotes].map((n) => n.id)),
+    [promptNotes, manualNotes],
   )
 
   const allNotes = useMemo(() => {
     const seen = new Set<string>()
     const result: PanelNote[] = []
     const manualIds = new Set(manualNotes.map((n) => n.id))
-    for (const n of [...healthcareNotes, ...manualNotes]) {
+    for (const n of [...promptNotes, ...manualNotes]) {
       if (seen.has(n.id)) continue
       // Auto-surfaced notes need a document-level signal (a reflect-prompt note whose
       // prompt is tagged for some q* question). Free-form/notepad/other notes have no
@@ -908,7 +906,7 @@ function useMaterialsData() {
       seen.add(n.id); result.push(n)
     }
     return result
-  }, [healthcareNotes, manualNotes])
+  }, [promptNotes, manualNotes])
 
   function addManualItem(entry: PanelEntry) {
     setManualItems((prev) => (prev.some((e) => e.id === entry.id) ? prev : [...prev, entry]))
@@ -919,7 +917,7 @@ function useMaterialsData() {
   }
 
   return {
-    healthcareItems, outputItems, manualItems, healthcareNotes, manualNotes,
+    healthcareItems, outputItems, manualItems, promptNotes, manualNotes,
     loadingPanel,
     deduplicatedOutputs, allNotes,
     existingEntryIds, existingNoteIds,
