@@ -116,6 +116,69 @@ function buildEmailUpdateEmail(
   `)
 }
 
+// ── Template 4: Promotion ("your role changed: secondary → primary") ─────────
+
+function buildPromotionEmail(
+  userFirst: string,
+  userLast: string,
+  contactFirst: string,
+  personalMessage?: string | null,
+): string {
+  userFirst    = toTitleCase(userFirst)
+  userLast     = toTitleCase(userLast)
+  contactFirst = toTitleCase(contactFirst)
+
+  const msgBlock = personalMessage
+    ? `<hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>
+       <h3 style="margin:0 0 10px;font-size:15px;color:#130426;">A message from ${userFirst}</h3>
+       <p style="color:#130426;line-height:1.65;white-space:pre-wrap;margin:0">${esc(personalMessage)}</p>
+       <hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>`
+    : ''
+
+  return emailWrap(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your role as a Legacy Contact has changed</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${contactFirst},</p>
+    <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has updated their Legacy Contact designations on The Nightside Planning Studio. You were previously their <strong>secondary</strong> Legacy Contact; you are now their <strong>primary</strong> Legacy Contact. (You'll already have received a designation notice when ${userFirst} first named you — this is a change to your role, not a new designation.)</p>
+    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">What this means now</h3>
+    <p style="color:#130426;line-height:1.65;">As ${userFirst}'s primary Legacy Contact, you are the first person we would contact to release their practical planning materials in the event of their death — things like wishes for their body and funeral, important contacts, financial information, and other administrative details. You still don't have access to ${userFirst}'s plan while they are alive, and this role gives you no legal authority over their estate, healthcare, or other matters.</p>
+    <p style="color:#130426;line-height:1.65;">There's nothing you need to do right now.</p>
+    ${msgBlock}
+    <p style="color:#130426;line-height:1.65;">If ${userFirst} passes away and you need to activate your role, contact us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>. If you have any questions, you can reach ${userFirst} directly or us at the same address.</p>
+  `)
+}
+
+// ── Template 5: Demotion ("your role changed: primary → secondary") ──────────
+
+function buildDemotionEmail(
+  userFirst: string,
+  userLast: string,
+  contactFirst: string,
+  personalMessage?: string | null,
+): string {
+  userFirst    = toTitleCase(userFirst)
+  userLast     = toTitleCase(userLast)
+  contactFirst = toTitleCase(contactFirst)
+
+  const msgBlock = personalMessage
+    ? `<hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>
+       <h3 style="margin:0 0 10px;font-size:15px;color:#130426;">A message from ${userFirst}</h3>
+       <p style="color:#130426;line-height:1.65;white-space:pre-wrap;margin:0">${esc(personalMessage)}</p>
+       <hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>`
+    : ''
+
+  return emailWrap(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your role as a Legacy Contact has changed</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${contactFirst},</p>
+    <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has updated their Legacy Contact designations on The Nightside Planning Studio. You were previously their <strong>primary</strong> Legacy Contact; you are now their <strong>secondary</strong> Legacy Contact.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>You are still ${userFirst}'s Legacy Contact</strong> — this is a change to your order, not a removal.</p>
+    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">What this means now</h3>
+    <p style="color:#130426;line-height:1.65;">As a secondary Legacy Contact, you would be contacted to receive ${userFirst}'s practical planning materials if their primary Legacy Contact is unavailable. You don't have access to ${userFirst}'s plan while they are alive, and this role gives you no legal authority over their estate, healthcare, or other matters.</p>
+    <p style="color:#130426;line-height:1.65;">There's nothing you need to do right now.</p>
+    ${msgBlock}
+    <p style="color:#130426;line-height:1.65;">If you have any questions, you can reach ${userFirst} directly, or contact us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+  `)
+}
+
 // ── POST /api/legacy-contact/manage ──────────────────────────────────────────
 
 interface ContactInput {
@@ -220,7 +283,33 @@ export async function POST(req: NextRequest) {
       .eq('id', current.id)
     if (updateErr) return NextResponse.json({ error: 'Failed to save changes. Please try again.' }, { status: 500 })
 
-    // Audit log
+    // Email notification — only when the email address changed, and BLOCKING: the
+    // address on file must not diverge from what the contact has been notified about.
+    // Name / relationship changes stay silent (no notification), as before.
+    if (emailChanged) {
+      const html    = buildEmailUpdateEmail(userFirst, userLast, contact.firstName)
+      const subject = `Your email on file for ${toTitleCase(userFirst)} has been updated`
+      const note    = await sendEmail({ to: contact.email.toLowerCase(), subject, html })
+      if (!note.ok) {
+        // Roll the edit back to the previous values, then surface the failure.
+        await admin
+          .from('legacy_contacts')
+          .update({
+            first_name:   current.first_name,
+            last_name:    current.last_name,
+            email:        current.email,
+            relationship: current.relationship,
+            updated_at:   current.updated_at,
+          })
+          .eq('id', current.id)
+        return NextResponse.json(
+          { error: `Could not notify your Legacy Contact at ${contact.email}. Your change was not saved. Please try again. (${note.error})` },
+          { status: 502 }
+        )
+      }
+    }
+
+    // Audit log (only after any required notification has succeeded)
     await admin.from('legacy_contact_audit_log').insert({
       user_id:       user.id,
       action:        'updated',
@@ -229,122 +318,251 @@ export async function POST(req: NextRequest) {
       new_data:      { first_name: contact.firstName,  last_name: contact.lastName,  email: contact.email.toLowerCase(), relationship: contact.relationship },
     })
 
-    // Email notification only if email changed
-    if (emailChanged) {
-      const html    = buildEmailUpdateEmail(userFirst, userLast, contact.firstName)
-      const subject = `Your email on file for ${toTitleCase(userFirst)} has been updated`
-      await sendEmail({ to: contact.email.toLowerCase(), subject, html })
-      // Don't block on email failure — the edit is already saved
-    }
-
     logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'edit', contactType } })
     return NextResponse.json({ ok: true })
   }
 
   // ── Replace ───────────────────────────────────────────────────────────────
+  // Secondary: swap the secondary record for a new person (de-designate old, designate new).
+  // Primary: the new primary is either a brand-new person OR the existing secondary promoted
+  // up, and the displaced old primary is either removed or moved into the secondary slot.
+  // Every person whose role changes is notified; any notification failure rolls the whole
+  // change back. Mutation ordering always vacates a slot before filling it so the
+  // UNIQUE(user_id, contact_type) constraint is never violated mid-operation.
   if (action === 'replace') {
     if (!contactType) return NextResponse.json({ error: 'contactType required' }, { status: 400 })
 
-    const newContact     = body.contact as ContactInput
     const personalMessage = (body.personalMessage as string | null) ?? null
-
-    if (!newContact?.firstName || !newContact?.lastName || !newContact?.email || !newContact?.relationship) {
-      return NextResponse.json({ error: 'All contact fields are required' }, { status: 400 })
-    }
-    if (!isValidEmail(newContact.email)) {
-      return NextResponse.json({ error: 'Email address is not valid' }, { status: 400 })
-    }
-    if (newContact.email.toLowerCase() === user.email?.toLowerCase()) {
-      return NextResponse.json({ error: 'Legacy Contact email cannot be your own email address' }, { status: 400 })
-    }
     if (personalMessage && personalMessage.length > 1500) {
       return NextResponse.json({ error: 'Personal message must be 1500 characters or fewer' }, { status: 400 })
     }
 
-    // Get current record (to notify old contact and check email conflicts)
-    const { data: current } = await admin
-      .from('legacy_contacts')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('contact_type', contactType)
-      .maybeSingle()
-    if (!current) return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
+    // ----- Secondary replace -----
+    if (contactType === 'secondary') {
+      const newContact = body.contact as ContactInput
+      if (!newContact?.firstName || !newContact?.lastName || !newContact?.email || !newContact?.relationship) {
+        return NextResponse.json({ error: 'All contact fields are required' }, { status: 400 })
+      }
+      if (!isValidEmail(newContact.email)) {
+        return NextResponse.json({ error: 'Email address is not valid' }, { status: 400 })
+      }
+      if (newContact.email.toLowerCase() === user.email?.toLowerCase()) {
+        return NextResponse.json({ error: 'Legacy Contact email cannot be your own email address' }, { status: 400 })
+      }
 
-    // Check new email doesn't conflict with the other contact
-    const otherType = contactType === 'primary' ? 'secondary' : 'primary'
-    const { data: other } = await admin
-      .from('legacy_contacts')
-      .select('email')
-      .eq('user_id', user.id)
-      .eq('contact_type', otherType)
-      .maybeSingle()
-    if (other && newContact.email.toLowerCase() === other.email.toLowerCase()) {
-      return NextResponse.json(
-        { error: 'Primary and secondary contacts must have different email addresses' },
-        { status: 400 }
-      )
+      const { data: current } = await admin
+        .from('legacy_contacts').select('*')
+        .eq('user_id', user.id).eq('contact_type', 'secondary').maybeSingle()
+      if (!current) return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
+
+      const { data: primary } = await admin
+        .from('legacy_contacts').select('email')
+        .eq('user_id', user.id).eq('contact_type', 'primary').maybeSingle()
+      if (primary && newContact.email.toLowerCase() === primary.email.toLowerCase()) {
+        return NextResponse.json({ error: 'Primary and secondary contacts must have different email addresses' }, { status: 400 })
+      }
+
+      const { error: deleteErr } = await admin.from('legacy_contacts').delete().eq('id', current.id)
+      if (deleteErr) return NextResponse.json({ error: 'Failed to update. Please try again.' }, { status: 500 })
+
+      const { error: insertErr } = await admin.from('legacy_contacts').insert({
+        user_id: user.id, contact_type: 'secondary',
+        first_name: newContact.firstName, last_name: newContact.lastName,
+        email: newContact.email.toLowerCase(), relationship: newContact.relationship,
+        personal_message: personalMessage,
+      })
+      if (insertErr) {
+        await admin.from('legacy_contacts').insert(current)
+        return NextResponse.json({ error: 'Failed to update. Please try again.' }, { status: 500 })
+      }
+
+      await admin.from('legacy_contact_audit_log').insert([
+        { user_id: user.id, action: 'removed', contact_type: 'secondary',
+          previous_data: { first_name: current.first_name, last_name: current.last_name, email: current.email }, new_data: null },
+        { user_id: user.id, action: 'designated', contact_type: 'secondary',
+          previous_data: null, new_data: { first_name: newContact.firstName, last_name: newContact.lastName, email: newContact.email.toLowerCase() } },
+      ])
+
+      const dedesig = await sendEmail({
+        to: current.email.toLowerCase(),
+        subject: 'Your Legacy Contact designation has been updated',
+        html: buildDedesignationEmail(userFirst, userLast, current.first_name),
+      })
+      if (!dedesig.ok) {
+        await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
+        await admin.from('legacy_contacts').insert(current)
+        return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${current.email}. No changes were saved. Please try again. (${dedesig.error})` }, { status: 502 })
+      }
+
+      const desig = await sendEmail({
+        to: newContact.email.toLowerCase(),
+        subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
+        html: buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
+      })
+      if (!desig.ok) {
+        await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
+        await admin.from('legacy_contacts').insert(current)
+        return NextResponse.json({ error: `Could not notify your new Legacy Contact at ${newContact.email}. No changes were saved. Please try again. (${desig.error})` }, { status: 502 })
+      }
+
+      logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType: 'secondary' } })
+      return NextResponse.json({ ok: true })
     }
 
-    // Delete old record, insert new
-    const { error: deleteErr } = await admin
-      .from('legacy_contacts')
-      .delete()
-      .eq('id', current.id)
-    if (deleteErr) return NextResponse.json({ error: 'Failed to update. Please try again.' }, { status: 500 })
+    // ----- Primary replace -----
+    const promote     = body.promote === true
+    const disposition = body.oldPrimaryDisposition as 'remove' | 'secondary' | undefined
+    if (disposition !== 'remove' && disposition !== 'secondary') {
+      return NextResponse.json({ error: 'A decision about your current primary Legacy Contact is required.' }, { status: 400 })
+    }
 
-    const { error: insertErr } = await admin.from('legacy_contacts').insert({
-      user_id:          user.id,
-      contact_type:     contactType,
-      first_name:       newContact.firstName,
-      last_name:        newContact.lastName,
-      email:            newContact.email.toLowerCase(),
-      relationship:     newContact.relationship,
-      personal_message: personalMessage,
-    })
-    if (insertErr) {
-      // Restore old record
-      await admin.from('legacy_contacts').insert(current)
+    const { data: P } = await admin
+      .from('legacy_contacts').select('*')
+      .eq('user_id', user.id).eq('contact_type', 'primary').maybeSingle()
+    if (!P) return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
+
+    const { data: S } = await admin
+      .from('legacy_contacts').select('*')
+      .eq('user_id', user.id).eq('contact_type', 'secondary').maybeSingle()
+
+    // Resolve the new primary's details (+ validate when it's a brand-new person)
+    let newFirst: string, newLast: string, newEmail: string, newRel: string
+    if (promote) {
+      if (!S) return NextResponse.json({ error: 'No secondary Legacy Contact to promote.' }, { status: 400 })
+      newFirst = S.first_name; newLast = S.last_name; newEmail = (S.email as string).toLowerCase(); newRel = S.relationship
+    } else {
+      const newContact = body.contact as ContactInput
+      if (!newContact?.firstName || !newContact?.lastName || !newContact?.email || !newContact?.relationship) {
+        return NextResponse.json({ error: 'All contact fields are required' }, { status: 400 })
+      }
+      if (!isValidEmail(newContact.email)) {
+        return NextResponse.json({ error: 'Email address is not valid' }, { status: 400 })
+      }
+      newFirst = newContact.firstName; newLast = newContact.lastName
+      newEmail = newContact.email.toLowerCase(); newRel = newContact.relationship
+      if (newEmail === user.email?.toLowerCase()) {
+        return NextResponse.json({ error: 'Legacy Contact email cannot be your own email address' }, { status: 400 })
+      }
+      // New primary email must not collide with whoever remains in the other slot:
+      //   disposition 'secondary' → old primary P stays (demoted); 'remove' → old secondary S stays (if any).
+      const survivorEmail = disposition === 'secondary'
+        ? (P.email as string).toLowerCase()
+        : (S ? (S.email as string).toLowerCase() : undefined)
+      if (survivorEmail && newEmail === survivorEmail) {
+        return NextResponse.json({ error: 'Primary and secondary contacts must have different email addresses' }, { status: 400 })
+      }
+    }
+
+    // Uniform rollback to the original two records.
+    const restoreOriginal = async () => {
+      await admin.from('legacy_contacts').delete().eq('user_id', user.id)
+      await admin.from('legacy_contacts').insert(S ? [P, S] : [P])
+    }
+
+    const now = new Date().toISOString()
+    let dbErr: { message: string } | null = null
+
+    if (disposition === 'remove') {
+      // Old primary removed; new primary takes the (now-empty) primary slot.
+      dbErr = (await admin.from('legacy_contacts').delete().eq('id', P.id)).error
+      if (!dbErr && promote) {
+        dbErr = (await admin.from('legacy_contacts')
+          .update({ contact_type: 'primary', personal_message: personalMessage, updated_at: now })
+          .eq('id', S!.id)).error
+      } else if (!dbErr) {
+        dbErr = (await admin.from('legacy_contacts').insert({
+          user_id: user.id, contact_type: 'primary',
+          first_name: newFirst, last_name: newLast, email: newEmail, relationship: newRel,
+          personal_message: personalMessage,
+        })).error
+      }
+    } else if (promote) {
+      // Swap: secondary → primary, old primary → secondary. The contact_type enum has no
+      // temp value and UNIQUE(user_id, contact_type) forbids two rows of the same type
+      // mid-swap, so we can't do a clean in-place, id-preserving demotion of the primary.
+      // Instead the demoted primary is re-inserted as a FRESH secondary row (new id /
+      // designated_at). Pre-launch this is fine — nothing references the old primary's id.
+      dbErr = (await admin.from('legacy_contacts').delete().eq('id', P.id)).error
+      if (!dbErr) dbErr = (await admin.from('legacy_contacts')
+        .update({ contact_type: 'primary', personal_message: personalMessage, updated_at: now })
+        .eq('id', S!.id)).error
+      if (!dbErr) dbErr = (await admin.from('legacy_contacts').insert({
+        user_id: user.id, contact_type: 'secondary',
+        first_name: P.first_name, last_name: P.last_name, email: P.email, relationship: P.relationship,
+        personal_message: P.personal_message,
+      })).error
+    } else {
+      // New person → primary; old primary → secondary; any existing secondary is bumped out.
+      if (S) dbErr = (await admin.from('legacy_contacts').delete().eq('id', S.id)).error
+      if (!dbErr) dbErr = (await admin.from('legacy_contacts')
+        .update({ contact_type: 'secondary', updated_at: now })
+        .eq('id', P.id)).error
+      if (!dbErr) dbErr = (await admin.from('legacy_contacts').insert({
+        user_id: user.id, contact_type: 'primary',
+        first_name: newFirst, last_name: newLast, email: newEmail, relationship: newRel,
+        personal_message: personalMessage,
+      })).error
+    }
+
+    if (dbErr) {
+      await restoreOriginal()
       return NextResponse.json({ error: 'Failed to update. Please try again.' }, { status: 500 })
     }
 
-    // Audit log
-    await admin.from('legacy_contact_audit_log').insert([
-      { user_id: user.id, action: 'removed', contact_type: contactType,
-        previous_data: { first_name: current.first_name, last_name: current.last_name, email: current.email }, new_data: null },
-      { user_id: user.id, action: 'designated', contact_type: contactType,
-        previous_data: null, new_data: { first_name: newContact.firstName, last_name: newContact.lastName, email: newContact.email.toLowerCase() } },
-    ])
-
-    // Emails — rollback if either fails
-    const dedesig = await sendEmail({
-      to: current.email,
-      subject: 'Your Legacy Contact designation has been updated',
-      html: buildDedesignationEmail(userFirst, userLast, current.first_name),
-    })
-    if (!dedesig.ok) {
-      await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', contactType)
-      await admin.from('legacy_contacts').insert(current)
-      return NextResponse.json(
-        { error: `Could not notify your previous Legacy Contact at ${current.email}. No changes were saved. Please try again. (${dedesig.error})` },
-        { status: 502 }
-      )
+    // 1. Notify the new / promoted primary.
+    const primaryNotice = promote
+      ? await sendEmail({
+          to: newEmail,
+          subject: `Your role as ${toTitleCase(userFirst)} ${toTitleCase(userLast)}'s Legacy Contact has changed`,
+          html: buildPromotionEmail(userFirst, userLast, newFirst, personalMessage),
+        })
+      : await sendEmail({
+          to: newEmail,
+          subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
+          html: buildDesignationEmail(userFirst, userLast, newFirst, personalMessage),
+        })
+    if (!primaryNotice.ok) {
+      await restoreOriginal()
+      return NextResponse.json({ error: `Could not notify your new Legacy Contact at ${newEmail}. No changes were saved. Please try again. (${primaryNotice.error})` }, { status: 502 })
     }
 
-    const desig = await sendEmail({
-      to: newContact.email.toLowerCase(),
-      subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-      html: buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
-    })
-    if (!desig.ok) {
-      await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', contactType)
-      await admin.from('legacy_contacts').insert(current)
-      return NextResponse.json(
-        { error: `Could not notify your new Legacy Contact at ${newContact.email}. No changes were saved. Please try again. (${desig.error})` },
-        { status: 502 }
-      )
+    // 2. Notify the displaced old primary — removed (de-designation) or demoted (role change).
+    const oldPrimaryNotice = disposition === 'remove'
+      ? await sendEmail({
+          to: (P.email as string).toLowerCase(),
+          subject: 'Your Legacy Contact designation has been updated',
+          html: buildDedesignationEmail(userFirst, userLast, P.first_name),
+        })
+      : await sendEmail({
+          to: (P.email as string).toLowerCase(),
+          subject: `Your role as ${toTitleCase(userFirst)} ${toTitleCase(userLast)}'s Legacy Contact has changed`,
+          html: buildDemotionEmail(userFirst, userLast, P.first_name, personalMessage),
+        })
+    if (!oldPrimaryNotice.ok) {
+      await restoreOriginal()
+      return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${P.email}. No changes were saved. Please try again. (${oldPrimaryNotice.error})` }, { status: 502 })
     }
 
-    logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType } })
+    // 3. Notify an existing secondary that got bumped out (new-person + move-to-secondary only).
+    if (!promote && disposition === 'secondary' && S) {
+      const bumped = await sendEmail({
+        to: (S.email as string).toLowerCase(),
+        subject: 'Your Legacy Contact designation has been updated',
+        html: buildDedesignationEmail(userFirst, userLast, S.first_name),
+      })
+      if (!bumped.ok) {
+        await restoreOriginal()
+        return NextResponse.json({ error: `Could not notify your previous secondary Legacy Contact at ${S.email}. No changes were saved. Please try again. (${bumped.error})` }, { status: 502 })
+      }
+    }
+
+    await admin.from('legacy_contact_audit_log').insert({
+      user_id: user.id, action: 'updated', contact_type: 'primary',
+      previous_data: { first_name: P.first_name, last_name: P.last_name, email: P.email },
+      new_data: { first_name: newFirst, last_name: newLast, email: newEmail, promote, old_primary_disposition: disposition },
+    })
+
+    logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType: 'primary', promote, disposition } })
     return NextResponse.json({ ok: true })
   }
 
@@ -375,14 +593,22 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
     if (existing) return NextResponse.json({ error: 'A secondary Legacy Contact is already designated.' }, { status: 409 })
 
-    // Check email doesn't match primary
+    // A secondary cannot exist without a primary — guard the latent path (also enforced
+    // by UI flow, but there is no DB constraint, so enforce it here).
     const { data: primary } = await admin
       .from('legacy_contacts')
       .select('email')
       .eq('user_id', user.id)
       .eq('contact_type', 'primary')
       .maybeSingle()
-    if (primary && newContact.email.toLowerCase() === primary.email.toLowerCase()) {
+    if (!primary) {
+      return NextResponse.json(
+        { error: 'You must designate a primary Legacy Contact before adding a secondary.' },
+        { status: 409 }
+      )
+    }
+    // New secondary's email must differ from the primary's.
+    if (newContact.email.toLowerCase() === primary.email.toLowerCase()) {
       return NextResponse.json(
         { error: 'Primary and secondary contacts must have different email addresses' },
         { status: 400 }

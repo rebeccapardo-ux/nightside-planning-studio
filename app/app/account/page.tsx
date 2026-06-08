@@ -30,8 +30,8 @@ interface ReleasePrefs {
   include_fears_ranking:  boolean
 }
 
-type FlowType = 'update' | 'add-secondary' | 'remove-secondary'
-type UpdateMode = 'edit' | 'replace-confirm' | 'replace'
+type FlowType = 'update' | 'replace' | 'add-secondary' | 'remove-secondary'
+type ReplaceStep = 'warning' | 'form'
 
 interface ActiveFlow {
   type:        FlowType
@@ -109,11 +109,11 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function Field({
-  label, type, value, onChange, autoComplete, error,
+  label, type, value, onChange, autoComplete, error, disabled,
 }: {
   label: string; type: string; value: string
   onChange: (v: string) => void
-  autoComplete?: string; error?: string
+  autoComplete?: string; error?: string; disabled?: boolean
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -122,11 +122,15 @@ function Field({
         type={type} value={value}
         onChange={e => onChange(e.target.value)}
         autoComplete={autoComplete}
+        disabled={disabled}
         style={{
           padding: '10px 14px',
           border: error ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)',
-          borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426',
-          background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box',
+          borderRadius: 8, fontFamily: hv, fontSize: 15,
+          color: disabled ? 'rgba(19,4,38,0.55)' : '#130426',
+          background: disabled ? 'rgba(19,4,38,0.05)' : '#ffffff',
+          outline: 'none', width: '100%', boxSizing: 'border-box',
+          cursor: disabled ? 'not-allowed' : 'auto',
         }}
       />
       {error && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{error}</span>}
@@ -146,9 +150,10 @@ export default function AccountPage() {
 
   // Legacy Contact flow state
   const [activeFlow,          setActiveFlow]          = useState<ActiveFlow | null>(null)
-  const [updateMode,          setUpdateMode]          = useState<UpdateMode>('edit')
+  const [replaceStep,         setReplaceStep]         = useState<ReplaceStep>('warning')
+  const [promoteSecondary,    setPromoteSecondary]    = useState(false)
+  const [oldPrimaryDisposition, setOldPrimaryDisposition] = useState<'remove' | 'secondary' | null>(null)
   const [flowFields,          setFlowFields]          = useState<ContactFields>(EMPTY)
-  const [originalFlowFields,  setOriginalFlowFields]  = useState<ContactFields>(EMPTY)
   const [flowErrors,          setFlowErrors]          = useState<Partial<Record<keyof ContactFields, string>>>({})
   const [flowMessage,         setFlowMessage]         = useState('')
   const [flowPassword,        setFlowPassword]        = useState('')
@@ -220,19 +225,18 @@ export default function AccountPage() {
   function openFlow(flow: ActiveFlow) {
     setActiveFlow(flow)
     if (flow.type === 'update' && flow.existing) {
-      const pre: ContactFields = {
+      setFlowFields({
         firstName:    flow.existing.first_name,
         lastName:     flow.existing.last_name,
         email:        flow.existing.email,
         relationship: flow.existing.relationship,
-      }
-      setFlowFields(pre)
-      setOriginalFlowFields(pre)
+      })
     } else {
       setFlowFields(EMPTY)
-      setOriginalFlowFields(EMPTY)
     }
-    setUpdateMode('edit')
+    setReplaceStep('warning')
+    setPromoteSecondary(false)
+    setOldPrimaryDisposition(null)
     setFlowErrors({})
     setFlowMessage('')
     setFlowPassword('')
@@ -243,13 +247,27 @@ export default function AccountPage() {
   function closeFlow() {
     setActiveFlow(null)
     setFlowFields(EMPTY)
-    setOriginalFlowFields(EMPTY)
-    setUpdateMode('edit')
+    setReplaceStep('warning')
+    setPromoteSecondary(false)
+    setOldPrimaryDisposition(null)
     setFlowErrors({})
     setFlowMessage('')
     setFlowPassword('')
     setFlowStatus('idle')
     setFlowError('')
+  }
+
+  // Promote checkbox (Replace-primary): on → autofill the form from the existing
+  // secondary and lock the fields; off → clear back to an empty, editable form.
+  function togglePromote(checked: boolean) {
+    setPromoteSecondary(checked)
+    const sec = legacyContacts.find(c => c.contact_type === 'secondary')
+    if (checked && sec) {
+      setFlowFields({ firstName: sec.first_name, lastName: sec.last_name, email: sec.email, relationship: sec.relationship })
+    } else {
+      setFlowFields(EMPTY)
+    }
+    setFlowErrors({})
   }
 
   function updateFlowField(field: keyof ContactFields, value: string) {
@@ -259,7 +277,9 @@ export default function AccountPage() {
 
   function validateFlowFields(): boolean {
     if (!activeFlow || activeFlow.type === 'remove-secondary') return true
-    if (activeFlow.type === 'update' && updateMode === 'replace-confirm') return true
+    if (activeFlow.type === 'replace' && replaceStep === 'warning') return true
+    // Promoting the secondary uses its existing (already-valid) details, shown read-only.
+    if (activeFlow.type === 'replace' && activeFlow.contactType === 'primary' && promoteSecondary) return true
     const fe: Partial<Record<keyof ContactFields, string>> = {}
     let ok = true
 
@@ -289,21 +309,28 @@ export default function AccountPage() {
   async function handleFlowSubmit() {
     if (!activeFlow) return
     if (!validateFlowFields()) return
+    if (activeFlow.type === 'replace' && activeFlow.contactType === 'primary' && !oldPrimaryDisposition) {
+      setFlowError('Please choose what should happen to your current primary Legacy Contact.')
+      return
+    }
     if (!flowPassword) { setFlowError('Password is required'); return }
     if (flowMessage.length > MSG_HARD) return
 
     setFlowStatus('loading')
     setFlowError('')
 
-    const apiAction =
-      activeFlow.type === 'update'
-        ? (updateMode === 'replace' ? 'replace' : 'edit')
-        : activeFlow.type
+    // 'update' → 'edit'; 'replace' / 'add-secondary' / 'remove-secondary' map straight through.
+    const apiAction = activeFlow.type === 'update' ? 'edit' : activeFlow.type
 
     const body: Record<string, unknown> = {
       action:      apiAction,
       contactType: activeFlow.contactType,
       password:    flowPassword,
+    }
+
+    if (apiAction === 'replace' && activeFlow.contactType === 'primary') {
+      body.promote = promoteSecondary
+      body.oldPrimaryDisposition = oldPrimaryDisposition
     }
 
     if (activeFlow.type !== 'remove-secondary') {
@@ -509,6 +536,9 @@ export default function AccountPage() {
   const msgLen = flowMessage.length
   const msgWarn  = msgLen >= MSG_SOFT && msgLen < MSG_HARD
   const msgLimit = msgLen >= MSG_HARD
+  // Replace-primary requires an explicit decision about the old primary before saving.
+  const replaceNeedsDisposition = activeFlow?.type === 'replace' && activeFlow.contactType === 'primary' && !oldPrimaryDisposition
+  const flowSubmitDisabled = flowStatus === 'loading' || !flowPassword || msgLimit || !!replaceNeedsDisposition
 
   // ── Shared styles ──────────────────────────────────────────────────────────
 
@@ -628,8 +658,13 @@ export default function AccountPage() {
                 <Row label="Email"        value={primaryContact.email} />
                 <Row label="Relationship" value={primaryContact.relationship} />
                 <Row label="Designated"   value={new Date(primaryContact.designated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} />
-                <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
-                  <button style={ghostSmall} onClick={() => openFlow({ type: 'update', contactType: 'primary', existing: primaryContact })}>Update</button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 4 }}>
+                  <button style={ghostSmall} onClick={() => openFlow({ type: 'update', contactType: 'primary', existing: primaryContact })}>
+                    Update {toTitleCase(primaryContact.first_name)}&apos;s contact details
+                  </button>
+                  <button style={ghostSmall} onClick={() => openFlow({ type: 'replace', contactType: 'primary', existing: primaryContact })}>
+                    Replace with a different Legacy Contact
+                  </button>
                 </div>
               </div>
             ) : (
@@ -647,8 +682,13 @@ export default function AccountPage() {
                 <Row label="Email"        value={secondaryContact.email} />
                 <Row label="Relationship" value={secondaryContact.relationship} />
                 <Row label="Designated"   value={new Date(secondaryContact.designated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} />
-                <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
-                  <button style={ghostSmall} onClick={() => openFlow({ type: 'update', contactType: 'secondary', existing: secondaryContact })}>Update</button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 4 }}>
+                  <button style={ghostSmall} onClick={() => openFlow({ type: 'update', contactType: 'secondary', existing: secondaryContact })}>
+                    Update {toTitleCase(secondaryContact.first_name)}&apos;s contact details
+                  </button>
+                  <button style={ghostSmall} onClick={() => openFlow({ type: 'replace', contactType: 'secondary', existing: secondaryContact })}>
+                    Replace with a different Legacy Contact
+                  </button>
                   <button style={{ ...ghostSmall, color: '#C04828', borderColor: 'rgba(192,72,40,0.3)' }}
                           onClick={() => openFlow({ type: 'remove-secondary', contactType: 'secondary', existing: secondaryContact })}>Remove</button>
                 </div>
@@ -734,28 +774,52 @@ export default function AccountPage() {
             onClick={e => e.stopPropagation()}
             style={{ background: '#F8F4EB', borderRadius: 16, padding: '32px 36px', maxWidth: 500, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
           >
-            {/* Update (unified edit + replace flow) */}
+            {/* Update — edit the existing contact's details (no person change) */}
             {activeFlow.type === 'update' && (
               <>
                 <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 20px' }}>
-                  Update Legacy Contact
+                  Update Contact Details
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <Field label="First name *" type="text" value={flowFields.firstName} onChange={v => updateFlowField('firstName', v)} error={flowErrors.firstName} />
+                    <Field label="Last name *"  type="text" value={flowFields.lastName}  onChange={v => updateFlowField('lastName',  v)} error={flowErrors.lastName} />
+                  </div>
+                  <Field label="Email *"               type="email" value={flowFields.email}        onChange={v => updateFlowField('email',        v)} error={flowErrors.email}        autoComplete="off" />
+                  <Field label="Relationship to you *" type="text"  value={flowFields.relationship} onChange={v => updateFlowField('relationship', v)} error={flowErrors.relationship} />
+                </div>
+              </>
+            )}
+
+            {/* Replace — warning step, then a form designating a new (or promoted) person */}
+            {activeFlow.type === 'replace' && activeFlow.existing && (
+              <>
+                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 20px' }}>
+                  Replace Legacy Contact
                 </h3>
 
-                {/* Replace-confirm step — replaces form content */}
-                {updateMode === 'replace-confirm' && activeFlow.existing && (
+                {replaceStep === 'warning' && (
                   <div style={{ marginBottom: 24 }}>
                     <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: 'rgba(19,4,38,0.75)', margin: '0 0 20px' }}>
-                      <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong> will receive a notification that they are no longer your Legacy Contact. You can then designate someone else.
+                      {activeFlow.contactType === 'primary' ? (
+                        <>
+                          <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong>&apos;s role as your Legacy Contact will change. On the next screen, you&apos;ll choose whether they&apos;re removed entirely or moved to your secondary slot.
+                        </>
+                      ) : (
+                        <>
+                          <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong> will receive a notification that they are no longer your Legacy Contact. You can then designate someone else.
+                        </>
+                      )}
                     </p>
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button
-                        onClick={() => { setFlowFields(originalFlowFields); setFlowErrors({}); setUpdateMode('edit') }}
+                        onClick={closeFlow}
                         style={{ flex: 1, background: 'rgba(19,4,38,0.07)', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', cursor: 'pointer' }}
                       >
                         Cancel
                       </button>
                       <button
-                        onClick={() => { setFlowFields(EMPTY); setFlowMessage(''); setFlowErrors({}); setUpdateMode('replace') }}
+                        onClick={() => setReplaceStep('form')}
                         style={{ flex: 1, background: '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
                       >
                         Continue
@@ -764,40 +828,71 @@ export default function AccountPage() {
                   </div>
                 )}
 
-                {/* Edit mode */}
-                {updateMode === 'edit' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                      <Field label="First name *" type="text" value={flowFields.firstName} onChange={v => updateFlowField('firstName', v)} error={flowErrors.firstName} />
-                      <Field label="Last name *"  type="text" value={flowFields.lastName}  onChange={v => updateFlowField('lastName',  v)} error={flowErrors.lastName} />
-                    </div>
-                    <Field label="Email *"               type="email" value={flowFields.email}        onChange={v => updateFlowField('email',        v)} error={flowErrors.email}        autoComplete="off" />
-                    <Field label="Relationship to you *" type="text"  value={flowFields.relationship} onChange={v => updateFlowField('relationship', v)} error={flowErrors.relationship} />
-                  </div>
-                )}
-
-                {/* Replace mode */}
-                {updateMode === 'replace' && (
+                {replaceStep === 'form' && (
                   <>
-                    {activeFlow.existing && (
-                      <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '0 0 18px', lineHeight: 1.5 }}>
-                        You are designating a new person to replace <strong style={{ color: '#130426' }}>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong>.
-                      </p>
+                    {/* Prominent banner — makes the replacement unmissable */}
+                    <div style={{ background: 'rgba(219,88,53,0.10)', border: '1px solid rgba(219,88,53,0.30)', borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
+                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 700, color: '#B5430F', lineHeight: 1.45 }}>
+                        {promoteSecondary && secondaryContact
+                          ? `Promoting ${toTitleCase(secondaryContact.first_name)} ${toTitleCase(secondaryContact.last_name)} to replace ${toTitleCase(activeFlow.existing.first_name)} ${toTitleCase(activeFlow.existing.last_name)}`
+                          : `Designating a new person to replace ${toTitleCase(activeFlow.existing.first_name)} ${toTitleCase(activeFlow.existing.last_name)}`}
+                      </span>
+                    </div>
+
+                    {/* Promote checkbox — primary replace only, when a secondary exists */}
+                    {activeFlow.contactType === 'primary' && secondaryContact && (
+                      <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 18, cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={promoteSecondary}
+                          onChange={e => togglePromote(e.target.checked)}
+                          style={{ marginTop: 3, flexShrink: 0, accentColor: '#130426', width: 16, height: 16 }}
+                        />
+                        <span style={{ fontFamily: hv, fontSize: 14, color: '#130426', lineHeight: 1.5 }}>
+                          Promote <strong>{toTitleCase(secondaryContact.first_name)} {toTitleCase(secondaryContact.last_name)}</strong> (your secondary) to primary instead
+                        </span>
+                      </label>
                     )}
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Field label="First name *" type="text" value={flowFields.firstName} onChange={v => updateFlowField('firstName', v)} error={flowErrors.firstName} />
-                        <Field label="Last name *"  type="text" value={flowFields.lastName}  onChange={v => updateFlowField('lastName',  v)} error={flowErrors.lastName} />
+                        <Field label="First name *" type="text" value={flowFields.firstName} onChange={v => updateFlowField('firstName', v)} error={flowErrors.firstName} disabled={promoteSecondary} />
+                        <Field label="Last name *"  type="text" value={flowFields.lastName}  onChange={v => updateFlowField('lastName',  v)} error={flowErrors.lastName}  disabled={promoteSecondary} />
                       </div>
-                      <Field label="Email *"               type="email" value={flowFields.email}        onChange={v => updateFlowField('email',        v)} error={flowErrors.email}        autoComplete="off" />
-                      <Field label="Relationship to you *" type="text"  value={flowFields.relationship} onChange={v => updateFlowField('relationship', v)} error={flowErrors.relationship} />
+                      <Field label="Email *"               type="email" value={flowFields.email}        onChange={v => updateFlowField('email',        v)} error={flowErrors.email}        autoComplete="off" disabled={promoteSecondary} />
+                      <Field label="Relationship to you *" type="text"  value={flowFields.relationship} onChange={v => updateFlowField('relationship', v)} error={flowErrors.relationship} disabled={promoteSecondary} />
                     </div>
+
+                    {/* Old-primary decision — primary replace only */}
+                    {activeFlow.contactType === 'primary' && (
+                      <div style={{ marginBottom: 20 }}>
+                        <span style={{ display: 'block', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', marginBottom: 10 }}>
+                          What should happen to {toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}?
+                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <label style={{ display: 'flex', gap: 10, alignItems: 'center', cursor: 'pointer' }}>
+                            <input type="radio" name="oldPrimaryDisposition" checked={oldPrimaryDisposition === 'remove'} onChange={() => { setOldPrimaryDisposition('remove'); setFlowError('') }} style={{ accentColor: '#130426', width: 16, height: 16, flexShrink: 0 }} />
+                            <span style={{ fontFamily: hv, fontSize: 14, color: '#130426' }}>Remove them as a Legacy Contact</span>
+                          </label>
+                          <label style={{ display: 'flex', gap: 10, alignItems: 'center', cursor: 'pointer' }}>
+                            <input type="radio" name="oldPrimaryDisposition" checked={oldPrimaryDisposition === 'secondary'} onChange={() => { setOldPrimaryDisposition('secondary'); setFlowError('') }} style={{ accentColor: '#130426', width: 16, height: 16, flexShrink: 0 }} />
+                            <span style={{ fontFamily: hv, fontSize: 14, color: '#130426' }}>Move them to your secondary slot</span>
+                          </label>
+                        </div>
+                        {oldPrimaryDisposition === 'secondary' && !promoteSecondary && secondaryContact && (
+                          <p style={{ fontFamily: hv, fontSize: 13, color: '#B5430F', margin: '10px 0 0', lineHeight: 1.5 }}>
+                            Your current secondary, <strong>{toTitleCase(secondaryContact.first_name)} {toTitleCase(secondaryContact.last_name)}</strong>, will be removed as a Legacy Contact as a result.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     <label style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 4 }}>
                       <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>
                         Personal message <span style={{ fontWeight: 400, color: 'rgba(19,4,38,0.45)' }}>(optional)</span>
                       </span>
                       <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.45)', marginBottom: 4 }}>
-                        This will be included in the notification email sent to your new Legacy Contact.
+                        This will be included in the notification email(s) sent about this change.
                       </span>
                       <textarea
                         value={flowMessage} onChange={e => setFlowMessage(e.target.value)} rows={4}
@@ -859,8 +954,9 @@ export default function AccountPage() {
               </>
             )}
 
-            {/* Password + action buttons (hidden during replace-confirm step) */}
-            {!(activeFlow.type === 'update' && updateMode === 'replace-confirm') && (
+            {/* Password + action buttons (hidden during the Replace warning step, which
+                has its own Continue / Cancel) */}
+            {!(activeFlow.type === 'replace' && replaceStep === 'warning') && (
               <>
                 <div style={{ borderTop: '1px solid rgba(19,4,38,0.1)', paddingTop: 20, marginBottom: 20 }}>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -895,40 +991,24 @@ export default function AccountPage() {
                   </button>
                   <button
                     onClick={handleFlowSubmit}
-                    disabled={flowStatus === 'loading' || !flowPassword || msgLimit}
+                    disabled={flowSubmitDisabled}
                     style={{
                       flex: 1,
                       background: activeFlow.type === 'remove-secondary'
-                        ? (flowStatus === 'loading' || !flowPassword ? 'rgba(192,72,40,0.35)' : '#C04828')
-                        : (flowStatus === 'loading' || !flowPassword ? 'rgba(19,4,38,0.25)' : '#130426'),
+                        ? (flowSubmitDisabled ? 'rgba(192,72,40,0.35)' : '#C04828')
+                        : (flowSubmitDisabled ? 'rgba(19,4,38,0.25)' : '#130426'),
                       color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0',
                       fontFamily: hv, fontSize: 14, fontWeight: 600,
-                      cursor: flowStatus === 'loading' || !flowPassword || msgLimit ? 'not-allowed' : 'pointer',
+                      cursor: flowSubmitDisabled ? 'not-allowed' : 'pointer',
                     }}
                   >
                     {flowStatus === 'loading' ? 'Saving…' : (
-                      activeFlow.type === 'update' && updateMode === 'replace' ? 'Save' :
-                      activeFlow.type === 'update'                             ? 'Save' :
-                      activeFlow.type === 'add-secondary'                      ? 'Add Legacy Contact' :
-                                                                                  'Remove Legacy Contact'
+                      activeFlow.type === 'add-secondary'    ? 'Add Legacy Contact' :
+                      activeFlow.type === 'remove-secondary' ? 'Remove Legacy Contact' :
+                                                               'Save'
                     )}
                   </button>
                 </div>
-
-                {/* "Designate someone else" link — edit mode only */}
-                {activeFlow.type === 'update' && updateMode === 'edit' && (
-                  <div style={{ borderTop: '1px solid rgba(19,4,38,0.08)', marginTop: 20, paddingTop: 16, textAlign: 'center' }}>
-                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.45)' }}>
-                      Want to designate someone else as your Legacy Contact instead?{' '}
-                    </span>
-                    <button
-                      onClick={() => setUpdateMode('replace-confirm')}
-                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 13, color: '#130426', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      Designate someone else
-                    </button>
-                  </div>
-                )}
               </>
             )}
           </div>
