@@ -800,17 +800,31 @@ export default function AccountPage() {
 
                 {replaceStep === 'warning' && (
                   <div style={{ marginBottom: 24 }}>
-                    <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: 'rgba(19,4,38,0.75)', margin: '0 0 20px' }}>
-                      {activeFlow.contactType === 'primary' ? (
-                        <>
-                          <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong>&apos;s role as your Legacy Contact will change. On the next screen, you&apos;ll choose whether they&apos;re removed entirely or moved to your secondary slot.
-                        </>
-                      ) : (
-                        <>
-                          <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong> will receive a notification that they are no longer your Legacy Contact. You can then designate someone else.
-                        </>
-                      )}
-                    </p>
+                    {activeFlow.contactType === 'primary' ? (
+                      <>
+                        {/* Disposition is the destructive decision — make it first */}
+                        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: 'rgba(19,4,38,0.75)', margin: '0 0 16px' }}>
+                          <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong> is currently your Legacy Contact. What should happen to them?
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+                          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+                            <input type="radio" name="oldPrimaryDisposition" checked={oldPrimaryDisposition === 'remove'} onChange={() => setOldPrimaryDisposition('remove')} style={{ accentColor: '#130426', width: 16, height: 16, flexShrink: 0, marginTop: 2 }} />
+                            <span style={{ fontFamily: hv, fontSize: 14, color: '#130426', lineHeight: 1.5 }}>Remove them as a Legacy Contact</span>
+                          </label>
+                          <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+                            <input type="radio" name="oldPrimaryDisposition" checked={oldPrimaryDisposition === 'secondary'} onChange={() => setOldPrimaryDisposition('secondary')} style={{ accentColor: '#130426', width: 16, height: 16, flexShrink: 0, marginTop: 2 }} />
+                            <span style={{ fontFamily: hv, fontSize: 14, color: '#130426', lineHeight: 1.5 }}>
+                              Move them to your secondary slot
+                              {secondaryContact && <span style={{ color: '#B5430F' }}> (this will remove {toTitleCase(secondaryContact.first_name)} {toTitleCase(secondaryContact.last_name)} as your Legacy Contact)</span>}
+                            </span>
+                          </label>
+                        </div>
+                      </>
+                    ) : (
+                      <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: 'rgba(19,4,38,0.75)', margin: '0 0 20px' }}>
+                        <strong>{toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}</strong> will receive a notification that they are no longer your Legacy Contact. You can then designate someone else.
+                      </p>
+                    )}
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button
                         onClick={closeFlow}
@@ -820,7 +834,8 @@ export default function AccountPage() {
                       </button>
                       <button
                         onClick={() => setReplaceStep('form')}
-                        style={{ flex: 1, background: '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                        disabled={activeFlow.contactType === 'primary' && !oldPrimaryDisposition}
+                        style={{ flex: 1, background: (activeFlow.contactType === 'primary' && !oldPrimaryDisposition) ? 'rgba(19,4,38,0.25)' : '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: (activeFlow.contactType === 'primary' && !oldPrimaryDisposition) ? 'not-allowed' : 'pointer' }}
                       >
                         Continue
                       </button>
@@ -862,30 +877,6 @@ export default function AccountPage() {
                       <Field label="Email *"               type="email" value={flowFields.email}        onChange={v => updateFlowField('email',        v)} error={flowErrors.email}        autoComplete="off" disabled={promoteSecondary} />
                       <Field label="Relationship to you *" type="text"  value={flowFields.relationship} onChange={v => updateFlowField('relationship', v)} error={flowErrors.relationship} disabled={promoteSecondary} />
                     </div>
-
-                    {/* Old-primary decision — primary replace only */}
-                    {activeFlow.contactType === 'primary' && (
-                      <div style={{ marginBottom: 20 }}>
-                        <span style={{ display: 'block', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', marginBottom: 10 }}>
-                          What should happen to {toTitleCase(activeFlow.existing.first_name)} {toTitleCase(activeFlow.existing.last_name)}?
-                        </span>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <label style={{ display: 'flex', gap: 10, alignItems: 'center', cursor: 'pointer' }}>
-                            <input type="radio" name="oldPrimaryDisposition" checked={oldPrimaryDisposition === 'remove'} onChange={() => { setOldPrimaryDisposition('remove'); setFlowError('') }} style={{ accentColor: '#130426', width: 16, height: 16, flexShrink: 0 }} />
-                            <span style={{ fontFamily: hv, fontSize: 14, color: '#130426' }}>Remove them as a Legacy Contact</span>
-                          </label>
-                          <label style={{ display: 'flex', gap: 10, alignItems: 'center', cursor: 'pointer' }}>
-                            <input type="radio" name="oldPrimaryDisposition" checked={oldPrimaryDisposition === 'secondary'} onChange={() => { setOldPrimaryDisposition('secondary'); setFlowError('') }} style={{ accentColor: '#130426', width: 16, height: 16, flexShrink: 0 }} />
-                            <span style={{ fontFamily: hv, fontSize: 14, color: '#130426' }}>Move them to your secondary slot</span>
-                          </label>
-                        </div>
-                        {oldPrimaryDisposition === 'secondary' && !promoteSecondary && secondaryContact && (
-                          <p style={{ fontFamily: hv, fontSize: 13, color: '#B5430F', margin: '10px 0 0', lineHeight: 1.5 }}>
-                            Your current secondary, <strong>{toTitleCase(secondaryContact.first_name)} {toTitleCase(secondaryContact.last_name)}</strong>, will be removed as a Legacy Contact as a result.
-                          </p>
-                        )}
-                      </div>
-                    )}
 
                     <label style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 4 }}>
                       <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>
