@@ -1,5 +1,11 @@
 // Shared UI layout constants.
 
+// Copy for the ⓘ tooltip on the wishes-docs "Relevant materials" panel header
+// (advance-directive = My Care Wishes, funeral-wishes). Shared so the two docs
+// can't drift apart. Rendered via <InfoTooltip>.
+export const MATERIALS_PANEL_TOOLTIP =
+  'These are materials relevant to this document. When you select a question, the most relevant materials move to the top. You can also add more via "+ Add materials."'
+
 // Vertical offset (px) for scrolling an accordion section/item to the top of the
 // viewport so its title lands *clear of the sticky GlobalNav*
 // (`app/components/GlobalNav.tsx` — `sticky top-0`, 76px tall) with ~20px of
