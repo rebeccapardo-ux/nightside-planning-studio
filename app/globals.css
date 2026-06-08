@@ -261,15 +261,6 @@ body.nav-drawer-open .ns-floating-notepad-wrap {
   }
 }
 
-/* Instruction pills on wishes/practical capture pages: allow text to
-   wrap inside the pill on mobile so long pills don't overflow the
-   viewport. Pills still flow-wrap to new rows for shorter labels. */
-@media (max-width: 767px) {
-  .instruction-pill {
-    white-space: normal !important;
-  }
-}
-
 /* Scenario Navigator: stacks the one remaining inline-grid choice list
    (line ~319 with dynamic gridTemplateColumns) to a single column on
    small viewports. The other 12 grids in the file now use Tailwind

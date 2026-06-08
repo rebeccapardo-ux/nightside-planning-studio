@@ -52,10 +52,13 @@ export default function SlidePanel({
           fontFamily: hv,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-          <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.3 }}>
-            {title}
-          </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.3 }}>
+              {title}
+            </h2>
+            {headerAction}
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -76,9 +79,6 @@ export default function SlidePanel({
             ×
           </button>
         </div>
-        {headerAction && (
-          <div style={{ marginBottom: 20 }}>{headerAction}</div>
-        )}
         {children}
       </div>
     </>

@@ -4,10 +4,12 @@ import { Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
+import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator, MATERIALS_PANEL_TOOLTIP } from '@/lib/ui'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
+import InfoTooltip from '@/app/components/InfoTooltip'
+import MaterialsNullState from '@/app/components/MaterialsNullState'
 import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse, hasAnySupDocTag, noteHasSupDocSignal } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
@@ -594,15 +596,7 @@ function FuneralWishesPage() {
             </a>
           </p>
 
-          {/* Instruction pills — desktop only */}
-          <div className="hidden md:flex" style={{ gap: 6, marginTop: 28 }}>
-            {['Expand a section', 'Relevant materials update as you work', 'Pull content into your answers'].map((text) => (
-              <span key={text} className="instruction-pill" style={{ background: '#130426', border: '1px dashed rgba(248,244,235,0.60)', borderRadius: 20, padding: '7px 16px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, color: '#F8F4EB', cursor: 'default', whiteSpace: 'nowrap' }}>
-                {text}
-              </span>
-            ))}
-          </div>
-          <AutosaveNotice style={{ marginTop: 16 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
+          <AutosaveNotice style={{ marginTop: 28 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}
@@ -922,6 +916,7 @@ function FuneralWishesPage() {
         open={drawerQuestion !== null}
         onClose={closeMaterialsDrawer}
         title="Relevant materials"
+        headerAction={<InfoTooltip text={MATERIALS_PANEL_TOOLTIP} />}
       >
         {drawerQuestion !== null && (
           <FWMaterialsPanel
@@ -1345,8 +1340,14 @@ function FWMaterialsPanel({
     />
   ) : null
 
+  // Panel is truly empty only when neither tier has anything. Manually-added
+  // materials land in `other`, so this stays false whenever the user added something.
+  const isEmpty = recommended.length === 0 && other.length === 0
+
   const innerContent = loadingPanel ? (
     <p style={{ fontSize: 12, color: 'rgba(19,4,38,0.50)' }}>Loading...</p>
+  ) : isEmpty ? (
+    <MaterialsNullState />
   ) : activeQuestion === null ? (
     <FWFlatPanelContent items={other} onInsert={onInsert} />
   ) : (
@@ -1385,10 +1386,13 @@ function FWMaterialsPanel({
 
   return (
     <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-        <h2 style={{ fontSize: 20, lineHeight: '26px', fontWeight: 600, color: '#130426', margin: 0, whiteSpace: 'nowrap' }}>
-          Relevant materials
-        </h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <h2 style={{ fontSize: 20, lineHeight: '26px', fontWeight: 600, color: '#130426', margin: 0, whiteSpace: 'nowrap' }}>
+            Relevant materials
+          </h2>
+          <InfoTooltip text={MATERIALS_PANEL_TOOLTIP} />
+        </div>
         <button
           onClick={() => setShowBrowser(true)}
           className="shrink-0 transition-opacity hover:opacity-70"
@@ -1424,11 +1428,8 @@ function FWFlatPanelContent({ items, onInsert }: { items: TieredItem[]; onInsert
   const visible = expanded || items.length <= FW_FLAT_SHOW_LIMIT ? items : items.slice(0, FW_FLAT_SHOW_LIMIT)
 
   if (items.length === 0) {
-    return (
-      <p style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(19,4,38,0.72)', padding: '4px 0', margin: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-        No materials found.
-      </p>
-    )
+    // Defensive fallback — the panel-level isEmpty check normally intercepts first.
+    return <MaterialsNullState />
   }
 
   return (
@@ -1469,13 +1470,10 @@ function FWPanelContent({ recommended, other, responseText, onInsert }: {
   const hasRecommended = recommended.length > 0
   const hasOther = other.length > 0
 
-  // Neither tier — neutral, non-apologetic empty state.
+  // Neither tier — defer to the shared null state (the panel-level isEmpty check
+  // normally intercepts this first; kept here as a defensive fallback).
   if (!hasRecommended && !hasOther) {
-    return (
-      <p className="mt-2" style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(19,4,38,0.50)' }}>
-        No materials surfaced for this section yet.
-      </p>
-    )
+    return <div className="mt-2"><MaterialsNullState /></div>
   }
 
   // "Also relevant" list body — reused with or without its subheader.
