@@ -12,6 +12,7 @@
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'node:crypto'
 import { sendEmail, brandedEmail, type SendEmailResult } from './email'
+import { buildRecoveryVerifiedEmail, RECOVERY_VERIFIED_SUBJECT } from './account-notifications'
 
 export type RecoveryTokenPurpose = 'verify' | 'recovery'
 
@@ -140,6 +141,22 @@ export async function confirmVerifyToken(rawToken: string): Promise<'verified' |
     .update({ recovery_email_verified: true })
     .eq('user_id', consumed.userId)
   if (error) return 'invalid'
+
+  // The recovery channel just became active → notify the PRIMARY email (the change
+  // is now real). Primary only — notifying the just-confirmed recovery address adds
+  // nothing. Token-authorized flow has no session, so resolve the primary address +
+  // first name from the userId. Best-effort: never fail the verification on a send.
+  try {
+    const { data: userData } = await admin.auth.admin.getUserById(consumed.userId)
+    const primaryEmail = userData?.user?.email
+    const firstName = (userData?.user?.user_metadata?.first_name as string | undefined) ?? ''
+    if (primaryEmail) {
+      await sendEmail({ to: primaryEmail, subject: RECOVERY_VERIFIED_SUBJECT, html: buildRecoveryVerifiedEmail(firstName) })
+    }
+  } catch (err) {
+    console.error('[recovery-email] verified notification failed', err)
+  }
+
   return 'verified'
 }
 

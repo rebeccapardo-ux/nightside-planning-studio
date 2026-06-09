@@ -13,6 +13,9 @@ function esc(s: string): string {
 export const PASSWORD_CHANGED_SUBJECT = 'Your Nightside Planning Studio password was changed'
 export const PLAN_EXPORT_SUBJECT = 'A full plan export was downloaded from your account'
 export const PLAN_EXPORT_JSON_SUBJECT = 'A data export of your plan was downloaded'
+export const ACCOUNT_DELETED_SUBJECT = 'Your Nightside Planning Studio account has been deleted'
+export const RECOVERY_VERIFIED_SUBJECT = 'Your recovery email has been verified'
+export const RECOVERY_REMOVED_SUBJECT = 'Your recovery email has been removed'
 
 // "Your password was changed" — the same event whether via direct change (Phase 3)
 // or forgot-password reset. Supabase's auto password-changed email is OFF; we own it.
@@ -44,6 +47,44 @@ export function buildPlanExportJsonEmail(firstName: string): string {
     <h2 style="margin-top:0;font-size:22px;color:#130426;">A data export of your plan was downloaded</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
     <p style="color:#130426;line-height:1.65;">A data export (JSON format) of your plan was just downloaded from your Nightside Planning Studio account.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+  `)
+}
+
+// Account deletion (pre-launch: immediate deletion). Sent to BOTH primary + verified
+// recovery BEFORE the delete (after, the addresses are gone). Best-effort.
+export function buildAccountDeletedEmail(firstName: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your account has been deleted</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+    <p style="color:#130426;line-height:1.65;">Your account has been deleted. All of your planning data has been permanently removed from our system.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a> — though we may not be able to recover deleted data.</p>
+  `)
+}
+
+// Recovery email verified — the recovery channel just became active. Primary only
+// (the recovery address itself just confirmed; notifying it adds nothing).
+export function buildRecoveryVerifiedEmail(firstName: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your recovery email has been verified</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+    <p style="color:#130426;line-height:1.65;">The recovery email on your Nightside Planning Studio account has been verified and is now active.</p>
+    <p style="color:#130426;line-height:1.65;">If you ever lose access to your primary email, this recovery email will be used to help you regain access.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+  `)
+}
+
+// Recovery email removed — the account no longer has a recovery channel. Primary only
+// (the removed address is no longer a destination we'd notify).
+export function buildRecoveryRemovedEmail(firstName: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your recovery email has been removed</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+    <p style="color:#130426;line-height:1.65;">The recovery email on your account has been removed. Without one, your account can't be recovered if you lose access to your primary email.</p>
+    <p style="color:#130426;line-height:1.65;">You can add a new recovery email anytime from your account settings.</p>
     <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `)
 }
