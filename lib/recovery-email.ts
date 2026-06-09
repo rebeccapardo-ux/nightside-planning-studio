@@ -107,6 +107,17 @@ export async function peekToken(
   return 'pristine'
 }
 
+// Invalidate every outstanding (unused) 'verify' token for a user. Called before
+// re-issuing on change / remove / resend so previously-sent verify links stop working.
+export async function invalidateVerifyTokens(userId: string): Promise<void> {
+  await adminClient()
+    .from('recovery_email_tokens')
+    .update({ used_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .eq('purpose', 'verify')
+    .is('used_at', null)
+}
+
 // Verify-flow composition: consume a 'verify' token, confirm its snapshot still
 // matches the account's CURRENT recovery_email (else 'stale'), then flip
 // recovery_email_verified. The token is consumed (one-time) regardless of outcome.
