@@ -50,7 +50,7 @@ export type LcChange =
 function tail(origin: string): string {
   const settingsUrl = `${origin}/app/account#account-access`
   return `
-    <p style="color:#130426;line-height:1.65;">As a reminder, your Legacy Contact is the person we'll release your practical planning materials to in the event of your death — they have no access to your plan while you're alive. You can review or change your Legacy Contacts anytime from your <a href="${settingsUrl}" style="color:#2C3777;">account settings</a>.</p>
+    <p style="color:#130426;line-height:1.65;">As a reminder, your primary Legacy Contact is the person we'll release your practical planning materials to in the event of your death. Your secondary Legacy Contact comes into play only if your primary is unavailable. Neither has access to your plan while you're alive. You can review or change your Legacy Contacts anytime from your <a href="${settingsUrl}" style="color:#2C3777;">account settings</a>.</p>
     <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `
 }
