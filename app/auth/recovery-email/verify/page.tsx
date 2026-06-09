@@ -2,6 +2,7 @@ import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
 import { peekToken } from '@/lib/recovery-email'
 import { confirmRecoveryEmail } from './actions'
+import VerifyStepIndicator from './VerifyStepIndicator'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -63,6 +64,10 @@ export default async function RecoveryEmailVerifyPage({
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: 20, width: 'auto', display: 'inline-block', marginBottom: 32 }} />
+          {/* Mid-sequence cue: step 2 of 2 ("Open link" → "Verify"). On the verified
+              outcome it plays the onboarding completion flourish, then fades away. */}
+          {view === 'confirm' && <VerifyStepIndicator mode="confirm" />}
+          {view === 'verified' && <VerifyStepIndicator mode="verified" />}
           <h1 style={{ fontFamily: apfel, fontSize: 24, fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px' }}>{heading[view]}</h1>
           <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 24px' }}>{body[view]}</p>
 

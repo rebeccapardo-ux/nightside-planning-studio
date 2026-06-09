@@ -12,6 +12,7 @@ function esc(s: string): string {
 
 export const PASSWORD_CHANGED_SUBJECT = 'Your Nightside Planning Studio password was changed'
 export const PLAN_EXPORT_SUBJECT = 'A full plan export was downloaded from your account'
+export const PLAN_EXPORT_JSON_SUBJECT = 'A data export of your plan was downloaded'
 
 // "Your password was changed" — the same event whether via direct change (Phase 3)
 // or forgot-password reset. Supabase's auto password-changed email is OFF; we own it.
@@ -25,12 +26,24 @@ export function buildPasswordChangedEmail(firstName: string): string {
   `)
 }
 
+// PDF (document) export.
 export function buildPlanExportEmail(firstName: string): string {
   const name = firstName?.trim() || 'there'
   return brandedEmail(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">A full plan export was downloaded</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
     <p style="color:#130426;line-height:1.65;">A full export of your plan was just downloaded from your Nightside Planning Studio account.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+  `)
+}
+
+// JSON (data) export — distinct copy so the user knows which format left their account.
+export function buildPlanExportJsonEmail(firstName: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">A data export of your plan was downloaded</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+    <p style="color:#130426;line-height:1.65;">A data export (JSON format) of your plan was just downloaded from your Nightside Planning Studio account.</p>
     <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `)
 }
