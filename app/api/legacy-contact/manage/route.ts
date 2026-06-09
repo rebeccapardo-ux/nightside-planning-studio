@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
 import { sendEmail } from '@/lib/email'
+import { notifyAccountHolderLcChange } from '@/lib/legacy-contact-notifications'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -197,6 +198,7 @@ export async function POST(req: NextRequest) {
   const meta      = user.user_metadata ?? {}
   const userFirst = (meta.first_name as string) || user.email?.split('@')[0] || 'Someone'
   const userLast  = (meta.last_name  as string) || ''
+  const origin    = req.nextUrl.origin
 
   // Parse
   let body: Record<string, unknown>
@@ -319,6 +321,13 @@ export async function POST(req: NextRequest) {
     })
 
     logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'edit', contactType } })
+    // Account-holder notification — only when the email actually changed (matches the
+    // LC-facing rule; silent name/relationship corrections don't notify).
+    if (emailChanged) {
+      await notifyAccountHolderLcChange(user.email, userFirst, origin, {
+        kind: 'edit-details', name: `${contact.firstName} ${contact.lastName}`,
+      })
+    }
     return NextResponse.json({ ok: true })
   }
 
@@ -406,6 +415,11 @@ export async function POST(req: NextRequest) {
       }
 
       logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType: 'secondary' } })
+      await notifyAccountHolderLcChange(user.email, userFirst, origin, {
+        kind: 'replace-secondary',
+        oldName: `${current.first_name} ${current.last_name}`,
+        newName: `${newContact.firstName} ${newContact.lastName}`,
+      })
       return NextResponse.json({ ok: true })
     }
 
@@ -563,6 +577,25 @@ export async function POST(req: NextRequest) {
     })
 
     logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType: 'primary', promote, disposition } })
+    // Account-holder notification: promote (secondary→primary) vs replace with a new
+    // person read differently, and each carries the displaced old primary's disposition.
+    if (promote) {
+      await notifyAccountHolderLcChange(user.email, userFirst, origin, {
+        kind: 'promote-secondary',
+        promotedName: `${newFirst} ${newLast}`,
+        oldPrimaryName: `${P.first_name} ${P.last_name}`,
+        disposition,
+      })
+    } else {
+      await notifyAccountHolderLcChange(user.email, userFirst, origin, {
+        kind: 'replace-primary',
+        oldName: `${P.first_name} ${P.last_name}`,
+        newName: `${newFirst} ${newLast}`,
+        disposition,
+        // Filling both slots (old primary → secondary) bumps any existing secondary out.
+        bumpedSecondaryName: disposition === 'secondary' && S ? `${S.first_name} ${S.last_name}` : undefined,
+      })
+    }
     return NextResponse.json({ ok: true })
   }
 
@@ -649,6 +682,9 @@ export async function POST(req: NextRequest) {
     }
 
     logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'add-secondary' } })
+    await notifyAccountHolderLcChange(user.email, userFirst, origin, {
+      kind: 'designate-secondary', name: `${newContact.firstName} ${newContact.lastName}`,
+    })
     return NextResponse.json({ ok: true })
   }
 
@@ -690,6 +726,9 @@ export async function POST(req: NextRequest) {
     }
 
     logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'remove-secondary' } })
+    await notifyAccountHolderLcChange(user.email, userFirst, origin, {
+      kind: 'remove-secondary', name: `${current.first_name} ${current.last_name}`,
+    })
     return NextResponse.json({ ok: true })
   }
 

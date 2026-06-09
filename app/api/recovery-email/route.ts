@@ -3,6 +3,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
 import { issueToken, invalidateVerifyTokens, sendVerificationEmail } from '@/lib/recovery-email'
+import { sendEmail } from '@/lib/email'
+import { buildRecoveryRemovedEmail, RECOVERY_REMOVED_SUBJECT } from '@/lib/account-notifications'
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -55,6 +57,12 @@ export async function POST(req: NextRequest) {
       .eq('user_id', userId)
     if (error) return NextResponse.json({ error: 'Failed to remove. Please try again.' }, { status: 500 })
     logEvent({ userId, eventName: 'recovery_email_updated', metadata: { action: 'remove' } })
+    // The change is immediately real → notify the PRIMARY email (best-effort).
+    try {
+      await sendEmail({ to: user.email!, subject: RECOVERY_REMOVED_SUBJECT, html: buildRecoveryRemovedEmail(firstName) })
+    } catch (err) {
+      console.error('[recovery-email] removed notification failed', err)
+    }
     return NextResponse.json({ ok: true })
   }
 

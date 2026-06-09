@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
+import { buildAccountDeletedEmail, notifyPrimaryAndRecovery, ACCOUNT_DELETED_SUBJECT } from '@/lib/account-notifications'
 
 export async function POST(req: NextRequest) {
   // Verify the requester is authenticated
@@ -48,6 +49,16 @@ export async function POST(req: NextRequest) {
   // admin client deletes the auth user below. No explicit table-level deletes
   // are needed. The account_deleted analytics event is logged earlier (above)
   // so its user_id reference survives the cascade.
+
+  // Notify BOTH primary + verified recovery BEFORE deleting — afterward the
+  // addresses are gone. Best-effort: a send failure must not block the deletion.
+  // (Read of the recovery address uses the still-valid session client / RLS.)
+  try {
+    const firstName = (user.user_metadata?.first_name as string | undefined) ?? ''
+    await notifyPrimaryAndRecovery(supabase, uid, user.email, ACCOUNT_DELETED_SUBJECT, buildAccountDeletedEmail(firstName))
+  } catch (err) {
+    console.error('[delete-account] notification failed', err)
+  }
 
   // Delete the auth user (requires service role key)
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
