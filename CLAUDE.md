@@ -116,18 +116,26 @@ Documents with collapsible sections scroll the opened section to the top of the 
 
 ---
 
-## Account recovery email (in progress — paused after Phase 1)
+## Account recovery email (Phases 1–2 shipped)
 
-Self-service account recovery for users who lose access to their primary email. **No manual review** — a *verified* recovery email is the only recovery path; users without one cannot recover (decided; documented in the support runbook). Distinct from a Legacy Contact (a different person, released to on death).
+Self-service account recovery for users who lose access to their primary email. **No manual review** — a *verified* recovery email is the only recovery path; users without one cannot recover (decided; documented in the support runbook).
 
-**Storage (shipped — Phase 1a, `supabase/migrations/20260608_recovery_email.sql`):**
-- `user_profiles.recovery_email` (text, nullable) + `recovery_email_verified` (boolean, default false). An address is **inert until verified** — every consumer must check the flag.
-- `recovery_email_tokens` — single-use, time-limited ledger for both the `verify` and `recovery` flows. **Service-role only: RLS enabled with NO policies** (never readable by the browser). Stores a **SHA-256 `token_hash`** (raw token only ever in the emailed link) and an **`email` snapshot** (so editing a pending address invalidates old links). Consume with `WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()`.
+- **Design assumption: the recovery email is the primary user's OWN backup address — not a delegate.** Copy, threat model, and notification semantics all assume this. Using someone else's address (e.g. a partner's) is the user's choice *outside* the platform's design intent — this framing keeps the recovery model identity-preserving and bounds liability. (Distinct from a Legacy Contact, who *is* a different person, released to on death.)
 
-**Locked conventions for the remaining phases:**
-- **Must-differ-from-primary** is enforced in app code (client + server), *not* SQL — the primary lives in `auth.users`, unreachable from a CHECK.
-- **Verification is deferred until after primary-email confirmation:** capture `recovery_email` at signup via `signUp` `options.data`, then persist it + send the verify email from the `/auth/callback` post-confirmation hook (single-email focus, recent context). Success page acknowledges the verify send.
-- Recovery is **outside Supabase auth** — both the verify flow and the lost-email recovery flow need custom tokens + service-role routes; Supabase's built-in confirm/reset flows (keyed to the *primary* email) can't be reused. The lost-email reset should bootstrap a Supabase recovery session via `admin.generateLink({ type: 'recovery' })` so GoTrue's password rules (12-char min, leaked-password protection) still apply, then revoke other sessions (single-session enforcement is OFF).
+**Storage (Phase 1a, `supabase/migrations/20260608_recovery_email.sql`):** `user_profiles.recovery_email` (text, nullable) + `recovery_email_verified` (boolean, default false) — an address is **inert until verified**, every consumer must check the flag. `recovery_email_tokens` — single-use, time-limited ledger for the `verify` and `recovery` flows; **service-role only (RLS enabled, NO policies)**.
+
+**Token engine (Phase 2, `lib/recovery-email.ts` — service-role only):** `issueToken(userId, purpose, email)` / `consumeToken(raw, expectedPurpose)`.
+- Stores only a **SHA-256 `token_hash`**; the raw token is returned to the caller and only ever travels in the emailed link (a DB read can't yield a usable link).
+- Each token **snapshots the email** it was issued for; `confirmVerifyToken` compares the snapshot to the account's *current* `recovery_email` and returns `stale` on mismatch (editing a pending address invalidates old links).
+- **Single-use:** consume stamps `used_at`, guarded `WHERE token_hash = $1 AND purpose = $2 AND used_at IS NULL AND expires_at > NOW()` plus a `used_at IS NULL`-guarded update so a race can't double-consume. Verify TTL 24h; recovery TTL 60m (Phase 4).
+- Shared branded email shell is `brandedEmail()` in `lib/email.ts` (introduced here; legacy-contact emails still inline their own — migrating is a tracked follow-up).
+
+**Capture + verify flow (Phase 2):**
+- **Must-differ-from-primary** is enforced in app code (signup client + the callback server), *not* SQL — the primary lives in `auth.users`, unreachable from a CHECK.
+- **Verification is deferred until after primary-email confirmation (decision b):** signup writes `recovery_email` into `signUp` `options.data`; the **`/auth/callback` post-confirmation hook** (`provisionRecoveryEmailFromMetadata`) is the trigger point — it validates, persists the address (unverified), issues a verify token, and sends the email. **Idempotency guard required** (skip if `recovery_email` already set) so a re-clicked confirmation link doesn't re-issue/re-send. Best-effort: never block the callback. The acknowledgment lives on `/auth/signup/payment` (the confirmation-landing page), inline + subtle — *not* the post-payment success page (the 24h verify TTL means a user must see it before it expires).
+- **The verify link is prefetch-safe:** `/auth/recovery-email/verify` renders a landing page with a **Confirm button that POSTs** (a server action) to consume the token — email-client GET prefetch can't consume it. (Deliberately stronger than the platform's PKCE confirm link, which is prefetch-vulnerable.)
+- **The address persists *before* the verify email send.** A failed send leaves the address in a **pending-unverified** state (visible in Phase 3, recoverable via the Phase 3 resend path) rather than silently losing the user's input. This trades a potential "forever-unverified-typo" edge case for not dropping captured input — sends are usually transient failures.
+- Recovery is **outside Supabase auth** — both the verify flow and the lost-email recovery flow need custom tokens + service-role routes; Supabase's built-in confirm/reset flows (keyed to the *primary* email) can't be reused. The lost-email reset (Phase 4) should bootstrap a Supabase recovery session via `admin.generateLink({ type: 'recovery' })` so GoTrue's password rules (12-char min, leaked-password protection) still apply, then revoke other sessions (single-session enforcement is OFF).
 
 **Notification policy (Phase 5 — mostly gap-filling).** Supabase now auto-notifies the **primary** email for password change / email change (old address) / sign-in-method & MFA events. We add the **recovery-email** side where policy says both, plus full notifications for events Supabase doesn't cover (account deletion, plan export). Password-change notification = keep client `updateUser` + a **thin notify endpoint** (preserves Supabase's secure-change re-auth *and* its primary notification — do **not** move to a service-role admin write, which loses both); plan-export = a thin endpoint the client calls post-export (PDF stays client-side).
 

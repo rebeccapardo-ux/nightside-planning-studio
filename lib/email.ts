@@ -11,6 +11,25 @@
 
 const FROM = 'The Nightside <noreply@thenightside.net>'
 
+const LOGO_URL = 'https://images.squarespace-cdn.com/content/v1/640e160f9a63e5441c7054f2/198408a5-87a0-427c-b02c-767ca3a69220/The-Nightside-Logo-White.png?format=1500w'
+
+// Shared branded HTML shell for transactional emails — logo header + "With care,
+// The Nightside" sign-off. Pass the inner body HTML. (The legacy-contact routes
+// still inline their own equivalent wrapper; migrating them onto this is a tracked
+// follow-up — don't refactor them as a side effect.)
+export function brandedEmail(innerHtml: string): string {
+  return `
+<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
+  <div style="background-color:#2C3777;padding:18px 24px;text-align:center;">
+    <img src="${LOGO_URL}" alt="The Nightside" style="max-width:100px;height:auto;"/>
+  </div>
+  <div style="padding:32px 24px;">
+    ${innerHtml}
+    <p style="color:#130426;line-height:1.65;">With care,<br/>The Nightside</p>
+  </div>
+</div>`
+}
+
 export type SendEmailResult = { ok: boolean; error?: string }
 
 export async function sendEmail(opts: {
