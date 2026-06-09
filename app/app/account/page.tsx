@@ -175,7 +175,19 @@ export default function AccountPage() {
   const [emailStatus,  setEmailStatus]  = useState<'idle' | 'loading' | 'sent' | 'error'>('idle')
   const [emailError,   setEmailError]   = useState('')
 
-  // Change password
+  // Recovery email
+  const [recoveryEmail,    setRecoveryEmail]    = useState<string | null>(null)
+  const [recoveryVerified, setRecoveryVerified] = useState(false)
+  const [recModal,         setRecModal]         = useState<null | 'add' | 'remove' | 'resend'>(null)
+  const [recEmailInput,    setRecEmailInput]    = useState('')
+  const [recPassword,      setRecPassword]      = useState('')
+  const [recErrors,        setRecErrors]        = useState<{ email?: string; password?: string }>({})
+  const [recStatus,        setRecStatus]        = useState<'idle' | 'loading' | 'sent' | 'error'>('idle')
+  const [recError,         setRecError]         = useState('')
+  const [recEmailSent,     setRecEmailSent]     = useState(true)
+
+  // Change password (now behind a modal — mirrors the email/recovery rows)
+  const [pwModal,         setPwModal]         = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword,     setNewPassword]     = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -195,6 +207,19 @@ export default function AccountPage() {
       .select('id,contact_type,first_name,last_name,email,relationship,designated_at')
       .order('contact_type', { ascending: true })
     if (data) setLegacyContacts(data as LegacyContact[])
+  }, [])
+
+  const refreshRecoveryEmail = useCallback(async () => {
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user: u } } = await supabase.auth.getUser()
+    if (!u) return
+    const { data } = await supabase
+      .from('user_profiles')
+      .select('recovery_email, recovery_email_verified')
+      .eq('user_id', u.id)
+      .maybeSingle()
+    setRecoveryEmail((data?.recovery_email as string | null) ?? null)
+    setRecoveryVerified(!!data?.recovery_email_verified)
   }, [])
 
   useEffect(() => {
@@ -218,7 +243,8 @@ export default function AccountPage() {
       }
     })
     refreshContacts()
-  }, [refreshContacts])
+    refreshRecoveryEmail()
+  }, [refreshContacts, refreshRecoveryEmail])
 
   // ── Legacy Contact flow ────────────────────────────────────────────────────
 
@@ -458,6 +484,69 @@ export default function AccountPage() {
     setEmailStatus('sent')
   }
 
+  // ── Recovery email ──────────────────────────────────────────────────────────
+
+  function openRecModal(mode: 'add' | 'remove' | 'resend') {
+    setRecModal(mode)
+    setRecEmailInput('')
+    setRecPassword('')
+    setRecErrors({})
+    setRecStatus('idle')
+    setRecError('')
+    setRecEmailSent(true)
+  }
+
+  function closeRecModal() {
+    setRecModal(null)
+    setRecEmailInput('')
+    setRecPassword('')
+    setRecErrors({})
+    setRecStatus('idle')
+    setRecError('')
+  }
+
+  async function handleRecSubmit() {
+    const mode = recModal
+    if (!mode) return
+
+    const errs: { email?: string; password?: string } = {}
+    if (mode === 'add') {
+      const e = recEmailInput.trim()
+      if (!e) errs.email = 'Required'
+      else if (!isValidEmail(e)) errs.email = 'Enter a valid email address'
+      else if (e.toLowerCase() === user?.email?.toLowerCase()) errs.email = 'Must differ from your primary email'
+    }
+    if (!recPassword) errs.password = 'Required'
+    if (Object.keys(errs).length) { setRecErrors(errs); return }
+
+    setRecStatus('loading')
+    setRecError('')
+    try {
+      const res = await fetch('/api/recovery-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: mode, email: recEmailInput.trim().toLowerCase(), password: recPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (res.status === 401) setRecErrors({ password: 'Incorrect password' })
+        else setRecError(data.error ?? 'Something went wrong. Please try again.')
+        setRecStatus('error')
+        return
+      }
+      await refreshRecoveryEmail()
+      if (mode === 'remove') {
+        closeRecModal()
+      } else {
+        setRecEmailSent(data.emailSent !== false)
+        setRecStatus('sent')
+      }
+    } catch {
+      setRecError('Something went wrong. Please check your connection and try again.')
+      setRecStatus('error')
+    }
+  }
+
   // ── Release prefs ──────────────────────────────────────────────────────────
 
   async function handleReleaseToggle(field: keyof ReleasePrefs, value: boolean) {
@@ -477,21 +566,36 @@ export default function AccountPage() {
     if (newPassword !== confirmPassword) { setPwError('New passwords do not match.'); return }
     if (newPassword.length < 12)         { setPwError('New password must be at least 12 characters.'); return }
     setPwStatus('loading')
-    const supabase = createSupabaseBrowserClient()
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user!.email!, password: currentPassword,
-    })
-    if (signInError) { setPwError('Current password is incorrect.'); setPwStatus('error'); return }
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
-    if (updateError) { setPwError(updateError.message); setPwStatus('error'); return }
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'account_settings_updated', metadata: { type: 'password' } }),
-    }).catch(() => {})
-    setPwStatus('success')
+    try {
+      const res = await fetch('/api/account/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setPwError(res.status === 401 ? 'Current password is incorrect.' : (data.error ?? 'Something went wrong. Please try again.'))
+        setPwStatus('error')
+        return
+      }
+      setPwStatus('success')
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+    } catch {
+      setPwError('Something went wrong. Please check your connection and try again.')
+      setPwStatus('error')
+    }
+  }
+
+  function openPwModal() {
     setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
-    setTimeout(() => setPwStatus('idle'), 4000)
+    setPwStatus('idle'); setPwError('')
+    setPwModal(true)
+  }
+
+  function closePwModal() {
+    setPwModal(false)
+    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+    setPwStatus('idle'); setPwError('')
   }
 
   // ── Delete account ─────────────────────────────────────────────────────────
@@ -558,6 +662,20 @@ export default function AccountPage() {
     padding: '6px 14px', fontFamily: hv, fontSize: 13, fontWeight: 600,
     color: '#130426', cursor: 'pointer',
   }
+  // Inline underlined "Change / Add / …" link buttons in Account Access rows.
+  const linkBtn: React.CSSProperties = {
+    background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 14,
+    color: '#130426', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+    textDecoration: 'underline', textUnderlineOffset: 3,
+  }
+  const removeLinkBtn: React.CSSProperties = { ...linkBtn, color: '#C04828' }
+  const verifiedBadge: React.CSSProperties = {
+    fontFamily: hv, fontSize: 12, fontWeight: 600, color: '#2D7A4F',
+    background: 'rgba(45,122,79,0.12)', padding: '2px 9px', borderRadius: 999, whiteSpace: 'nowrap',
+  }
+  const pendingBadge: React.CSSProperties = {
+    ...verifiedBadge, color: '#B06800', background: 'rgba(176,104,0,0.12)',
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -601,42 +719,49 @@ export default function AccountPage() {
           </p>
           <div style={{ ...card, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 0 }}>
             {/* Email row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, paddingBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, paddingBottom: 20 }}>
               <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426', flexShrink: 0 }}>Email</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', wordBreak: 'break-all' }}>{user?.email ?? '—'}</span>
-                <button onClick={openEmailModal} style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 14, color: '#130426', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', textDecoration: 'underline', textUnderlineOffset: 3 }}>Change</button>
+                <button onClick={openEmailModal} style={linkBtn}>Change</button>
               </div>
             </div>
-            {/* Divider */}
-            <div style={{ borderTop: '1px solid rgba(19,4,38,0.08)', paddingTop: 20 }}>
-              <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426' }}>Password</span>
-                  <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', letterSpacing: '0.1em' }}>••••••••</span>
+
+            {/* Recovery email row */}
+            <div style={{ borderTop: '1px solid rgba(19,4,38,0.08)', paddingTop: 20, paddingBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426' }}>Recovery email</span>
+                  {recoveryEmail && (recoveryVerified
+                    ? <span style={verifiedBadge}>Verified</span>
+                    : <span style={pendingBadge}>Pending verification</span>
+                  )}
                 </div>
-                <Field label="Current password"     type="password" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
-                <Field label="New password"         type="password" value={newPassword}     onChange={setNewPassword}     autoComplete="new-password" />
-                <p style={{ fontFamily: hv, fontSize: 13, color: '#6b6b6b', margin: 0, lineHeight: 1.4 }}>
-                  Use at least 12 characters. Long, memorable passphrases work well.
+                {!recoveryEmail && <button onClick={() => openRecModal('add')} style={linkBtn}>Add</button>}
+              </div>
+
+              {recoveryEmail ? (
+                <>
+                  <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', wordBreak: 'break-all', margin: '8px 0 0' }}>{recoveryEmail}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 12 }}>
+                    {!recoveryVerified && <button onClick={() => openRecModal('resend')} style={linkBtn}>Resend verification</button>}
+                    <button onClick={() => openRecModal('remove')} style={removeLinkBtn}>Remove</button>
+                  </div>
+                </>
+              ) : (
+                <p style={{ fontFamily: hv, fontSize: 13, color: '#6b6b6b', margin: '8px 0 0', lineHeight: 1.5 }}>
+                  A backup email — if you ever lose access to your primary, this is how you&apos;ll get back in. Without one, your account can&apos;t be recovered.
                 </p>
-                <Field label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
-                {pwError && <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{pwError}</p>}
-                {pwStatus === 'success' && <p style={{ fontFamily: hv, fontSize: 14, color: '#2D7A4F', margin: 0 }}>Password updated successfully.</p>}
-                <button
-                  type="submit"
-                  disabled={pwStatus === 'loading'}
-                  style={{
-                    alignSelf: 'flex-start', background: '#130426', color: '#F8F4EB',
-                    border: 'none', borderRadius: 22, padding: '10px 22px',
-                    fontFamily: hv, fontSize: 14, fontWeight: 600,
-                    cursor: pwStatus === 'loading' ? 'wait' : 'pointer',
-                    opacity: pwStatus === 'loading' ? 0.6 : 1,
-                  }}
-                >
-                  {pwStatus === 'loading' ? 'Updating…' : 'Update password'}
-                </button>
-              </form>
+              )}
+            </div>
+
+            {/* Password row */}
+            <div style={{ borderTop: '1px solid rgba(19,4,38,0.08)', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426' }}>Password</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', letterSpacing: '0.1em' }}>••••••••</span>
+                <button onClick={openPwModal} style={linkBtn}>Change</button>
+              </div>
             </div>
           </div>
         </section>
@@ -1133,6 +1258,129 @@ export default function AccountPage() {
                     {emailStatus === 'loading' ? 'Sending…' : 'Send confirmation'}
                   </button>
                 </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Recovery email modal ── */}
+      {recModal && (
+        <div
+          onClick={recStatus !== 'sent' ? closeRecModal : undefined}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(19,4,38,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ background: '#F8F4EB', borderRadius: 16, padding: '32px 36px', maxWidth: 480, width: '100%' }}>
+            {recStatus === 'sent' ? (
+              <>
+                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 14px' }}>
+                  {recModal === 'resend' ? 'Verification email sent' : 'Check your recovery email'}
+                </h3>
+                <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 24px' }}>
+                  {recModal === 'resend' ? (
+                    <>We&apos;ve sent a new verification link to <strong>{recoveryEmail}</strong>. Click it within 24 hours to verify.</>
+                  ) : recEmailSent ? (
+                    <>We&apos;ve sent a verification link to <strong>{recoveryEmail}</strong>. Click it within 24 hours to verify your recovery email.</>
+                  ) : (
+                    <>Saved. We couldn&apos;t send the verification email just now — use <strong>Resend verification</strong> to try again.</>
+                  )}
+                </p>
+                <button onClick={closeRecModal} style={{ width: '100%', background: '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Got it</button>
+              </>
+            ) : (
+              <>
+                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>
+                  {recModal === 'add' ? 'Add Recovery Email' : recModal === 'remove' ? 'Remove Recovery Email' : 'Resend Verification Email'}
+                </h3>
+                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 24px' }}>
+                  {recModal === 'remove'
+                    ? <>Your account will no longer have a recovery email. If you lose access to your primary email, you won&apos;t be able to recover your account.</>
+                    : recModal === 'resend'
+                    ? <>We&apos;ll send a new verification link to <strong>{recoveryEmail}</strong>.</>
+                    : <>We&apos;ll send a verification link to this address. Click the link to activate it.</>}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+                  {recModal === 'add' && (
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>Recovery email *</span>
+                      <input
+                        type="email" value={recEmailInput}
+                        onChange={e => { setRecEmailInput(e.target.value); if (recErrors.email) setRecErrors(p => ({ ...p, email: undefined })) }}
+                        autoComplete="off"
+                        style={{ padding: '10px 14px', border: recErrors.email ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      />
+                      {recErrors.email && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{recErrors.email}</span>}
+                    </label>
+                  )}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>Current password *</span>
+                    <input
+                      type="password" value={recPassword}
+                      onChange={e => { setRecPassword(e.target.value); if (recErrors.password) setRecErrors(p => ({ ...p, password: undefined })) }}
+                      autoComplete="current-password"
+                      onKeyDown={e => { if (e.key === 'Enter') handleRecSubmit() }}
+                      style={{ padding: '10px 14px', border: recErrors.password ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                    />
+                    {recErrors.password && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{recErrors.password}</span>}
+                  </label>
+                </div>
+                {recError && (
+                  <div style={{ background: 'rgba(192,72,40,0.08)', border: '1px solid rgba(192,72,40,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+                    <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{recError}</p>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={closeRecModal} style={{ flex: 1, background: 'rgba(19,4,38,0.07)', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', cursor: 'pointer' }}>Cancel</button>
+                  <button
+                    onClick={handleRecSubmit}
+                    disabled={recStatus === 'loading'}
+                    style={{ flex: 1, background: recModal === 'remove' ? (recStatus === 'loading' ? 'rgba(192,72,40,0.35)' : '#C04828') : (recStatus === 'loading' ? 'rgba(19,4,38,0.25)' : '#130426'), color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: recStatus === 'loading' ? 'wait' : 'pointer' }}
+                  >
+                    {recStatus === 'loading' ? 'Working…' : recModal === 'remove' ? 'Remove' : recModal === 'resend' ? 'Resend' : 'Save'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Change password modal ── */}
+      {pwModal && (
+        <div
+          onClick={pwStatus !== 'success' ? closePwModal : undefined}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(19,4,38,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ background: '#F8F4EB', borderRadius: 16, padding: '32px 36px', maxWidth: 480, width: '100%' }}>
+            {pwStatus === 'success' ? (
+              <>
+                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 14px' }}>Password updated</h3>
+                <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 24px' }}>Your password has been updated successfully.</p>
+                <button onClick={closePwModal} style={{ width: '100%', background: '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Got it</button>
+              </>
+            ) : (
+              <>
+                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 24px' }}>Change password</h3>
+                <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <Field label="Current password"     type="password" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
+                  <div style={{ borderTop: '1px solid rgba(19,4,38,0.1)', margin: '4px 0' }} />
+                  <p style={{ fontFamily: hv, fontSize: 13, color: '#6b6b6b', margin: 0, lineHeight: 1.4 }}>
+                    Use at least 12 characters. Long, memorable passphrases work well.
+                  </p>
+                  <Field label="New password"         type="password" value={newPassword}     onChange={setNewPassword}     autoComplete="new-password" />
+                  <Field label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+                  {pwError && <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{pwError}</p>}
+                  <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                    <button type="button" onClick={closePwModal} style={{ flex: 1, background: 'rgba(19,4,38,0.07)', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', cursor: 'pointer' }}>Cancel</button>
+                    <button
+                      type="submit"
+                      disabled={pwStatus === 'loading'}
+                      style={{ flex: 1, background: pwStatus === 'loading' ? 'rgba(19,4,38,0.25)' : '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: pwStatus === 'loading' ? 'wait' : 'pointer' }}
+                    >
+                      {pwStatus === 'loading' ? 'Updating…' : 'Update password'}
+                    </button>
+                  </div>
+                </form>
               </>
             )}
           </div>
