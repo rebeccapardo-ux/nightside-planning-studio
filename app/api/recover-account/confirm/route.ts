@@ -15,7 +15,7 @@ function recoveredSubject(audience: 'primary' | 'recovery'): string {
   // unexpected change is recognizable. Recovery recipient is likely the initiator.
   return audience === 'primary'
     ? 'Your password has been changed via account recovery'
-    : 'Your Nightside Planning Studio account was recovered'
+    : 'You recovered access to your Nightside Planning Studio account'
 }
 
 function buildRecoveredEmail(firstName: string, audience: 'primary' | 'recovery'): string {
@@ -29,9 +29,10 @@ function buildRecoveredEmail(firstName: string, audience: 'primary' | 'recovery'
     `)
   }
   return brandedEmail(`
-    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your account was recovered</h2>
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">You recovered access to your account</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
-    <p style="color:#130426;line-height:1.65;">You just recovered access to your Nightside Planning Studio account. Your password has been reset and other sessions have been signed out for security.</p>
+    <p style="color:#130426;line-height:1.65;">You just recovered access to your account using your recovery email. Your password has been reset and other sessions have been signed out.</p>
+    <p style="color:#130426;line-height:1.65;">You can now sign in with your primary email and your new password.</p>
   `)
 }
 
