@@ -72,8 +72,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, emailSent: true })
   }
 
-  // ── Add / Change ──
-  if (action === 'add' || action === 'change') {
+  // ── Add ── (there is no "change": switching addresses = remove then add, which
+  // matches the model — a recovery email has no persistent identity to mutate.)
+  if (action === 'add') {
     const email = (body.email as string | undefined)?.trim().toLowerCase() ?? ''
     if (!email) return NextResponse.json({ error: 'Recovery email is required.' }, { status: 400 })
     if (!isValidEmail(email)) return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Your recovery email must be different from your primary email.' }, { status: 400 })
     }
 
-    // Invalidate any outstanding verify tokens (matters for change; harmless for add).
+    // Defensive: clear any stray outstanding verify tokens before issuing a fresh one.
     await invalidateVerifyTokens(userId)
 
     // Persist BEFORE sending (Phase 2 principle): a failed send leaves a recoverable

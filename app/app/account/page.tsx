@@ -178,7 +178,7 @@ export default function AccountPage() {
   // Recovery email
   const [recoveryEmail,    setRecoveryEmail]    = useState<string | null>(null)
   const [recoveryVerified, setRecoveryVerified] = useState(false)
-  const [recModal,         setRecModal]         = useState<null | 'add' | 'change' | 'remove' | 'resend'>(null)
+  const [recModal,         setRecModal]         = useState<null | 'add' | 'remove' | 'resend'>(null)
   const [recEmailInput,    setRecEmailInput]    = useState('')
   const [recPassword,      setRecPassword]      = useState('')
   const [recErrors,        setRecErrors]        = useState<{ email?: string; password?: string }>({})
@@ -486,7 +486,7 @@ export default function AccountPage() {
 
   // ── Recovery email ──────────────────────────────────────────────────────────
 
-  function openRecModal(mode: 'add' | 'change' | 'remove' | 'resend') {
+  function openRecModal(mode: 'add' | 'remove' | 'resend') {
     setRecModal(mode)
     setRecEmailInput('')
     setRecPassword('')
@@ -510,7 +510,7 @@ export default function AccountPage() {
     if (!mode) return
 
     const errs: { email?: string; password?: string } = {}
-    if (mode === 'add' || mode === 'change') {
+    if (mode === 'add') {
       const e = recEmailInput.trim()
       if (!e) errs.email = 'Required'
       else if (!isValidEmail(e)) errs.email = 'Enter a valid email address'
@@ -741,7 +741,6 @@ export default function AccountPage() {
                   <p style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#130426', wordBreak: 'break-all', margin: '8px 0 0' }}>{recoveryEmail}</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 12 }}>
                     {!recoveryVerified && <button onClick={() => openRecModal('resend')} style={linkBtn}>Resend verification</button>}
-                    <button onClick={() => openRecModal('change')} style={linkBtn}>Change</button>
                     <button onClick={() => openRecModal('remove')} style={removeLinkBtn}>Remove</button>
                   </div>
                 </>
@@ -1287,19 +1286,19 @@ export default function AccountPage() {
             ) : (
               <>
                 <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>
-                  {recModal === 'add' ? 'Add Recovery Email' : recModal === 'change' ? 'Change Recovery Email' : recModal === 'remove' ? 'Remove Recovery Email' : 'Resend Verification Email'}
+                  {recModal === 'add' ? 'Add Recovery Email' : recModal === 'remove' ? 'Remove Recovery Email' : 'Resend Verification Email'}
                 </h3>
                 <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 24px' }}>
                   {recModal === 'remove'
                     ? <>Your account will no longer have a recovery email. If you lose access to your primary email, you won&apos;t be able to recover your account.</>
                     : recModal === 'resend'
                     ? <>We&apos;ll send a new verification link to <strong>{recoveryEmail}</strong>.</>
-                    : <>We&apos;ll send a verification link to this address. It stays unverified until you click that link.</>}
+                    : <>We&apos;ll send a verification link to this address. Click the link to activate it.</>}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
-                  {(recModal === 'add' || recModal === 'change') && (
+                  {recModal === 'add' && (
                     <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>{recModal === 'change' ? 'New recovery email *' : 'Recovery email *'}</span>
+                      <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>Recovery email *</span>
                       <input
                         type="email" value={recEmailInput}
                         onChange={e => { setRecEmailInput(e.target.value); if (recErrors.email) setRecErrors(p => ({ ...p, email: undefined })) }}
