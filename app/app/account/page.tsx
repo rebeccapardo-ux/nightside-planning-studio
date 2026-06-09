@@ -1363,10 +1363,11 @@ export default function AccountPage() {
                 <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 24px' }}>Change password</h3>
                 <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <Field label="Current password"     type="password" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
-                  <Field label="New password"         type="password" value={newPassword}     onChange={setNewPassword}     autoComplete="new-password" />
+                  <div style={{ borderTop: '1px solid rgba(19,4,38,0.1)', margin: '4px 0' }} />
                   <p style={{ fontFamily: hv, fontSize: 13, color: '#6b6b6b', margin: 0, lineHeight: 1.4 }}>
                     Use at least 12 characters. Long, memorable passphrases work well.
                   </p>
+                  <Field label="New password"         type="password" value={newPassword}     onChange={setNewPassword}     autoComplete="new-password" />
                   <Field label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
                   {pwError && <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{pwError}</p>}
                   <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
