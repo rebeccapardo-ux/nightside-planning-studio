@@ -10,19 +10,28 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+function recoveredSubject(audience: 'primary' | 'recovery'): string {
+  // Primary recipient may NOT have initiated recovery — lead with the action so an
+  // unexpected change is recognizable. Recovery recipient is likely the initiator.
+  return audience === 'primary'
+    ? 'Your password has been changed via account recovery'
+    : 'Your Nightside Planning Studio account was recovered'
+}
+
 function buildRecoveredEmail(firstName: string, audience: 'primary' | 'recovery'): string {
-  const name  = firstName?.trim() || 'there'
-  const intro = audience === 'primary'
-    ? 'Your account was just recovered.'
-    : 'You just recovered access to your Nightside Planning Studio account.'
-  const tail  = audience === 'primary'
-    ? `<p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>`
-    : ''
+  const name = firstName?.trim() || 'there'
+  if (audience === 'primary') {
+    return brandedEmail(`
+      <h2 style="margin-top:0;font-size:22px;color:#130426;">Your password has been changed via account recovery</h2>
+      <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+      <p style="color:#130426;line-height:1.65;">Other sessions have been signed out for security.</p>
+      <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you:</strong> contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+    `)
+  }
   return brandedEmail(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Your account was recovered</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
-    <p style="color:#130426;line-height:1.65;">${intro} Your password has been reset and other sessions have been signed out for security.</p>
-    ${tail}
+    <p style="color:#130426;line-height:1.65;">You just recovered access to your Nightside Planning Studio account. Your password has been reset and other sessions have been signed out for security.</p>
   `)
 }
 
@@ -86,10 +95,9 @@ export async function POST(req: NextRequest) {
 
   // Notify primary + recovery — best-effort; never undo the recovery.
   try {
-    const subject = 'Your Nightside Planning Studio account was recovered'
     await Promise.all([
-      sendEmail({ to: primaryEmail.toLowerCase(),       subject, html: buildRecoveredEmail(firstName, 'primary') }),
-      sendEmail({ to: consumed.email.toLowerCase(),     subject, html: buildRecoveredEmail(firstName, 'recovery') }),
+      sendEmail({ to: primaryEmail.toLowerCase(),   subject: recoveredSubject('primary'),  html: buildRecoveredEmail(firstName, 'primary') }),
+      sendEmail({ to: consumed.email.toLowerCase(), subject: recoveredSubject('recovery'), html: buildRecoveredEmail(firstName, 'recovery') }),
     ])
   } catch (err) {
     console.error('[recover-account] notification failed', err)
