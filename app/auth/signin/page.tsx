@@ -134,7 +134,10 @@ function SignInForm() {
             autoComplete="current-password"
             required
           />
-          <div style={{ textAlign: 'right', marginTop: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: '8px' }}>
+            <Link href="/auth/recover-account" className="auth-forgot-link">
+              Lost access to your email?
+            </Link>
             <Link href="/auth/forgot-password" className="auth-forgot-link">
               Forgot password?
             </Link>
