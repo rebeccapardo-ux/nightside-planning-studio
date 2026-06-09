@@ -566,38 +566,24 @@ export default function AccountPage() {
     if (newPassword !== confirmPassword) { setPwError('New passwords do not match.'); return }
     if (newPassword.length < 12)         { setPwError('New password must be at least 12 characters.'); return }
     setPwStatus('loading')
-    const supabase = createSupabaseBrowserClient()
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: user!.email!, password: currentPassword,
-    })
-    // TEMP DIAGNOSTIC (remove before merge) — capture the exact reauth/update path.
-    console.log('[pw-debug] signInWithPassword →', {
-      hasSession: !!signInData?.session,
-      hasUser: !!signInData?.user,
-      signInError: signInError ? { message: signInError.message, status: signInError.status, code: signInError.code, name: signInError.name } : null,
-    })
-    if (signInError) { setPwError('Current password is incorrect.'); setPwStatus('error'); return }
-    const { data: updateData, error: updateError } = await supabase.auth.updateUser({ password: newPassword })
-    // TEMP DIAGNOSTIC (remove before merge) — the full error object names the GoTrue cause.
-    console.log('[pw-debug] updateUser({password}) →', {
-      hasUser: !!updateData?.user,
-      updateError: updateError ? { message: updateError.message, status: updateError.status, code: updateError.code, name: updateError.name } : null,
-      raw: updateError ? JSON.stringify(updateError) : null,
-    })
-    if (updateError) {
-      // TEMP: surface code/status inline so it can be captured without devtools.
-      const u = updateError as { status?: number; code?: string }
-      setPwError(`${updateError.message} [status=${u.status ?? '?'} code=${u.code ?? '?'}]`)
+    try {
+      const res = await fetch('/api/account/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setPwError(res.status === 401 ? 'Current password is incorrect.' : (data.error ?? 'Something went wrong. Please try again.'))
+        setPwStatus('error')
+        return
+      }
+      setPwStatus('success')
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+    } catch {
+      setPwError('Something went wrong. Please check your connection and try again.')
       setPwStatus('error')
-      return
     }
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'account_settings_updated', metadata: { type: 'password' } }),
-    }).catch(() => {})
-    setPwStatus('success')
-    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
   }
 
   function openPwModal() {
