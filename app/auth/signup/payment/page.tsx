@@ -95,7 +95,7 @@ export default async function PaymentPage() {
 
               {profile?.recovery_email && !profile.recovery_email_verified && (
                 <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', textAlign: 'center', margin: '16px 0 0', lineHeight: 1.5 }}>
-                  We&apos;ve also sent a verification link to your recovery email ({profile.recovery_email}) — verify it now or anytime from your account settings.
+                  We&apos;ve also sent a verification link to your recovery email ({profile.recovery_email}) — verify within the next 24 hours, or request a new link anytime from your account settings.
                 </p>
               )}
             </>
