@@ -44,7 +44,9 @@ export async function proxy(request: NextRequest) {
     // ── Always-public paths ──────────────────────────────────────────────────
     if (ALWAYS_PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
       // Redirect authenticated users away from plain auth pages (signin, signup)
-      // but not from the payment flow pages (/auth/signup/payment etc.).
+      // but not from the payment flow pages (/auth/signup/payment etc.), nor the
+      // recovery-email verify page — that's a self-contained journey authorized by a
+      // one-time token, not the session, and must render regardless of who's signed in.
       if (
         user &&
         pathname.startsWith('/auth/') &&
@@ -52,7 +54,8 @@ export async function proxy(request: NextRequest) {
         !pathname.startsWith('/auth/signup/success') &&
         !pathname.startsWith('/auth/signup/cancel') &&
         !pathname.startsWith('/auth/signup/reconcile') &&
-        !pathname.startsWith('/auth/reset-password')
+        !pathname.startsWith('/auth/reset-password') &&
+        !pathname.startsWith('/auth/recovery-email')
       ) {
         const url = request.nextUrl.clone()
         url.pathname = '/app'

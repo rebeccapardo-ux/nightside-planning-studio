@@ -48,6 +48,7 @@ export default function SignUpPage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [recoveryEmail, setRecoveryEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [province, setProvince] = useState('')
@@ -72,6 +73,11 @@ export default function SignUpPage() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = 'Please enter a valid email address.'
     if (!password) errs.password = 'Please enter a password.'
     else if (password.length < 12) errs.password = 'Password must be at least 12 characters.'
+    const rec = recoveryEmail.trim()
+    if (rec) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rec)) errs.recoveryEmail = 'Please enter a valid email address.'
+      else if (rec.toLowerCase() === email.trim().toLowerCase()) errs.recoveryEmail = 'Your recovery email must be different from your primary email.'
+    }
     if (!province) errs.province = 'Please select your province or territory.'
     if (!termsAccepted) errs.terms = 'Please agree to the Terms of Service and Privacy Policy to continue.'
     if (Object.keys(errs).length > 0) { setFieldErrors(errs); return }
@@ -93,6 +99,9 @@ export default function SignUpPage() {
           terms_accepted_at: new Date().toISOString(),
           terms_version_accepted: TERMS_VERSION,
           privacy_version_accepted: PRIVACY_VERSION,
+          // Optional backup address — provisioned + verify-emailed after the primary
+          // email is confirmed (see /auth/callback). Omitted when left blank.
+          recovery_email: recoveryEmail.trim() ? recoveryEmail.trim().toLowerCase() : undefined,
         },
       },
     })
@@ -366,6 +375,25 @@ export default function SignUpPage() {
                       ))}
                     </select>
                     {fieldErrors.province && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.province}</p>}
+                  </div>
+
+                  {/* Recovery email (optional but recommended) */}
+                  <div style={{ marginTop: '20px' }}>
+                    <label htmlFor="signup-recovery-email" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
+                      Recovery email <span style={{ fontWeight: 400, color: '#6b6b6b' }}>(recommended)</span>
+                    </label>
+                    <input
+                      id="signup-recovery-email"
+                      type="email"
+                      value={recoveryEmail}
+                      onChange={(e) => { setRecoveryEmail(e.target.value); clearFieldError('recoveryEmail') }}
+                      className={`auth-input${fieldErrors.recoveryEmail ? ' has-error' : ''}`}
+                      autoComplete="email"
+                    />
+                    {fieldErrors.recoveryEmail
+                      ? <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.recoveryEmail}</p>
+                      : <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', margin: '5px 0 0 0', lineHeight: 1.4 }}>A backup email — if you ever lose access to your primary, this is how you&apos;ll get back in. Without one, your account can&apos;t be recovered.</p>
+                    }
                   </div>
 
                   {/* Privacy notice */}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { logEvent } from '@/lib/analytics'
+import { provisionRecoveryEmailFromMetadata } from '@/lib/recovery-email'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -18,6 +19,14 @@ export async function GET(request: Request) {
     if (!error) {
       if (data.user) {
         logEvent({ userId: data.user.id, eventName: 'email_confirmed' })
+        // Decision (b): provision + verify-email the recovery address only AFTER the
+        // primary email is confirmed. Idempotent and best-effort — never block the
+        // confirmation redirect on it.
+        try {
+          await provisionRecoveryEmailFromMetadata(data.user, origin)
+        } catch (err) {
+          console.error('[recovery-email] provision failed', err)
+        }
       }
       return NextResponse.redirect(`${origin}/auth/signup/payment`)
     }
