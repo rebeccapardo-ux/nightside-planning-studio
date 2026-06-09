@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { ACTIVITY, DOCUMENT_TYPES, DOCUMENT_TYPE_META, type DocumentType } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { buildPlanExportJsonEmail, notifyPrimaryAndRecovery, PLAN_EXPORT_JSON_SUBJECT } from '@/lib/account-notifications'
 
 // Export-schema field name per document_type. This vocabulary is specific to
 // this route's JSON output, so it stays local; title/category come from META.
@@ -207,6 +208,14 @@ export async function GET() {
 
   const todayStr = new Date().toISOString().slice(0, 10)
   const body = JSON.stringify(payload, null, 2)
+
+  // Data export → notify primary + verified recovery (best-effort; never fail the export).
+  try {
+    const firstName = (user.user_metadata?.first_name as string | undefined) ?? ''
+    await notifyPrimaryAndRecovery(supabase, user.id, user.email, PLAN_EXPORT_JSON_SUBJECT, buildPlanExportJsonEmail(firstName))
+  } catch (err) {
+    console.error('[export-json] notification failed', err)
+  }
 
   return new NextResponse(body, {
     status: 200,

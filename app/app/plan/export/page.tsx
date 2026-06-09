@@ -109,6 +109,12 @@ export default function PlanExportPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventName: 'export_generated', metadata: { mode } }),
       }).catch(() => {})
+      // Full PDF is a full plan export → notify primary + recovery (fire-and-forget;
+      // the PDF is client-side so the server otherwise never sees it). Summary is a
+      // lighter artifact and does not notify.
+      if (mode === 'full') {
+        fetch('/api/plan/export-recorded', { method: 'POST' }).catch(() => {})
+      }
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

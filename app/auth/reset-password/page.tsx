@@ -133,6 +133,12 @@ export default function ResetPasswordPage() {
     }
 
     setPhase('success')
+    // Notify primary + verified recovery (best-effort) while the recovery session is
+    // still valid — must run BEFORE signOut, which revokes it. Supabase's auto
+    // password-changed email is OFF, so this is the only reset notification.
+    try {
+      await fetch('/api/account/notify-password-reset', { method: 'POST' })
+    } catch { /* best-effort */ }
     // Sign out so the user logs in fresh with the new password
     await supabase.auth.signOut()
     setTimeout(() => router.push('/auth/signin?reset=success'), 1500)

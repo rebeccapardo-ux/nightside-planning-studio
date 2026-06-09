@@ -2,22 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
-import { sendEmail, brandedEmail } from '@/lib/email'
 import { isPasswordLeaked } from '@/lib/password-leak'
-
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
-function buildPasswordChangedEmail(firstName: string): string {
-  const name = firstName?.trim() || 'there'
-  return brandedEmail(`
-    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your password was changed</h2>
-    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
-    <p style="color:#130426;line-height:1.65;">The password for your account on The Nightside Planning Studio was just changed. If this was you, there's nothing else to do.</p>
-    <p style="color:#130426;line-height:1.65;"><strong>If you didn't change your password</strong>, your account may have been accessed without your permission. Contact us right away at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a> and we'll help you secure it.</p>
-  `)
-}
+import { buildPasswordChangedEmail, notifyPrimaryAndRecovery, PASSWORD_CHANGED_SUBJECT } from '@/lib/account-notifications'
 
 // Password change. Verifies the current password server-side (signInWithPassword),
 // then writes the new password via the service-role admin API. The admin write is
@@ -73,18 +59,7 @@ export async function POST(req: NextRequest) {
   // changed; a notification failure must not undo it.
   try {
     const firstName = (user.user_metadata?.first_name as string | undefined) ?? ''
-    const subject   = 'Your Nightside Planning Studio password was changed'
-    const html      = buildPasswordChangedEmail(firstName)
-
-    const recipients = new Set<string>()
-    if (user.email) recipients.add(user.email.toLowerCase())
-    const { data: profile } = await admin
-      .from('user_profiles').select('recovery_email, recovery_email_verified')
-      .eq('user_id', user.id).maybeSingle()
-    if (profile?.recovery_email && profile.recovery_email_verified) {
-      recipients.add((profile.recovery_email as string).toLowerCase())
-    }
-    await Promise.all([...recipients].map(to => sendEmail({ to, subject, html })))
+    await notifyPrimaryAndRecovery(admin, user.id, user.email, PASSWORD_CHANGED_SUBJECT, buildPasswordChangedEmail(firstName))
   } catch (err) {
     console.error('[password] change notification failed', err)
   }
