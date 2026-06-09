@@ -87,6 +87,26 @@ export async function consumeToken(
   return { userId: data.user_id, email: data.email }
 }
 
+// Read a token's state WITHOUT consuming it. Lets a GET render the right page (e.g.
+// "already verified" for a used token) instead of showing the Confirm landing for a
+// non-pristine token. Stays prefetch-safe — only the POST consume mutates.
+export async function peekToken(
+  rawToken: string,
+  expectedPurpose: RecoveryTokenPurpose,
+): Promise<'pristine' | 'used' | 'expired' | 'invalid'> {
+  if (!rawToken) return 'invalid'
+  const { data } = await adminClient()
+    .from('recovery_email_tokens')
+    .select('used_at, expires_at')
+    .eq('token_hash', hashToken(rawToken))
+    .eq('purpose', expectedPurpose)
+    .maybeSingle()
+  if (!data) return 'invalid'
+  if (data.used_at) return 'used'
+  if (new Date(data.expires_at as string).getTime() <= Date.now()) return 'expired'
+  return 'pristine'
+}
+
 // Verify-flow composition: consume a 'verify' token, confirm its snapshot still
 // matches the account's CURRENT recovery_email (else 'stale'), then flip
 // recovery_email_verified. The token is consumed (one-time) regardless of outcome.
