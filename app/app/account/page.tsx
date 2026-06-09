@@ -567,12 +567,30 @@ export default function AccountPage() {
     if (newPassword.length < 12)         { setPwError('New password must be at least 12 characters.'); return }
     setPwStatus('loading')
     const supabase = createSupabaseBrowserClient()
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: user!.email!, password: currentPassword,
     })
+    // TEMP DIAGNOSTIC (remove before merge) — capture the exact reauth/update path.
+    console.log('[pw-debug] signInWithPassword →', {
+      hasSession: !!signInData?.session,
+      hasUser: !!signInData?.user,
+      signInError: signInError ? { message: signInError.message, status: signInError.status, code: signInError.code, name: signInError.name } : null,
+    })
     if (signInError) { setPwError('Current password is incorrect.'); setPwStatus('error'); return }
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
-    if (updateError) { setPwError(updateError.message); setPwStatus('error'); return }
+    const { data: updateData, error: updateError } = await supabase.auth.updateUser({ password: newPassword })
+    // TEMP DIAGNOSTIC (remove before merge) — the full error object names the GoTrue cause.
+    console.log('[pw-debug] updateUser({password}) →', {
+      hasUser: !!updateData?.user,
+      updateError: updateError ? { message: updateError.message, status: updateError.status, code: updateError.code, name: updateError.name } : null,
+      raw: updateError ? JSON.stringify(updateError) : null,
+    })
+    if (updateError) {
+      // TEMP: surface code/status inline so it can be captured without devtools.
+      const u = updateError as { status?: number; code?: string }
+      setPwError(`${updateError.message} [status=${u.status ?? '?'} code=${u.code ?? '?'}]`)
+      setPwStatus('error')
+      return
+    }
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
