@@ -1,34 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'node:crypto'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
 import { sendEmail, brandedEmail } from '@/lib/email'
+import { isPasswordLeaked } from '@/lib/password-leak'
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
-// Leaked-password check via HIBP Pwned Passwords range API (k-anonymity): we
-// SHA-1 the password and send only the first 5 hex chars — never the password or
-// the full hash — then scan the returned suffix list. This restores the leaked-
-// password protection that the admin write bypasses. **Fail-OPEN**: a HIBP outage
-// must not block a legitimate password change (matches Supabase's own behavior and
-// our legitimate-user-access threat-model bias).
-async function isPasswordLeaked(password: string): Promise<boolean> {
-  try {
-    const hash   = crypto.createHash('sha1').update(password).digest('hex').toUpperCase()
-    const prefix = hash.slice(0, 5)
-    const suffix = hash.slice(5)
-    const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
-      headers: { 'Add-Padding': 'true' }, // pad the response so its size can't leak the count
-    })
-    if (!res.ok) return false
-    const text = await res.text()
-    return text.split('\n').some(line => line.split(':')[0]?.trim().toUpperCase() === suffix)
-  } catch {
-    return false // fail-open
-  }
 }
 
 function buildPasswordChangedEmail(firstName: string): string {

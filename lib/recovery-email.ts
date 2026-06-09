@@ -211,3 +211,31 @@ export async function sendVerificationEmail(
     html: buildVerificationEmail(firstName, verifyUrl),
   })
 }
+
+// ── Lost-email recovery email (Phase 4) ──────────────────────────────────────
+
+export function buildRecoveryEmail(firstName: string, recoverUrl: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Recover access to your account</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${escapeHtml(name)},</p>
+    <p style="color:#130426;line-height:1.65;">You requested a recovery link for your Nightside Planning Studio account because you've lost access to your primary email.</p>
+    <p style="color:#130426;line-height:1.65;">Click this link to set a new password and regain access:</p>
+    <p style="margin:28px 0;">
+      <a href="${recoverUrl}" style="display:inline-block;background:#2C3777;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-size:15px;">Recover my account</a>
+    </p>
+    <p style="color:#130426;line-height:1.65;">This link expires in 60 minutes. If you didn't request this, you can ignore this message.</p>
+  `)
+}
+
+export async function sendRecoveryEmail(
+  to: string,
+  firstName: string,
+  recoverUrl: string,
+): Promise<SendEmailResult> {
+  return sendEmail({
+    to: to.toLowerCase(),
+    subject: 'Recover access to your Nightside Planning Studio account',
+    html: buildRecoveryEmail(firstName, recoverUrl),
+  })
+}

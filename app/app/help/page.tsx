@@ -118,6 +118,18 @@ const CATEGORIES: { title: string; items: FaqItem[] }[] = [
         a: 'Go to My Account → Account Access → Change email. You\'ll need to enter your current password. We\'ll send a confirmation link to your new email address, and the change applies once you confirm. We\'ll also notify your current email about the change.',
       },
       {
+        key: 'recover-account',
+        q: 'How do I recover my account if I\'ve lost access to my email?',
+        a: (
+          <div style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.75)', lineHeight: 1.7, paddingRight: 32, paddingBottom: 20 }}>
+            <p style={{ margin: '0 0 14px' }}>If you have a verified recovery email set up on your account, you can use it to recover access when your primary email is no longer available.</p>
+            <p style={{ margin: '0 0 14px' }}>To start: from the sign-in page, click &ldquo;Lost access to your email?&rdquo; and enter your primary email. We&apos;ll send a recovery link to your verified recovery email. You&apos;ll set a new password and be signed in. All other sessions will be signed out for security.</p>
+            <p style={{ margin: '0 0 14px' }}>If you didn&apos;t set up a recovery email in advance, your account can&apos;t be recovered. This is by design — we don&apos;t manually verify identity for account recovery. We strongly recommend setting up a recovery email from your account settings now if you haven&apos;t.</p>
+            <p style={{ margin: 0 }}>Recovery links expire after 60 minutes. If yours expires, you can request a new one from the sign-in page.</p>
+          </div>
+        ),
+      },
+      {
         key: 'name',
         q: 'How do I update my name or province?',
         a: 'Go to My Account → Account Info → Edit account info. Changes save immediately.',
