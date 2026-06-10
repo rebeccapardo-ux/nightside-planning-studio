@@ -55,29 +55,6 @@ export async function POST(req: NextRequest) {
 
   logEvent({ userId: user.id, eventName: 'account_settings_updated', metadata: { type: 'password' } })
 
-  // Revoke the user's OTHER sessions (keep this device), mirroring the Phase 4 recovery
-  // flow — a password change shouldn't leave other sessions alive. The current-password
-  // gate above re-issued this device's session (cookies are writable in a route handler),
-  // so getSession() returns the access token to keep. Fail-open: the password is already
-  // changed, so a signOut failure must be logged but must not fail the response.
-  try {
-    // LOAD-BEARING: this returns the token of the session the current device will keep
-    // *because* the signInWithPassword gate above re-issued it and the route handler's
-    // cookie store is writable (so the browser adopts it). If that gate is ever removed
-    // or the cookie store made read-only, getSession() would return the pre-gate token
-    // and 'others' could revoke this device instead of keeping it — re-verify then.
-    const { data: { session } } = await supabase.auth.getSession()
-    const accessToken = session?.access_token
-    if (accessToken) {
-      const { error: signOutErr } = await admin.auth.admin.signOut(accessToken, 'others')
-      if (signOutErr) console.error('[password] revoke other sessions failed', signOutErr)
-    } else {
-      console.error('[password] no access token available; skipped revoking other sessions')
-    }
-  } catch (err) {
-    console.error('[password] revoke other sessions threw', err)
-  }
-
   // Notify primary + verified recovery email. Best-effort — the password is already
   // changed; a notification failure must not undo it.
   try {
