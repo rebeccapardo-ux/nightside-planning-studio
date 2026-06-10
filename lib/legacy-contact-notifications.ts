@@ -43,7 +43,7 @@ export type LcChange =
   // record of their removal — so surface it here as a third line.
   | { kind: 'replace-primary'; oldName: string; newName: string; disposition: 'remove' | 'secondary'; bumpedSecondaryName?: string }
   | { kind: 'promote-secondary'; promotedName: string; oldPrimaryName: string; disposition: 'remove' | 'secondary' }
-  | { kind: 'edit-details'; name: string }
+  | { kind: 'edit-details'; name: string; role: 'primary' | 'secondary' }
 
 // Shared tail: role reminder + manage link + "if this wasn't you". (Sign-off is added
 // by brandedEmail.)
@@ -105,8 +105,8 @@ export function accountHolderLcEmail(holderFirst: string, origin: string, change
     }
     case 'edit-details': {
       const n = esc(toTitleCase(change.name))
-      subject = "You've updated your Legacy Contact's contact details"
-      lead = h2(subject) + greeting + p(`You've updated ${n}'s email address on Nightside Planning Studio.`)
+      subject = `You've updated your ${change.role} Legacy Contact's email address on Nightside Planning Studio`
+      lead = h2(subject) + greeting + p(`You've updated your ${change.role} Legacy Contact ${n}'s email address.`)
       break
     }
   }

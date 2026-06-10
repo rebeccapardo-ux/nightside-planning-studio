@@ -5,6 +5,7 @@ import { logEvent } from '@/lib/analytics'
 import { sendEmail } from '@/lib/email'
 import { notifyAccountHolderLcChange } from '@/lib/legacy-contact-notifications'
 import { checkAndRecordEmailSend, EMAIL_THROTTLE_MESSAGE } from '@/lib/email-throttle'
+import { sendDesignationEmail, type LcRole } from '@/lib/legacy-contact-emails'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -37,43 +38,8 @@ function emailWrap(body: string): string {
 </div>`
 }
 
-// ── Template 1: Designation ("you've been designated") ───────────────────────
-
-function buildDesignationEmail(
-  userFirst: string,
-  userLast: string,
-  contactFirst: string,
-  personalMessage?: string | null,
-): string {
-  userFirst    = toTitleCase(userFirst)
-  userLast     = toTitleCase(userLast)
-  contactFirst = toTitleCase(contactFirst)
-
-  const msgBlock = personalMessage
-    ? `<hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>
-       <h3 style="margin:0 0 10px;font-size:15px;color:#130426;">A message from ${userFirst}</h3>
-       <p style="color:#130426;line-height:1.65;white-space:pre-wrap;margin:0">${esc(personalMessage)}</p>
-       <hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>`
-    : ''
-
-  return emailWrap(`
-    <h2 style="margin-top:0;font-size:22px;color:#130426;">You've been designated as a Legacy Contact</h2>
-    <p style="color:#130426;line-height:1.65;">Hi ${contactFirst},</p>
-    <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has designated you as a Legacy Contact on The Nightside Planning Studio, an end-of-life planning platform.</p>
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">About this designation</h3>
-    <p style="color:#130426;line-height:1.65;">${userFirst} has been doing end-of-life planning on the platform and has named you as someone they trust. This means that, in the event of their death, you will be the person we release their practical planning materials to; this includes things like wishes for their body and funeral, important contacts, financial information, and other administrative details.</p>
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">What this means for you right now</h3>
-    <p style="color:#130426;line-height:1.65;">There's nothing for you to do at this moment. You don't have access to ${userFirst}'s plan while they are alive, and this designation doesn't ask anything of you unless circumstances change.</p>
-    <p style="color:#130426;line-height:1.65;">It also doesn't give you any legal authority over ${userFirst}'s estate, healthcare, or other matters. If ${userFirst} wants you to have other authority, that's designated separately through legal documents like a will or representation agreement.</p>
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">If something happens to ${userFirst}</h3>
-    <p style="color:#130426;line-height:1.65;">If ${userFirst} passes away and you need to activate your role as Legacy Contact, you can reach out to us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>. We'll work with you to release ${userFirst}'s planning materials and to confirm what has happened. We can be flexible about documentation depending on what's available; a death certificate, a Statement of Death from a funeral director, or other comparable documentation all work.</p>
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">If you have questions or concerns</h3>
-    <p style="color:#130426;line-height:1.65;">If you have questions about being designated, or if you'd rather not take on this role, please reach out to ${userFirst} directly. They can update their designation at any time, and your relationship to them isn't tied to this designation in any way.</p>
-    <p style="color:#130426;line-height:1.65;">${userFirst} may reach out to you to talk about this soon. If they haven't yet, you're welcome to reach out to them too.</p>
-    ${msgBlock}
-    <p style="color:#130426;line-height:1.65;">If you have any questions about the platform itself, you can reach us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
-  `)
-}
+// LC-facing designation email lives in lib/legacy-contact-emails.ts (shared with the
+// onboarding route, role-aware). Templates 2–5 below stay inline.
 
 // ── Template 2: Dedesignation ("you're no longer designated") ────────────────
 
@@ -81,6 +47,7 @@ function buildDedesignationEmail(
   userFirst: string,
   userLast: string,
   contactFirst: string,
+  role: LcRole,
 ): string {
   userFirst    = toTitleCase(userFirst)
   userLast     = toTitleCase(userLast)
@@ -89,7 +56,7 @@ function buildDedesignationEmail(
   return emailWrap(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Your Legacy Contact designation has been updated</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${contactFirst},</p>
-    <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has updated their Legacy Contact designation on The Nightside Planning Studio. You are no longer designated as their Legacy Contact.</p>
+    <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has updated their Legacy Contact designation on The Nightside Planning Studio. You are no longer designated as their ${role} Legacy Contact.</p>
     <p style="color:#130426;line-height:1.65;">No further action is needed from you. If you have any questions, you can reach out to ${userFirst} directly.</p>
     <p style="color:#130426;line-height:1.65;">If you have any questions about the platform, you can reach us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `)
@@ -101,6 +68,7 @@ function buildEmailUpdateEmail(
   userFirst: string,
   userLast: string,
   contactFirst: string,
+  role: LcRole,
 ): string {
   userFirst    = toTitleCase(userFirst)
   userLast     = toTitleCase(userLast)
@@ -110,7 +78,7 @@ function buildEmailUpdateEmail(
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Your email on file has been updated</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${contactFirst},</p>
     <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has updated the email address they use to reach you as their Legacy Contact on The Nightside Planning Studio. This message confirms your new email is on file.</p>
-    <p style="color:#130426;line-height:1.65;">Your role as their Legacy Contact has not changed. You don't need to do anything now.</p>
+    <p style="color:#130426;line-height:1.65;">Your role as their ${role} Legacy Contact has not changed. You don't need to do anything now.</p>
     <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">As a reminder of what this means</h3>
     <p style="color:#130426;line-height:1.65;">${userFirst} has designated you to receive their practical planning materials if they die. These include things like wishes for their body and funeral, important contacts, financial information, and other administrative details. You do not have access to their plan while they are alive, and you have no other authority over their estate, healthcare, or other matters.</p>
     <p style="color:#130426;line-height:1.65;"><strong>If ${userFirst} dies and you need to activate your role as Legacy Contact</strong>, contact us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>. We'll work with you to verify the death and release ${userFirst}'s planning materials.</p>
@@ -296,7 +264,7 @@ export async function POST(req: NextRequest) {
     // address on file must not diverge from what the contact has been notified about.
     // Name / relationship changes stay silent (no notification), as before.
     if (emailChanged) {
-      const html    = buildEmailUpdateEmail(userFirst, userLast, contact.firstName)
+      const html    = buildEmailUpdateEmail(userFirst, userLast, contact.firstName, contactType)
       const subject = `Your email on file for ${toTitleCase(userFirst)} has been updated`
       const note    = await sendEmail({ to: contact.email.toLowerCase(), subject, html })
       if (!note.ok) {
@@ -332,7 +300,7 @@ export async function POST(req: NextRequest) {
     // LC-facing rule; silent name/relationship corrections don't notify).
     if (emailChanged) {
       await notifyAccountHolderLcChange(user.email, userFirst, origin, {
-        kind: 'edit-details', name: `${contact.firstName} ${contact.lastName}`,
+        kind: 'edit-details', name: `${contact.firstName} ${contact.lastName}`, role: contactType,
       })
     }
     return NextResponse.json({ ok: true })
@@ -406,7 +374,7 @@ export async function POST(req: NextRequest) {
       const dedesig = await sendEmail({
         to: current.email.toLowerCase(),
         subject: 'Your Legacy Contact designation has been updated',
-        html: buildDedesignationEmail(userFirst, userLast, current.first_name),
+        html: buildDedesignationEmail(userFirst, userLast, current.first_name, 'secondary'),
       })
       if (!dedesig.ok) {
         await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
@@ -414,10 +382,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${current.email}. No changes were saved. Please try again. (${dedesig.error})` }, { status: 502 })
       }
 
-      const desig = await sendEmail({
-        to: newContact.email.toLowerCase(),
-        subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-        html: buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
+      const desig = await sendDesignationEmail(newContact.email.toLowerCase(), {
+        userFirst, userLast, contactFirst: newContact.firstName, role: 'secondary', personalMessage,
       })
       if (!desig.ok) {
         await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
@@ -546,10 +512,8 @@ export async function POST(req: NextRequest) {
           subject: `Your role as ${toTitleCase(userFirst)} ${toTitleCase(userLast)}'s Legacy Contact has changed`,
           html: buildPromotionEmail(userFirst, userLast, newFirst, personalMessage),
         })
-      : await sendEmail({
-          to: newEmail,
-          subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-          html: buildDesignationEmail(userFirst, userLast, newFirst, personalMessage),
+      : await sendDesignationEmail(newEmail, {
+          userFirst, userLast, contactFirst: newFirst, role: 'primary', personalMessage,
         })
     if (!primaryNotice.ok) {
       await restoreOriginal()
@@ -561,7 +525,7 @@ export async function POST(req: NextRequest) {
       ? await sendEmail({
           to: (P.email as string).toLowerCase(),
           subject: 'Your Legacy Contact designation has been updated',
-          html: buildDedesignationEmail(userFirst, userLast, P.first_name),
+          html: buildDedesignationEmail(userFirst, userLast, P.first_name, 'primary'),
         })
       : await sendEmail({
           to: (P.email as string).toLowerCase(),
@@ -578,7 +542,7 @@ export async function POST(req: NextRequest) {
       const bumped = await sendEmail({
         to: (S.email as string).toLowerCase(),
         subject: 'Your Legacy Contact designation has been updated',
-        html: buildDedesignationEmail(userFirst, userLast, S.first_name),
+        html: buildDedesignationEmail(userFirst, userLast, S.first_name, 'secondary'),
       })
       if (!bumped.ok) {
         await restoreOriginal()
@@ -688,10 +652,8 @@ export async function POST(req: NextRequest) {
     })
 
     // Email — rollback if fails
-    const desig = await sendEmail({
-      to: newContact.email.toLowerCase(),
-      subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-      html: buildDesignationEmail(userFirst, userLast, newContact.firstName, personalMessage),
+    const desig = await sendDesignationEmail(newContact.email.toLowerCase(), {
+      userFirst, userLast, contactFirst: newContact.firstName, role: 'secondary', personalMessage,
     })
     if (!desig.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
@@ -739,7 +701,7 @@ export async function POST(req: NextRequest) {
     const dedesig = await sendEmail({
       to: current.email,
       subject: 'Your Legacy Contact designation has been updated',
-      html: buildDedesignationEmail(userFirst, userLast, current.first_name),
+      html: buildDedesignationEmail(userFirst, userLast, current.first_name, 'secondary'),
     })
     if (!dedesig.ok) {
       await admin.from('legacy_contacts').insert(current)

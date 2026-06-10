@@ -2,85 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
-import { sendEmail } from '@/lib/email'
+import { sendDesignationEmail } from '@/lib/legacy-contact-emails'
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
-
-function toTitleCase(name: string): string {
-  if (!name) return name
-  return name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
-}
-
-function buildEmail({
-  userFirst,
-  userLast,
-  contactFirst,
-  personalMessage,
-}: {
-  userFirst: string
-  userLast: string
-  contactFirst: string
-  personalMessage?: string | null
-}): string {
-  userFirst    = toTitleCase(userFirst)
-  userLast     = toTitleCase(userLast)
-  contactFirst = toTitleCase(contactFirst)
-
-  const msgBlock = personalMessage
-    ? `<hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>
-       <h3 style="margin:0 0 10px;font-size:15px;color:#130426;">A message from ${userFirst}</h3>
-       <p style="color:#130426;line-height:1.65;white-space:pre-wrap;margin:0">${personalMessage.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-       <hr style="border:none;border-top:1px solid #e0d8c8;margin:28px 0"/>`
-    : ''
-
-  return `
-<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;">
-  <div style="background-color:#2C3777;padding:18px 24px;text-align:center;">
-    <img src="https://images.squarespace-cdn.com/content/v1/640e160f9a63e5441c7054f2/198408a5-87a0-427c-b02c-767ca3a69220/The-Nightside-Logo-White.png?format=1500w"
-         alt="The Nightside" style="max-width:100px;height:auto;"/>
-  </div>
-  <div style="padding:32px 24px;">
-    <h2 style="margin-top:0;font-size:22px;color:#130426;">You've been designated as a Legacy Contact</h2>
-
-    <p style="color:#130426;line-height:1.65;">Hi ${contactFirst},</p>
-    <p style="color:#130426;line-height:1.65;">${userFirst} ${userLast} has designated you as a Legacy Contact on The Nightside Planning Studio, an end-of-life planning platform.</p>
-
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">About this designation</h3>
-    <p style="color:#130426;line-height:1.65;">${userFirst} has been doing end-of-life planning on the platform and has named you as someone they trust. This means that, in the event of their death, you will be the person we release their practical planning materials to; this includes things like wishes for their body and funeral, important contacts, financial information, and other administrative details.</p>
-
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">What this means for you right now</h3>
-    <p style="color:#130426;line-height:1.65;">There's nothing for you to do at this moment. You don't have access to ${userFirst}'s plan while they are alive, and this designation doesn't ask anything of you unless circumstances change.</p>
-    <p style="color:#130426;line-height:1.65;">It also doesn't give you any legal authority over ${userFirst}'s estate, healthcare, or other matters. If ${userFirst} wants you to have other authority, that's designated separately through legal documents like a will or representation agreement.</p>
-
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">If something happens to ${userFirst}</h3>
-    <p style="color:#130426;line-height:1.65;">If ${userFirst} passes away and you need to activate your role as Legacy Contact, you can reach out to us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>. We'll work with you to release ${userFirst}'s planning materials and to confirm what has happened. We can be flexible about documentation depending on what's available; a death certificate, a Statement of Death from a funeral director, or other comparable documentation all work.</p>
-
-    <h3 style="font-size:16px;color:#130426;margin:28px 0 8px;">If you have questions or concerns</h3>
-    <p style="color:#130426;line-height:1.65;">If you have questions about being designated, or if you'd rather not take on this role, please reach out to ${userFirst} directly. They can update their designation at any time, and your relationship to them isn't tied to this designation in any way.</p>
-    <p style="color:#130426;line-height:1.65;">${userFirst} may reach out to you to talk about this soon. If they haven't yet, you're welcome to reach out to them too.</p>
-
-    ${msgBlock}
-
-    <p style="color:#130426;line-height:1.65;">If you have any questions about the platform itself, you can reach us at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
-    <p style="color:#130426;line-height:1.65;">With care,<br/>The Nightside</p>
-  </div>
-</div>`
-}
-
-async function sendDesignationEmail(
-  to: string,
-  contactFirst: string,
-  userFirst: string,
-  userLast: string,
-  personalMessage?: string | null,
-): Promise<{ ok: boolean; error?: string }> {
-  return sendEmail({
-    to,
-    subject: `${toTitleCase(userFirst)} ${toTitleCase(userLast)} has designated you as a Legacy Contact on The Nightside Planning Studio`,
-    html: buildEmail({ userFirst, userLast, contactFirst, personalMessage }),
-  })
 }
 
 interface ContactInput {
@@ -204,7 +129,7 @@ export async function POST(req: NextRequest) {
   // recovery-email routes): this onboarding designation runs once per account, behind
   // the signup + payment gate, so it's a poor email-relay vector (looping it costs a
   // fresh paid account per ~2 sends). Considered and excluded — see CLAUDE.md.
-  const primaryEmail = await sendDesignationEmail(primary.email, primary.firstName, userFirst, userLast, personalMessage)
+  const primaryEmail = await sendDesignationEmail(primary.email, { userFirst, userLast, contactFirst: primary.firstName, role: 'primary', personalMessage })
   if (!primaryEmail.ok) {
     await admin.from('legacy_contacts').delete().eq('user_id', user.id)
     return NextResponse.json(
@@ -214,7 +139,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (secondary) {
-    const secondaryEmail = await sendDesignationEmail(secondary.email, secondary.firstName, userFirst, userLast, personalMessage)
+    const secondaryEmail = await sendDesignationEmail(secondary.email, { userFirst, userLast, contactFirst: secondary.firstName, role: 'secondary', personalMessage })
     if (!secondaryEmail.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id)
       return NextResponse.json(
