@@ -1238,7 +1238,7 @@ function PanelContent({
   return (
     <div className="mt-2">
       {hasRecommended && (
-        <PanelSection label="Recommended" isFirst>
+        <PanelSection label="Most relevant" isFirst>
           {recommended.map((item) => (
             <TieredPanelItem
               key={item.data.id}

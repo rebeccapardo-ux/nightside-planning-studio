@@ -1493,7 +1493,7 @@ function FWPanelContent({ recommended, other, responseText, onInsert }: {
   return (
     <div className="mt-2">
       {hasRecommended && (
-        <FWPanelSection label="Recommended" isFirst>
+        <FWPanelSection label="Most relevant" isFirst>
           {recommended.map(item => <FWTieredPanelItem key={item.data.id} item={item} responseText={responseText} onInsert={onInsert} />)}
         </FWPanelSection>
       )}
