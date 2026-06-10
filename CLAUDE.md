@@ -116,6 +116,17 @@ Documents with collapsible sections scroll the opened section to the top of the 
 
 ---
 
+## Email-relay throttle (sends to user-supplied addresses)
+
+Routes that send Nightside-branded mail to a **user-supplied** address can be looped by a malicious user with their *own* valid credentials to relay mail to arbitrary third parties via Resend — the password step-up gate doesn't help (it's *their* password). A per-user throttle bounds this.
+
+- **`checkAndRecordEmailSend(admin, userId, operation)` (`lib/email-throttle.ts`)** counts the user's email-send ops against the **`email_send_attempts`** ledger (service-role only, RLS no policies; migration `20260610_email_send_attempts.sql`) in rolling **hour + day** windows; combined caps **5/hr + 20/day** across all ops. **Record-on-allow** (a blocked attempt sends no mail, so it shouldn't spend budget, and retries don't dig a deeper hole), **count-before-insert**, **fails open** on a DB error (matches `recovery_request_attempts`). Returns `{ allowed }`; on `false` the route returns **429** with the non-revealing `EMAIL_THROTTLE_MESSAGE`.
+- **Call it at the top of each affected branch, BEFORE any DB mutation or send.** One row per **operation** (operation granularity), even though one op (replace-primary) can dispatch up to 3 emails.
+- **Eight throttled operations** (the `EmailSendOperation` vocab — append-never-rename, persisted): LC-manage `lc_edit_email_change` (email-change only), `lc_replace_primary`, `lc_promote_secondary`, `lc_replace_secondary`, `lc_add_secondary`, `lc_remove_secondary`; recovery-email `recovery_email_add`, `recovery_email_resend`.
+- **Deliberately NOT throttled:** the **onboarding** LC designation route (`app/api/legacy-contact/route.ts`) — one-shot per account, behind the signup + payment gate, so a poor relay vector (considered + excluded). Recovery-email **remove** isn't throttled either — it notifies the user's *own* primary, not a user-supplied address. When you add a new route that emails a user-supplied address, **grep `checkAndRecordEmailSend`** and add a gate.
+
+---
+
 ## Account recovery email (Phases 1–4 shipped — complete)
 
 Self-service account recovery for users who lose access to their primary email. **No manual review** — a *verified* recovery email is the only recovery path; users without one cannot recover (decided; documented in the support runbook).

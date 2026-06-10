@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { logEvent } from '@/lib/analytics'
 import { sendEmail } from '@/lib/email'
 import { notifyAccountHolderLcChange } from '@/lib/legacy-contact-notifications'
+import { checkAndRecordEmailSend, EMAIL_THROTTLE_MESSAGE } from '@/lib/email-throttle'
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -272,6 +273,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Throttle: an email change notifies the LC's (user-supplied) new address.
+    if (emailChanged) {
+      const { allowed } = await checkAndRecordEmailSend(admin, user.id, 'lc_edit_email_change')
+      if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
+    }
+
     // Update record
     const { error: updateErr } = await admin
       .from('legacy_contacts')
@@ -371,6 +378,10 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Primary and secondary contacts must have different email addresses' }, { status: 400 })
       }
 
+      // Throttle before any mutation (designation goes to a user-supplied address).
+      const { allowed } = await checkAndRecordEmailSend(admin, user.id, 'lc_replace_secondary')
+      if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
+
       const { error: deleteErr } = await admin.from('legacy_contacts').delete().eq('id', current.id)
       if (deleteErr) return NextResponse.json({ error: 'Failed to update. Please try again.' }, { status: 500 })
 
@@ -466,6 +477,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Primary and secondary contacts must have different email addresses' }, { status: 400 })
       }
     }
+
+    // Throttle before any mutation (this op dispatches up to 3 emails to user-supplied
+    // addresses). Promote vs. new-person are distinct operation types.
+    const { allowed } = await checkAndRecordEmailSend(admin, user.id, promote ? 'lc_promote_secondary' : 'lc_replace_primary')
+    if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
 
     // Uniform rollback to the original two records.
     const restoreOriginal = async () => {
@@ -648,6 +664,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Throttle before any mutation (designation goes to a user-supplied address).
+    const { allowed } = await checkAndRecordEmailSend(admin, user.id, 'lc_add_secondary')
+    if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
+
     // Insert
     const { error: insertErr } = await admin.from('legacy_contacts').insert({
       user_id:          user.id,
@@ -697,6 +717,10 @@ export async function POST(req: NextRequest) {
       .eq('contact_type', 'secondary')
       .maybeSingle()
     if (!current) return NextResponse.json({ error: 'No secondary Legacy Contact found' }, { status: 404 })
+
+    // Throttle before any mutation (dedesignation goes to a user-supplied address).
+    const { allowed } = await checkAndRecordEmailSend(admin, user.id, 'lc_remove_secondary')
+    if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
 
     const { error: deleteErr } = await admin
       .from('legacy_contacts')

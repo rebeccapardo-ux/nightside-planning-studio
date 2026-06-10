@@ -200,6 +200,10 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Send notification emails — rollback DB if either fails ────────────────
+  // Intentionally NOT throttled by email_send_attempts (unlike the LC-manage and
+  // recovery-email routes): this onboarding designation runs once per account, behind
+  // the signup + payment gate, so it's a poor email-relay vector (looping it costs a
+  // fresh paid account per ~2 sends). Considered and excluded — see CLAUDE.md.
   const primaryEmail = await sendDesignationEmail(primary.email, primary.firstName, userFirst, userLast, personalMessage)
   if (!primaryEmail.ok) {
     await admin.from('legacy_contacts').delete().eq('user_id', user.id)
