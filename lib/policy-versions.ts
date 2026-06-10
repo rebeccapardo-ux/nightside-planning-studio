@@ -7,5 +7,5 @@
 export const TERMS_VERSION = '2026-05-22'
 export const TERMS_LAST_UPDATED_DISPLAY = 'May 22, 2026'
 
-export const PRIVACY_VERSION = '2026-05-24'
-export const PRIVACY_LAST_UPDATED_DISPLAY = 'May 24, 2026'
+export const PRIVACY_VERSION = '2026-06-10'
+export const PRIVACY_LAST_UPDATED_DISPLAY = 'June 10, 2026'

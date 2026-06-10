@@ -194,6 +194,9 @@ export default function PrivacyPage() {
               <li key={item} style={{ ...li, marginBottom: 8 }}>{item}</li>
             ))}
           </ul>
+          <p style={{ ...p, margin: 0 }}>
+            These documents are released as they are stored on the platform. Certain sensitive fields — Social Insurance Numbers, health card numbers, financial account numbers, passwords, PINs, and similar access details — are designed to be added at the moment you export your plan rather than saved on the platform. They are not stored on our servers and therefore are not included in any release.
+          </p>
 
           <h3 style={h3}>What you can choose to add to the release</h3>
           <p style={p}>
@@ -201,6 +204,14 @@ export default function PrivacyPage() {
           </p>
           <p style={{ ...p, margin: 0 }}>
             You cannot remove items from the default release. The practical planning documents listed above were created to be used by others after your death. Including them in your Legacy Contact&apos;s release is part of how the platform serves its purpose.
+          </p>
+
+          <h3 style={h3}>What is never released</h3>
+          <p style={p}>
+            Some content is never released to your Legacy Contact, even by opt-in. This includes any notes you write in the platform — your Notepad notes, voice notes (audio and transcripts), and notes you write within activities like the Scenario Navigator, Values and Fears Ranking, or Reflection Prompts. These remain private as long as your account exists.
+          </p>
+          <p style={{ ...p, margin: 0 }}>
+            One exception: notes attached to the Legacy Map activity are released if you opt in to releasing your Legacy Map.
           </p>
 
           <h3 style={h3}>Most users may never need this mechanism</h3>
@@ -219,20 +230,29 @@ export default function PrivacyPage() {
             <li style={{ ...li, marginBottom: 0 }}>Confirmation of their identity matching the Legacy Contact you designated</li>
           </ul>
           <p style={{ ...p, margin: '16px 0 16px' }}>
-            We review each request and use judgment in handling individual cases. In urgent situations where documentation is still being processed, we may release essential information (such as your decision-makers&apos; contact information or your wishes for your body) while we wait for full documentation, at our discretion.
+            We review each request and use judgment in handling individual cases.
+          </p>
+          <p style={{ ...p, margin: '0 0 16px' }}>
+            For very recent designations (within 7 days of designation), we may apply a brief waiting period before processing a release request. This protects against situations where a designation may have been made under duress in a user&apos;s final days.
           </p>
           <p style={{ ...p, margin: 0 }}>
-            For very recent designations (within 7 days of designation), we may apply a brief waiting period before processing a release request, to protect against fraudulent designations.
+            After we release your planning materials to your Legacy Contact, we retain a copy of the released package for one year. This allows us to re-send the materials if your Legacy Contact loses access to them. After one year, we permanently delete the retained copy. The record of the release (when, to whom, what was sent) is kept indefinitely as an audit trail.
           </p>
 
           <h3 style={h3}>If your Legacy Contact predeceases you or is unavailable</h3>
+          <p style={p}>
+            When you sign up, you can designate both a primary and a secondary Legacy Contact. The primary is the person we contact first about your planning materials if you die. The secondary is a backup who can act in the primary&apos;s place if the primary has also died, cannot be reached, declines to act, or is unable to fulfill the role.
+          </p>
           <p style={{ ...p, margin: 0 }}>
-            You can designate a secondary Legacy Contact when signing up, or update your Legacy Contact designation anytime in your account settings. If your Legacy Contact dies or becomes unreachable, you can update your designation to someone else.
+            You can update either designation at any time through your account settings. We recommend reviewing your designations periodically — relationships change, and the person you&apos;d want to receive your materials today may not be the same person five years from now.
           </p>
 
           <h3 style={h3}>If no Legacy Contact is reachable when you die</h3>
-          <p style={{ ...p, margin: 0 }}>
+          <p style={p}>
             If your designated Legacy Contact (primary and secondary) is unreachable or cannot be verified, your data is not released. We do not release planning materials to people who were not designated by you.
+          </p>
+          <p style={{ ...p, margin: 0 }}>
+            If no Legacy Contact engages with us after your death, your account remains as it was at the time of your last activity. Family members who become aware of your account can contact us — for example, to process a refund or to ask us to close the account. If they ask us to take action, we will do so, with appropriate verification. Otherwise, your account remains until someone takes action. We do not automatically detect death or close accounts based on inactivity.
           </p>
         </Section>
 
