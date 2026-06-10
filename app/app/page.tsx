@@ -164,10 +164,10 @@ export default function AppHomePage() {
                 Your thinking, organized
               </h2>
               <p style={{ fontFamily: hv, fontSize: 19, fontWeight: 400, color: '#F8F4EB', lineHeight: 1.7, margin: 0 }}>
-                End-of-life planning rarely happens all at once. It unfolds over time, and often in disparate moments: a thought here, a conversation there, something you learned last week.
+                End-of-life planning rarely happens all at once. It typically unfolds in scattered moments over time: a thought here, a conversation there, something you learned last week.
               </p>
               <p style={{ fontFamily: hv, fontSize: 19, fontWeight: 400, color: '#F8F4EB', lineHeight: 1.7, marginTop: 20, marginBottom: 0 }}>
-                This platform automatically saves reflections, notes, and planning work into Your Plan as you go, helping you shape and build on your thinking over time.
+                This platform is built to support that. It automatically saves your reflections, notes, and planning work as you go, organizing them in <Link href="/app/plan" target="_blank" rel="noopener noreferrer" style={{ color: '#F8F4EB', textDecoration: 'underline' }}>Your Plan</Link> and helping you shape them into structured outputs and documents to use or share.
               </p>
             </div>
 
