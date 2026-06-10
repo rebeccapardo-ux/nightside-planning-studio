@@ -5,6 +5,7 @@ import { logEvent } from '@/lib/analytics'
 import { issueToken, invalidateVerifyTokens, sendVerificationEmail } from '@/lib/recovery-email'
 import { sendEmail } from '@/lib/email'
 import { buildRecoveryRemovedEmail, RECOVERY_REMOVED_SUBJECT } from '@/lib/account-notifications'
+import { checkAndRecordEmailSend, EMAIL_THROTTLE_MESSAGE } from '@/lib/email-throttle'
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -73,6 +74,9 @@ export async function POST(req: NextRequest) {
       .eq('user_id', userId).maybeSingle()
     const current = (profile?.recovery_email as string | null | undefined) ?? null
     if (!current) return NextResponse.json({ error: 'No recovery email to verify.' }, { status: 400 })
+    // Throttle: resend re-sends a verification to the stored (user-supplied) address.
+    const { allowed } = await checkAndRecordEmailSend(admin, userId, 'recovery_email_resend')
+    if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
     await invalidateVerifyTokens(userId)
     const sent = await issueAndSend(current)
     if (!sent) return NextResponse.json({ error: 'Could not send the verification email. Please try again.' }, { status: 502 })
@@ -89,6 +93,10 @@ export async function POST(req: NextRequest) {
     if (email === user.email?.toLowerCase()) {
       return NextResponse.json({ error: 'Your recovery email must be different from your primary email.' }, { status: 400 })
     }
+
+    // Throttle: add sends a verification to a fresh user-supplied address.
+    const { allowed } = await checkAndRecordEmailSend(admin, userId, 'recovery_email_add')
+    if (!allowed) return NextResponse.json({ error: EMAIL_THROTTLE_MESSAGE }, { status: 429 })
 
     // Defensive: clear any stray outstanding verify tokens before issuing a fresh one.
     await invalidateVerifyTokens(userId)
