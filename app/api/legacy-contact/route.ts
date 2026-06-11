@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   if (!primaryEmail.ok) {
     await admin.from('legacy_contacts').delete().eq('user_id', user.id)
     return NextResponse.json(
-      { error: `Could not send notification to ${primary.email}. Please check the address and try again. (${primaryEmail.error})` },
+      { error: `Could not send notification to ${primary.email}. Please check the address and try again.` },
       { status: 502 }
     )
   }
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
     if (!secondaryEmail.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id)
       return NextResponse.json(
-        { error: `Could not send notification to ${secondary.email}. Please check the address and try again. (${secondaryEmail.error})` },
+        { error: `Could not send notification to ${secondary.email}. Please check the address and try again.` },
         { status: 502 }
       )
     }

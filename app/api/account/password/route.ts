@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
 
   const { error: updErr } = await admin.auth.admin.updateUserById(user.id, { password: newPassword })
   if (updErr) {
-    return NextResponse.json({ error: updErr.message || 'Failed to update password. Please try again.' }, { status: 400 })
+    console.error('[password] admin updateUserById failed', updErr)
+    return NextResponse.json({ error: "Couldn't update your password. Please try again." }, { status: 400 })
   }
 
   logEvent({ userId: user.id, eventName: 'account_settings_updated', metadata: { type: 'password' } })

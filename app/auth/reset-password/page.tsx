@@ -127,7 +127,8 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
-      setServerError(error.message || 'Could not update password. Try requesting a new reset link.')
+      console.error('[reset-password] updateUser failed', error)
+      setServerError('Could not update password. Try requesting a new reset link.')
       setPhase('ready')
       return
     }

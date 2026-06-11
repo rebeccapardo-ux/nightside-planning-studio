@@ -280,7 +280,7 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', current.id)
         return NextResponse.json(
-          { error: `Could not notify your Legacy Contact at ${contact.email}. Your change was not saved. Please try again. (${note.error})` },
+          { error: `Could not notify your Legacy Contact at ${contact.email}. Your change was not saved. Please try again.` },
           { status: 502 }
         )
       }
@@ -379,7 +379,7 @@ export async function POST(req: NextRequest) {
       if (!dedesig.ok) {
         await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
         await admin.from('legacy_contacts').insert(current)
-        return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${current.email}. No changes were saved. Please try again. (${dedesig.error})` }, { status: 502 })
+        return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${current.email}. No changes were saved. Please try again.` }, { status: 502 })
       }
 
       const desig = await sendDesignationEmail(newContact.email.toLowerCase(), {
@@ -388,7 +388,7 @@ export async function POST(req: NextRequest) {
       if (!desig.ok) {
         await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
         await admin.from('legacy_contacts').insert(current)
-        return NextResponse.json({ error: `Could not notify your new Legacy Contact at ${newContact.email}. No changes were saved. Please try again. (${desig.error})` }, { status: 502 })
+        return NextResponse.json({ error: `Could not notify your new Legacy Contact at ${newContact.email}. No changes were saved. Please try again.` }, { status: 502 })
       }
 
       logEvent({ userId: user.id, eventName: 'legacy_contact_updated', metadata: { action: 'replace', contactType: 'secondary' } })
@@ -517,7 +517,7 @@ export async function POST(req: NextRequest) {
         })
     if (!primaryNotice.ok) {
       await restoreOriginal()
-      return NextResponse.json({ error: `Could not notify your new Legacy Contact at ${newEmail}. No changes were saved. Please try again. (${primaryNotice.error})` }, { status: 502 })
+      return NextResponse.json({ error: `Could not notify your new Legacy Contact at ${newEmail}. No changes were saved. Please try again.` }, { status: 502 })
     }
 
     // 2. Notify the displaced old primary — removed (de-designation) or demoted (role change).
@@ -534,7 +534,7 @@ export async function POST(req: NextRequest) {
         })
     if (!oldPrimaryNotice.ok) {
       await restoreOriginal()
-      return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${P.email}. No changes were saved. Please try again. (${oldPrimaryNotice.error})` }, { status: 502 })
+      return NextResponse.json({ error: `Could not notify your previous Legacy Contact at ${P.email}. No changes were saved. Please try again.` }, { status: 502 })
     }
 
     // 3. Notify an existing secondary that got bumped out (new-person + move-to-secondary only).
@@ -546,7 +546,7 @@ export async function POST(req: NextRequest) {
       })
       if (!bumped.ok) {
         await restoreOriginal()
-        return NextResponse.json({ error: `Could not notify your previous secondary Legacy Contact at ${S.email}. No changes were saved. Please try again. (${bumped.error})` }, { status: 502 })
+        return NextResponse.json({ error: `Could not notify your previous secondary Legacy Contact at ${S.email}. No changes were saved. Please try again.` }, { status: 502 })
       }
     }
 
@@ -658,7 +658,7 @@ export async function POST(req: NextRequest) {
     if (!desig.ok) {
       await admin.from('legacy_contacts').delete().eq('user_id', user.id).eq('contact_type', 'secondary')
       return NextResponse.json(
-        { error: `Could not send notification to ${newContact.email}. Please check the address and try again. (${desig.error})` },
+        { error: `Could not send notification to ${newContact.email}. Please check the address and try again.` },
         { status: 502 }
       )
     }
@@ -706,7 +706,7 @@ export async function POST(req: NextRequest) {
     if (!dedesig.ok) {
       await admin.from('legacy_contacts').insert(current)
       return NextResponse.json(
-        { error: `Could not notify your Legacy Contact at ${current.email}. No changes were saved. Please try again. (${dedesig.error})` },
+        { error: `Could not notify your Legacy Contact at ${current.email}. No changes were saved. Please try again.` },
         { status: 502 }
       )
     }

@@ -430,7 +430,7 @@ export default function AccountPage() {
         province:   profileFields.province.trim(),
       },
     })
-    if (error) { setProfileError(error.message); setProfileStatus('error'); return }
+    if (error) { console.error('[account] profile update failed', error); setProfileError("Couldn't save your changes. Please try again."); setProfileStatus('error'); return }
     setUser(data.user)
     fetch('/api/analytics/track', {
       method: 'POST',
@@ -479,7 +479,12 @@ export default function AccountPage() {
     if (authErr) { setEmailErrors({ emailPw: 'Incorrect password' }); setEmailStatus('error'); return }
 
     const { error: updateErr } = await supabase.auth.updateUser({ email: newEmail.trim() })
-    if (updateErr) { setEmailError(updateErr.message); setEmailStatus('error'); return }
+    if (updateErr) {
+      console.error('[account] email change failed', updateErr)
+      setEmailError(/already|registered|exists/i.test(updateErr.message) ? 'That email is already in use.' : "Couldn't update your email. Please try again.")
+      setEmailStatus('error')
+      return
+    }
 
     setEmailStatus('sent')
   }
