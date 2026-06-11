@@ -240,7 +240,7 @@ export default function PlanExportPage() {
               </button>
             </div>
             {exportError && (
-              <p style={{ fontFamily: hv, fontSize: 12, color: 'rgba(219,88,53,0.9)', margin: 0, textAlign: 'right' }}>
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#c0392b', margin: 0, textAlign: 'right' }}>
                 {exportError}
               </p>
             )}

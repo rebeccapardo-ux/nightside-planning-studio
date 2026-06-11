@@ -959,7 +959,7 @@ function PlanningStatusSection({
               {exploredCount} of {totalTopics} topics started
             </p>
             {saveError && (
-              <p style={{ fontSize: 13, color: 'rgba(219,88,53,0.9)', margin: '12px 0 0 0' }}>
+              <p style={{ fontSize: 13, color: '#c0392b', margin: '12px 0 0 0' }}>
                 Couldn&apos;t save your change. Please try again.
               </p>
             )}

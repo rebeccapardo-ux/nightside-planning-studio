@@ -189,7 +189,7 @@ function ReflectPromptsInner() {
 
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setSaveStatus('error'); return }
 
     setSaveStatus('saving')
     const startedAt = Date.now()

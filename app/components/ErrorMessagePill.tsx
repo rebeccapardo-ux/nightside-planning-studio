@@ -14,7 +14,7 @@ export default function ErrorMessagePill({ children, style }: Props) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        background: '#DB5835',
+        background: '#c0392b',
         color: '#F8F4EB',
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         fontSize: 12,

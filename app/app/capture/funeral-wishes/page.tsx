@@ -557,7 +557,7 @@ function FuneralWishesPage() {
     <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
       <ExportButton onClick={handlePreviewExport} disabled={saveState === 'saving'} />
       {saveStatusText && (
-        <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#c0392b' : 'rgba(19,4,38,0.75)', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
           {saveStatusText}
         </span>
       )}
@@ -599,7 +599,7 @@ function FuneralWishesPage() {
 
           <AutosaveNotice style={{ marginTop: 28 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+            <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: saveState === 'error' ? '#c0392b' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}
         </div>
 

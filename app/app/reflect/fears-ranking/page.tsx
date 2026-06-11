@@ -237,7 +237,7 @@ function FearsRankingContent() {
   async function autoSaveCardState() {
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setSaveStatus('error'); return }
 
     setSaveStatus('saving')
     const currentEntryId = savedEntryIdRef.current
@@ -295,7 +295,7 @@ function FearsRankingContent() {
   async function autoSaveReflection(value: string) {
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setReflectionSaveStatus('error'); return }
 
     const currentEntryId = savedEntryIdRef.current
     setReflectionSaveStatus('saving')

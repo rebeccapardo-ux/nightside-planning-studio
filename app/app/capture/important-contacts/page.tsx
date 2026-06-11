@@ -398,7 +398,7 @@ function ImportantContactsPage() {
             {saveStatus === 'saving' ? 'Preparing…' : 'Export'}
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#c0392b' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
           )}
         </div>
       )}
@@ -417,7 +417,7 @@ function ImportantContactsPage() {
           </p>
           <AutosaveNotice>Contacts you add will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#c0392b' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
           )}
         </div>
 

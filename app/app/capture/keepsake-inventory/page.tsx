@@ -404,8 +404,15 @@ export default function KeepsakeDocumentPage() {
             <span className="hidden md:inline">Preview &amp; </span>Export
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#c0392b' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
           )}
+        </div>
+      )}
+      {/* Error must surface even when the export bar is hidden — e.g. a brand-new
+          keepsake whose first save fails offline (savedDocId never gets set). */}
+      {saveStatus === 'error' && !(savedDocId && hasAnyContent) && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#c0392b', fontFamily: hv }}>Couldn&apos;t save</span>
         </div>
       )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>
