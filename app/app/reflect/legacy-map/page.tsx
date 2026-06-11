@@ -1415,7 +1415,7 @@ export default function LegacyMapPage() {
               {/* Error state */}
               {reflectionSaveStatus === 'error' && (
                 <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: 'rgba(219,88,53,0.85)', minHeight: 18 }}>
-                  Couldn't save — check your connection
+                  Couldn't save
                 </p>
               )}
 

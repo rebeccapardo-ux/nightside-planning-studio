@@ -380,6 +380,7 @@ function AdvanceDirectivePage() {
   }
 
   const saveStatusText = useMemo(() => {
+    if (saveState === 'error') return "Couldn't save"
     if (!lastSavedAt) return null
     const diffMs = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const diffSeconds = Math.floor(diffMs / 1000)
@@ -392,7 +393,7 @@ function AdvanceDirectivePage() {
     if (diffHours < 24) return diffHours === 1 ? 'Saved 1h ago' : `Saved ${diffHours}h ago`
     if (diffDays < 7) return diffDays === 1 ? 'Saved 1 day ago' : `Saved ${diffDays} days ago`
     return diffWeeks === 1 ? 'Saved 1 week ago' : `Saved ${diffWeeks} weeks ago`
-  }, [lastSavedAt, statusNow])
+  }, [lastSavedAt, statusNow, saveState])
 
   if (loading) {
     return (

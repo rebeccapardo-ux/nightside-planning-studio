@@ -533,6 +533,7 @@ function FuneralWishesPage() {
   }
 
   const saveStatusText = (() => {
+    if (saveState === 'error') return "Couldn't save"
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60)

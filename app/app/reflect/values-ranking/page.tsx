@@ -570,7 +570,7 @@ function ValuesRankingContent() {
           if (days < 7) return `Saved ${days}d ago`
           return `Saved ${Math.floor(days / 7)}w ago`
         })()
-      : saveStatus === 'error' ? "Couldn't save — check your connection"
+      : saveStatus === 'error' ? "Couldn't save"
       : ''
 
   if (loadingSavedEntry) {
@@ -635,7 +635,7 @@ function ValuesRankingContent() {
             </button>
           )}
           {saveStatus === 'error' ? (
-            <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>
+            <ErrorMessagePill>Couldn&apos;t save</ErrorMessagePill>
           ) : saveStatusText && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -892,7 +892,7 @@ function ValuesRankingContent() {
                   <span>Saved to Your Plan</span>
                 </>
               )}
-              {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>}
+              {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save</ErrorMessagePill>}
             </div>
             <AutosaveNotice style={{ marginBottom: 24 }} />
             <div style={{ marginTop: 8 }}>
@@ -1216,7 +1216,7 @@ function ValuesRankingContent() {
                     <span>Saved to Your Plan</span>
                   </>
                 )}
-                {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>}
+                {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save</ErrorMessagePill>}
               </div>
               <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 8 }}>

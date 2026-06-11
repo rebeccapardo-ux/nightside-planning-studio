@@ -275,7 +275,7 @@ function ReflectPromptsInner() {
   const saveLabel =
     saveStatus === 'pending' || saveStatus === 'saving' ? 'Saving…' :
     saveStatus === 'saved' ? 'Saved' :
-    saveStatus === 'error' ? "Couldn't save — check your connection" :
+    saveStatus === 'error' ? "Couldn't save" :
     null
 
   return (
@@ -367,7 +367,7 @@ function ReflectPromptsInner() {
                 <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Saving…</span>
               )}
               {saveStatus === 'error' && (
-                <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Couldn&apos;t save — check your connection</span>
+                <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Couldn&apos;t save</span>
               )}
             </div>
 
