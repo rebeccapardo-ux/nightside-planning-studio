@@ -204,6 +204,7 @@ export default function KeepsakeDocumentPage() {
   const userIdRef = useRef<string | null>(null)
   const router = useRouter()
   const [savedDocId, setSavedDocId] = useState<string | null>(null)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const entryRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const lastEditedEntryIdRef = useRef<string | null>(null)
@@ -253,6 +254,7 @@ export default function KeepsakeDocumentPage() {
   )
 
   const saveStatusText = useMemo(() => {
+    if (saveStatus === 'error') return "Couldn't save"
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24), w = Math.floor(d / 7)
@@ -261,7 +263,7 @@ export default function KeepsakeDocumentPage() {
     if (h < 24) return h === 1 ? 'Saved 1h ago' : `Saved ${h}h ago`
     if (d < 7) return d === 1 ? 'Saved 1 day ago' : `Saved ${d} days ago`
     return w === 1 ? 'Saved 1 week ago' : `Saved ${w} weeks ago`
-  }, [lastSavedAt, statusNow])
+  }, [lastSavedAt, statusNow, saveStatus])
 
   const scheduleSave = useCallback((nextEntries: KeepsakeEntry[]) => {
     const saveable = nextEntries.filter((e) => !isEntryEmpty(e))
@@ -269,16 +271,29 @@ export default function KeepsakeDocumentPage() {
     debounceRef.current = setTimeout(async () => {
       const targetId = lastEditedEntryIdRef.current
       setSavingEntryId(targetId)
+      setSaveStatus('saving')
       const startedAt = Date.now()
-      if (docIdRef.current) {
-        await saveKeepsakeInventory(docIdRef.current, saveable)
-      } else if (saveable.length > 0) {
-        const inv = await createKeepsakeInventory(saveable)
-        if (inv) { docIdRef.current = inv.id; setSavedDocId(inv.id) }
+      // Capture the lib results — a failed save must not show a false "Saved".
+      let ok = true
+      try {
+        if (docIdRef.current) {
+          ok = await saveKeepsakeInventory(docIdRef.current, saveable)
+        } else if (saveable.length > 0) {
+          const inv = await createKeepsakeInventory(saveable)
+          if (inv) { docIdRef.current = inv.id; setSavedDocId(inv.id) }
+          else ok = false
+        }
+      } catch {
+        ok = false
       }
       await holdSavingIndicator(startedAt)
       setSavingEntryId(null)
+      if (!ok) {
+        setSaveStatus('error')
+        return
+      }
       if (saveable.length > 0) {
+        setSaveStatus('saved')
         if (docIdRef.current && userIdRef.current) localStorage.setItem(`nightside.lastSaved.${userIdRef.current}.${docIdRef.current}`, new Date().toISOString())
         setLastSavedAt(new Date())
         setStatusNow(Date.now())
@@ -291,6 +306,8 @@ export default function KeepsakeDocumentPage() {
             setTimeout(() => setSavedIndicatorId(null), 400)
           }, 2600)
         }
+      } else {
+        setSaveStatus('idle')
       }
     }, AUTOSAVE_DELAY)
   }, [])
