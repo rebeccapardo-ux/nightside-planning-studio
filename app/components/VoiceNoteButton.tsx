@@ -50,6 +50,9 @@ export default function VoiceNoteButton({
   const [phase, setPhase] = useState<Phase>(autoStart ? 'recording' : 'idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [savedNote, setSavedNote] = useState<Note | null>(null)
+  // Whether the audio blob failed to upload to storage (storagePath === null). Lets the
+  // saved-state distinguish "recording didn't save" from "transcription didn't run".
+  const [audioUploadFailed, setAudioUploadFailed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const prevNoteRef = useRef<Note | null>(null)
 
@@ -63,6 +66,7 @@ export default function VoiceNoteButton({
 
   async function handleRecorderSave(blob: Blob, durationSeconds: number) {
     setPhase('uploading')
+    setAudioUploadFailed(false)
 
     try {
       const supabase = createSupabaseBrowserClient()
@@ -96,6 +100,11 @@ export default function VoiceNoteButton({
       if (storagePath) {
         await updateNoteAudioUrl(note.id, storagePath)
         note = { ...note, audio_url: storagePath }
+      } else {
+        // The recording itself didn't get stored. Note still exists (transcription
+        // uses the in-memory blob, not storage), but the audio is gone — flag it so
+        // the saved-state shows the "couldn't save your recording" error, not success.
+        setAudioUploadFailed(true)
       }
 
       // 3. Transcribe
@@ -131,6 +140,7 @@ export default function VoiceNoteButton({
     if (savedNote) await deleteNote(savedNote.id)
     prevNoteRef.current = null
     setSavedNote(null)
+    setAudioUploadFailed(false)
     setPhase('idle')
     onDelete?.()
   }
@@ -138,7 +148,16 @@ export default function VoiceNoteButton({
   function deriveSaveStatus(): SaveStatus | undefined {
     if (phase === 'uploading') return 'saving'
     if (phase === 'transcribing') return 'transcribing'
-    if (phase === 'saved') return savedNote?.transcription_status === 'complete' ? 'saved' : 'failed'
+    if (phase === 'saved') {
+      // Priority: a recording that didn't save is the headline failure — it wins even
+      // if transcription also failed (transcription is moot without saved audio). Then
+      // transcription-failed, then full success. Check === 'failed' (not !== 'complete')
+      // so this only ever fires on a terminal failure — never a transient 'pending'
+      // (which corresponds to phase 'transcribing' anyway, not 'saved').
+      if (audioUploadFailed) return 'audio_failed'
+      if (savedNote?.transcription_status === 'failed') return 'transcribe_failed'
+      return 'saved'
+    }
     return undefined
   }
 
