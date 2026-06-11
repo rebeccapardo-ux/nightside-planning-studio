@@ -743,6 +743,10 @@ function PlanningStatusSection({
 }) {
   const [openRowPanel, setOpenRowPanel] = useState<OpenRowPanel>(null)
   const [checkboxes, setCheckboxes] = useState<Record<string, boolean[]>>({})
+  // Page-level "couldn't save" signal for the fire-and-forget checkbox/orientation
+  // saves (they resolve falsy on failure). Optimistic UI isn't rolled back — this just
+  // surfaces that the change didn't persist.
+  const [saveError, setSaveError] = useState(false)
 
   function resolveRowNotes(itemKey: string, allowedReflectPromptIds?: string[]): {
     notes: Note[]
@@ -833,7 +837,8 @@ function PlanningStatusSection({
       onReadyStatusChange(itemKey, status)
       // Fire-and-forget persist to user_profiles.domain_state.
       void saveCheckboxes(domainId, itemKey, updated, { currentState: domainStateRef.current })
-        .then((next) => { if (next) domainStateRef.current = next })
+        .then((next) => { if (next) { domainStateRef.current = next; setSaveError(false) } else setSaveError(true) })
+        .catch(() => setSaveError(true))
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -851,7 +856,8 @@ function PlanningStatusSection({
         current === 'not_started' ? 'in_progress' :
         current === 'in_progress' ? 'complete' : 'not_started'
       void saveOrient(domainId, key, next, { currentState: domainStateRef.current })
-        .then((updated) => { if (updated) domainStateRef.current = updated })
+        .then((updated) => { if (updated) { domainStateRef.current = updated; setSaveError(false) } else setSaveError(true) })
+        .catch(() => setSaveError(true))
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -865,7 +871,8 @@ function PlanningStatusSection({
     if (!domainStateLoaded) return
     setOrientStatuses((prev) => {
       void saveOrient(domainId, key, newStatus, { currentState: domainStateRef.current })
-        .then((updated) => { if (updated) domainStateRef.current = updated })
+        .then((updated) => { if (updated) { domainStateRef.current = updated; setSaveError(false) } else setSaveError(true) })
+        .catch(() => setSaveError(true))
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -951,6 +958,11 @@ function PlanningStatusSection({
             <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.70)', margin: 0 }}>
               {exploredCount} of {totalTopics} topics started
             </p>
+            {saveError && (
+              <p style={{ fontSize: 13, color: 'rgba(219,88,53,0.9)', margin: '12px 0 0 0' }}>
+                Couldn&apos;t save your change. Please try again.
+              </p>
+            )}
           </div>
 
           {/* Your Wishes card — healthcare only */}
