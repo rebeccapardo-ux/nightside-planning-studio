@@ -125,7 +125,7 @@ function Field({
         disabled={disabled}
         style={{
           padding: '10px 14px',
-          border: error ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)',
+          border: error ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)',
           borderRadius: 8, fontFamily: hv, fontSize: 15,
           color: disabled ? 'rgba(19,4,38,0.55)' : '#130426',
           background: disabled ? 'rgba(19,4,38,0.05)' : '#ffffff',
@@ -133,7 +133,7 @@ function Field({
           cursor: disabled ? 'not-allowed' : 'auto',
         }}
       />
-      {error && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{error}</span>}
+      {error && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{error}</span>}
     </label>
   )
 }
@@ -1017,11 +1017,11 @@ export default function AccountPage() {
                       </span>
                       <textarea
                         value={flowMessage} onChange={e => setFlowMessage(e.target.value)} rows={4}
-                        style={{ padding: '10px 14px', border: msgLimit ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 14, color: '#130426', background: '#ffffff', outline: 'none', resize: 'vertical', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }}
+                        style={{ padding: '10px 14px', border: msgLimit ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 14, color: '#130426', background: '#ffffff', outline: 'none', resize: 'vertical', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }}
                       />
                     </label>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-                      <span style={{ fontFamily: hv, fontSize: 12, color: msgLimit ? '#C04828' : msgWarn ? '#B06800' : 'rgba(19,4,38,0.4)' }}>
+                      <span style={{ fontFamily: hv, fontSize: 12, color: msgLimit ? '#8B0000' : msgWarn ? '#B06800' : 'rgba(19,4,38,0.4)' }}>
                         {msgLen.toLocaleString()} / {MSG_SOFT.toLocaleString()}
                         {msgLimit && ' — please shorten'}
                       </span>
@@ -1051,11 +1051,11 @@ export default function AccountPage() {
                   </span>
                   <textarea
                     value={flowMessage} onChange={e => setFlowMessage(e.target.value)} rows={4}
-                    style={{ padding: '10px 14px', border: msgLimit ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 14, color: '#130426', background: '#ffffff', outline: 'none', resize: 'vertical', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }}
+                    style={{ padding: '10px 14px', border: msgLimit ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 14, color: '#130426', background: '#ffffff', outline: 'none', resize: 'vertical', lineHeight: 1.6, width: '100%', boxSizing: 'border-box' }}
                   />
                 </label>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-                  <span style={{ fontFamily: hv, fontSize: 12, color: msgLimit ? '#C04828' : msgWarn ? '#B06800' : 'rgba(19,4,38,0.4)' }}>
+                  <span style={{ fontFamily: hv, fontSize: 12, color: msgLimit ? '#8B0000' : msgWarn ? '#B06800' : 'rgba(19,4,38,0.4)' }}>
                     {msgLen.toLocaleString()} / {MSG_SOFT.toLocaleString()}
                     {msgLimit && ' — please shorten'}
                   </span>
@@ -1098,8 +1098,8 @@ export default function AccountPage() {
                 </div>
 
                 {flowError && (
-                  <div style={{ background: 'rgba(192,72,40,0.08)', border: '1px solid rgba(192,72,40,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-                    <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{flowError}</p>
+                  <div style={{ background: 'rgba(139,0,0,0.08)', border: '1px solid rgba(139,0,0,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+                    <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: 0 }}>{flowError}</p>
                   </div>
                 )}
 
@@ -1154,18 +1154,18 @@ export default function AccountPage() {
                   <input
                     type="text" value={profileFields.firstName}
                     onChange={e => setProfileFields(p => ({ ...p, firstName: e.target.value }))}
-                    style={{ padding: '10px 14px', border: profileErrors.firstName ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                    style={{ padding: '10px 14px', border: profileErrors.firstName ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                   />
-                  {profileErrors.firstName && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{profileErrors.firstName}</span>}
+                  {profileErrors.firstName && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{profileErrors.firstName}</span>}
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>Last name *</span>
                   <input
                     type="text" value={profileFields.lastName}
                     onChange={e => setProfileFields(p => ({ ...p, lastName: e.target.value }))}
-                    style={{ padding: '10px 14px', border: profileErrors.lastName ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                    style={{ padding: '10px 14px', border: profileErrors.lastName ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                   />
-                  {profileErrors.lastName && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{profileErrors.lastName}</span>}
+                  {profileErrors.lastName && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{profileErrors.lastName}</span>}
                 </label>
               </div>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1173,17 +1173,17 @@ export default function AccountPage() {
                 <select
                   value={profileFields.province}
                   onChange={e => setProfileFields(p => ({ ...p, province: e.target.value }))}
-                  style={{ padding: '10px 14px', border: profileErrors.province ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: profileFields.province ? '#130426' : 'rgba(19,4,38,0.35)', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                  style={{ padding: '10px 14px', border: profileErrors.province ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: profileFields.province ? '#130426' : 'rgba(19,4,38,0.35)', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                 >
                   <option value="">Select province or territory</option>
                   {CANADIAN_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
-                {profileErrors.province && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{profileErrors.province}</span>}
+                {profileErrors.province && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{profileErrors.province}</span>}
               </label>
             </div>
             {profileError && (
-              <div style={{ background: 'rgba(192,72,40,0.08)', border: '1px solid rgba(192,72,40,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-                <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{profileError}</p>
+              <div style={{ background: 'rgba(139,0,0,0.08)', border: '1px solid rgba(139,0,0,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+                <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: 0 }}>{profileError}</p>
               </div>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
@@ -1233,9 +1233,9 @@ export default function AccountPage() {
                     <input
                       type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)}
                       autoComplete="off"
-                      style={{ padding: '10px 14px', border: emailErrors.newEmail ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      style={{ padding: '10px 14px', border: emailErrors.newEmail ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                     />
-                    {emailErrors.newEmail && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{emailErrors.newEmail}</span>}
+                    {emailErrors.newEmail && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{emailErrors.newEmail}</span>}
                   </label>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 600, color: 'rgba(19,4,38,0.6)' }}>Current password *</span>
@@ -1243,14 +1243,14 @@ export default function AccountPage() {
                       type="password" value={emailPw} onChange={e => setEmailPw(e.target.value)}
                       autoComplete="current-password"
                       onKeyDown={e => { if (e.key === 'Enter') handleChangeEmail() }}
-                      style={{ padding: '10px 14px', border: emailErrors.emailPw ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      style={{ padding: '10px 14px', border: emailErrors.emailPw ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                     />
-                    {emailErrors.emailPw && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{emailErrors.emailPw}</span>}
+                    {emailErrors.emailPw && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{emailErrors.emailPw}</span>}
                   </label>
                 </div>
                 {emailError && (
-                  <div style={{ background: 'rgba(192,72,40,0.08)', border: '1px solid rgba(192,72,40,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-                    <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{emailError}</p>
+                  <div style={{ background: 'rgba(139,0,0,0.08)', border: '1px solid rgba(139,0,0,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+                    <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: 0 }}>{emailError}</p>
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -1312,9 +1312,9 @@ export default function AccountPage() {
                         type="email" value={recEmailInput}
                         onChange={e => { setRecEmailInput(e.target.value); if (recErrors.email) setRecErrors(p => ({ ...p, email: undefined })) }}
                         autoComplete="off"
-                        style={{ padding: '10px 14px', border: recErrors.email ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                        style={{ padding: '10px 14px', border: recErrors.email ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                       />
-                      {recErrors.email && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{recErrors.email}</span>}
+                      {recErrors.email && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{recErrors.email}</span>}
                     </label>
                   )}
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1324,14 +1324,14 @@ export default function AccountPage() {
                       onChange={e => { setRecPassword(e.target.value); if (recErrors.password) setRecErrors(p => ({ ...p, password: undefined })) }}
                       autoComplete="current-password"
                       onKeyDown={e => { if (e.key === 'Enter') handleRecSubmit() }}
-                      style={{ padding: '10px 14px', border: recErrors.password ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      style={{ padding: '10px 14px', border: recErrors.password ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                     />
-                    {recErrors.password && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{recErrors.password}</span>}
+                    {recErrors.password && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{recErrors.password}</span>}
                   </label>
                 </div>
                 {recError && (
-                  <div style={{ background: 'rgba(192,72,40,0.08)', border: '1px solid rgba(192,72,40,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-                    <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{recError}</p>
+                  <div style={{ background: 'rgba(139,0,0,0.08)', border: '1px solid rgba(139,0,0,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
+                    <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: 0 }}>{recError}</p>
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -1374,7 +1374,7 @@ export default function AccountPage() {
                   </p>
                   <Field label="New password"         type="password" value={newPassword}     onChange={setNewPassword}     autoComplete="new-password" />
                   <Field label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
-                  {pwError && <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{pwError}</p>}
+                  {pwError && <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: 0 }}>{pwError}</p>}
                   <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                     <button type="button" onClick={closePwModal} style={{ flex: 1, background: 'rgba(19,4,38,0.07)', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', cursor: 'pointer' }}>Cancel</button>
                     <button
@@ -1436,7 +1436,7 @@ export default function AccountPage() {
                   placeholder="Your password" autoFocus
                   style={{ width: '100%', boxSizing: 'border-box', padding: '10px 14px', border: '1.5px solid rgba(19,4,38,0.2)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: '#130426', background: '#ffffff', outline: 'none', marginBottom: deleteError ? 8 : 20 }}
                 />
-                {deleteError && <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: '0 0 16px' }}>{deleteError}</p>}
+                {deleteError && <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: '0 0 16px' }}>{deleteError}</p>}
                 <div style={{ display: 'flex', gap: 12 }}>
                   <button onClick={() => { setDeleteStep('confirm'); setDeletePassword(''); setDeleteError(''); setDeleteStatus('idle') }}
                     style={{ flex: 1, background: 'rgba(19,4,38,0.07)', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', cursor: 'pointer' }}>Back</button>

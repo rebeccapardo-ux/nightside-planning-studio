@@ -56,9 +56,9 @@ function ContactField({
         value={value}
         onChange={(e) => onChange(field, e.target.value)}
         autoComplete={type === 'email' ? 'off' : undefined}
-        style={{ ...inputBase, border: error ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)' }}
+        style={{ ...inputBase, border: error ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)' }}
       />
-      {error && <span style={{ fontFamily: hv, fontSize: 13, color: '#C04828' }}>{error}</span>}
+      {error && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{error}</span>}
     </label>
   )
 }
@@ -340,7 +340,7 @@ export default function LegacyContactForm() {
 
           {/* ── Primary Legacy Contact ── */}
           <div style={{ marginBottom: 28 }}>
-            <p style={sectionHead}>Primary Legacy Contact <span style={{ color: '#C04828' }}>*</span></p>
+            <p style={sectionHead}>Primary Legacy Contact <span style={{ color: '#8B0000' }}>*</span></p>
             <ContactGroup values={primary} errors={primaryErrors} onChange={updatePrimary} idPrefix="primary" />
           </div>
 
@@ -426,7 +426,7 @@ export default function LegacyContactForm() {
               rows={5}
               style={{
                 width: '100%', boxSizing: 'border-box', padding: '10px 14px', borderRadius: 8,
-                border: msgLimit ? '1.5px solid #C04828' : '1.5px solid rgba(19,4,38,0.15)',
+                border: msgLimit ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)',
                 fontFamily: hv, fontSize: 15, color: '#130426',
                 background: '#ffffff', outline: 'none', resize: 'vertical', lineHeight: 1.6,
               }}
@@ -434,7 +434,7 @@ export default function LegacyContactForm() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 5 }}>
               <span style={{
                 fontFamily: hv, fontSize: 13,
-                color: msgLimit ? '#C04828' : msgWarn ? '#B06800' : 'rgba(19,4,38,0.4)',
+                color: msgLimit ? '#8B0000' : msgWarn ? '#B06800' : 'rgba(19,4,38,0.4)',
               }}>
                 {msgLen.toLocaleString()} / {MSG_SOFT.toLocaleString()} characters
                 {msgLimit && ' — please shorten your message'}
@@ -444,8 +444,8 @@ export default function LegacyContactForm() {
 
           {/* ── Error ── */}
           {submitError && (
-            <div style={{ background: 'rgba(192,72,40,0.08)', border: '1px solid rgba(192,72,40,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 20 }}>
-              <p style={{ fontFamily: hv, fontSize: 14, color: '#C04828', margin: 0 }}>{submitError}</p>
+            <div style={{ background: 'rgba(139,0,0,0.08)', border: '1px solid rgba(139,0,0,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 20 }}>
+              <p style={{ fontFamily: hv, fontSize: 14, color: '#8B0000', margin: 0 }}>{submitError}</p>
             </div>
           )}
 
