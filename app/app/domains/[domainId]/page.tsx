@@ -39,6 +39,7 @@ import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AlertIcon from '@/app/components/AlertIcon'
 import DomainTour from '@/app/components/DomainTour'
 
 // ---------------------------------------------------------------------------
@@ -959,8 +960,8 @@ function PlanningStatusSection({
               {exploredCount} of {totalTopics} topics started
             </p>
             {saveError && (
-              <p style={{ fontSize: 13, color: '#c0392b', margin: '12px 0 0 0' }}>
-                Couldn&apos;t save your change. Please try again.
+              <p style={{ fontSize: 13, color: '#8B0000', margin: '12px 0 0 0' }}>
+                <AlertIcon color="#8B0000" size={13} />Couldn&apos;t save your change. Please try again.
               </p>
             )}
           </div>

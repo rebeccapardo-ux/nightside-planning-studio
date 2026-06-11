@@ -10,6 +10,7 @@ import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import type { VoiceNoteSaveMode } from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import ErrorMessagePill from '@/app/components/ErrorMessagePill'
 
 const REVIEWED_PROMPTS_STORAGE_KEY = 'reflect-reviewed-prompts'
 const AUTOSAVE_DELAY_MS = 1500
@@ -367,7 +368,7 @@ function ReflectPromptsInner() {
                 <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Saving…</span>
               )}
               {saveStatus === 'error' && (
-                <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Couldn&apos;t save</span>
+                <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>
               )}
             </div>
 

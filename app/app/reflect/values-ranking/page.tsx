@@ -635,7 +635,7 @@ function ValuesRankingContent() {
             </button>
           )}
           {saveStatus === 'error' ? (
-            <ErrorMessagePill>Couldn&apos;t save</ErrorMessagePill>
+            <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>
           ) : saveStatusText && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -892,7 +892,7 @@ function ValuesRankingContent() {
                   <span>Saved to Your Plan</span>
                 </>
               )}
-              {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save</ErrorMessagePill>}
+              {reflectionSaveStatus === 'error' && <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>}
             </div>
             <AutosaveNotice style={{ marginBottom: 24 }} />
             <div style={{ marginTop: 8 }}>
@@ -1216,7 +1216,7 @@ function ValuesRankingContent() {
                     <span>Saved to Your Plan</span>
                   </>
                 )}
-                {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save</ErrorMessagePill>}
+                {reflectionSaveStatus === 'error' && <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>}
               </div>
               <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 8 }}>

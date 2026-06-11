@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AlertIcon from '@/app/components/AlertIcon'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import {
   fetchKeepsakeInventory,
@@ -398,13 +399,13 @@ export default function KeepsakeDocumentPage() {
             style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
             <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M1.5 10.5h10" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" />
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
             <span className="hidden md:inline">Preview &amp; </span>Export
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#c0392b' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
         </div>
       )}
@@ -412,7 +413,7 @@ export default function KeepsakeDocumentPage() {
           keepsake whose first save fails offline (savedDocId never gets set). */}
       {saveStatus === 'error' && !(savedDocId && hasAnyContent) && (
         <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#c0392b', fontFamily: hv }}>Couldn&apos;t save</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#8B0000', fontFamily: hv }}><AlertIcon color="#8B0000" />Couldn&apos;t save</span>
         </div>
       )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>

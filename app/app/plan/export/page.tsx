@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState } from '@/lib/domain-state'
+import AlertIcon from '@/app/components/AlertIcon'
 import { buildMaterials, buildKeyDetails, buildDomainStatuses } from '@/lib/pdf/buildPlanData'
 import type { PlanKeyDetail, PlanDomainStatus, PlanMaterial, PlanPDFProps } from '@/lib/pdf/PlanPDFDocument'
 
@@ -240,8 +241,8 @@ export default function PlanExportPage() {
               </button>
             </div>
             {exportError && (
-              <p style={{ fontFamily: hv, fontSize: 12, color: '#c0392b', margin: 0, textAlign: 'right' }}>
-                {exportError}
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#8B0000', margin: 0, textAlign: 'right' }}>
+                <AlertIcon color="#8B0000" />{exportError}
               </p>
             )}
             <p

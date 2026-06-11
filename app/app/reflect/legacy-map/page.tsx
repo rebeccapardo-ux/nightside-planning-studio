@@ -8,6 +8,7 @@ import VoiceNoteButton from "@/app/components/VoiceNoteButton";
 import type { Note } from "@/lib/notes";
 import Breadcrumbs from "@/app/components/navigation/Breadcrumbs";
 import AutosaveNotice from "@/app/components/AutosaveNotice";
+import AlertIcon, { ERROR_COLOR_ON_LIGHT } from "@/app/components/AlertIcon";
 
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
@@ -1414,9 +1415,10 @@ export default function LegacyMapPage() {
 
               {/* Error state */}
               {reflectionSaveStatus === 'error' && (
-                <p style={{ marginTop: 6, fontSize: 13, fontFamily: hv, color: 'rgba(219,88,53,0.85)', minHeight: 18 }}>
-                  Couldn't save
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, marginTop: 6, minHeight: 18 }}>
+                  <AlertIcon color={ERROR_COLOR_ON_LIGHT} size={14} style={{ marginRight: 0 }} />
+                  <span style={{ fontSize: 13, fontFamily: hv, fontWeight: 500, color: ERROR_COLOR_ON_LIGHT }}>Couldn&apos;t save</span>
+                </div>
               )}
 
               <AutosaveNotice style={{ marginTop: 12, marginBottom: 8 }} />

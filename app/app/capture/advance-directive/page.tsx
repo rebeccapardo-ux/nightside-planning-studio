@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator, MATERIALS_PANEL_TOOLTIP } from '@/lib/ui'
+import AlertIcon from '@/app/components/AlertIcon'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import SlidePanel from '@/app/components/SlidePanel'
@@ -409,8 +410,8 @@ function AdvanceDirectivePage() {
     <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
       <ExportButton onClick={handlePreviewExport} disabled={saveState === 'saving'} />
       {saveStatusText && (
-        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#c0392b' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>
-          {saveStatusText}
+        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>
+          {saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}
         </span>
       )}
     </div>
@@ -456,7 +457,7 @@ function AdvanceDirectivePage() {
 
             <AutosaveNotice style={{ marginTop: 28 }}>Your answers will save automatically to Your Plan.</AutosaveNotice>
             {saveStatusText && (
-              <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveState === 'error' ? '#c0392b' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+              <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
             )}
           </div>
 
