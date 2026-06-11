@@ -5,6 +5,7 @@ import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
+import AlertIcon from '@/app/components/AlertIcon'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
@@ -471,7 +472,7 @@ function PersonalAdminPage() {
             {saveStatus === 'saving' ? 'Preparing…' : <><span className="hidden md:inline">Finalize &amp; </span>Export</>}
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
         </div>
       )}
@@ -503,7 +504,7 @@ function PersonalAdminPage() {
           </p>
           <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>
           {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatusText}</span>
+            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
         </div>
 

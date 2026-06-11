@@ -128,7 +128,7 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
               {/* Message */}
               <div>
                 <label style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.7)', display: 'block', marginBottom: 6 }}>
-                  Your message <span style={{ color: '#C04828' }}>*</span>
+                  Your message <span style={{ color: '#8B0000' }}>*</span>
                 </label>
                 <textarea
                   ref={messageRef}
@@ -136,10 +136,10 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
                   onChange={e => { setMessage(e.target.value); if (errors.message) setErrors(p => ({ ...p, message: undefined })) }}
                   rows={5}
                   placeholder="Tell us what's on your mind…"
-                  style={{ ...inputBase, border: `1.5px solid ${errors.message ? '#C04828' : 'rgba(19,4,38,0.15)'}`, resize: 'vertical' }}
+                  style={{ ...inputBase, border: `1.5px solid ${errors.message ? '#8B0000' : 'rgba(19,4,38,0.15)'}`, resize: 'vertical' }}
                 />
                 {errors.message && (
-                  <p style={{ fontFamily: hv, fontSize: 12, color: '#C04828', margin: '4px 0 0' }}>{errors.message}</p>
+                  <p style={{ fontFamily: hv, fontSize: 12, color: '#8B0000', margin: '4px 0 0' }}>{errors.message}</p>
                 )}
               </div>
 
@@ -147,26 +147,26 @@ export default function FeedbackModal({ onClose }: { onClose: () => void }) {
               {isAuthed === false && (
                 <div>
                   <label style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.7)', display: 'block', marginBottom: 6 }}>
-                    Your email (so we can reply) <span style={{ color: '#C04828' }}>*</span>
+                    Your email (so we can reply) <span style={{ color: '#8B0000' }}>*</span>
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: undefined })) }}
                     placeholder="you@example.com"
-                    style={{ ...inputBase, border: `1.5px solid ${errors.email ? '#C04828' : 'rgba(19,4,38,0.15)'}` }}
+                    style={{ ...inputBase, border: `1.5px solid ${errors.email ? '#8B0000' : 'rgba(19,4,38,0.15)'}` }}
                   />
                   {errors.email && (
-                    <p style={{ fontFamily: hv, fontSize: 12, color: '#C04828', margin: '4px 0 0' }}>{errors.email}</p>
+                    <p style={{ fontFamily: hv, fontSize: 12, color: '#8B0000', margin: '4px 0 0' }}>{errors.email}</p>
                   )}
                 </div>
               )}
 
               {/* Error state */}
               {status === 'error' && (
-                <p style={{ fontFamily: hv, fontSize: 13, color: '#C04828', margin: 0, lineHeight: 1.55 }}>
+                <p style={{ fontFamily: hv, fontSize: 13, color: '#8B0000', margin: 0, lineHeight: 1.55 }}>
                   Something went wrong sending your feedback. Please try again, or email us directly at{' '}
-                  <a href="mailto:contact@thenightside.net" style={{ color: '#C04828' }}>contact@thenightside.net</a>.
+                  <a href="mailto:contact@thenightside.net" style={{ color: '#8B0000' }}>contact@thenightside.net</a>.
                 </p>
               )}
 

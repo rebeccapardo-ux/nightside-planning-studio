@@ -237,7 +237,7 @@ function FearsRankingContent() {
   async function autoSaveCardState() {
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setSaveStatus('error'); return }
 
     setSaveStatus('saving')
     const currentEntryId = savedEntryIdRef.current
@@ -295,7 +295,7 @@ function FearsRankingContent() {
   async function autoSaveReflection(value: string) {
     const supabase = createSupabaseBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setReflectionSaveStatus('error'); return }
 
     const currentEntryId = savedEntryIdRef.current
     setReflectionSaveStatus('saving')
@@ -561,7 +561,7 @@ function FearsRankingContent() {
           if (days < 7) return `Saved ${days}d ago`
           return `Saved ${Math.floor(days / 7)}w ago`
         })()
-      : saveStatus === 'error' ? "Couldn't save — check your connection"
+      : saveStatus === 'error' ? "Couldn't save"
       : ''
 
   if (loadingSavedEntry) {
@@ -626,7 +626,7 @@ function FearsRankingContent() {
             </button>
           )}
           {saveStatus === 'error' ? (
-            <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>
+            <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>
           ) : saveStatusText && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -891,7 +891,7 @@ function FearsRankingContent() {
                   <span>Saved to Your Plan</span>
                 </>
               )}
-              {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>}
+              {reflectionSaveStatus === 'error' && <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>}
             </div>
             <AutosaveNotice style={{ marginBottom: 24 }} />
             <div style={{ marginTop: 8 }}>
@@ -1215,7 +1215,7 @@ function FearsRankingContent() {
                     <span>Saved to Your Plan</span>
                   </>
                 )}
-                {reflectionSaveStatus === 'error' && <ErrorMessagePill>Couldn&apos;t save — check your connection</ErrorMessagePill>}
+                {reflectionSaveStatus === 'error' && <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>}
               </div>
               <AutosaveNotice style={{ marginBottom: 24 }} />
               <div style={{ marginTop: 8 }}>

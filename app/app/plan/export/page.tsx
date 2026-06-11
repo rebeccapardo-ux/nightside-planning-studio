@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState } from '@/lib/domain-state'
+import AlertIcon from '@/app/components/AlertIcon'
 import { buildMaterials, buildKeyDetails, buildDomainStatuses } from '@/lib/pdf/buildPlanData'
 import type { PlanKeyDetail, PlanDomainStatus, PlanMaterial, PlanPDFProps } from '@/lib/pdf/PlanPDFDocument'
 
@@ -38,6 +39,7 @@ export default function PlanExportPage() {
   const [summaryLoading, setSummaryLoading]   = useState(false)
   const [fullLoading, setFullLoading]         = useState(false)
   const [jsonLoading, setJsonLoading]         = useState(false)
+  const [exportError, setExportError]         = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -86,6 +88,7 @@ export default function PlanExportPage() {
   async function handleDownload(mode: 'summary' | 'full') {
     const setDownloading = mode === 'summary' ? setSummaryLoading : setFullLoading
     setDownloading(true)
+    setExportError(null)
     try {
       const { pdf } = await import('@react-pdf/renderer')
       const { default: PlanPDFDocument } = await import('@/lib/pdf/PlanPDFDocument')
@@ -126,6 +129,9 @@ export default function PlanExportPage() {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('PDF export error:', e)
+      setExportError("Couldn't generate your export. Please try again.")
     } finally {
       setDownloading(false)
     }
@@ -133,10 +139,12 @@ export default function PlanExportPage() {
 
   async function handleJsonDownload() {
     setJsonLoading(true)
+    setExportError(null)
     try {
       const res = await fetch('/api/plan/export-json', { credentials: 'same-origin' })
       if (!res.ok) {
         console.error('JSON export failed:', res.status)
+        setExportError("Couldn't generate your export. Please try again.")
         return
       }
       const blob = await res.blob()
@@ -154,6 +162,9 @@ export default function PlanExportPage() {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('JSON export error:', e)
+      setExportError("Couldn't generate your export. Please try again.")
     } finally {
       setJsonLoading(false)
     }
@@ -229,6 +240,11 @@ export default function PlanExportPage() {
                 {jsonLoading ? 'Generating…' : 'Download JSON'}
               </button>
             </div>
+            {exportError && (
+              <p style={{ fontFamily: hv, fontSize: 12, color: '#8B0000', margin: 0, textAlign: 'right' }}>
+                <AlertIcon color="#8B0000" />{exportError}
+              </p>
+            )}
             <p
               style={{
                 fontFamily: hv,

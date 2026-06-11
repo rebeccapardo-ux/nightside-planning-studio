@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import AlertIcon from '@/app/components/AlertIcon'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 import {
   fetchKeepsakeInventory,
@@ -204,6 +205,7 @@ export default function KeepsakeDocumentPage() {
   const userIdRef = useRef<string | null>(null)
   const router = useRouter()
   const [savedDocId, setSavedDocId] = useState<string | null>(null)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const entryRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const lastEditedEntryIdRef = useRef<string | null>(null)
@@ -253,6 +255,7 @@ export default function KeepsakeDocumentPage() {
   )
 
   const saveStatusText = useMemo(() => {
+    if (saveStatus === 'error') return "Couldn't save"
     if (!lastSavedAt) return null
     const diff = Math.max(statusNow - lastSavedAt.getTime(), 0)
     const s = Math.floor(diff / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24), w = Math.floor(d / 7)
@@ -261,7 +264,7 @@ export default function KeepsakeDocumentPage() {
     if (h < 24) return h === 1 ? 'Saved 1h ago' : `Saved ${h}h ago`
     if (d < 7) return d === 1 ? 'Saved 1 day ago' : `Saved ${d} days ago`
     return w === 1 ? 'Saved 1 week ago' : `Saved ${w} weeks ago`
-  }, [lastSavedAt, statusNow])
+  }, [lastSavedAt, statusNow, saveStatus])
 
   const scheduleSave = useCallback((nextEntries: KeepsakeEntry[]) => {
     const saveable = nextEntries.filter((e) => !isEntryEmpty(e))
@@ -269,16 +272,29 @@ export default function KeepsakeDocumentPage() {
     debounceRef.current = setTimeout(async () => {
       const targetId = lastEditedEntryIdRef.current
       setSavingEntryId(targetId)
+      setSaveStatus('saving')
       const startedAt = Date.now()
-      if (docIdRef.current) {
-        await saveKeepsakeInventory(docIdRef.current, saveable)
-      } else if (saveable.length > 0) {
-        const inv = await createKeepsakeInventory(saveable)
-        if (inv) { docIdRef.current = inv.id; setSavedDocId(inv.id) }
+      // Capture the lib results — a failed save must not show a false "Saved".
+      let ok = true
+      try {
+        if (docIdRef.current) {
+          ok = await saveKeepsakeInventory(docIdRef.current, saveable)
+        } else if (saveable.length > 0) {
+          const inv = await createKeepsakeInventory(saveable)
+          if (inv) { docIdRef.current = inv.id; setSavedDocId(inv.id) }
+          else ok = false
+        }
+      } catch {
+        ok = false
       }
       await holdSavingIndicator(startedAt)
       setSavingEntryId(null)
+      if (!ok) {
+        setSaveStatus('error')
+        return
+      }
       if (saveable.length > 0) {
+        setSaveStatus('saved')
         if (docIdRef.current && userIdRef.current) localStorage.setItem(`nightside.lastSaved.${userIdRef.current}.${docIdRef.current}`, new Date().toISOString())
         setLastSavedAt(new Date())
         setStatusNow(Date.now())
@@ -291,6 +307,8 @@ export default function KeepsakeDocumentPage() {
             setTimeout(() => setSavedIndicatorId(null), 400)
           }, 2600)
         }
+      } else {
+        setSaveStatus('idle')
       }
     }, AUTOSAVE_DELAY)
   }, [])
@@ -381,14 +399,21 @@ export default function KeepsakeDocumentPage() {
             style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
             <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M1.5 10.5h10" stroke="#F8F4EB" strokeWidth="1.4" strokeLinecap="round" />
+              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
             <span className="hidden md:inline">Preview &amp; </span>Export
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
+        </div>
+      )}
+      {/* Error must surface even when the export bar is hidden — e.g. a brand-new
+          keepsake whose first save fails offline (savedDocId never gets set). */}
+      {saveStatus === 'error' && !(savedDocId && hasAnyContent) && (
+        <div style={{ position: 'absolute', top: 20, right: 152, zIndex: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#8B0000', fontFamily: hv }}><AlertIcon color="#8B0000" />Couldn&apos;t save</span>
         </div>
       )}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>

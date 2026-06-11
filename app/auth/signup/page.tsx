@@ -164,7 +164,7 @@ export default function SignUpPage() {
           box-shadow: 0 0 0 3px rgba(45,58,107,0.1);
         }
         .auth-input.has-error {
-          border-color: #c0392b;
+          border-color: #8B0000;
         }
         .auth-select {
           appearance: none;
@@ -282,7 +282,7 @@ export default function SignUpPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <div>
                       <label htmlFor="signup-first-name" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
-                        First name <span style={{ color: '#c0392b' }}>*</span>
+                        First name <span style={{ color: '#8B0000' }}>*</span>
                       </label>
                       <input
                         id="signup-first-name"
@@ -292,11 +292,11 @@ export default function SignUpPage() {
                         className={`auth-input${fieldErrors.firstName ? ' has-error' : ''}`}
                         autoComplete="given-name"
                       />
-                      {fieldErrors.firstName && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.firstName}</p>}
+                      {fieldErrors.firstName && <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '4px 0 0 0' }}>{fieldErrors.firstName}</p>}
                     </div>
                     <div>
                       <label htmlFor="signup-last-name" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
-                        Last name <span style={{ color: '#c0392b' }}>*</span>
+                        Last name <span style={{ color: '#8B0000' }}>*</span>
                       </label>
                       <input
                         id="signup-last-name"
@@ -306,14 +306,14 @@ export default function SignUpPage() {
                         className={`auth-input${fieldErrors.lastName ? ' has-error' : ''}`}
                         autoComplete="family-name"
                       />
-                      {fieldErrors.lastName && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.lastName}</p>}
+                      {fieldErrors.lastName && <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '4px 0 0 0' }}>{fieldErrors.lastName}</p>}
                     </div>
                   </div>
 
                   {/* Email */}
                   <div style={{ marginTop: '20px' }}>
                     <label htmlFor="signup-email" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
-                      Email <span style={{ color: '#c0392b' }}>*</span>
+                      Email <span style={{ color: '#8B0000' }}>*</span>
                     </label>
                     <input
                       id="signup-email"
@@ -323,13 +323,13 @@ export default function SignUpPage() {
                       className={`auth-input${fieldErrors.email ? ' has-error' : ''}`}
                       autoComplete="email"
                     />
-                    {fieldErrors.email && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.email}</p>}
+                    {fieldErrors.email && <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '4px 0 0 0' }}>{fieldErrors.email}</p>}
                   </div>
 
                   {/* Password */}
                   <div style={{ marginTop: '20px' }}>
                     <label htmlFor="signup-password" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
-                      Password <span style={{ color: '#c0392b' }}>*</span>
+                      Password <span style={{ color: '#8B0000' }}>*</span>
                     </label>
                     <div style={{ position: 'relative' }}>
                       <input
@@ -352,7 +352,7 @@ export default function SignUpPage() {
                       </button>
                     </div>
                     {fieldErrors.password
-                      ? <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.password}</p>
+                      ? <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '4px 0 0 0' }}>{fieldErrors.password}</p>
                       : <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', margin: '5px 0 0 0', lineHeight: 1.4 }}>Use at least 12 characters. Long, memorable passphrases work well.</p>
                     }
                   </div>
@@ -360,7 +360,7 @@ export default function SignUpPage() {
                   {/* Province */}
                   <div style={{ marginTop: '20px' }}>
                     <label htmlFor="signup-province" style={{ display: 'block', fontFamily: hv, fontSize: '13px', fontWeight: 500, color: '#3a3a3a', marginBottom: '6px' }}>
-                      Province <span style={{ color: '#c0392b' }}>*</span>
+                      Province <span style={{ color: '#8B0000' }}>*</span>
                     </label>
                     <select
                       id="signup-province"
@@ -374,7 +374,7 @@ export default function SignUpPage() {
                         <option key={p} value={p} style={{ color: '#1a1a1a' }}>{p}</option>
                       ))}
                     </select>
-                    {fieldErrors.province && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.province}</p>}
+                    {fieldErrors.province && <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '4px 0 0 0' }}>{fieldErrors.province}</p>}
                   </div>
 
                   {/* Recovery email (optional but recommended) */}
@@ -391,7 +391,7 @@ export default function SignUpPage() {
                       autoComplete="email"
                     />
                     {fieldErrors.recoveryEmail
-                      ? <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '4px 0 0 0' }}>{fieldErrors.recoveryEmail}</p>
+                      ? <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '4px 0 0 0' }}>{fieldErrors.recoveryEmail}</p>
                       : <p style={{ fontFamily: hv, fontSize: '12px', color: '#6b6b6b', margin: '5px 0 0 0', lineHeight: 1.4 }}>A backup email — if you ever lose access to your primary, this is how you&apos;ll get back in. Without one, your account can&apos;t be recovered.</p>
                     }
                   </div>
@@ -423,12 +423,12 @@ export default function SignUpPage() {
                     <p style={{ fontFamily: hv, fontSize: '12px', fontStyle: 'italic', color: 'rgba(19, 4, 38, 0.70)', lineHeight: 1.5, margin: '6px 0 0 26px' }}>
                       Your information is stored in Canada. Some processing occurs through providers in other countries — see our Privacy Policy for details.
                     </p>
-                    {fieldErrors.terms && <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '6px 0 0 26px' }}>{fieldErrors.terms}</p>}
+                    {fieldErrors.terms && <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '6px 0 0 26px' }}>{fieldErrors.terms}</p>}
                   </div>
 
                   {/* Server error */}
                   {serverError && (
-                    <p style={{ fontFamily: hv, fontSize: '13px', color: '#c0392b', margin: '12px 0 0 0', lineHeight: 1.4 }}>
+                    <p style={{ fontFamily: hv, fontSize: '13px', color: '#8B0000', margin: '12px 0 0 0', lineHeight: 1.4 }}>
                       {serverError}
                     </p>
                   )}

@@ -127,7 +127,8 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
-      setServerError(error.message || 'Could not update password. Try requesting a new reset link.')
+      console.error('[reset-password] updateUser failed', error)
+      setServerError('Could not update password. Try requesting a new reset link.')
       setPhase('ready')
       return
     }
@@ -166,7 +167,7 @@ export default function ResetPasswordPage() {
           border-color: #2d3a6b;
           box-shadow: 0 0 0 3px rgba(45,58,107,0.1);
         }
-        .auth-input.has-error { border-color: #c0392b; }
+        .auth-input.has-error { border-color: #8B0000; }
         .auth-btn {
           width: 100%;
           padding: 14px;
@@ -317,10 +318,10 @@ export default function ResetPasswordPage() {
                   </div>
 
                   {fieldError && (
-                    <p style={{ fontFamily: hv, fontSize: '12px', color: '#c0392b', margin: '8px 0 0 0' }}>{fieldError}</p>
+                    <p style={{ fontFamily: hv, fontSize: '12px', color: '#8B0000', margin: '8px 0 0 0' }}>{fieldError}</p>
                   )}
                   {serverError && (
-                    <p style={{ fontFamily: hv, fontSize: '13px', color: '#c0392b', margin: '12px 0 0 0', lineHeight: 1.4 }}>{serverError}</p>
+                    <p style={{ fontFamily: hv, fontSize: '13px', color: '#8B0000', margin: '12px 0 0 0', lineHeight: 1.4 }}>{serverError}</p>
                   )}
 
                   <button type="submit" className="auth-btn" disabled={phase === 'submitting'} style={{ marginTop: '24px' }}>

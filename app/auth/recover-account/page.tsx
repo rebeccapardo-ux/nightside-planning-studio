@@ -85,7 +85,7 @@ export default function RecoverAccountPage() {
                   onChange={e => { setEmail(e.target.value); setError('') }}
                   style={inputStyle} autoComplete="email"
                 />
-                {error && <p style={{ fontFamily: hv, fontSize: 12, color: '#c0392b', margin: '6px 0 0' }}>{error}</p>}
+                {error && <p style={{ fontFamily: hv, fontSize: 12, color: '#8B0000', margin: '6px 0 0' }}>{error}</p>}
                 <button type="submit" disabled={status === 'loading'} style={{ ...btnStyle, marginTop: 20, opacity: status === 'loading' ? 0.55 : 1, cursor: status === 'loading' ? 'not-allowed' : 'pointer' }}>
                   {status === 'loading' ? 'Sending…' : 'Send recovery link →'}
                 </button>

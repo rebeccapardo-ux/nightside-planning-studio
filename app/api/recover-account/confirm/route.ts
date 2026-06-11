@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
 
   const { error: updErr } = await admin.auth.admin.updateUserById(consumed.userId, { password })
   if (updErr) {
-    return NextResponse.json({ error: updErr.message || 'Failed to set the new password. Please try again.' }, { status: 400 })
+    console.error('[recover-account] admin updateUserById failed', updErr)
+    return NextResponse.json({ error: "Couldn't set your new password. Please try again." }, { status: 400 })
   }
 
   // Sign in on THIS device — needs only the address + the just-set password (no email
