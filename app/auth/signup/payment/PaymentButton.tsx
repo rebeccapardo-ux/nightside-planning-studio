@@ -53,7 +53,7 @@ export default function PaymentButton() {
         .payment-btn:disabled { opacity: 0.55; cursor: not-allowed; }
       `}</style>
       {error && (
-        <p style={{ fontFamily: hv, fontSize: '13px', color: '#c0392b', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+        <p style={{ fontFamily: hv, fontSize: '13px', color: '#8B0000', margin: '0 0 12px 0', lineHeight: 1.4 }}>
           {error}
         </p>
       )}

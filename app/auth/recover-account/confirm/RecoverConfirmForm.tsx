@@ -69,7 +69,7 @@ export default function RecoverConfirmForm({ token }: { token: string }) {
           <input id="rec-pw2" type="password" value={confirmPassword} onChange={e => { setConfirmPassword(e.target.value); setError('') }} style={inputStyle} autoComplete="new-password" />
         </div>
 
-        {error && <p style={{ fontFamily: hv, fontSize: 13, color: '#c0392b', margin: '12px 0 0', lineHeight: 1.4 }}>{error}</p>}
+        {error && <p style={{ fontFamily: hv, fontSize: 13, color: '#8B0000', margin: '12px 0 0', lineHeight: 1.4 }}>{error}</p>}
 
         <button
           type="submit" disabled={status === 'loading'}

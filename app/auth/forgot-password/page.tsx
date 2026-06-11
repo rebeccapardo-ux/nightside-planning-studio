@@ -129,7 +129,7 @@ export default function ForgotPasswordPage() {
                   </div>
 
                   {error && (
-                    <p style={{ fontFamily: hv, fontSize: '13px', color: '#c0392b', margin: '12px 0 0 0', lineHeight: 1.4 }}>
+                    <p style={{ fontFamily: hv, fontSize: '13px', color: '#8B0000', margin: '12px 0 0 0', lineHeight: 1.4 }}>
                       {error}
                     </p>
                   )}

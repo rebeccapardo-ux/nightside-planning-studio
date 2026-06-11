@@ -31,8 +31,9 @@ export default function AlertIcon({
 }
 
 // The AA-verified error colors (see the error-message work):
-//   onLight  #8B0000 — 8.8:1 on cream #F8F4EB, 4.7:1 on the lavender capture bg #BBABF4
-//            (a notch darker than the auth-page form red #c0392b, which fails on #BBABF4)
+//   onLight  #8B0000 — the single platform error red. 8.8:1 on cream #F8F4EB,
+//            4.7:1 on the lavender capture bg #BBABF4 (where the older #c0392b failed),
+//            9-10:1 on the white/cream auth surfaces.
 //   onDark   #FF8E7A — 8.8:1 on #130426, 4.9:1 on #2C3777 (the dark ranking/prompt banners)
 export const ERROR_COLOR_ON_LIGHT = '#8B0000'
 export const ERROR_COLOR_ON_DARK = '#FF8E7A'
