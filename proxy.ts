@@ -7,7 +7,6 @@ const ALWAYS_PUBLIC_PREFIXES = [
   '/privacy',
   '/terms',
   '/account-deleted',
-  '/login',
 ]
 
 // Within /app/*, these paths are accessible after paying but before Legacy Contact designation.
