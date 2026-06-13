@@ -476,7 +476,7 @@ export default function AccountPage() {
     const { error: authErr } = await supabase.auth.signInWithPassword({
       email: user!.email!, password: emailPw,
     })
-    if (authErr) { setEmailErrors({ emailPw: 'Incorrect password' }); setEmailStatus('error'); return }
+    if (authErr) { setEmailErrors({ emailPw: 'Incorrect password.' }); setEmailStatus('error'); return }
 
     const { error: updateErr } = await supabase.auth.updateUser({ email: newEmail.trim() })
     if (updateErr) {
@@ -534,7 +534,7 @@ export default function AccountPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        if (res.status === 401) setRecErrors({ password: 'Incorrect password' })
+        if (res.status === 401) setRecErrors({ password: 'Incorrect password.' })
         else setRecError(data.error ?? 'Something went wrong. Please try again.')
         setRecStatus('error')
         return
@@ -568,7 +568,7 @@ export default function AccountPage() {
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault()
     setPwError('')
-    if (newPassword !== confirmPassword) { setPwError('New passwords do not match.'); return }
+    if (newPassword !== confirmPassword) { setPwError('Passwords don’t match.'); return }
     if (newPassword.length < 12)         { setPwError('New password must be at least 12 characters.'); return }
     setPwStatus('loading')
     try {

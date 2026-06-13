@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
     email: user.email!, password,
   })
   if (authError) {
-    return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
+    return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 })
   }
 
   // Admin client
