@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   // Step-up: re-verify the password (consistent with every Account Access operation).
   const { error: authErr } = await supabase.auth.signInWithPassword({ email: user.email!, password })
-  if (authErr) return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
+  if (authErr) return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 })
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
