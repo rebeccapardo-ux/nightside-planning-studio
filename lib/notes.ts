@@ -27,34 +27,6 @@ export type Container = {
   domain_code?: string | null
 }
 
-export type DomainWithCount = Container & { noteCount: number }
-
-export async function fetchDomainsWithCounts(): Promise<DomainWithCount[]> {
-  const supabase = createSupabaseBrowserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const { data: containers, error } = await supabase
-    .from('containers')
-    .select('id, title, domain_code')
-    .eq('type', 'domain')
-    .order('title')
-
-  if (error || !containers || containers.length === 0) return []
-
-  const { data: links } = await supabase
-    .from('container_notes')
-    .select('container_id')
-    .in('container_id', containers.map((c) => c.id))
-
-  const counts: Record<string, number> = {}
-  for (const link of links ?? []) {
-    counts[link.container_id] = (counts[link.container_id] ?? 0) + 1
-  }
-
-  return containers.map((c) => ({ ...c, noteCount: counts[c.id] ?? 0 }))
-}
-
 export async function fetchNotesByDomainId(domainId: string): Promise<Note[]> {
   const supabase = createSupabaseBrowserClient()
   const { data: { user } } = await supabase.auth.getUser()
