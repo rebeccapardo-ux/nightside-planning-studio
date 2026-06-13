@@ -4,7 +4,7 @@ import AuthNav from '@/app/components/AuthNav'
 import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { reconcilePayment } from '@/lib/reconcile-payment'
-import VerifyingPayment from './VerifyingPayment'
+import VerifyingPayment, { type PaymentTerminalState } from './VerifyingPayment'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -24,6 +24,11 @@ export default async function SignupSuccessPage({
   // still activates the account. `result.ok` is the ground truth for paid_at —
   // we only render "Payment received" when it's actually set.
   let paid = false
+  // Thread reconcile's reason (not just .ok) so the timed-out card can be honest:
+  // not_found (Stripe says unpaid) / needs_activation (paid, can't auto-finish) /
+  // transient (Stripe API threw). Defaults to not_found — incl. the no-userId case,
+  // where we can't identify a payment for this visitor at all.
+  let terminalState: PaymentTerminalState = 'not_found'
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -38,7 +43,15 @@ export default async function SignupSuccessPage({
     }
   }
   if (userId) {
-    paid = (await reconcilePayment(userId, 'success_page')).ok
+    const result = await reconcilePayment(userId, 'success_page')
+    if (result.ok) {
+      paid = true
+    } else {
+      terminalState =
+        result.reason === 'ambiguous_manual_review' || result.reason === 'activation_failed' ? 'needs_activation'
+        : result.reason === 'stripe_error' ? 'transient'
+        : 'not_found' // no_payment | stripe_unpaid | session_not_found
+    }
   }
 
   return (
@@ -88,7 +101,7 @@ export default async function SignupSuccessPage({
               </Link>
             </>
           ) : (
-            <VerifyingPayment supportEmail={SUPPORT_EMAIL} />
+            <VerifyingPayment supportEmail={SUPPORT_EMAIL} terminalState={terminalState} />
           )}
         </div>
       </div>
