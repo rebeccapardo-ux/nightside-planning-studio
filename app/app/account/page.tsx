@@ -141,6 +141,7 @@ function Field({
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function AccountPage() {
+  const [loading,        setLoading]        = useState(true)
   const [user,           setUser]           = useState<User | null>(null)
   const [legacyContacts, setLegacyContacts] = useState<LegacyContact[]>([])
   const [releasePrefs,   setReleasePrefs]   = useState<ReleasePrefs>({
@@ -224,10 +225,10 @@ export default function AccountPage() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
-    supabase.auth.getUser().then(({ data }) => {
+    const userLoad = supabase.auth.getUser().then(({ data }) => {
       setUser(data.user)
       if (data.user) {
-        supabase
+        return supabase
           .from('user_release_preferences')
           .select('*')
           .eq('user_id', data.user.id)
@@ -242,8 +243,11 @@ export default function AccountPage() {
           })
       }
     })
-    refreshContacts()
-    refreshRecoveryEmail()
+    // Release the load gate once the initial data burst settles. allSettled +
+    // a guaranteed setLoading(false) is fail-open: a failed fetch still reveals
+    // the page (with whatever loaded) rather than trapping the user on a spinner.
+    Promise.allSettled([userLoad, refreshContacts(), refreshRecoveryEmail()])
+      .finally(() => setLoading(false))
   }, [refreshContacts, refreshRecoveryEmail])
 
   // ── Legacy Contact flow ────────────────────────────────────────────────────
@@ -683,6 +687,22 @@ export default function AccountPage() {
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
+
+  // Load gate: hold the cream chrome + "My Account" heading with a loading
+  // indicator until the mount data burst settles, so the sections don't render
+  // with empty fields that pop/flicker to filled. Matches the capture-page gate.
+  if (loading) {
+    return (
+      <div style={{ background: '#F8F4EB', minHeight: '100vh', padding: '64px 24px 80px' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+          <h1 style={{ fontFamily: hv, fontSize: 32, fontWeight: 600, color: '#130426', margin: '0 0 40px' }}>
+            My Account
+          </h1>
+          <div style={{ fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.55)' }}>Loading…</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh', padding: '64px 24px 80px' }}>
