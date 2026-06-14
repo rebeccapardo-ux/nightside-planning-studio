@@ -842,6 +842,19 @@ export default function LegacyMapPage() {
 
   // ─────────────────────────────────────────────────────────────────────────────
 
+  // Load gate: until the mount fetch resolves (isLoaded), hold the page chrome
+  // (blue workspace + midnight banner band) rather than rendering the canvas with
+  // empty DEFAULT_STATE and then flickering as saved nodes populate. Mirrors the
+  // loading.tsx skeleton so the nav-transition → mounted-but-loading → loaded
+  // sequence is visually seamless.
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen" style={{ background: '#2f3f8f' }}>
+        <div style={{ background: '#130426', minHeight: 180 }} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen" style={{ background: '#2f3f8f' }}>
 
