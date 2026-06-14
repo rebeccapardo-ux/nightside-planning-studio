@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DeathcareAnimations from './DeathcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+
+
+export const metadata: Metadata = {
+  title: "Learn: Deathcare",
+}
 
 export default async function DeathcareLearnPage() {
   const supabase = await createSupabaseServerClient()

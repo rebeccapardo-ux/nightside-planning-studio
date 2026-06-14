@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import WillsAnimations from './WillsAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+
+
+export const metadata: Metadata = {
+  title: "Learn: Wills & Estates",
+}
 
 export default async function WillsLearnPage() {
   const supabase = await createSupabaseServerClient()

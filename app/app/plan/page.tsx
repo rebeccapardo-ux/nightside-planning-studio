@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import DomainStateCard from '@/app/components/DomainStateCard'
@@ -35,6 +36,11 @@ const KNOWN_ACTIVITIES = [
 ]
 
 // ---------------------------------------------------------------------------
+
+
+export const metadata: Metadata = {
+  title: "Your Plan",
+}
 
 export default async function PlanPage() {
   const supabase = await createSupabaseServerClient()

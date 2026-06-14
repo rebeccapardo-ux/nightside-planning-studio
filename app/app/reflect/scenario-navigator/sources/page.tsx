@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SOURCES } from '@/lib/scenario-navigator-data'
+
+
+export const metadata: Metadata = {
+  title: "Scenario Navigator Sources",
+}
 
 export default function ScenarioNavigatorSourcesPage() {
   const sources = Object.values(SOURCES)

@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import LegacyContactForm from './LegacyContactForm'
+
+
+export const metadata: Metadata = {
+  title: "Designate your Legacy Contact",
+}
 
 export default async function LegacyContactOnboardingPage() {
   const supabase = await createSupabaseServerClient()

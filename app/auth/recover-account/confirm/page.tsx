@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
 import { peekToken } from '@/lib/recovery-email'
@@ -9,6 +10,11 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 // Recovery confirm landing. The GET only PEEKS the 'recovery' token (no consume —
 // prefetch-safe); the actual consume + password set happens on the POST from the
 // form. A non-pristine token renders its terminal state directly.
+
+export const metadata: Metadata = {
+  title: "Confirm account recovery",
+}
+
 export default async function RecoverConfirmPage({
   searchParams,
 }: {

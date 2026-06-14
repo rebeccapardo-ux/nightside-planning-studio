@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ACTIVITY, isStructuredActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE, documentTypeHasSensitiveFields, documentTypeMeta } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
@@ -115,6 +116,11 @@ function lmCircleColor(i: number, total: number): string {
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
+
+
+export const metadata: Metadata = {
+  title: "Export entry",
+}
 
 export default async function ExportPage({ params }: ExportPageProps) {
   const { id } = await params

@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+
+
+export const metadata: Metadata = {
+  title: "Learn: Ritual & Ceremony",
+}
 
 export default async function RitualLearnPage() {
   const supabase = await createSupabaseServerClient()

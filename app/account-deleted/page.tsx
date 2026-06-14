@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+export const metadata: Metadata = {
+  title: 'Account deleted',
+}
 
 export default function AccountDeletedPage() {
   return (

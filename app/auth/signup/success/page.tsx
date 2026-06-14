@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Stripe from 'stripe'
 import AuthNav from '@/app/components/AuthNav'
@@ -9,6 +10,11 @@ import VerifyingPayment, { type PaymentTerminalState } from './VerifyingPayment'
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const SUPPORT_EMAIL = 'contact@thenightside.net'
+
+
+export const metadata: Metadata = {
+  title: "Payment received",
+}
 
 export default async function SignupSuccessPage({
   searchParams,

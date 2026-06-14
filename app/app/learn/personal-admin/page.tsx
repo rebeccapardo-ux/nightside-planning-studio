@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import PersonalAdminAnimations from './PersonalAdminAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+
+
+export const metadata: Metadata = {
+  title: "Learn: Personal Admin",
+}
 
 export default async function PersonalAdminLearnPage() {
   const supabase = await createSupabaseServerClient()

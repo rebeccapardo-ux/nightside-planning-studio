@@ -1,4 +1,11 @@
+import type { Metadata } from 'next'
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "About The Nightside Planning Studio: creator and approach",
+}
 
 export default function AboutPage() {
   return (

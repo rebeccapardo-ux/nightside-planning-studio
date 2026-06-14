@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Nightside Planning Studio",
-  description: "End-of-life planning studio",
+  title: {
+    template: "%s · The Nightside Planning Studio",
+    default: "The Nightside Planning Studio",
+  },
+  description: "An end-of-life planning platform to help you reflect on your values, understand your options, organize your thinking, and share your wishes with the people who matter.",
 };
 
 export default function RootLayout({

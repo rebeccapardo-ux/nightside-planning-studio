@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import HealthcareAnimations from './HealthcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+
+
+export const metadata: Metadata = {
+  title: "Learn: Healthcare Wishes",
+}
 
 export default async function HealthcareLearnPage() {
   const supabase = await createSupabaseServerClient()

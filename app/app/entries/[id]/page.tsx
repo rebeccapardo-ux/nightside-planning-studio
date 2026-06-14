@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ACTIVITY, isStructuredActivity, isRankingActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE, isCaptureDocument } from '@/lib/content-metadata'
 import { notFound } from 'next/navigation'
@@ -97,6 +98,11 @@ function lmThumbCircleColor(i: number, total: number): string {
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
+
+
+export const metadata: Metadata = {
+  title: "Entry",
+}
 
 export default async function EntryDetailPage({ params, searchParams }: EntryPageProps) {
   const { id } = await params

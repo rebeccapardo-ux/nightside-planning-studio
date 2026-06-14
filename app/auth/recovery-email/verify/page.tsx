@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
 import { peekToken } from '@/lib/recovery-email'
@@ -15,6 +16,11 @@ type View = 'confirm' | 'verified' | 'stale' | 'used' | 'expired'
 //   right page directly. Only a pristine token shows the Confirm landing; a used /
 //   expired / invalid token renders its terminal state instead of a misleading
 //   "confirm what you already did" prompt.
+
+export const metadata: Metadata = {
+  title: "Verify recovery email",
+}
+
 export default async function RecoveryEmailVerifyPage({
   searchParams,
 }: {

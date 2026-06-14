@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import AuthNav from '@/app/components/AuthNav'
@@ -7,6 +8,11 @@ import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+
+export const metadata: Metadata = {
+  title: "Payment",
+}
 
 export default async function PaymentPage() {
   const supabase = await createSupabaseServerClient()
