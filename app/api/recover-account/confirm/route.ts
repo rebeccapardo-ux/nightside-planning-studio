@@ -24,14 +24,15 @@ function buildRecoveredEmail(firstName: string, audience: 'primary' | 'recovery'
     return brandedEmail(`
       <h2 style="margin-top:0;font-size:22px;color:#130426;">Your password has been changed via account recovery</h2>
       <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
-      <p style="color:#130426;line-height:1.65;">Other sessions have been signed out for security.</p>
-      <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you:</strong> contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+      <p style="color:#130426;line-height:1.65;">Your Nightside Planning Studio password was just changed using account recovery — meaning someone used your recovery email to set a new password. Other sessions have been signed out for security.</p>
+      <p style="color:#130426;line-height:1.65;">If this was you, no further action is needed.</p>
+      <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
     `)
   }
   return brandedEmail(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">You recovered access to your account</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
-    <p style="color:#130426;line-height:1.65;">You just recovered access to your account using your recovery email. Your password has been reset and other sessions have been signed out.</p>
+    <p style="color:#130426;line-height:1.65;">You just recovered access to your account using your recovery email. Your password has been reset and other sessions have been signed out for security.</p>
     <p style="color:#130426;line-height:1.65;">You can now sign in with your primary email and your new password.</p>
   `)
 }
