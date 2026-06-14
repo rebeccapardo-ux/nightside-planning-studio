@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import AuthNav from '@/app/components/AuthNav'
-import { peekToken } from '@/lib/recovery-email'
+import { peekToken, peekRecoveryAddresses } from '@/lib/recovery-email'
 import RecoverConfirmForm from './RecoverConfirmForm'
 
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -38,8 +38,20 @@ export default async function RecoverConfirmPage({
     </div>
   )
 
+  // Pristine token → resolve the two (masked) addresses so the form can offer the
+  // "which email going forward?" choice. If they can't resolve (e.g. consumed in a
+  // race between peek and this lookup), fall through to the terminal state.
   if (state === 'pristine' && token) {
-    return card(<RecoverConfirmForm token={token} />)
+    const addresses = await peekRecoveryAddresses(token)
+    if (addresses) {
+      return card(
+        <RecoverConfirmForm
+          token={token}
+          primaryMasked={addresses.primaryMasked}
+          recoveryMasked={addresses.recoveryMasked}
+        />
+      )
+    }
   }
 
   const heading =

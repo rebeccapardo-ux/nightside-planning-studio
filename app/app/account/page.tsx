@@ -475,22 +475,27 @@ export default function AccountPage() {
 
     setEmailStatus('loading')
     setEmailError('')
-    const supabase = createSupabaseBrowserClient()
-
-    const { error: authErr } = await supabase.auth.signInWithPassword({
-      email: user!.email!, password: emailPw,
-    })
-    if (authErr) { setEmailErrors({ emailPw: 'Incorrect password.' }); setEmailStatus('error'); return }
-
-    const { error: updateErr } = await supabase.auth.updateUser({ email: newEmail.trim() })
-    if (updateErr) {
-      console.error('[account] email change failed', updateErr)
-      setEmailError(/already|registered|exists/i.test(updateErr.message) ? 'That email is already in use.' : "Couldn't update your email. Please try again.")
+    try {
+      const res = await fetch('/api/account/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: emailPw, newEmail: newEmail.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        // Wrong-password (step-up) error belongs on the password field; everything else general.
+        if (res.status === 401) { setEmailErrors({ emailPw: 'Incorrect password.' }); setEmailStatus('error'); return }
+        setEmailError(data.error ?? "Couldn't update your email. Please try again.")
+        setEmailStatus('error')
+        return
+      }
+      // The change is live (admin path) — reflect the new email in the account UI now.
+      setUser(prev => prev ? ({ ...prev, email: newEmail.trim().toLowerCase() }) : prev)
+      setEmailStatus('sent')
+    } catch {
+      setEmailError('Something went wrong. Please check your connection and try again.')
       setEmailStatus('error')
-      return
     }
-
-    setEmailStatus('sent')
   }
 
   // ── Recovery email ──────────────────────────────────────────────────────────
@@ -1232,12 +1237,9 @@ export default function AccountPage() {
           >
             {emailStatus === 'sent' ? (
               <>
-                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 14px' }}>Check your new email</h3>
+                <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 14px' }}>Email changed</h3>
                 <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 24px' }}>
-                  We've sent a confirmation link to <strong>{newEmail.trim()}</strong>. Click the link in that email to complete the change. We've also notified your current email about this request.
-                </p>
-                <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 24px' }}>
-                  Your current email stays active until you confirm the new one.
+                  Your sign-in email is now <strong>{newEmail.trim()}</strong>. Use it with your existing password next time you sign in. We've sent a notification to both your previous and new email addresses.
                 </p>
                 <button onClick={closeEmailModal} style={{ width: '100%', background: '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>Got it</button>
               </>
@@ -1245,7 +1247,7 @@ export default function AccountPage() {
               <>
                 <h3 style={{ fontFamily: hv, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>Change email</h3>
                 <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, margin: '0 0 24px' }}>
-                  You'll receive a confirmation link at your new address. Your current email stays active until you confirm.
+                  Enter your password and a new email address. The change takes effect immediately.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -1280,7 +1282,7 @@ export default function AccountPage() {
                     disabled={emailStatus === 'loading'}
                     style={{ flex: 1, background: emailStatus === 'loading' ? 'rgba(19,4,38,0.25)' : '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: emailStatus === 'loading' ? 'wait' : 'pointer' }}
                   >
-                    {emailStatus === 'loading' ? 'Sending…' : 'Send confirmation'}
+                    {emailStatus === 'loading' ? 'Changing…' : 'Change email'}
                   </button>
                 </div>
               </>

@@ -108,6 +108,42 @@ export async function peekToken(
   return 'pristine'
 }
 
+// Partial-mask an email for display: keep the first 1–2 local chars + the full
+// domain (the domain is what lets a user tell their two addresses apart).
+// e.g. rebecca@gmail.com → re***@gmail.com
+export function maskEmail(email: string): string {
+  const at = email.indexOf('@')
+  if (at <= 0) return email
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1)
+  const shown = local.length <= 2 ? local.slice(0, 1) : local.slice(0, 2)
+  return `${shown}***@${domain}`
+}
+
+// For the recovery-confirm landing: resolve the (masked) primary + recovery
+// addresses behind a PRISTINE 'recovery' token, so the form can present the
+// "which email going forward?" choice. Non-consuming (mirrors peekToken's guards).
+// Returns null if the token isn't currently valid or the addresses can't resolve.
+export async function peekRecoveryAddresses(
+  rawToken: string,
+): Promise<{ primaryMasked: string; recoveryMasked: string } | null> {
+  if (!rawToken) return null
+  const admin = adminClient()
+  const { data } = await admin
+    .from('recovery_email_tokens')
+    .select('user_id, email')
+    .eq('token_hash', hashToken(rawToken))
+    .eq('purpose', 'recovery')
+    .is('used_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle()
+  if (!data) return null
+  const { data: userData } = await admin.auth.admin.getUserById(data.user_id as string)
+  const primary = userData?.user?.email
+  if (!primary) return null
+  return { primaryMasked: maskEmail(primary), recoveryMasked: maskEmail(data.email as string) }
+}
+
 // Invalidate every outstanding (unused) 'verify' token for a user. Called before
 // re-issuing on change / remove / resend so previously-sent verify links stop working.
 export async function invalidateVerifyTokens(userId: string): Promise<void> {
@@ -209,7 +245,7 @@ export function buildVerificationEmail(firstName: string, verifyUrl: string): st
   return brandedEmail(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Confirm your recovery email</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${escapeHtml(name)},</p>
-    <p style="color:#130426;line-height:1.65;">You added this email address as the recovery email for your account on The Nightside Planning Studio. If you ever lose access to your main email, this address will be used to help you regain access.</p>
+    <p style="color:#130426;line-height:1.65;">You added this email address as the recovery email for your Nightside Planning Studio account. If you ever lose access to your primary email, this address will be used to help you regain access.</p>
     <p style="margin:28px 0;">
       <a href="${verifyUrl}" style="display:inline-block;background:#2C3777;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-size:15px;">Confirm this email address</a>
     </p>
@@ -236,8 +272,7 @@ export function buildRecoveryEmail(firstName: string, recoverUrl: string): strin
   return brandedEmail(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Recover access to your account</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${escapeHtml(name)},</p>
-    <p style="color:#130426;line-height:1.65;">You requested a recovery link for your Nightside Planning Studio account because you've lost access to your primary email.</p>
-    <p style="color:#130426;line-height:1.65;">Click this link to set a new password and regain access:</p>
+    <p style="color:#130426;line-height:1.65;">You requested a recovery link for your Nightside Planning Studio account because you've lost access to your primary email. Click below to set a new password and regain access.</p>
     <p style="margin:28px 0;">
       <a href="${recoverUrl}" style="display:inline-block;background:#2C3777;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:8px;font-size:15px;">Recover my account</a>
     </p>
