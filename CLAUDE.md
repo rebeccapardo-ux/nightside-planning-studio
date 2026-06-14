@@ -97,6 +97,22 @@ Documents with collapsible sections scroll the opened section to the top of the 
 
 ---
 
+## Page metadata — titles & descriptions
+
+**Every new user-facing route gets a specific title** — never rely on the default. The default exists only as a fallback for routes that shouldn't have a page name (and the redirect-only `/`).
+
+- **Single source of truth: `app/layout.tsx`** holds the title `template` (`"%s · The Nightside Planning Studio"`), the `default` title, and the **default `description`**. The template means a route sets only its **page name** (`title: 'Your Plan'`) and Next appends ` · The Nightside Planning Studio` — **never write the full string**. Most routes inherit the default description; override only for high-value pages.
+- **Five patterns — pick by route type:**
+  1. **Server `page.tsx`** (no `'use client'`) → `export const metadata = { title: '…' }` directly in the page.
+  2. **Client `page.tsx`** (`'use client'` — can't export metadata) → add a sibling **metadata-only `layout.tsx`**: a server component that exports `metadata` and `return children` (zero added DOM). This is the default client pattern. For a client page that already has a server `layout.tsx` (e.g. `privacy`, `terms`), add `metadata` to that existing layout instead of a new file.
+  3. **Dynamic route** (`[param]`) → a server `layout.tsx` with `generateMetadata`, resolving the param to a title. Resolve **stable codes**, not prose (e.g. `/app/domains/[domainId]`: look up the container UUID → `domain_code` → title map keyed by `domain_code`). Wrap in try/catch, fall back to default.
+  4. **Parent client segment with children** (e.g. `/app/reflect`, `/app/learn`) → the sibling layout titles the landing; child routes override via their own page/layout metadata (nearest segment wins).
+  5. **`/app` landing only** → it shares the app-wide `app/app/layout.tsx`, so titling it there would leak "Home" as the inherited default to every `/app/*` route. Instead it's a **server wrapper** (`app/app/page.tsx` exports `title: 'Home'` + renders `<AppHome />`) over the `'use client'` `app/app/AppHome.tsx`.
+- `/` is a **pure redirect** (no rendered UI) — adding metadata there is inert; the root default covers it. Leave it untouched.
+- When adding a route, **grep an existing layout (e.g. `app/auth/signin/layout.tsx`) for the pattern** and copy it; verify with `tsc --noEmit` (ignore stale `.next/` validator errors) + `eslint`.
+
+---
+
 ## Database migrations
 
 - Migrations are plain SQL files in `supabase/migrations/` (e.g. `20260603_containers_domain_code.sql`).
