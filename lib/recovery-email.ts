@@ -108,6 +108,42 @@ export async function peekToken(
   return 'pristine'
 }
 
+// Partial-mask an email for display: keep the first 1–2 local chars + the full
+// domain (the domain is what lets a user tell their two addresses apart).
+// e.g. rebecca@gmail.com → re***@gmail.com
+export function maskEmail(email: string): string {
+  const at = email.indexOf('@')
+  if (at <= 0) return email
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1)
+  const shown = local.length <= 2 ? local.slice(0, 1) : local.slice(0, 2)
+  return `${shown}***@${domain}`
+}
+
+// For the recovery-confirm landing: resolve the (masked) primary + recovery
+// addresses behind a PRISTINE 'recovery' token, so the form can present the
+// "which email going forward?" choice. Non-consuming (mirrors peekToken's guards).
+// Returns null if the token isn't currently valid or the addresses can't resolve.
+export async function peekRecoveryAddresses(
+  rawToken: string,
+): Promise<{ primaryMasked: string; recoveryMasked: string } | null> {
+  if (!rawToken) return null
+  const admin = adminClient()
+  const { data } = await admin
+    .from('recovery_email_tokens')
+    .select('user_id, email')
+    .eq('token_hash', hashToken(rawToken))
+    .eq('purpose', 'recovery')
+    .is('used_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle()
+  if (!data) return null
+  const { data: userData } = await admin.auth.admin.getUserById(data.user_id as string)
+  const primary = userData?.user?.email
+  if (!primary) return null
+  return { primaryMasked: maskEmail(primary), recoveryMasked: maskEmail(data.email as string) }
+}
+
 // Invalidate every outstanding (unused) 'verify' token for a user. Called before
 // re-issuing on change / remove / resend so previously-sent verify links stop working.
 export async function invalidateVerifyTokens(userId: string): Promise<void> {
