@@ -1282,7 +1282,7 @@ export default function AccountPage() {
                     disabled={emailStatus === 'loading'}
                     style={{ flex: 1, background: emailStatus === 'loading' ? 'rgba(19,4,38,0.25)' : '#130426', color: '#F8F4EB', border: 'none', borderRadius: 22, padding: '11px 0', fontFamily: hv, fontSize: 14, fontWeight: 600, cursor: emailStatus === 'loading' ? 'wait' : 'pointer' }}
                   >
-                    {emailStatus === 'loading' ? 'Sending…' : 'Send confirmation'}
+                    {emailStatus === 'loading' ? 'Changing…' : 'Change email'}
                   </button>
                 </div>
               </>

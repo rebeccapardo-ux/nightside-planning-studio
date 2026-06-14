@@ -63,7 +63,7 @@ function buildPromotedOldPrimaryEmail(firstName: string): string {
   return brandedEmail(`
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Your sign-in email has changed</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
-    <p style="color:#130426;line-height:1.65;">Your Nightside Planning Studio account was recovered using your recovery email, and the account's sign-in email was changed away from this address. Your password was reset and other sessions were signed out for security.</p>
+    <p style="color:#130426;line-height:1.65;">Your Nightside Planning Studio account was recovered using your recovery email, and the account's sign-in email was changed from this address to a new one. Your password was reset and other sessions were signed out for security.</p>
     <p style="color:#130426;line-height:1.65;">This means this email address can no longer be used to sign in to the account.</p>
     <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `)
