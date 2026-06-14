@@ -12,7 +12,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 // pushed deeper by their own retries. (This is the deliberate divergence from
 // recovery_request_attempts, which logs every attempt to harden a pre-auth flow.)
 
-// The 8 throttled operations. Controlled vocab enforced here in code (the DB column
+// The 9 throttled operations. Controlled vocab enforced here in code (the DB column
 // is free TEXT) — append new values, never rename (they're persisted for forensics).
 export type EmailSendOperation =
   | 'lc_edit_email_change'   // edit, only when the LC email actually changes
@@ -23,6 +23,7 @@ export type EmailSendOperation =
   | 'lc_remove_secondary'
   | 'recovery_email_add'
   | 'recovery_email_resend'
+  | 'account_email_change'   // direct (admin-path) primary-email change; notifies old + new
 
 // Combined caps across ALL operation types (summed), per the Phase 2 decision.
 const HOURLY_LIMIT = 5

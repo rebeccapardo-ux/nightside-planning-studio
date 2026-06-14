@@ -16,6 +16,8 @@ export const PLAN_EXPORT_JSON_SUBJECT = 'A data export of your plan was download
 export const ACCOUNT_DELETED_SUBJECT = 'Your Nightside Planning Studio account has been deleted'
 export const RECOVERY_VERIFIED_SUBJECT = 'Your recovery email has been verified'
 export const RECOVERY_REMOVED_SUBJECT = 'Your recovery email has been removed'
+export const EMAIL_CHANGED_NEW_SUBJECT = 'This is now your Nightside Planning Studio sign-in email'
+export const EMAIL_CHANGED_OLD_SUBJECT = 'Your Nightside Planning Studio sign-in email has changed'
 
 // "Your password was changed" — the same event whether via direct change (Phase 3)
 // or forgot-password reset. Supabase's auto password-changed email is OFF; we own it.
@@ -83,6 +85,33 @@ export function buildRecoveryRemovedEmail(firstName: string): string {
     <h2 style="margin-top:0;font-size:22px;color:#130426;">Your recovery email has been removed</h2>
     <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
     <p style="color:#130426;line-height:1.65;">The recovery email on your Nightside Planning Studio account has been removed. Without one, your account can't be recovered if you lose access to your primary email. You can add a new recovery email anytime from your account settings.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+  `)
+}
+
+// Account email change (direct, step-up-gated admin path — NOT a confirmation request;
+// the change is already live). Parallels the recovery-promotion Email A/B structure.
+
+// To the NEW address — confirmation that this is now the sign-in email. (No recovery-gap
+// "Important:" line — a routine email change leaves the recovery email untouched.)
+export function buildEmailChangedNewEmail(firstName: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">This is now your sign-in email</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+    <p style="color:#130426;line-height:1.65;">The sign-in email for your Nightside Planning Studio account was just changed to this address. From now on, sign in with this address and your existing password.</p>
+    <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
+  `)
+}
+
+// To the OLD address (changed away from) — security notice.
+export function buildEmailChangedOldEmail(firstName: string): string {
+  const name = firstName?.trim() || 'there'
+  return brandedEmail(`
+    <h2 style="margin-top:0;font-size:22px;color:#130426;">Your sign-in email has changed</h2>
+    <p style="color:#130426;line-height:1.65;">Hi ${esc(name)},</p>
+    <p style="color:#130426;line-height:1.65;">The sign-in email for your Nightside Planning Studio account was just changed away from this address to a new one.</p>
+    <p style="color:#130426;line-height:1.65;">This means this email address can no longer be used to sign in to the account.</p>
     <p style="color:#130426;line-height:1.65;"><strong>If this wasn't you</strong>, please contact us immediately at <a href="mailto:contact@thenightside.net" style="color:#2C3777;">contact@thenightside.net</a>.</p>
   `)
 }
