@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -24,7 +23,6 @@ export default function RecoverConfirmForm({
   primaryMasked: string
   recoveryMasked: string
 }) {
-  const router = useRouter()
   const [password, setPassword]               = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [signInChoice, setSignInChoice]       = useState<SignInChoice>('')
@@ -50,10 +48,9 @@ export default function RecoverConfirmForm({
       if (!res.ok) { setError(data.error ?? 'Something went wrong. Please try again.'); setStatus('idle'); return }
       setResult({ promoted: !!data.promoted, promotionFailed: !!data.promotionFailed })
       setStatus('done')
-      // No-promotion (and the rare promotion-failed fallback) keep the old auto-advance.
-      // A successful promotion does NOT auto-redirect — the user needs to read that their
-      // sign-in email changed and that they no longer have a recovery email.
-      if (!data.promoted) setTimeout(() => router.push('/app'), 2000)
+      // All success branches use an explicit "Continue" button (no auto-redirect) — a
+      // password-manager save prompt can intercept attention, so the user advances at
+      // their own pace once they've read which email they'll sign in with.
     } catch {
       setError('Something went wrong. Please check your connection and try again.')
       setStatus('idle')
@@ -95,13 +92,16 @@ export default function RecoverConfirmForm({
         </div>
       )
     }
-    // ── No promotion — keep signing in with the previous email (auto-advancing) ──
+    // ── No promotion — keep signing in with the previous email ──
     return (
       <div style={{ textAlign: 'center' }}>
         <h1 style={{ fontFamily: apfel, fontSize: 24, fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px' }}>Account recovered</h1>
-        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: '#3a3a3a', margin: 0 }}>
-          You&apos;re signed in, and you&apos;ll keep signing in with your previous email (<strong>{primaryMasked}</strong>) and your new password. Other sessions have been signed out. Taking you to your plan…
+        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.6, color: '#3a3a3a', margin: '0 0 28px' }}>
+          You&apos;re signed in, and you&apos;ll keep signing in with your previous email (<strong>{primaryMasked}</strong>) and your new password. Other sessions have been signed out.
         </p>
+        <Link href="/app" style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 14, background: '#2d3a6b', color: '#fff', borderRadius: 100, fontSize: 15, fontWeight: 500, fontFamily: hv, textDecoration: 'none' }}>
+          Continue to your plan →
+        </Link>
       </div>
     )
   }
@@ -124,7 +124,7 @@ export default function RecoverConfirmForm({
 
         {/* Forward-looking sign-in email choice (no default — the user must pick). */}
         <fieldset style={{ marginTop: 28, border: '1px solid #e8e4d8', borderRadius: 10, padding: '16px 18px' }}>
-          <legend style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#3a3a3a', padding: '0 6px' }}>Going forward, which email should you use to sign in?</legend>
+          <legend style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: '#3a3a3a', padding: '0 6px' }}>Going forward, which email will you use to sign in?</legend>
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: hv, fontSize: 14, color: '#1a1a1a', cursor: 'pointer', marginTop: 6 }}>
             <input type="radio" name="signInChoice" value="previous" checked={signInChoice === 'previous'} onChange={() => { setSignInChoice('previous'); setError('') }} />
             My previous email — <strong style={{ fontWeight: 600 }}>{primaryMasked}</strong>
