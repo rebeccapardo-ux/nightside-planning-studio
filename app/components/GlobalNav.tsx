@@ -264,9 +264,6 @@ export default function GlobalNav() {
   // Opacity tuned for WCAG AA on the worst-case nav backgrounds (>=4.5:1 for this
   // caption): 0.65 cream → 5.21:1 over #2C3777; 0.62 navy → 5.47:1 over #f8f4eb.
   const drawerCaptionColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.65)' : 'rgba(19,4,38,0.62)'
-  // Divider above the "Areas of planning" caption — deliberately brighter/heavier than
-  // a hairline border so the trivia↔areas separation is unmissable.
-  const drawerDividerColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.30)' : 'rgba(19,4,38,0.25)'
 
   // Mobile drawer section (Approach B — always-expanded). The header is a LINK to the
   // landing page (its tap navigates — never an expand control); it reads as a tappable
@@ -305,8 +302,7 @@ export default function GlobalNav() {
         body = (
           <>
             {lead.map(subLink)}
-            <div className="px-6" style={{ paddingTop: 2, paddingBottom: 14 }}>
-              <div style={{ borderTop: `1.5px solid ${drawerDividerColor}`, marginBottom: 16 }} />
+            <div className="px-6" style={{ paddingTop: 20, paddingBottom: 14 }}>
               <span aria-hidden="true" className="block uppercase" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.07em', color: drawerCaptionColor }}>
                 {dividerLabel}
               </span>
