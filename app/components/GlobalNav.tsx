@@ -305,13 +305,13 @@ export default function GlobalNav() {
         body = (
           <>
             {lead.map(subLink)}
-            <div className="pl-12 pr-6">
-              <div style={{ borderTop: `1.5px solid ${drawerDividerColor}`, marginTop: 2, marginBottom: 18 }} />
-              <span aria-hidden="true" className="block font-semibold uppercase" style={{ fontSize: 12.5, letterSpacing: '0.07em', color: drawerCaptionColor }}>
+            <div className="pl-12 pr-6" style={{ paddingTop: 2, paddingBottom: 6 }}>
+              <div style={{ borderTop: `1.5px solid ${drawerDividerColor}`, marginBottom: 16 }} />
+              <span aria-hidden="true" className="block uppercase" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.07em', color: drawerCaptionColor }}>
                 {dividerLabel}
               </span>
             </div>
-            <div role="group" aria-label={dividerLabel} style={{ marginTop: -6 }}>
+            <div role="group" aria-label={dividerLabel}>
               {grouped.map(subLink)}
             </div>
           </>
