@@ -305,9 +305,9 @@ export default function GlobalNav() {
         body = (
           <>
             {lead.map(subLink)}
-            <div className="pl-12 pr-6" style={{ paddingTop: 2, paddingBottom: 6 }}>
+            <div className="pl-12 pr-6" style={{ paddingTop: 2, paddingBottom: 14 }}>
               <div style={{ borderTop: `1.5px solid ${drawerDividerColor}`, marginBottom: 16 }} />
-              <span aria-hidden="true" className="block uppercase" style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.07em', color: drawerCaptionColor }}>
+              <span aria-hidden="true" className="block uppercase" style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.07em', color: drawerCaptionColor }}>
                 {dividerLabel}
               </span>
             </div>
