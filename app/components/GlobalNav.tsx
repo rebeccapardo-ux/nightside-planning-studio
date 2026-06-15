@@ -167,10 +167,6 @@ const NAV_ITEMS: NavItem[] = [
   },
 ]
 
-// Mobile drawer (Phase 1) uses the flat top-level links only — sub-menus on mobile
-// are Phase 2.
-const NAV_LINKS = NAV_ITEMS.map(({ href, label }) => ({ href, label }))
-
 // Now that Supabase is the source of truth for every piece of user-created
 // data (documents, activity outputs, notes, domain checkboxes/orient, etc),
 // the local mirror is just a stale cache. On sign-out we wipe ALL platform
@@ -263,6 +259,78 @@ export default function GlobalNav() {
   // so the primary nav reads with the visual weight it deserves.
   const drawerLinkClass = `block w-full text-left px-6 py-4 text-[22px] font-medium ${style.link}`
   const hamburgerLineBg = entry.theme === 'dark' ? '#f8f4eb' : '#130426'
+  // Muted caption colour for the mobile drawer's "Areas of planning" group label —
+  // tracks the nav theme (cream text on dark navs, navy text on the light nav).
+  const drawerCaptionColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.55)' : 'rgba(19,4,38,0.5)'
+
+  // Mobile drawer section (Approach B — always-expanded). The header is a LINK to the
+  // landing page (its tap navigates — never an expand control), with a trailing `›`
+  // signalling "goes to a page". Sub-items are always shown, indented and subordinate.
+  // Learn's `divider` row becomes an "Areas of planning" caption + inner group, so
+  // Deathcare Trivia (above it) reads parallel to the whole group — mirroring desktop.
+  function renderDrawerSection(item: NavItem) {
+    const headerActive = item.activePrefixes.some((p) => pathname.startsWith(p))
+    const slug = item.href.split('/').pop() || item.label.toLowerCase()
+    const headerId = `navsec-${slug}`
+
+    const subLink = (row: Extract<NavRow, { type: 'item' }>) => {
+      const subActive = (row.activePrefixes ?? [row.href]).some((p) => pathname.startsWith(p))
+      return (
+        <Link
+          key={row.href}
+          href={row.href}
+          className={`block w-full pl-12 pr-6 py-3.5 text-[16.5px] ${style.link} ${subActive ? 'font-semibold underline underline-offset-4 decoration-2' : 'font-normal'}`}
+        >
+          {row.label}
+        </Link>
+      )
+    }
+
+    let body: React.ReactNode = null
+    if (item.rows) {
+      const dividerIdx = item.rows.findIndex((r) => r.type === 'divider')
+      const isItem = (r: NavRow): r is Extract<NavRow, { type: 'item' }> => r.type === 'item'
+      if (dividerIdx === -1) {
+        body = item.rows.filter(isItem).map(subLink)
+      } else {
+        const lead = item.rows.slice(0, dividerIdx).filter(isItem)
+        const grouped = item.rows.slice(dividerIdx + 1).filter(isItem)
+        const dividerLabel = (item.rows[dividerIdx] as Extract<NavRow, { type: 'divider' }>).label
+        body = (
+          <>
+            {lead.map(subLink)}
+            <div className="pl-12 pr-6 pt-3 pb-2">
+              <div className={`border-t ${style.border} mb-3`} />
+              <span aria-hidden="true" className="block text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: drawerCaptionColor }}>
+                {dividerLabel}
+              </span>
+            </div>
+            <div role="group" aria-label={dividerLabel}>
+              {grouped.map(subLink)}
+            </div>
+          </>
+        )
+      }
+    }
+
+    return (
+      <div key={item.href} className="pb-2">
+        <Link
+          href={item.href}
+          id={item.rows ? headerId : undefined}
+          className={`flex items-center justify-between w-full px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
+        >
+          <span>{item.label}</span>
+          <span aria-hidden="true" className="ml-3 text-[22px] leading-none opacity-50">›</span>
+        </Link>
+        {item.rows && (
+          <div role="group" aria-labelledby={headerId}>
+            {body}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // Top-nav link styling. Active state is color-independent (underline + weight) so
   // it reads on every nav background; `style.link` still supplies the themed color.
@@ -488,12 +556,12 @@ export default function GlobalNav() {
           <div
             onClick={() => setDrawerOpen(false)}
             aria-hidden="true"
+            className="nav-drawer-backdrop"
             style={{
               position: 'fixed',
               inset: 0,
               background: 'rgba(19,4,38,0.45)',
               zIndex: 90,
-              animation: 'navDrawerFadeIn 200ms ease-out',
             }}
           />
           {/* Drawer panel */}
@@ -503,18 +571,17 @@ export default function GlobalNav() {
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
-            className={entry.navBg}
+            className={`${entry.navBg} nav-drawer-panel`}
             style={{
               position: 'fixed',
               top: 0,
               right: 0,
               bottom: 0,
-              width: 'min(280px, 80vw)',
+              width: 'min(340px, 90vw)',
               zIndex: 95,
               display: 'flex',
               flexDirection: 'column',
               boxShadow: '-4px 0 24px rgba(0,0,0,0.25)',
-              animation: 'navDrawerSlideIn 220ms ease-out',
             }}
           >
             <div className={`flex justify-end items-center h-[76px] px-4 border-b ${style.border}`}>
@@ -529,18 +596,14 @@ export default function GlobalNav() {
                 </svg>
               </button>
             </div>
-            <nav className="flex-1 py-2" aria-label="Primary">
+            <nav className="flex-1 overflow-y-auto py-2" aria-label="Primary">
               {isAuthed === true && (
                 <>
-                  {NAV_LINKS.map((link) => (
-                    <Link key={link.href} href={link.href} className={drawerLinkClass}>
-                      {link.label}
-                    </Link>
-                  ))}
+                  {NAV_ITEMS.map(renderDrawerSection)}
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className={drawerLinkClass}
+                    className={`block w-full text-left px-6 py-4 text-[21px] font-semibold ${style.link}`}
                   >
                     Sign out
                   </button>
@@ -560,6 +623,11 @@ export default function GlobalNav() {
             }
             @keyframes navDrawerSlideIn {
               from { transform: translateX(100%) } to { transform: translateX(0) }
+            }
+            .nav-drawer-backdrop { animation: navDrawerFadeIn 200ms ease-out; }
+            .nav-drawer-panel { animation: navDrawerSlideIn 220ms ease-out; }
+            @media (prefers-reduced-motion: reduce) {
+              .nav-drawer-backdrop, .nav-drawer-panel { animation: none; }
             }
           `}</style>
         </>
