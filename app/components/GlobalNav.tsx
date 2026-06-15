@@ -262,14 +262,18 @@ export default function GlobalNav() {
   // Muted caption colour for the mobile drawer's "Areas of planning" group label —
   // tracks the nav theme (cream text on dark navs, navy text on the light nav).
   // Opacity tuned for WCAG AA on the worst-case nav backgrounds (>=4.5:1 for this
-  // 11px caption): 0.65 cream → 5.21:1 over #2C3777; 0.62 navy → 5.47:1 over #f8f4eb.
+  // caption): 0.65 cream → 5.21:1 over #2C3777; 0.62 navy → 5.47:1 over #f8f4eb.
   const drawerCaptionColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.65)' : 'rgba(19,4,38,0.62)'
+  // Divider above the "Areas of planning" caption — deliberately brighter/heavier than
+  // a hairline border so the trivia↔areas separation is unmissable.
+  const drawerDividerColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.30)' : 'rgba(19,4,38,0.25)'
 
   // Mobile drawer section (Approach B — always-expanded). The header is a LINK to the
-  // landing page (its tap navigates — never an expand control), with a trailing `›`
-  // signalling "goes to a page". Sub-items are always shown, indented and subordinate.
-  // Learn's `divider` row becomes an "Areas of planning" caption + inner group, so
-  // Deathcare Trivia (above it) reads parallel to the whole group — mirroring desktop.
+  // landing page (its tap navigates — never an expand control); it reads as a tappable
+  // row from its size/weight + active underline, no chevron. Sub-items are always shown,
+  // indented and subordinate. Learn's `divider` row becomes an "Areas of planning"
+  // caption + inner group, so Deathcare Trivia (above it) reads parallel to the whole
+  // group — mirroring desktop.
   function renderDrawerSection(item: NavItem) {
     const headerActive = item.activePrefixes.some((p) => pathname.startsWith(p))
     const slug = item.href.split('/').pop() || item.label.toLowerCase()
@@ -301,13 +305,13 @@ export default function GlobalNav() {
         body = (
           <>
             {lead.map(subLink)}
-            <div className="pl-12 pr-6 pt-3 pb-2">
-              <div className={`border-t ${style.border} mb-3`} />
-              <span aria-hidden="true" className="block text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: drawerCaptionColor }}>
+            <div className="pl-12 pr-6">
+              <div style={{ borderTop: `1.5px solid ${drawerDividerColor}`, marginTop: 2, marginBottom: 18 }} />
+              <span aria-hidden="true" className="block font-semibold uppercase" style={{ fontSize: 12.5, letterSpacing: '0.07em', color: drawerCaptionColor }}>
                 {dividerLabel}
               </span>
             </div>
-            <div role="group" aria-label={dividerLabel}>
+            <div role="group" aria-label={dividerLabel} style={{ marginTop: -6 }}>
               {grouped.map(subLink)}
             </div>
           </>
@@ -320,10 +324,9 @@ export default function GlobalNav() {
         <Link
           href={item.href}
           id={item.rows ? headerId : undefined}
-          className={`flex items-center justify-between w-full px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
+          className={`block w-full px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
         >
-          <span>{item.label}</span>
-          <span aria-hidden="true" className="ml-3 text-[22px] leading-none opacity-50">›</span>
+          {item.label}
         </Link>
         {item.rows && (
           <div role="group" aria-labelledby={headerId}>
