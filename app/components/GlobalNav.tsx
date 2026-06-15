@@ -354,7 +354,7 @@ export default function GlobalNav() {
         shadow: '0 14px 36px rgba(19,4,38,0.28)',
         itemActiveBg: '#EEEDFE',
         dividerLine: 'rgba(19,4,38,0.10)',
-        dividerLabel: 'rgba(19,4,38,0.5)',
+        dividerLabel: 'rgba(19,4,38,0.62)', // WCAG AA: 5.47:1 over the #F8F4EB panel
         itemHoverClass: 'hover:bg-[rgba(19,4,38,0.06)]',
       }
     : {
@@ -364,7 +364,7 @@ export default function GlobalNav() {
         shadow: '0 14px 36px rgba(19,4,38,0.40)',
         itemActiveBg: 'rgba(255,255,255,0.14)',
         dividerLine: 'rgba(248,244,235,0.18)',
-        dividerLabel: 'rgba(248,244,235,0.55)',
+        dividerLabel: 'rgba(248,244,235,0.65)', // WCAG AA: 5.21:1 over the #2C3777 panel
         itemHoverClass: 'hover:bg-[rgba(255,255,255,0.08)]',
       }
 
