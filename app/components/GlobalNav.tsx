@@ -261,7 +261,9 @@ export default function GlobalNav() {
   const hamburgerLineBg = entry.theme === 'dark' ? '#f8f4eb' : '#130426'
   // Muted caption colour for the mobile drawer's "Areas of planning" group label —
   // tracks the nav theme (cream text on dark navs, navy text on the light nav).
-  const drawerCaptionColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.55)' : 'rgba(19,4,38,0.5)'
+  // Opacity tuned for WCAG AA on the worst-case nav backgrounds (>=4.5:1 for this
+  // 11px caption): 0.65 cream → 5.21:1 over #2C3777; 0.62 navy → 5.47:1 over #f8f4eb.
+  const drawerCaptionColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.65)' : 'rgba(19,4,38,0.62)'
 
   // Mobile drawer section (Approach B — always-expanded). The header is a LINK to the
   // landing page (its tap navigates — never an expand control), with a trailing `›`
