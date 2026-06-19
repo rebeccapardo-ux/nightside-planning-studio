@@ -2,6 +2,8 @@
 
 Pre-launch end-of-life planning app. Next.js 16 (App Router) · React 19 · TypeScript · Supabase (Postgres + RLS) · `@react-pdf/renderer`. These notes capture the load-bearing, non-obvious conventions — read them before refactoring data, labels, or domain structure.
 
+> **Git history is NOT a reliable record of architectural intent.** The repo has a squashed baseline (`c818ae1 "initial commit — working app baseline"`) — pre-baseline evolution is unrecoverable — and several silent regressions have hidden inside large bundled commits (e.g. activity reflections silently bypassing the notes table; the legacy-map export silently reading a vestigial field). **Document intended patterns HERE or in project memory, never implicitly in code.** If you're relying on `git log`/pickaxe to reconstruct "how this was supposed to work," assume it's incomplete.
+
 ---
 
 ## Controlled vocabularies — single sources of truth
@@ -13,6 +15,25 @@ Three controlled vocabularies, each defined once. Reference these constants; do 
 - **Domains** (`containers.domain_code`) — `DOMAIN_STRUCTURES` + `getDomainStructureByCode()` in `lib/domain-structure.ts`; the `Domain` union in `lib/content-metadata.ts`.
 
 **The rule:** these slug values are **persisted in the DB and emitted as analytics dimensions** — they are immutable. Add a new value by **appending** to the const; **never rename** an existing one (it would orphan live rows and break analytics history). Display copy can change freely (it lives in metadata, separate from the slug). The PDF `kind` discriminator (`lib/pdf/types.ts`) reuses some of these strings but is a **separate concept** — keep it independent.
+
+---
+
+## Notes — the `notes` table is the single home for every free-form note
+
+**Every free-form note lives in the `notes` table** and surfaces uniformly — on the Plan-page notes grid and (where tagged) in the wishes-doc "Relevant materials" panels. There is **one** storage model; do not invent per-surface note storage, and **never store a free-form note in `entries.content`**.
+
+**Writers** (`lib/notes.ts`):
+- Notepad (`NotepadModal`) → `createNote` (`origin_type='freeform'`)
+- Reflection prompts → `createPromptNote` (`origin_type='prompt'`; carries `prompt_id`/`prompt_context` + an `entry_notes` link). Prompt notes are the **one exception** that store their source on the note — the prompt is essential context for reading the note.
+- Deathcare trivia · scenario-navigator outcome · domain pages → `createNote` (`origin_type='freeform'`)
+- **Activity reflections** (values-ranking, fears-ranking, legacy-map) → `createReflectionNote` (`origin_type='reflection'`) + an `entry_notes` link to the activity entry.
+
+**The activity-reflection rule (load-bearing — this was a silent regression).** The free-text reflection textarea at the bottom of values-ranking, fears-ranking, and legacy-map is a **note**, not activity data:
+- It must `createReflectionNote` / `updateNote` to the `notes` table — **do NOT** write `entries.content.reflection` (rankings) or `entries.content.themes` (legacy-map). Activity *data* (rankings, map moments) stays in `entries.content`; the *reflection on* that activity is a note.
+- On mount, **hydrate the note id** via the `entry_notes` link (`fetchReflectionNote(entryId)`) so re-edits `updateNote` the same row instead of creating duplicates. (Scenario-navigator's pattern lacks this hydration — its per-outcome notes can duplicate across sessions; don't copy that gap.)
+- `origin_type='reflection'` is **technical only** (provenance + migration idempotency). **Reflection notes carry NO source label in the UI — a note is a note.** Only prompt notes show their source.
+
+**Reading.** The Plan grid + wishes panels read the `notes` table. The per-activity **PDF/preview export** reads the reflection from the **linked note** (via `entry_notes` → `fetchReflectionNote`), not from `entries.content`. (Historically the legacy-map export read a vestigial `content.legacyProjects` and silently dropped the reflection — fixed when reflections became notes; the dead `LegacyMapContent` renderer was removed.)
 
 ---
 
