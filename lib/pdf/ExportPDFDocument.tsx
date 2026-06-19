@@ -676,10 +676,7 @@ const SLand = StyleSheet.create({
 
 export function LegacyMapContent({ data }: { data: Extract<PDFData, { kind: 'legacy_map' }> }) {
   const reflections = [
-    { label: 'THEMES THAT STOOD OUT', value: data.themes },
-    { label: 'SURPRISES OR REALIZATIONS', value: data.surprises },
-    { label: 'VALUES TO PASS ON', value: data.valuesToPassOn },
-    { label: 'REFLECTIONS', value: data.legacyProjects },
+    { label: 'REFLECTIONS', value: data.reflection },
   ].filter(r => r.value?.trim())
 
   const sorted = [...data.moments].sort((a, b) => a.xPercent - b.xPercent)
@@ -757,7 +754,7 @@ export function LegacyMapContent({ data }: { data: Extract<PDFData, { kind: 'leg
 export function LegacyMapLandscapePage({ data, logoUrl, watermark }: { data: Extract<PDFData, { kind: 'legacy_map' }>; logoUrl?: string; watermark?: string }) {
   const sorted = [...data.moments].sort((a, b) => a.xPercent - b.xPercent)
   const n = sorted.length
-  const reflection = data.legacyProjects
+  const reflection = data.reflection
   const resolvedLogo = resolveLogoUrl(logoUrl)
 
   return (

@@ -339,7 +339,7 @@ export function buildKeepsakePDF(entry: EntryRow, userName: string): PDFData {
   }
 }
 
-export function buildValuesRankingPDF(entry: EntryRow, userName: string): PDFData {
+export function buildValuesRankingPDF(entry: EntryRow, userName: string, reflection?: string): PDFData {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
   return {
     kind: 'values_ranking',
@@ -351,13 +351,13 @@ export function buildValuesRankingPDF(entry: EntryRow, userName: string): PDFDat
       { label: 'IMPORTANT',      items: (Array.isArray(c.important)    ? c.important    : []).filter((i): i is string => typeof i === 'string') },
       { label: 'LESS IMPORTANT', items: (Array.isArray(c.less_central) ? c.less_central : []).filter((i): i is string => typeof i === 'string') },
     ].filter(g => g.items.length > 0),
-    reflection: typeof c.reflection === 'string' ? c.reflection : undefined,
+    reflection: reflection ?? (typeof c.reflection === 'string' ? c.reflection : undefined),
     intro: 'This document captures how you sorted and reflected on different personal values in relation to care, identity, and what matters most to you.',
     userName,
   }
 }
 
-export function buildFearsRankingPDF(entry: EntryRow, userName: string): PDFData {
+export function buildFearsRankingPDF(entry: EntryRow, userName: string, reflection?: string): PDFData {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
   return {
     kind: 'fears_ranking',
@@ -369,13 +369,13 @@ export function buildFearsRankingPDF(entry: EntryRow, userName: string): PDFData
       { label: 'SOMEWHAT PRESSING', items: (Array.isArray(c.important)    ? c.important    : []).filter((i): i is string => typeof i === 'string') },
       { label: 'LESS PRESSING',     items: (Array.isArray(c.less_central) ? c.less_central : []).filter((i): i is string => typeof i === 'string') },
     ].filter(g => g.items.length > 0),
-    reflection: typeof c.reflection === 'string' ? c.reflection : undefined,
+    reflection: reflection ?? (typeof c.reflection === 'string' ? c.reflection : undefined),
     intro: 'This document reflects how different fears and concerns felt to you at a particular moment in time.',
     userName,
   }
 }
 
-export function buildLegacyMapPDF(entry: EntryRow, userName: string): PDFData {
+export function buildLegacyMapPDF(entry: EntryRow, userName: string, reflection?: string): PDFData {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
   const moments = Array.isArray(c.moments)
     ? (c.moments as Record<string, unknown>[])
@@ -392,10 +392,7 @@ export function buildLegacyMapPDF(entry: EntryRow, userName: string): PDFData {
     createdDate: formatDate(entry.created_at),
     filename: `nightside-legacy-map-${isoDate(entry.created_at)}`,
     moments,
-    themes:       typeof c.themes       === 'string' ? c.themes       || undefined : undefined,
-    surprises:    typeof c.surprises    === 'string' ? c.surprises    || undefined : undefined,
-    valuesToPassOn: typeof c.valuesToPassOn === 'string' ? c.valuesToPassOn || undefined : undefined,
-    legacyProjects: typeof c.legacyProjects === 'string' ? c.legacyProjects || undefined : undefined,
+    reflection: reflection ?? (typeof c.themes === 'string' ? c.themes || undefined : undefined),
     intro: 'This document maps meaningful moments and reflections from across your life.',
     userName,
     monthYear,
@@ -418,7 +415,11 @@ export function hasAnyStringContent(value: unknown): boolean {
 // and the legacy map are always included when an entry exists. Order is fixed
 // (matches the in-app full-plan export). Notes are never materials and never
 // appear here.
-export function buildMaterials(entries: EntryRow[], userName: string): PlanMaterial[] {
+export function buildMaterials(
+  entries: EntryRow[],
+  userName: string,
+  reflectionByEntryId: Record<string, string> = {},
+): PlanMaterial[] {
   const adminEntry    = entries.find(e => e.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
   const contactsEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS)
   const adEntry       = entries.find(e => e.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT)
@@ -438,9 +439,9 @@ export function buildMaterials(entries: EntryRow[], userName: string): PlanMater
   if (finEntry && hasAnyStringContent(finEntry.content))           mats.push({ title: 'Financial Information', pdfData: buildFinancialPDF(finEntry, userName) })
   if (devicesEntry && hasAnyStringContent(devicesEntry.content))   mats.push({ title: 'Devices & Accounts', pdfData: buildDevicesAccountsPDF(devicesEntry, userName) })
   if (keepsakeEntry && hasAnyStringContent(keepsakeEntry.content)) mats.push({ title: 'Keepsakes Inventory', pdfData: buildKeepsakePDF(keepsakeEntry, userName) })
-  if (valuesEntry)                                                 mats.push({ title: 'Values Ranking', pdfData: buildValuesRankingPDF(valuesEntry, userName) })
-  if (fearsEntry)                                                  mats.push({ title: 'Fears Ranking', pdfData: buildFearsRankingPDF(fearsEntry, userName) })
-  if (legacyEntry)                                                 mats.push({ title: 'Legacy Map', pdfData: buildLegacyMapPDF(legacyEntry, userName) })
+  if (valuesEntry)                                                 mats.push({ title: 'Values Ranking', pdfData: buildValuesRankingPDF(valuesEntry, userName, reflectionByEntryId[valuesEntry.id]) })
+  if (fearsEntry)                                                  mats.push({ title: 'Fears Ranking', pdfData: buildFearsRankingPDF(fearsEntry, userName, reflectionByEntryId[fearsEntry.id]) })
+  if (legacyEntry)                                                 mats.push({ title: 'Legacy Map', pdfData: buildLegacyMapPDF(legacyEntry, userName, reflectionByEntryId[legacyEntry.id]) })
   return mats
 }
 

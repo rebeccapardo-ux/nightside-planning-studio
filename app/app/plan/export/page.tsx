@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState } from '@/lib/domain-state'
 import AlertIcon from '@/app/components/AlertIcon'
 import { buildMaterials, buildKeyDetails, buildDomainStatuses } from '@/lib/pdf/buildPlanData'
+import { ACTIVITY } from '@/lib/content-metadata'
 import type { PlanKeyDetail, PlanDomainStatus, PlanMaterial, PlanPDFProps } from '@/lib/pdf/PlanPDFDocument'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -77,8 +78,36 @@ export default function PlanExportPage() {
       setKeyDetails(buildKeyDetails(domainState, allDomains, allEntries))
       setDomainStatuses(buildDomainStatuses(domainState, allDomains))
 
+      // Activity reflections now live in the notes table (origin_type='reflection'),
+      // linked to their entry via entry_notes — not in entries.content. Fetch them into
+      // an entryId -> text map so the activity PDFs render the reflection from its note,
+      // matching the per-entry export path.
+      const reflectionByEntryId: Record<string, string> = {}
+      const activityEntryIds = allEntries
+        .filter(e => e.activity === ACTIVITY.VALUES_RANKING || e.activity === ACTIVITY.FEARS_RANKING || e.activity === ACTIVITY.LEGACY_MAP)
+        .map(e => e.id)
+      if (activityEntryIds.length > 0) {
+        const { data: links } = await supabase
+          .from('entry_notes')
+          .select('entry_id, note_id')
+          .in('entry_id', activityEntryIds)
+        const noteIds = (links ?? []).map(l => l.note_id as string)
+        if (noteIds.length > 0) {
+          const { data: reflectionNotes } = await supabase
+            .from('notes')
+            .select('id, content')
+            .in('id', noteIds)
+            .eq('origin_type', 'reflection')
+          const contentById = new Map((reflectionNotes ?? []).map(n => [n.id as string, n.content as string]))
+          for (const l of links ?? []) {
+            const text = contentById.get(l.note_id as string)
+            if (text) reflectionByEntryId[l.entry_id as string] = text
+          }
+        }
+      }
+
       // Build materials list
-      setMaterials(buildMaterials(allEntries, name))
+      setMaterials(buildMaterials(allEntries, name, reflectionByEntryId))
 
       setLoading(false)
     }

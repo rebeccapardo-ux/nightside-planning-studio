@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { createReflectionNote, fetchReflectionNote, updateNote, deleteNote } from '@/lib/notes'
 import { holdSavingIndicator } from '@/lib/ui'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import ErrorMessagePill from '@/app/components/ErrorMessagePill'
@@ -140,6 +141,8 @@ function ValuesRankingContent() {
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reflectionSavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedEntryIdRef = useRef<string | null>(null)
+  // The reflection is a NOTE linked to this entry (not entries.content.reflection).
+  const savedReflectionNoteIdRef = useRef<string | null>(null)
   const deckModuleRef = useRef<HTMLDivElement>(null)
 
   const current = VALUES[index] ?? null
@@ -190,9 +193,17 @@ function ValuesRankingContent() {
         const important = (Array.isArray(content.important) ? content.important : []).map(normalizeCard)
         const less_central = (Array.isArray(content.less_central) ? content.less_central : []).map(normalizeCard)
         setAssignments({ essential, important, less_central })
-        setReflection(typeof content.reflection === 'string' ? content.reflection : '')
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
+        // Reflection now lives in a linked note; hydrate text + note id so re-edits
+        // update the same row. Fall back to legacy content.reflection if un-migrated.
+        const reflectionNote = await fetchReflectionNote(data.id)
+        if (reflectionNote) {
+          setReflection(reflectionNote.content)
+          savedReflectionNoteIdRef.current = reflectionNote.id
+        } else {
+          setReflection(typeof content.reflection === 'string' ? content.reflection : '')
+        }
         const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${data.id}`)
         if (storedSave) { setLastSavedAt(new Date(storedSave)); setSaveStatus('saved') }
         else if (data.created_at) { setLastSavedAt(new Date(data.created_at)); setSaveStatus('saved') }
@@ -258,7 +269,6 @@ function ValuesRankingContent() {
         essential: assignments.essential,
         important: assignments.important,
         less_central: assignments.less_central,
-        reflection: reflection.trim(),
         is_complete: isDone,
         sorted_count: sortedCount,
         total_count: VALUES.length,
@@ -295,61 +305,40 @@ function ValuesRankingContent() {
     setReflection(value)
     setReflectionSaveStatus('idle')
     if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current)
-    if (value.trim()) {
-      reflectionDebounceRef.current = setTimeout(() => { reflectionDebounceRef.current = null; autoSaveReflection(value) }, 1500)
-    }
+    reflectionDebounceRef.current = setTimeout(() => { reflectionDebounceRef.current = null; autoSaveReflection(value) }, 1500)
   }
 
   async function autoSaveReflection(value: string) {
-    const supabase = createSupabaseBrowserClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setReflectionSaveStatus('error'); return }
-
-    const currentEntryId = savedEntryIdRef.current
+    const trimmed = value.trim()
     setReflectionSaveStatus('saving')
     const startedAt = Date.now()
 
     try {
-      if (currentEntryId) {
-        const { error } = await supabase
-          .from('entries')
-          .update({
-            content: {
-              essential: assignments.essential,
-              important: assignments.important,
-              less_central: assignments.less_central,
-              reflection: value.trim(),
-              is_complete: isDone,
-              sorted_count: sortedCount,
-              total_count: VALUES.length,
-            },
-          })
-          .eq('id', currentEntryId)
-        if (error) throw error
-      } else {
-        const { data, error } = await supabase
-          .from('entries')
-          .insert({
-            title: 'Values Ranking',
-            user_id: user.id,
-            section: 'explore',
-            activity: ACTIVITY.VALUES_RANKING,
-            content: {
-              essential: assignments.essential,
-              important: assignments.important,
-              less_central: assignments.less_central,
-              reflection: value.trim(),
-              is_complete: isDone,
-              sorted_count: sortedCount,
-              total_count: VALUES.length,
-            },
-          })
-          .select('id')
-          .single()
-        if (error) throw error
-        setSavedEntryId(data.id)
-        savedEntryIdRef.current = data.id
+      // Cleared → remove the note (if any) rather than leave a stale one.
+      if (!trimmed) {
+        if (savedReflectionNoteIdRef.current) {
+          await deleteNote(savedReflectionNoteIdRef.current)
+          savedReflectionNoteIdRef.current = null
+        }
+        await holdSavingIndicator(startedAt)
+        setReflectionSaveStatus('idle')
+        return
       }
+
+      // The note links to the activity entry — ensure the entry exists first.
+      if (!savedEntryIdRef.current) await autoSaveCardState()
+      const entryId = savedEntryIdRef.current
+      if (!entryId) { setReflectionSaveStatus('error'); return }
+
+      if (savedReflectionNoteIdRef.current) {
+        const ok = await updateNote(savedReflectionNoteIdRef.current, trimmed)
+        if (!ok) throw new Error('updateNote failed')
+      } else {
+        const note = await createReflectionNote(trimmed, entryId)
+        if (!note) throw new Error('createReflectionNote failed')
+        savedReflectionNoteIdRef.current = note.id
+      }
+
       await holdSavingIndicator(startedAt)
       setReflectionSaveStatus('saved')
       if (reflectionSavedTimerRef.current) clearTimeout(reflectionSavedTimerRef.current)
@@ -875,7 +864,7 @@ function ValuesRankingContent() {
                 if (reflectionDebounceRef.current) {
                   clearTimeout(reflectionDebounceRef.current)
                   reflectionDebounceRef.current = null
-                  if (reflection.trim()) autoSaveReflection(reflection)
+                  autoSaveReflection(reflection)
                 }
               }}
               placeholder="Share your thoughts…"

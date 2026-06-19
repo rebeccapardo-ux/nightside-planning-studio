@@ -126,6 +126,31 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
   const ranking = getRankingContent(entry)
   const legacyMap = getLegacyMapContent(entry)
+
+  // Activity reflections live in the notes table (origin_type='reflection'), linked to the
+  // entry via entry_notes — not in entries.content (the migration cleared content.reflection /
+  // content.themes). Pull the linked reflection note so this view still renders it.
+  let reflectionFromNote: string | undefined
+  if (
+    entry.activity === ACTIVITY.VALUES_RANKING ||
+    entry.activity === ACTIVITY.FEARS_RANKING ||
+    entry.activity === ACTIVITY.LEGACY_MAP
+  ) {
+    const { data: links } = await supabase.from('entry_notes').select('note_id').eq('entry_id', entry.id)
+    const noteIds = (links ?? []).map((l) => l.note_id as string)
+    if (noteIds.length > 0) {
+      const { data: note } = await supabase
+        .from('notes')
+        .select('content')
+        .in('id', noteIds)
+        .eq('origin_type', 'reflection')
+        .limit(1)
+        .maybeSingle()
+      reflectionFromNote = (note?.content as string | undefined) ?? undefined
+    }
+  }
+  if (reflectionFromNote && ranking) ranking.reflection = reflectionFromNote
+
   const userName = (user.user_metadata?.full_name as string | undefined) ??
                    (user.user_metadata?.name as string | undefined) ??
                    user.email ?? ''
@@ -289,7 +314,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 
             {/* Content */}
             {legacyMap ? (
-              <LegacyMapSnapshot content={legacyMap} id={entry.id} userName={userName} />
+              <LegacyMapSnapshot content={legacyMap} id={entry.id} userName={userName} reflection={reflectionFromNote ?? (legacyMap.themes || undefined)} />
             ) : ranking ? (
               <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} id={entry.id} />
             ) : isDocument ? (
@@ -308,7 +333,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
 // LegacyMapSnapshot
 // ---------------------------------------------------------------------------
 
-function LegacyMapSnapshot({ content, id, userName }: { content: LegacyMapContent; id: string; userName: string }) {
+function LegacyMapSnapshot({ content, id, userName, reflection }: { content: LegacyMapContent; id: string; userName: string; reflection?: string }) {
   const sorted = [...content.moments].sort((a, b) => a.xPercent - b.xPercent)
   const n = sorted.length
 
@@ -391,26 +416,17 @@ function LegacyMapSnapshot({ content, id, userName }: { content: LegacyMapConten
         </div>
       )}
 
-      {/* Reflection fields */}
-      {(content.themes || content.surprises || content.valuesToPassOn || content.legacyProjects) && (
+      {/* Reflection — the single free-text reflection, now sourced from its linked note. */}
+      {reflection?.trim() && (
         <div style={{ marginTop: 32 }}>
-          {[
-            { field: content.themes, label: 'THEMES THAT STOOD OUT' },
-            { field: content.surprises, label: 'SURPRISES OR REALIZATIONS' },
-            { field: content.valuesToPassOn, label: 'VALUES TO PASS ON' },
-            { field: content.legacyProjects, label: 'REFLECTIONS' },
-          ].map(({ field, label }) =>
-            field ? (
-              <div key={label} style={{ marginBottom: 28 }}>
-                <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 6, textTransform: 'uppercase' as const }}>
-                  {label}
-                </p>
-                <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                  {field}
-                </p>
-              </div>
-            ) : null
-          )}
+          <div style={{ marginBottom: 28 }}>
+            <p style={{ fontFamily: hv, fontSize: 11, fontWeight: 500, letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 6, textTransform: 'uppercase' as const }}>
+              REFLECTIONS
+            </p>
+            <p style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {reflection.trim()}
+            </p>
+          </div>
         </div>
       )}
     </div>
