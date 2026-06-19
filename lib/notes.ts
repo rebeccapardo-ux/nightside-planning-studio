@@ -5,7 +5,7 @@ export type Note = {
   content: string
   created_at: string
   updated_at: string
-  origin_type?: 'prompt' | 'freeform'
+  origin_type?: 'prompt' | 'freeform' | 'reflection'
   prompt_context?: string | null
   // Stable prompt identifier (REFLECT_PROMPT_META id, e.g. 'prompt_2'). Replaces
   // prompt_context as the join key; prompt_context is retained for display.
