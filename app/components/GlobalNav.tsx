@@ -171,10 +171,15 @@ const NAV_ITEMS: NavItem[] = [
 // data (documents, activity outputs, notes, domain checkboxes/orient, etc),
 // the local mirror is just a stale cache. On sign-out we wipe ALL platform
 // keys regardless of which user they're tagged with — there's nothing here
-// we need to preserve. UI dismissal flags (nightside.tooltip.*, nightside.tour)
-// are device-local by design and intentionally included in the sweep so a
-// signed-out shared device doesn't reveal the previous user's UI state.
+// we need to preserve, EXCEPT the onboarding-tour "seen" flags (nightside.tour.*).
+// Those are first-time-only onboarding state and must survive sign-out so the
+// Plan/Domain tours don't replay on every login. They're uid-namespaced
+// (`...:<userId>`), so a different user on a shared device still gets their own
+// first-time tour — the sweep's shared-device concern doesn't apply to them.
+// (Tooltip dismissal flags are still swept.)
 const STORAGE_PREFIXES = ['nightside.', 'nightside-legacy-map', 'reflect-', 'checkbox_', 'ready_', 'orient_']
+// Keys that match STORAGE_PREFIXES but ALSO one of these are preserved through sign-out.
+const STORAGE_PRESERVE_PREFIXES = ['nightside.tour.']
 const SS_PREFIXES = ['nightside_', 'nightside.']
 
 async function handleSignOut() {
@@ -183,7 +188,7 @@ async function handleSignOut() {
   const lsKeys: string[] = []
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (key && STORAGE_PREFIXES.some((p) => key.startsWith(p))) lsKeys.push(key)
+    if (key && STORAGE_PREFIXES.some((p) => key.startsWith(p)) && !STORAGE_PRESERVE_PREFIXES.some((p) => key.startsWith(p))) lsKeys.push(key)
   }
   lsKeys.forEach((k) => localStorage.removeItem(k))
 
