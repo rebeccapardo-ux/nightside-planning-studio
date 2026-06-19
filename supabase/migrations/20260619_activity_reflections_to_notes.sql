@@ -13,6 +13,16 @@
 -- Idempotent: an entry that already has a linked reflection note is skipped (its source
 -- field is still cleared, harmlessly). Re-runnable. Transactional (a DO block runs in one
 -- transaction) — any error aborts the whole migration rather than leaving a half-state.
+--
+-- DEPENDENCY: requires notes.origin_type to allow 'reflection'
+-- (20260618_notes_origin_type_allow_reflection.sql). Re-asserted below — idempotently — so
+-- this migration is self-sufficient even if run on its own; without it the INSERTs below
+-- would fail with a 23514 check_violation.
+
+-- Ensure the reflection origin_type is permitted before we insert any (see 20260618).
+ALTER TABLE notes DROP CONSTRAINT IF EXISTS notes_origin_type_check;
+ALTER TABLE notes ADD CONSTRAINT notes_origin_type_check
+  CHECK (origin_type IN ('freeform', 'prompt', 'reflection'));
 
 DO $$
 DECLARE

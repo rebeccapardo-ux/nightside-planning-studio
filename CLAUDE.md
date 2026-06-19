@@ -28,6 +28,8 @@ Three controlled vocabularies, each defined once. Reference these constants; do 
 - Deathcare trivia · scenario-navigator outcome · domain pages → `createNote` (`origin_type='freeform'`)
 - **Activity reflections** (values-ranking, fears-ranking, legacy-map) → `createReflectionNote` (`origin_type='reflection'`) + an `entry_notes` link to the activity entry.
 
+**`origin_type` is CHECK-constrained, NOT free-text.** The dashboard-created `notes` table carries `notes_origin_type_check`; it permitted only `'freeform'`/`'prompt'` until `20260618_notes_origin_type_allow_reflection.sql` added `'reflection'`. **Adding any new `origin_type` value requires a migration to widen the constraint first** — otherwise inserts fail at the DB with a `23514` check_violation even though the app code looks correct (this is exactly what broke the first reflection-as-notes deploy). Idempotent pattern: `DROP CONSTRAINT IF EXISTS … ; ADD CONSTRAINT … CHECK (origin_type IN (…))`.
+
 **The activity-reflection rule (load-bearing — this was a silent regression).** The free-text reflection textarea at the bottom of values-ranking, fears-ranking, and legacy-map is a **note**, not activity data:
 - It must `createReflectionNote` / `updateNote` to the `notes` table — **do NOT** write `entries.content.reflection` (rankings) or `entries.content.themes` (legacy-map). Activity *data* (rankings, map moments) stays in `entries.content`; the *reflection on* that activity is a note.
 - On mount, **hydrate the note id** via the `entry_notes` link (`fetchReflectionNote(entryId)`) so re-edits `updateNote` the same row instead of creating duplicates. (Scenario-navigator's pattern lacks this hydration — its per-outcome notes can duplicate across sessions; don't copy that gap.)
