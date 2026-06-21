@@ -40,14 +40,22 @@ When you see these, the fix is a stable id/code column + a metadata lookup for t
 
 ---
 
-## The dead `domainRelevance` trap
+## Placement rules for wishes documents and domain pages
 
-On reflect prompts, **`domainRelevance` (and `primaryTag` / `secondaryTags`) is dead code** — its only consumers (`getNotedomainTier` / `tieredNotesByDomain` / `isFragmentEligible`) have no live callers.
+Placement rules are **policy, not mechanism — do not infer them from code.** Canonical placement references:
 
-- **Domain-page prompt surfacing is driven by `allowedReflectPromptIds`** on each row in `DOMAIN_STRUCTURES`, *not* by `domainRelevance`.
-- To make a prompt surface on a domain page, **add its `prompt_id` to that row's `allowedReflectPromptIds`**. Tagging `domainRelevance` does nothing.
-- Funeral-wishes / advance-directive panels use a third system, `supplementaryDocumentRelevance` (live, via `getNoteSupDocTier`).
-- Open roadmap decision: delete the dead `domainRelevance` path or revive it as the canonical driver — pending, don't assume either.
+- `docs/my-care-wishes-placement-reference.md` — My Care Wishes (q1–q6)
+- `docs/funeral-wishes-placement-reference.md` — Wishes for My Body, Funeral & Ceremony (fw_s1–fw_s5)
+- `docs/domain-page-placement-reference.md` — Domain page orientation rows (**TO BE ADDED; not yet canonical**)
+
+Before adding, removing, or re-tiering any `supplementaryDocumentRelevance` entry in `lib/content-metadata.ts`, or any `allowedReflectPromptIds` entry in `lib/domain-structure.ts`, **consult the corresponding reference document.** If a change to the data is intentional, **update the corresponding reference document in the same PR.**
+
+**The dead-vocabulary trap.** The vocabularies `domainRelevance`, `primaryTag`, `secondaryTags`, and `InternalTag` do **NOT** control surfacing. `domainRelevance` (and `primaryTag` / `secondaryTags`) on reflect prompts is **dead code** — its only consumers (`getNotedomainTier` / `tieredNotesByDomain` / `isFragmentEligible`) have no live callers. Adding values to them will not cause anything to surface; **tagging `domainRelevance` does nothing.** The real surfacing levers are:
+
+- **`allowedReflectPromptIds`** (domain rows) — on each row in `DOMAIN_STRUCTURES` (`lib/domain-structure.ts`). To make a prompt surface on a domain page, **add its `prompt_id` to that row's `allowedReflectPromptIds`**.
+- **`supplementaryDocumentRelevance`** (wishes panels) — in `lib/content-metadata.ts`, live via `getNoteSupDocTier`.
+
+Open roadmap decision: delete the dead `domainRelevance` path or revive it as the canonical driver — pending, don't assume either.
 
 ---
 
