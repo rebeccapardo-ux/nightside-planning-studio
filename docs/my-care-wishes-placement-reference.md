@@ -10,9 +10,10 @@ which tier (Primary = "Recommended", Secondary = "Also relevant").
   data in `content-metadata.ts` is the **mechanism**. They must agree — if you change the
   data, update this document in the same PR (see CLAUDE.md → "Placement rules for wishes
   documents and domain pages").
-- **Tier mapping:** `'primary'` → Recommended; `'secondary'` → Also relevant. (Any material
-  with a document-level signal but no tag for a given question defaults to Also relevant at
-  that question — those ambient appearances are not enumerated here.)
+- **Tier mapping:** `'primary'` → Recommended; `'secondary'` → Also relevant. The per-section
+  lists below enumerate **tagged** placements only — untagged activity outputs also surface by a
+  default fall-through (tier-3 on every question). See **"Default fall-through behavior"** below;
+  read it before assuming an untagged item is excluded.
 
 > **On titles:** `content-metadata.ts` stores only the **full prompt text** (the `label`
 > field); there is no short-title field. The short titles in quotes below are *editorial*
@@ -128,6 +129,33 @@ which tier (Primary = "Recommended", Secondary = "Also relevant").
 
 ---
 
+## Default fall-through behavior (governs what actually surfaces)
+
+The per-section lists above enumerate **tagged** placements only. At runtime the panel also
+surfaces **untagged** items via a default fall-through, so the lists are not the complete set of
+what appears:
+
+- **Activity outputs are tiered on *every* question.** Where an activity has a `q*` tag, that tag
+  sets the tier (primary → Recommended, secondary → Also relevant). Where it has **no** tag for a
+  question, it falls through to **tier-3 (Also relevant)** — *unless* the activity is
+  `neverAutoSuggest` **and** carries no `q*` tag anywhere in this document, in which case it is
+  blocked entirely. (Code: the output loop in `advance-directive/page.tsx` — the only skip is the
+  `neverAutoSuggest && !hasAnySupDocTag(...)` gate; every other output hits `else tier3.push`.)
+- **Absence of a `q*` tag does NOT mean excluded.** A non-`neverAutoSuggest` activity with zero
+  `q*` tags still appears at tier-3 on all six questions.
+- **Render gate:** a Legacy Map card renders only when it has reflection text (note-first, then
+  legacy content fallback); an empty reflection hides it. So fall-through visibility also depends
+  on the user actually having that content.
+- **Reflect-prompt notes use a stricter rule** — they require a document-level signal
+  (`noteHasSupDocSignal`) to auto-surface, so untagged prompt notes do **not** fall through. The
+  fall-through described here applies to **activity outputs**, not notes.
+
+This fall-through is **intended behavior** (confirmed 2026-06-22, "Option β"). The section was
+added after an audit found the original `q*` extraction documented only tagged placements and
+missed it — see the methodological note (logic-trace pass) in project memory.
+
+---
+
 ## Notes & design intent (read before re-tiering)
 
 1. **Thin-primary sections (sparse, but not empty):**
@@ -142,9 +170,12 @@ which tier (Primary = "Recommended", Secondary = "Also relevant").
    q5. No activity is both `neverAutoSuggest` and absent of any `q*` tag.
 
 3. **Cross-document asymmetries (which activity lives in which doc):**
-   - **Legacy Map is absent from My Care Wishes entirely** — it carries only `fw_s1`/`fw_s5`
-     tags and no `q*` tag, so it never appears here (it is *not* `neverAutoSuggest`; it is
-     simply untagged for `q*`). It *does* appear in funeral-wishes.
+   - **Legacy Map auto-surfaces at tier-3 ("Also relevant") on every q* question** via the
+     default fall-through (see the section above) — it carries only `fw_s1`/`fw_s5` tags and no
+     `q*` tag, and because it is *not* `neverAutoSuggest` it is **not** blocked. It renders
+     wherever the user has a Legacy Map reflection (note-first; legacy content fallback). It
+     *also* appears in funeral-wishes, where it is explicitly tagged `fw_s1`/`fw_s5`. *(Corrected
+     2026-06-22 — previously, and wrongly, described as "absent from My Care Wishes entirely.")*
    - **Scenario Navigator is the mirror image** — it appears only in My Care Wishes
      (q1/q2/q4) and has no `fw_s*` tag, so it's absent from funeral-wishes.
    - **Fears Ranking** is also My-Care-Wishes-only (q5). **Values Ranking** is the one

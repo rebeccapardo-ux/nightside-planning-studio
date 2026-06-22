@@ -126,6 +126,34 @@ is intentional.
 
 ---
 
+## Default fall-through behavior (governs what actually surfaces)
+
+The per-section lists above enumerate **tagged** placements only. At runtime the panel also
+surfaces **untagged** activity outputs via a default fall-through:
+
+- **Activity outputs are tiered on *every* section.** Where an activity has an `fw_s*` tag, that
+  tag sets the tier (primary → Recommended, secondary → Also relevant). Where it has **no** tag
+  for a section, it falls through to **tier-3 (Also relevant)** — *unless* the activity is
+  `neverAutoSuggest` **and** carries no `fw_s*` tag anywhere in this document, in which case it is
+  blocked entirely. (Code: the output loop in `funeral-wishes/page.tsx` — the only skip is the
+  `neverAutoSuggest && !hasAnySupDocTag(...)` gate; every other output hits `else tier3.push`.)
+- **Why this matters less here than in My Care Wishes:** the activities that surface in
+  funeral-wishes (Values Ranking, Legacy Map) carry explicit `fw_s*` tags, so their presence is
+  already enumerated above; the fall-through just adds **tier-3 (Also relevant)** appearances on
+  the *other* sections they aren't tagged for. Fears Ranking is `neverAutoSuggest` with no `fw_s*`
+  tag → blocked here entirely. So absence of an `fw_s*` tag does **not** by itself mean excluded —
+  only `neverAutoSuggest` + no tag does.
+- **Render gate:** a Legacy Map card renders only when it has reflection text (note-first, then
+  legacy content fallback); an empty reflection hides it.
+- **Reflect-prompt notes** use a stricter rule — they require a document-level signal
+  (`noteHasSupDocSignal`) to auto-surface, so untagged prompt notes do **not** fall through.
+
+This fall-through is **intended behavior** (confirmed 2026-06-22). Documented here for symmetry
+with the My Care Wishes reference; see the methodological note (logic-trace pass) in project
+memory.
+
+---
+
 ## Notes & design intent (read before re-tiering)
 
 1. **fw_s2 is deliberately tag-free** (see its section above) — it relies on the
