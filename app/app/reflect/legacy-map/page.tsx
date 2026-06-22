@@ -427,15 +427,17 @@ export default function LegacyMapPage() {
         // is already in place and the first save will create the entry.
       }
 
-      // Reflection lives in a linked note now (not content.themes). Hydrate text +
-      // note id; fall back to legacy content.themes (winner.themes) if un-migrated.
+      // Reflection lives in a linked note — the single source of truth (not content.themes).
+      // Hydrate text + note id. No content fallback: if the note was deleted (e.g. from the
+      // Plan grid), the textbox must clear rather than resurrect stale content.themes /
+      // localStorage (migration 20260619 moved all reflections into notes).
       let reflectionNote: Note | null = null;
       if (supabaseEntryIdRef.current) reflectionNote = await fetchReflectionNote(supabaseEntryIdRef.current);
       if (reflectionNote) {
         setReflection(reflectionNote.content);
         reflectionNoteIdRef.current = reflectionNote.id;
       } else {
-        setReflection(winner?.themes ?? '');
+        setReflection('');
       }
 
       setIsLoaded(true);

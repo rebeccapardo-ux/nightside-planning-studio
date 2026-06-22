@@ -190,14 +190,16 @@ function FearsRankingContent() {
         setAssignments({ essential, important, less_central })
         setSavedEntryId(data.id)
         savedEntryIdRef.current = data.id
-        // Reflection now lives in a linked note; hydrate text + note id so re-edits
-        // update the same row. Fall back to legacy content.reflection if un-migrated.
+        // Reflection lives in a linked note — the single source of truth. Hydrate text +
+        // note id so re-edits update the same row. No content fallback: if the note was
+        // deleted (e.g. from the Plan grid), the textbox must clear rather than resurrect
+        // stale entries.content (migration 20260619 moved all reflections into notes).
         const reflectionNote = await fetchReflectionNote(data.id)
         if (reflectionNote) {
           setReflection(reflectionNote.content)
           savedReflectionNoteIdRef.current = reflectionNote.id
         } else {
-          setReflection(typeof content.reflection === 'string' ? content.reflection : '')
+          setReflection('')
         }
         const storedSave = localStorage.getItem(`nightside.lastSaved.${user.id}.${data.id}`)
         if (storedSave) { setLastSavedAt(new Date(storedSave)); setSaveStatus('saved') }
