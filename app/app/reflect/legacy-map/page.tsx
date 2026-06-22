@@ -5,7 +5,7 @@ import { ACTIVITY } from '@/lib/content-metadata'
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
 import VoiceNoteButton from "@/app/components/VoiceNoteButton";
-import type { Note } from "@/lib/notes";
+import { createReflectionNote, fetchReflectionNote, updateNote, deleteNote, type Note } from "@/lib/notes";
 import Breadcrumbs from "@/app/components/navigation/Breadcrumbs";
 import AutosaveNotice from "@/app/components/AutosaveNotice";
 import AlertIcon, { ERROR_COLOR_ON_LIGHT } from "@/app/components/AlertIcon";
@@ -296,6 +296,10 @@ export default function LegacyMapPage() {
   const [reflectionSavedFading, setReflectionSavedFading] = useState(false);
   const reflectionFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reflectionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The reflection is a NOTE (not entries.content.themes) — its own state, decoupled
+  // from the map state. The map's `themes` field is left untouched (goes empty post-migration).
+  const [reflection, setReflection] = useState('');
+  const reflectionNoteIdRef = useRef<string | null>(null);
 
   const realMoments = useMemo(() => state.moments, [state.moments]);
   const labelSides = useMemo(() => computeLabelSides(realMoments, orientation), [realMoments, orientation]);
@@ -421,6 +425,19 @@ export default function LegacyMapPage() {
         }
         // else: new user with no data anywhere; nothing to do. DEFAULT_STATE
         // is already in place and the first save will create the entry.
+      }
+
+      // Reflection lives in a linked note — the single source of truth (not content.themes).
+      // Hydrate text + note id. No content fallback: if the note was deleted (e.g. from the
+      // Plan grid), the textbox must clear rather than resurrect stale content.themes /
+      // localStorage (migration 20260619 moved all reflections into notes).
+      let reflectionNote: Note | null = null;
+      if (supabaseEntryIdRef.current) reflectionNote = await fetchReflectionNote(supabaseEntryIdRef.current);
+      if (reflectionNote) {
+        setReflection(reflectionNote.content);
+        reflectionNoteIdRef.current = reflectionNote.id;
+      } else {
+        setReflection('');
       }
 
       setIsLoaded(true);
@@ -616,60 +633,39 @@ export default function LegacyMapPage() {
     }
   }
 
-  async function saveReflectionToSupabase() {
-    const current = stateRef.current;
-    const toSave = { ...current, updatedAt: new Date().toISOString() };
-
+  // The reflection is saved as a NOTE linked to the legacy-map entry (not content.themes).
+  // The map state / moments save independently via persistStateToSupabase — untouched.
+  async function saveReflectionNote(value: string) {
+    const trimmed = value.trim();
+    setReflectionSaveStatus('saving');
     try {
-      const uid = userIdRef.current;
-      const sk = uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
-      window.localStorage.setItem(sk, JSON.stringify(toSave));
-      setState(toSave);
-      stateRef.current = toSave;
-    } catch { /* ignore */ }
-
-    try {
-      const supabase = createSupabaseBrowserClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setReflectionSaveStatus('error'); return; }
-
-      const content = {
-        moments: toSave.moments,
-        themes: toSave.themes,
-        surprises: toSave.surprises,
-        valuesToPassOn: toSave.valuesToPassOn,
-        legacyProjects: toSave.legacyProjects,
-        updatedAt: toSave.updatedAt,
-      };
-
-      if (supabaseEntryIdRef.current) {
-        await supabase.from("entries")
-          .update({ content, title: "Legacy Map" })
-          .eq("id", supabaseEntryIdRef.current);
-      } else {
-        const { data: created } = await supabase.from("entries")
-          .insert({ user_id: user.id, title: "Legacy Map", section: "explore", activity: "legacy_map", content })
-          .select("id").single();
-        if (created?.id) {
-          window.localStorage.setItem(`${ENTRY_ID_KEY}:${user.id}`, created.id);
-          setSupabaseEntryId(created.id);
-          supabaseEntryIdRef.current = created.id;
-          fetch('/api/analytics/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.LEGACY_MAP } }),
-          }).catch(() => {});
+      // Cleared → remove the note (if any) rather than leave a stale one.
+      if (!trimmed) {
+        if (reflectionNoteIdRef.current) {
+          await deleteNote(reflectionNoteIdRef.current);
+          reflectionNoteIdRef.current = null;
         }
+        setReflectionSaveStatus('idle');
+        return;
+      }
+
+      // The note links to the activity entry — ensure the entry exists first.
+      if (!supabaseEntryIdRef.current) await persistStateToSupabase(stateRef.current);
+      const entryId = supabaseEntryIdRef.current;
+      if (!entryId) { setReflectionSaveStatus('error'); return; }
+
+      if (reflectionNoteIdRef.current) {
+        const ok = await updateNote(reflectionNoteIdRef.current, trimmed);
+        if (!ok) throw new Error('updateNote failed');
+      } else {
+        const note = await createReflectionNote(trimmed, entryId);
+        if (!note) throw new Error('createReflectionNote failed');
+        reflectionNoteIdRef.current = note.id;
       }
 
       setReflectionSaveStatus('saved');
-      if (supabaseEntryIdRef.current) {
-        associateEntryWithLegacyDomain(supabaseEntryIdRef.current)
-        window.localStorage.setItem(`nightside.lastSaved.${user.id}.${supabaseEntryIdRef.current}`, new Date().toISOString());
-      }
       setLastSavedAt(new Date());
-
-      // Show fade-out saved indicator
+      // Fade-out saved indicator (preserves the prior UX).
       setReflectionSavedShowing(true);
       setReflectionSavedFading(false);
       if (reflectionFadeTimerRef.current) clearTimeout(reflectionFadeTimerRef.current);
@@ -684,27 +680,18 @@ export default function LegacyMapPage() {
 
   // ── Reflection field handlers ───────────────────────────────────────────────
 
-  function handleReflectionChange(
-    field: keyof Pick<LegacyMapState, 'themes' | 'surprises' | 'valuesToPassOn' | 'legacyProjects'>,
-    value: string
-  ) {
-    const next = { ...stateRef.current, [field]: value };
-    setState(next);
-    stateRef.current = next;
-    try { const _uid = userIdRef.current; window.localStorage.setItem(_uid ? `${STORAGE_KEY}:${_uid}` : STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-
+  function handleReflectionChange(value: string) {
+    setReflection(value);
     setReflectionSaveStatus('saving');
     if (reflectionDebounceRef.current) clearTimeout(reflectionDebounceRef.current);
-    reflectionDebounceRef.current = setTimeout(() => saveReflectionToSupabase(), 1500);
+    reflectionDebounceRef.current = setTimeout(() => { reflectionDebounceRef.current = null; saveReflectionNote(value); }, 1500);
   }
 
   function handleReflectionBlur() {
     if (reflectionDebounceRef.current) {
       clearTimeout(reflectionDebounceRef.current);
       reflectionDebounceRef.current = null;
-    }
-    if (reflectionSaveStatus === 'saving') {
-      saveReflectionToSupabase();
+      saveReflectionNote(reflection);
     }
   }
 
@@ -1392,8 +1379,8 @@ export default function LegacyMapPage() {
                 ))}
               </ol>
               <textarea
-                value={state.themes}
-                onChange={(e) => handleReflectionChange('themes', e.target.value)}
+                value={reflection}
+                onChange={(e) => handleReflectionChange(e.target.value)}
                 onBlur={handleReflectionBlur}
                 placeholder="Share your reflections…"
                 rows={5}

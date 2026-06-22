@@ -122,6 +122,21 @@ export const metadata: Metadata = {
   title: "Export entry",
 }
 
+// The reflection at the bottom of values/fears/legacy-map is a note (origin_type
+// 'reflection') linked to the activity entry via entry_notes — read it back here for the
+// export, instead of the legacy entries.content.reflection / content.themes.
+async function getReflectionNoteContent(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  entryId: string,
+): Promise<string | undefined> {
+  const { data: links } = await supabase.from('entry_notes').select('note_id').eq('entry_id', entryId)
+  const ids = (links ?? []).map((l) => l.note_id as string)
+  if (ids.length === 0) return undefined
+  const { data } = await supabase
+    .from('notes').select('content').in('id', ids).eq('origin_type', 'reflection').limit(1).maybeSingle()
+  return (data?.content as string | undefined) ?? undefined
+}
+
 export default async function ExportPage({ params }: ExportPageProps) {
   const { id } = await params
   const supabase = await createSupabaseServerClient()
@@ -156,6 +171,8 @@ export default async function ExportPage({ params }: ExportPageProps) {
   const displayTitle = getDisplayTitle(entry)
   const filename = getExportFilename(entry)
   const back = getBackLink(entry, id)
+  // The reflection (values/fears/legacy-map) is a linked note now — read it for the export.
+  const reflectionFromNote = isActivity ? await getReflectionNoteContent(supabase, id) : undefined
 
   if (entry.activity === ACTIVITY.LEGACY_MAP) {
     const mapContent = getLegacyMapContent(entry)
@@ -169,10 +186,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
       createdDate,
       filename,
       moments: mapContent.moments.map(m => ({ title: m.title, note: m.note || undefined, xPercent: m.xPercent })),
-      themes: mapContent.themes || undefined,
-      surprises: mapContent.surprises || undefined,
-      valuesToPassOn: mapContent.valuesToPassOn || undefined,
-      legacyProjects: mapContent.legacyProjects || undefined,
+      reflection: reflectionFromNote ?? (mapContent.themes || undefined),
       intro: LEGACY_MAP_INTRO,
       userName,
       monthYear,
@@ -183,6 +197,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
   if (entry.activity === ACTIVITY.VALUES_RANKING) {
     const ranking = getRankingContent(entry)
     if (!ranking) notFound()
+    ranking.reflection = reflectionFromNote ?? ranking.reflection
     const pdfData: PDFData = {
       kind: 'values_ranking',
       displayTitle,
@@ -203,6 +218,7 @@ export default async function ExportPage({ params }: ExportPageProps) {
   if (entry.activity === ACTIVITY.FEARS_RANKING) {
     const ranking = getRankingContent(entry)
     if (!ranking) notFound()
+    ranking.reflection = reflectionFromNote ?? ranking.reflection
     const pdfData: PDFData = {
       kind: 'fears_ranking',
       displayTitle,
@@ -465,7 +481,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
 }) {
   const sorted = [...mapContent.moments].sort((a, b) => a.xPercent - b.xPercent)
   const n = sorted.length
-  const reflection = mapContent.legacyProjects
+  const reflection = pdfData.kind === 'legacy_map' ? pdfData.reflection : undefined
 
   return (
     <>

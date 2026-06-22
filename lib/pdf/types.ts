@@ -66,10 +66,7 @@ export type PDFData = PDFBase &
     | {
         kind: 'legacy_map'
         moments: { title: string; note?: string; xPercent: number }[]
-        themes?: string
-        surprises?: string
-        valuesToPassOn?: string
-        legacyProjects?: string
+        reflection?: string
         intro?: string
         userName?: string
         monthYear?: string
