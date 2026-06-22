@@ -259,12 +259,13 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
       orientation: [
         {
           key: 'life_story_shaped',
-          title: 'Reflect on the story of my life and what has shaped me',
+          title: 'Reflect on what I am leaving behind',
           explanation: '',
           relatedActivities: [ACTIVITY.LEGACY_MAP],
           learnHref: '/app/learn/legacy',
           allowedReflectPromptIds: [
-            'prompt_24', 'prompt_31', 'prompt_37', 'prompt_38',
+            'prompt_10', 'prompt_12', 'prompt_36', 'prompt_38',
+            'prompt_39', 'prompt_42', 'prompt_43',
           ],
         },
         {
@@ -272,18 +273,12 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           title: 'Consider how I want to be remembered',
           explanation: '',
           learnHref: '/app/learn/legacy',
-          allowedReflectPromptIds: [
-            'prompt_39', 'prompt_42',
-          ],
         },
         {
           key: 'relationships_impact',
           title: 'Reflect on meaningful relationships and personal impact',
           explanation: '',
           learnHref: '/app/learn/legacy',
-          allowedReflectPromptIds: [
-            'prompt_27', 'prompt_28', 'prompt_32',
-          ],
         },
       ],
       readiness: [
