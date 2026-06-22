@@ -344,7 +344,22 @@ async function main() {
     activeDescriptors.some(d => (e as Record<string, unknown>)[d.field] === d.value),
   )
 
-  const materials = buildMaterials(allowedEntries, name)
+  // Activity reflections live in notes (origin_type='reflection'), linked via entry_notes —
+  // NOT in entries.content. Build the entryId->text map buildMaterials expects so the released
+  // PDF renders reflections (mirrors the in-app full-plan export). Service-role admin client.
+  const reflectionEntryIds = allowedEntries.map(e => e.id)
+  const reflectionByEntryId: Record<string, string> = {}
+  if (reflectionEntryIds.length > 0) {
+    const { data: links } = await admin.from('entry_notes').select('entry_id, note_id').in('entry_id', reflectionEntryIds)
+    const noteIds = (links ?? []).map(l => l.note_id as string)
+    if (noteIds.length > 0) {
+      const { data: refNotes } = await admin.from('notes').select('id, content').in('id', noteIds).eq('origin_type', 'reflection')
+      const byId = new Map((refNotes ?? []).map(n => [n.id as string, n.content as string]))
+      for (const l of links ?? []) { const t = byId.get(l.note_id as string); if (t) reflectionByEntryId[l.entry_id as string] = t }
+    }
+  }
+
+  const materials = buildMaterials(allowedEntries, name, reflectionByEntryId)
   // released_items mirrors exactly what buildMaterials rendered.
   const releasedItems: ReleasedItem[] = materials.map(m => {
     const d = RELEASE_SET.find(x => x.title === m.title)!

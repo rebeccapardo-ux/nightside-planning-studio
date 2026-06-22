@@ -171,6 +171,11 @@ export async function GET() {
   const payload = {
     exported_at: new Date().toISOString(),
     platform_version: '1.0',
+    _about_this_export:
+      "Activity reflections — the free-text reflections written during the Values Ranking, " +
+      "Fears Ranking, and Legacy Map activities — are stored as notes, not inside " +
+      "'activity_outputs'. They appear in the 'notes' array below with origin_type set to " +
+      "'reflection'. In the app, each reflection is linked to its originating activity entry.",
     account: {
       first_name: typeof userMeta.first_name === 'string' ? userMeta.first_name : null,
       last_name: typeof userMeta.last_name === 'string' ? userMeta.last_name : null,

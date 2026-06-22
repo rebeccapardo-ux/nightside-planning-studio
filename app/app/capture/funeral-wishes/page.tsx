@@ -14,7 +14,7 @@ import MaterialsNullState from '@/app/components/MaterialsNullState'
 import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse, hasAnySupDocTag, noteHasSupDocSignal } from '@/lib/content-surfacing'
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
-import type { Note } from '@/lib/notes'
+import { type Note, fetchReflectionsByEntryIds } from '@/lib/notes'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -101,6 +101,7 @@ type PanelEntry = {
   activity: string | null
   document_type: string | null
   group: 'domain' | 'output' | 'manual'
+  reflectionText?: string // resolved from the linked reflection note (note-first; content fallback)
 }
 
 type OutputCard = { representative: PanelEntry; count: number }
@@ -1220,7 +1221,8 @@ function useFWMaterialsData() {
         setPromptNotes((allPromptNotesData || []).map(n => ({ id: n.id, content: n.content, originType: n.origin_type ?? null, promptContext: n.prompt_context ?? null })))
 
         const { data: outputs } = await supabase.from('entries').select('id, title, content, activity, document_type').eq('user_id', user.id).in('activity', STRUCTURED_ACTIVITIES).order('created_at', { ascending: false })
-        setOutputItems((outputs || []).map(e => ({ ...e, group: 'output' as const })))
+        const reflectionByEntryId = await fetchReflectionsByEntryIds((outputs || []).map(e => e.id))
+        setOutputItems((outputs || []).map(e => ({ ...e, group: 'output' as const, reflectionText: reflectionByEntryId[e.id] })))
       } catch (err) {
         console.error('FW PANEL FETCH ERROR:', err)
       } finally {
@@ -1848,6 +1850,9 @@ function fwGetTypeLabel(entry: PanelEntry): string {
 }
 
 function formatLegacyMapReflections(entry: PanelEntry): string {
+  // Note-first: the reflection lives in the linked note (entry.reflectionText). Fall back to
+  // legacy content fields for un-migrated entries (pre-backfill / pre-deploy).
+  if (entry.reflectionText && entry.reflectionText.trim()) return entry.reflectionText.trim()
   const obj = entry.content as Record<string, unknown>
   if (!obj) return ''
   const parts: string[] = []
@@ -1874,7 +1879,8 @@ function fwFormatForInsert(entry: PanelEntry): string {
     const parts: string[] = []
     if (Array.isArray(obj.essential) && obj.essential.length) parts.push(`Primary concerns: ${(obj.essential as string[]).join(', ')}`)
     if (Array.isArray(obj.important) && obj.important.length) parts.push(`Also worried about: ${(obj.important as string[]).join(', ')}`)
-    if (typeof obj.reflection === 'string' && obj.reflection.trim()) parts.push(obj.reflection.trim())
+    const r = entry.reflectionText ?? (typeof obj.reflection === 'string' ? obj.reflection : '')
+    if (r.trim()) parts.push(r.trim())
     return parts.join('\n\n')
   }
   const textFields = Object.values(obj).filter(v => typeof v === 'string' && (v as string).trim())

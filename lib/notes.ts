@@ -190,6 +190,27 @@ export async function fetchReflectionNote(entryId: string): Promise<Note | null>
   return (data as Note) ?? null
 }
 
+// Batch map of entryId -> reflection-note text for a set of activity entries.
+// Reflections live in notes (origin_type='reflection'), linked via entry_notes — NOT in
+// entries.content. Under the update-in-place model there is one reflection note per entry.
+// Used by the wishes-doc panels to render legacy-map reflections note-first (content fallback).
+export async function fetchReflectionsByEntryIds(entryIds: string[]): Promise<Record<string, string>> {
+  const map: Record<string, string> = {}
+  if (entryIds.length === 0) return map
+  const supabase = createSupabaseBrowserClient()
+  const { data: links } = await supabase.from('entry_notes').select('entry_id, note_id').in('entry_id', entryIds)
+  const noteIds = (links ?? []).map((l) => l.note_id as string)
+  if (noteIds.length === 0) return map
+  const { data: notes } = await supabase
+    .from('notes').select('id, content').in('id', noteIds).eq('origin_type', 'reflection')
+  const byId = new Map((notes ?? []).map((n) => [n.id as string, n.content as string]))
+  for (const l of links ?? []) {
+    const t = byId.get(l.note_id as string)
+    if (t) map[l.entry_id as string] = t
+  }
+  return map
+}
+
 export async function createVoiceNote(params: {
   audioUrl: string
   durationSeconds: number
