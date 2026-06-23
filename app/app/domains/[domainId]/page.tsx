@@ -40,7 +40,6 @@ import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AlertIcon from '@/app/components/AlertIcon'
-import DomainTour from '@/app/components/DomainTour'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -87,7 +86,6 @@ type AddExistingFor = 'note' | 'document' | 'output' | null
 
 import {
   getDomainStructureByCode,
-  getDomainDisplayNameByCode,
   type DomainStructure,
   type OrientationItem as OrientationItemDef,
   type ReadinessItem as ReadinessItemDef,
@@ -691,8 +689,6 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
       {/* Materials canvas block was unreachable — all configured domains hit the
           isHealthcare branch in PlanningStatusSection. Removed in cleanup pass. */}
-
-      <DomainTour domainName={domain?.title?.trim() || getDomainDisplayNameByCode(domain?.domain_code) || ''} />
     </div>
   )
 }
