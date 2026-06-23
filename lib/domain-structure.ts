@@ -377,3 +377,17 @@ function segmentsOf(structure: DomainStructure | null): DomainSegment[] {
     ...structure.readiness.map((r): DomainSegment => ({ key: r.key, type: 'ready' })),
   ]
 }
+
+// Deduped union of every orientation row's allowedReflectPromptIds for a domain.
+// Pass 2 surfaces prompt notes PER-DOMAIN (in the Your Thoughts stream) rather than
+// per-row: a prompt note belongs to a domain if its prompt_id is in this set. Pure
+// structure derivation — no component state. Readiness rows carry no prompt ids.
+export function getDomainPromptIds(code: string | null | undefined): string[] {
+  const structure = getDomainStructureByCode(code)
+  if (!structure) return []
+  const ids = new Set<string>()
+  for (const row of structure.orientation) {
+    for (const id of row.allowedReflectPromptIds ?? []) ids.add(id)
+  }
+  return [...ids]
+}
