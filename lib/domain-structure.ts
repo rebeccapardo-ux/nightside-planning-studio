@@ -41,15 +41,19 @@ export type DomainStructure = {
   readiness: ReadinessItem[]
 }
 
-// A flattened orientation/readiness row reference — used by status components
-// that only need keys + type (not the full label/checkbox content).
-export type DomainSegment = { key: string; type: 'orient' | 'ready' }
+// One planning-status segment = one readiness checkbox. Post-redesign, segments
+// are per-checkbox (not per-row), and orientation rows are excluded entirely.
+// Used by the domain page status bar and the Plan-page DomainStateCard mini-bar.
+export type CheckboxSlot = { rowKey: string; index: number }
 
 export type DomainDef = {
   // Stable per-domain identity (containers.domain_code).
   code: Domain
   // Canonical display name — used by the PDF builder when no DB container exists.
   displayName: string
+  // Bottom "Reflection and Learning" links (activities + learn page), in order.
+  // Rendered as a flat list at the bottom of the domain page.
+  bottomLinks: { label: string; href: string }[]
   structure: DomainStructure
 }
 
@@ -57,6 +61,13 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'healthcare',
     displayName: 'Healthcare Wishes',
+    bottomLinks: [
+      { label: 'Scenario Navigator', href: '/app/reflect/scenario-navigator' },
+      { label: 'Values Ranking', href: '/app/reflect/values-ranking' },
+      { label: 'Fears Ranking', href: '/app/reflect/fears-ranking' },
+      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Learn about Healthcare wishes', href: '/app/learn/healthcare' },
+    ],
     structure: {
       orientation: [
         {
@@ -117,6 +128,10 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'deathcare',
     displayName: 'Deathcare',
+    bottomLinks: [
+      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Learn about Deathcare', href: '/app/learn/deathcare' },
+    ],
     structure: {
       orientation: [
         {
@@ -153,6 +168,9 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'wills_estates',
     displayName: 'Wills & Estates',
+    bottomLinks: [
+      { label: 'Learn about Wills & Estates', href: '/app/learn/wills' },
+    ],
     structure: {
       orientation: [
         {
@@ -220,6 +238,10 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'ritual',
     displayName: 'Ritual & Ceremony',
+    bottomLinks: [
+      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Learn about Ritual & Ceremony', href: '/app/learn/ritual' },
+    ],
     structure: {
       orientation: [
         {
@@ -255,6 +277,11 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'legacy',
     displayName: 'Legacy',
+    bottomLinks: [
+      { label: 'Legacy Map', href: '/app/reflect/legacy-map' },
+      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Learn about Legacy', href: '/app/learn/legacy' },
+    ],
     structure: {
       orientation: [
         {
@@ -298,6 +325,9 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'personal_admin',
     displayName: 'Personal Admin',
+    bottomLinks: [
+      { label: 'Learn about Personal Admin', href: '/app/learn/personal-admin' },
+    ],
     structure: {
       orientation: [
         {
@@ -364,18 +394,23 @@ export function getDomainDisplayNameByCode(code: string | null | undefined): str
   return DOMAIN_STRUCTURES.find(def => def.code === code)?.displayName ?? null
 }
 
-// Flattened {key, type} segments resolved by stable domain_code. For status
-// components that only need keys + type.
-export function getDomainSegmentsByCode(code: string | null | undefined): DomainSegment[] {
-  return segmentsOf(getDomainStructureByCode(code))
+// Flat list of planning-status segments resolved by stable domain_code — one per
+// readiness checkbox (orientation rows are back-end-only and excluded).
+export function getDomainCheckboxSlots(code: string | null | undefined): CheckboxSlot[] {
+  return slotsOf(getDomainStructureByCode(code))
 }
 
-function segmentsOf(structure: DomainStructure | null): DomainSegment[] {
+function slotsOf(structure: DomainStructure | null): CheckboxSlot[] {
   if (!structure) return []
-  return [
-    ...structure.orientation.map((o): DomainSegment => ({ key: o.key, type: 'orient' })),
-    ...structure.readiness.map((r): DomainSegment => ({ key: r.key, type: 'ready' })),
-  ]
+  return structure.readiness.flatMap((r) =>
+    r.checkboxes.map((_, index): CheckboxSlot => ({ rowKey: r.key, index })),
+  )
+}
+
+// Bottom "Reflection and Learning" links for a domain (activities + learn page).
+export function getDomainBottomLinks(code: string | null | undefined): { label: string; href: string }[] {
+  if (!code) return []
+  return DOMAIN_STRUCTURES.find(def => def.code === code)?.bottomLinks ?? []
 }
 
 // Deduped union of every orientation row's allowedReflectPromptIds for a domain.

@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { loadDomainState, getOrient, getReadyStatus } from '@/lib/domain-state'
-import { getDomainSegmentsByCode } from '@/lib/domain-structure'
+import { loadDomainState } from '@/lib/domain-state'
+import { getDomainCheckboxSlots } from '@/lib/domain-structure'
 
 export default function DomainNullStateBanner({
   domains,
@@ -18,11 +18,8 @@ export default function DomainNullStateBanner({
       if (cancelled) return
       let anyStarted = false
       outer: for (const domain of domains) {
-        for (const seg of getDomainSegmentsByCode(domain.domain_code)) {
-          const status = seg.type === 'orient'
-            ? getOrient(state, domain.id, seg.key)
-            : getReadyStatus(state, domain.id, seg.key)
-          if (status === 'complete' || status === 'in_progress') {
+        for (const slot of getDomainCheckboxSlots(domain.domain_code)) {
+          if (state[domain.id]?.checkboxes?.[slot.rowKey]?.[slot.index] === true) {
             anyStarted = true
             break outer
           }
