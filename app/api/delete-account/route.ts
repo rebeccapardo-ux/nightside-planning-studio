@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   // All user-owned rows (containers, container_notes, container_entries,
-  // notes, entries, entry_notes, domain_topic_notes, hidden_row_notes,
+  // notes, entries, entry_notes, domain_hidden_notes,
   // user_profiles, legacy_contacts, user_release_preferences, analytics_events,
   // etc.) are cleaned up via ON DELETE CASCADE on auth.users(id) when the
   // admin client deletes the auth user below. No explicit table-level deletes

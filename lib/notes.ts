@@ -522,112 +522,61 @@ export async function removeNoteFromContainer(
 }
 
 // ---------------------------------------------------------------------------
-// domain_topic_notes — manual row-level note attachments
+// domain_hidden_notes — per-domain note suppression (Pass 2). "Remove" on a
+// sticky in a domain's Your Thoughts stream hides the note here; re-adding it via
+// the "+ Add from your notes" modal un-hides it. The stream is:
+//   (container-linked notes ∪ auto-surfaced prompt notes) − hidden notes.
 // ---------------------------------------------------------------------------
 
-export type TopicNoteRow = { note_id: string; topic_id: string }
-
-export async function fetchAllDomainTopicNotes(domainId: string): Promise<TopicNoteRow[]> {
+export async function fetchDomainHiddenNotes(domainId: string): Promise<string[]> {
   const supabase = createSupabaseBrowserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
   const { data, error } = await supabase
-    .from('domain_topic_notes')
-    .select('note_id, topic_id')
+    .from('domain_hidden_notes')
+    .select('note_id')
     .eq('user_id', user.id)
     .eq('domain_id', domainId)
 
   if (error) {
-    console.error('fetchAllDomainTopicNotes error:', error.message)
+    console.error('fetchDomainHiddenNotes error:', error.message)
     return []
   }
-  return data ?? []
+  return (data ?? []).map((r) => r.note_id as string)
 }
 
-export async function addDomainTopicNote(
-  noteId: string,
-  domainId: string,
-  topicId: string
-): Promise<boolean> {
+export async function hideDomainNote(noteId: string, domainId: string): Promise<boolean> {
   const supabase = createSupabaseBrowserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
 
   const { error } = await supabase
-    .from('domain_topic_notes')
-    .insert({ user_id: user.id, note_id: noteId, domain_id: domainId, topic_id: topicId })
+    .from('domain_hidden_notes')
+    .insert({ user_id: user.id, note_id: noteId, domain_id: domainId })
 
   if (error) {
     if (error.code === '23505') return true
-    console.error('addDomainTopicNote error:', error.message)
+    console.error('hideDomainNote error:', error.message)
     return false
   }
   return true
 }
 
-export async function removeDomainTopicNote(
-  noteId: string,
-  domainId: string,
-  topicId: string
-): Promise<boolean> {
+export async function unhideDomainNote(noteId: string, domainId: string): Promise<boolean> {
   const supabase = createSupabaseBrowserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
 
   const { error } = await supabase
-    .from('domain_topic_notes')
+    .from('domain_hidden_notes')
     .delete()
     .eq('user_id', user.id)
     .eq('note_id', noteId)
     .eq('domain_id', domainId)
-    .eq('topic_id', topicId)
 
   if (error) {
-    console.error('removeDomainTopicNote error:', error.message)
-    return false
-  }
-  return true
-}
-
-// ---------------------------------------------------------------------------
-// hidden_row_notes — auto-surfaced notes suppressed from a row
-// ---------------------------------------------------------------------------
-
-export async function fetchHiddenRowNotes(domainId: string): Promise<TopicNoteRow[]> {
-  const supabase = createSupabaseBrowserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-
-  const { data, error } = await supabase
-    .from('hidden_row_notes')
-    .select('note_id, topic_id')
-    .eq('user_id', user.id)
-    .eq('domain_id', domainId)
-
-  if (error) {
-    console.error('fetchHiddenRowNotes error:', error.message)
-    return []
-  }
-  return data ?? []
-}
-
-export async function hideRowNote(
-  noteId: string,
-  domainId: string,
-  topicId: string
-): Promise<boolean> {
-  const supabase = createSupabaseBrowserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return false
-
-  const { error } = await supabase
-    .from('hidden_row_notes')
-    .insert({ user_id: user.id, note_id: noteId, domain_id: domainId, topic_id: topicId })
-
-  if (error) {
-    if (error.code === '23505') return true
-    console.error('hideRowNote error:', error.message)
+    console.error('unhideDomainNote error:', error.message)
     return false
   }
   return true

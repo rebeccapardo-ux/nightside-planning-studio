@@ -2,86 +2,63 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { loadDomainState, getOrient, getReadyStatus, type DomainState } from '@/lib/domain-state'
-import { getDomainSegmentsByCode, type DomainSegment } from '@/lib/domain-structure'
+import { loadDomainState, type DomainState } from '@/lib/domain-state'
+import { getDomainCheckboxSlots, type CheckboxSlot } from '@/lib/domain-structure'
+import { qualitativeLabel } from '@/lib/domain-status'
 
 // ---------------------------------------------------------------------------
-// Domain segment configs — topic keys in page order (orientation then readiness)
+// Helpers — each segment is one readiness checkbox; binary done / not-done.
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-type Status = 'not_started' | 'in_progress' | 'complete'
-
-function getSegmentStatusFromState(domainId: string, seg: DomainSegment, state: DomainState): Status {
-  if (seg.type === 'orient') return getOrient(state, domainId, seg.key)
-  return getReadyStatus(state, domainId, seg.key)
-}
-
-function qualitativeLabel(exploredCount: number, totalCount: number): string {
-  if (exploredCount === 0 || totalCount === 0) return 'Not yet started'
-  const pct = exploredCount / totalCount
-  if (pct >= 1)    return 'Deeply explored'
-  if (pct >= 0.67) return 'Well underway'
-  if (pct >= 0.34) return 'Taking shape'
-  return 'Just beginning'
+function slotDone(domainId: string, slot: CheckboxSlot, state: DomainState): boolean {
+  return state[domainId]?.checkboxes?.[slot.rowKey]?.[slot.index] === true
 }
 
 // ---------------------------------------------------------------------------
-// MiniSegmentBar — always 5 segments, proportional fill
+// MiniSegmentBar — one binary segment per readiness checkbox
 // ---------------------------------------------------------------------------
 
 function MiniSegmentBar({
   domainId,
-  segments,
+  slots,
   labelColor,
 }: {
   domainId: string
-  segments: DomainSegment[]
+  slots: CheckboxSlot[]
   labelColor: string
 }) {
-  const [statuses, setStatuses] = useState<Status[]>(() =>
-    segments.map(() => 'not_started')
-  )
+  const [done, setDone] = useState<boolean[]>(() => slots.map(() => false))
 
   useEffect(() => {
     let cancelled = false
     void (async () => {
       const { state } = await loadDomainState()
       if (cancelled) return
-      setStatuses(segments.map((seg) => getSegmentStatusFromState(domainId, seg, state)))
+      setDone(slots.map((slot) => slotDone(domainId, slot, state)))
     })()
     return () => { cancelled = true }
-  }, [domainId, segments])
+  }, [domainId, slots])
 
-  const totalCount   = segments.length
-  const exploredCount = statuses.filter((s) => s !== 'not_started').length
-  const ORDER: Record<Status, number> = { complete: 0, in_progress: 1, not_started: 2 }
-  const sortedStatuses = [...statuses].sort((a, b) => ORDER[a] - ORDER[b])
-
-  function segColor(status: Status): string {
-    if (status === 'complete')    return '#D85A30'
-    if (status === 'in_progress') return '#F0997B'
-    return '#F8F4EB'
-  }
+  const total   = slots.length
+  const checked = done.filter(Boolean).length
+  // Filled-left progress fill: completed segments first, then the rest.
+  const sorted  = [...done].sort((a, b) => Number(b) - Number(a))
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-        {sortedStatuses.map((status, i) => (
+      <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+        {sorted.map((isDone, i) => (
           <div
             key={i}
-            style={{ width: 24, height: 6, borderRadius: 3, flexShrink: 0, background: segColor(status), border: '1px solid rgba(216,90,48,0.45)' }}
+            style={{ width: 24, height: 6, borderRadius: 3, flexShrink: 0, background: isDone ? '#D85A30' : '#F8F4EB', border: '1px solid rgba(216,90,48,0.45)' }}
           />
         ))}
       </div>
       <p style={{ fontSize: 13, fontWeight: 600, color: labelColor, margin: '0 0 4px 0' }}>
-        {qualitativeLabel(exploredCount, totalCount)}
+        {qualitativeLabel(checked, total)}
       </p>
       <p style={{ fontSize: 12, color: labelColor, margin: 0 }}>
-        {exploredCount} of {totalCount} topics started
+        {checked} of {total} complete
       </p>
     </div>
   )
@@ -107,7 +84,7 @@ export default function DomainStateCard({
   colorIndex: number
 }) {
   const style    = DOMAIN_STYLES[colorIndex % DOMAIN_STYLES.length]
-  const segments = getDomainSegmentsByCode(domain.domain_code)
+  const slots    = getDomainCheckboxSlots(domain.domain_code)
   const isDark   = style.text === 'text-[#f8f4eb]'
 
   return (
@@ -121,10 +98,10 @@ export default function DomainStateCard({
       </div>
 
       <div className="flex-1 mb-4">
-        {segments.length > 0 ? (
+        {slots.length > 0 ? (
           <MiniSegmentBar
             domainId={domain.id}
-            segments={segments}
+            slots={slots}
             labelColor={style.labelColor}
           />
         ) : (

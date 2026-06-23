@@ -142,12 +142,14 @@ function ReflectPromptsInner() {
         .limit(1)
         .maybeSingle()
 
+      // Keep savedEntryIdRef set whenever the entry survives, so the next save
+      // updates it in place (and, paired with the saveText fix, recreates a
+      // missing note) — no orphan entry accumulation. Textbox hydration is
+      // deferred until we confirm the note still exists (below).
+      const existingText =
+        existingEntry && typeof existingEntry.content === 'string' ? existingEntry.content : ''
       if (existingEntry) {
         savedEntryIdRef.current = existingEntry.id
-        const existingText = typeof existingEntry.content === 'string' ? existingEntry.content : ''
-        if (existingText) {
-          setTexts(prev => ({ ...prev, [currentPrompt.id]: existingText }))
-        }
       }
 
       const { data: existingNote } = await supabase
@@ -162,6 +164,13 @@ function ReflectPromptsInner() {
 
       if (existingNote) {
         savedNoteIdRef.current = existingNote.id
+        // Only restore the textbox when the note still exists. If the note was
+        // deleted (e.g. from the Plan grid) but the entry survives, leave the
+        // box empty so the user never sees stale "saved" text for a note that
+        // is gone — matching the four activity pages' reflection behavior.
+        if (existingText) {
+          setTexts(prev => ({ ...prev, [currentPrompt.id]: existingText }))
+        }
       }
     }
 
@@ -196,23 +205,32 @@ function ReflectPromptsInner() {
     const startedAt = Date.now()
 
     try {
-      if (savedEntryIdRef.current) {
+      // 1. Ensure the entry exists — update in place, or create.
+      let entryId = savedEntryIdRef.current
+      if (entryId) {
         const { error } = await supabase
           .from('entries')
           .update({ content: text })
-          .eq('id', savedEntryIdRef.current)
+          .eq('id', entryId)
         if (error) throw error
-
-        if (savedNoteIdRef.current) {
-          await updateNote(savedNoteIdRef.current, text)
-        }
       } else {
         const entry = await createReflectEntry(promptLabel, text)
         if (!entry) throw new Error('Failed to create entry')
+        entryId = entry.id
         savedEntryIdRef.current = entry.id
+      }
 
-        const note = await createPromptNote(text, promptLabel, entry.id, promptId)
-        if (note) savedNoteIdRef.current = note.id
+      // 2. Ensure the note exists — INDEPENDENT of whether the entry was new.
+      //    The note can be missing while the entry survives (e.g. the note was
+      //    deleted from the Plan grid). Gating note creation on entry-absence
+      //    silently dropped the note in that state, so create-or-update here.
+      if (savedNoteIdRef.current) {
+        const ok = await updateNote(savedNoteIdRef.current, text)
+        if (!ok) throw new Error('Failed to update note')
+      } else {
+        const note = await createPromptNote(text, promptLabel, entryId, promptId)
+        if (!note) throw new Error('Failed to create note')
+        savedNoteIdRef.current = note.id
       }
 
       await holdSavingIndicator(startedAt)

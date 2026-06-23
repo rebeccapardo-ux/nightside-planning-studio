@@ -2,12 +2,13 @@
 // PDFData shapes the PDF documents render. No React, no browser, no Supabase —
 // safe to import from a client page or a Node release script alike.
 
-import { getCheckboxes, getOrient, getReadyStatus } from '@/lib/domain-state'
+import { getCheckboxes } from '@/lib/domain-state'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { DomainState } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from './types'
 import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanReadinessGroup } from './PlanPDFDocument'
 import { DOMAIN_STRUCTURES } from '@/lib/domain-structure'
+import { qualitativeLabel } from '@/lib/domain-status'
 
 // ---------------------------------------------------------------------------
 // Entry type
@@ -456,15 +457,6 @@ export function buildMaterials(
 
 export type DomainContainer = { id: string; title: string; domain_code?: string | null }
 
-function qualitativeLabel(started: number, total: number): string {
-  if (started === 0 || total === 0) return 'Not yet started'
-  const pct = started / total
-  if (pct >= 1)    return 'Deeply explored'
-  if (pct >= 0.67) return 'Well underway'
-  if (pct >= 0.34) return 'Taking shape'
-  return 'Just beginning'
-}
-
 // Build the plan summary's key-detail rows from DB domain_state + entries.
 export function buildKeyDetails(
   domainState: DomainState,
@@ -594,27 +586,21 @@ export function buildDomainStatuses(
 ): PlanDomainStatus[] {
   return DOMAIN_STRUCTURES.map(def => {
     const dbDomain = domains.find(d => d.domain_code === def.code)
-    const { orientation, readiness } = def.structure
-    const totalTopics = orientation.length + readiness.length
+    const { readiness } = def.structure
 
-    // Topic-level engagement for qualitative status label
+    // Planning status is per-CHECKBOX now (orientation rows are back-end-only and
+    // not counted). totalTopics/topicsStarted carry checkbox totals; the field
+    // names are retained for the PlanDomainStatus shape consumed by the PDF.
+    let totalTopics = 0
     let topicsStarted = 0
-    if (dbDomain) {
-      for (const o of orientation) {
-        const status = getOrient(domainState, dbDomain.id, o.key)
-        if (status === 'complete' || status === 'in_progress') topicsStarted++
-      }
-      for (const r of readiness) {
-        const status = getReadyStatus(domainState, dbDomain.id, r.key)
-        if (status === 'complete' || status === 'in_progress') topicsStarted++
-      }
-    }
 
     // Checkbox items grouped under their readiness row title, in definition order.
     const readinessGroups: PlanReadinessGroup[] = readiness.map(r => {
       const vals = dbDomain
         ? getCheckboxes(domainState, dbDomain.id, r.key, r.checkboxes.length)
         : r.checkboxes.map(() => false)
+      totalTopics += r.checkboxes.length
+      topicsStarted += vals.filter(Boolean).length
       return {
         title: r.title,
         items: r.checkboxes.map((label, i) => ({ label, checked: vals[i] === true })),
