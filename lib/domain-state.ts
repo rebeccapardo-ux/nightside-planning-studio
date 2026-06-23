@@ -1,10 +1,11 @@
-// Domain state (readiness checkboxes + orientation status) — single source
-// of truth lives in user_profiles.domain_state JSONB. This module is the
-// only place any consumer should touch that column.
+// Domain state (readiness checkboxes) — single source of truth lives in
+// user_profiles.domain_state JSONB. This module is the only place any consumer
+// should touch that column. (Orientation status was removed in the domain-page
+// Pass 2 redesign — orientation rows are back-end-only now.)
 //
 // Reads also perform a one-time, idempotent backfill from legacy locations
-// (localStorage checkbox_*/orient_*, auth.user_metadata.sync_*) so existing
-// users don't lose progress when the DB column is empty for them.
+// (localStorage checkbox_*, auth.user_metadata.sync_*) so existing users don't
+// lose progress when the DB column is empty for them.
 //
 // Precedence: DB state wins whenever present; localStorage/user_metadata are
 // read only to seed an empty DB column, never to override it — they are legacy
@@ -20,7 +21,6 @@ export type DomainItemStatus = 'not_started' | 'in_progress' | 'complete'
 
 export type DomainEntryState = {
   checkboxes?: Record<string, boolean[]>
-  orient?: Record<string, DomainItemStatus>
 }
 
 export type DomainState = Record<string, DomainEntryState>
@@ -40,15 +40,6 @@ export function getCheckboxes(
   const out = Array(length).fill(false)
   for (let i = 0; i < length; i++) out[i] = arr[i] === true
   return out
-}
-
-export function getOrient(
-  state: DomainState,
-  domainId: string,
-  itemKey: string,
-): DomainItemStatus {
-  const v = state[domainId]?.orient?.[itemKey]
-  return v === 'in_progress' || v === 'complete' ? v : 'not_started'
 }
 
 export function computeReadyStatus(vals: boolean[], total: number): DomainItemStatus {
@@ -122,18 +113,8 @@ function readLegacyLocalState(): DomainState {
         continue
       }
 
-      // orient_<domainId>_<itemKey>
-      const orMatch = /^orient_([^_]+)_(.+)$/.exec(key)
-      if (orMatch) {
-        const [, domainId, itemKey] = orMatch
-        const bucket = (out[domainId] ||= {})
-        const or = (bucket.orient ||= {})
-        const v = raw === 'in_progress' || raw === 'complete' ? raw : 'not_started'
-        or[itemKey] = v
-        continue
-      }
-
-      // ready_<domainId>_<itemKey> is derived — ignore; recomputed on demand.
+      // orient_* (orientation status, removed in Pass 2) and ready_* (always
+      // derived) legacy keys are obsolete — ignore.
     }
   } catch {
     // localStorage can throw under quota/private modes — fall through
@@ -221,13 +202,11 @@ async function resolveSyncFlagsToDomainIds(
 
 // ---------- merge -------------------------------------------------------
 
-// Merge two DomainEntryStates. Conflicts on booleans resolve to `true`.
-// Conflicts on orient statuses resolve to the "further along" state
-// (not_started < in_progress < complete).
+// Merge two DomainEntryStates. Conflicts on booleans resolve to `true` — we never
+// make a user's checkbox progress regress because of a stale local copy.
 function mergeEntry(a: DomainEntryState | undefined, b: DomainEntryState): DomainEntryState {
   const out: DomainEntryState = {
     checkboxes: { ...(a?.checkboxes ?? {}) },
-    orient:     { ...(a?.orient ?? {}) },
   }
   for (const [k, v] of Object.entries(b.checkboxes ?? {})) {
     const existing = out.checkboxes![k] ?? []
@@ -236,17 +215,7 @@ function mergeEntry(a: DomainEntryState | undefined, b: DomainEntryState): Domai
     for (let i = 0; i < len; i++) merged[i] = (existing[i] === true) || (v[i] === true)
     out.checkboxes![k] = merged
   }
-  for (const [k, v] of Object.entries(b.orient ?? {})) {
-    const existing = out.orient![k]
-    out.orient![k] = orientMax(existing, v)
-  }
   return out
-}
-
-function orientMax(a: DomainItemStatus | undefined, b: DomainItemStatus): DomainItemStatus {
-  const rank: Record<DomainItemStatus, number> = { not_started: 0, in_progress: 1, complete: 2 }
-  if (!a) return b
-  return rank[a] >= rank[b] ? a : b
 }
 
 function mergeState(a: DomainState, b: DomainState): DomainState {
@@ -331,34 +300,6 @@ export async function saveCheckboxes(
       checkboxes: {
         ...(current[domainId]?.checkboxes ?? {}),
         [itemKey]: vals.slice(),
-      },
-    },
-  }
-  await writeRaw(client, userId, next)
-  return next
-}
-
-export async function saveOrient(
-  domainId: string,
-  itemKey: string,
-  status: DomainItemStatus,
-  opts?: { supabase?: SupabaseClient; currentState?: DomainState; userId?: string },
-): Promise<DomainState | null> {
-  const client = opts?.supabase ?? createSupabaseBrowserClient()
-  let userId = opts?.userId
-  if (!userId) {
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) return null
-    userId = user.id
-  }
-  const current = opts?.currentState ?? await fetchRaw(client, userId)
-  const next: DomainState = {
-    ...current,
-    [domainId]: {
-      ...current[domainId],
-      orient: {
-        ...(current[domainId]?.orient ?? {}),
-        [itemKey]: status,
       },
     },
   }
