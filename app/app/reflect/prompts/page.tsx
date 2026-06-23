@@ -142,12 +142,14 @@ function ReflectPromptsInner() {
         .limit(1)
         .maybeSingle()
 
+      // Keep savedEntryIdRef set whenever the entry survives, so the next save
+      // updates it in place (and, paired with the saveText fix, recreates a
+      // missing note) — no orphan entry accumulation. Textbox hydration is
+      // deferred until we confirm the note still exists (below).
+      const existingText =
+        existingEntry && typeof existingEntry.content === 'string' ? existingEntry.content : ''
       if (existingEntry) {
         savedEntryIdRef.current = existingEntry.id
-        const existingText = typeof existingEntry.content === 'string' ? existingEntry.content : ''
-        if (existingText) {
-          setTexts(prev => ({ ...prev, [currentPrompt.id]: existingText }))
-        }
       }
 
       const { data: existingNote } = await supabase
@@ -162,6 +164,13 @@ function ReflectPromptsInner() {
 
       if (existingNote) {
         savedNoteIdRef.current = existingNote.id
+        // Only restore the textbox when the note still exists. If the note was
+        // deleted (e.g. from the Plan grid) but the entry survives, leave the
+        // box empty so the user never sees stale "saved" text for a note that
+        // is gone — matching the four activity pages' reflection behavior.
+        if (existingText) {
+          setTexts(prev => ({ ...prev, [currentPrompt.id]: existingText }))
+        }
       }
     }
 
