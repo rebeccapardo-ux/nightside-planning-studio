@@ -83,6 +83,7 @@ function getEntryHref(entry: EntryRef): string {
 }
 
 const STICKY_COLORS = ['#f5f2e3', '#eae7f5', '#f3ede8']
+const CREATE_TASK_WARNING_KEY = 'nightside.createTaskWarningDismissed'  // text-note conversion "Don't show again"
 
 // ---------------------------------------------------------------------------
 // Page
@@ -115,6 +116,16 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   const [makeTaskNote, setMakeTaskNote] = useState<Note | null>(null)
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0)
   const [conversionError, setConversionError] = useState(false)
+  // "Don't show again" for the text-note conversion warning (device preference;
+  // voice notes always warn regardless). Cleared on sign-out, which re-warns.
+  const [textWarningDismissed, setTextWarningDismissed] = useState(false)
+  useEffect(() => {
+    try { setTextWarningDismissed(window.localStorage.getItem(CREATE_TASK_WARNING_KEY) === '1') } catch { /* ignore */ }
+  }, [])
+  function dismissTextWarning() {
+    setTextWarningDismissed(true)
+    try { window.localStorage.setItem(CREATE_TASK_WARNING_KEY, '1') } catch { /* ignore */ }
+  }
 
   // Scratchpad / voice capture
   const [composerText, setComposerText] = useState('')
@@ -430,6 +441,8 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           note={makeTaskNote}
           domains={allContainers}
           currentDomainId={domainId}
+          textWarningDismissed={textWarningDismissed}
+          onDismissTextWarning={dismissTextWarning}
           onConfirm={handleMakeTaskConfirm}
           onClose={() => setMakeTaskNote(null)}
         />
@@ -969,7 +982,7 @@ function NoteCard({
   )
   const makeTaskBtn = (
     <button onClick={handleMakeTaskClick} style={actionBtnStyle} className="hover:opacity-75 transition-opacity">
-      Create task
+      Convert
     </button>
   )
 
@@ -1010,7 +1023,7 @@ function NoteCard({
         <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%) rotate(-1deg)', width: '36px', height: '20px', backgroundColor: 'rgba(255,255,255,0.7)' }} />
       }
       actionsContent={(onEdit) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
           <button onClick={onEdit} style={actionBtnStyle} className="hover:opacity-75 transition-opacity">
             Edit
           </button>

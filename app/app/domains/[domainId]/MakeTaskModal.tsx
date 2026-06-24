@@ -15,15 +15,24 @@ export default function MakeTaskModal({
   note,
   domains,
   currentDomainId,
+  textWarningDismissed,
+  onDismissTextWarning,
   onConfirm,
   onClose,
 }: {
   note: Note
   domains: Container[]
   currentDomainId: string
+  textWarningDismissed: boolean
+  onDismissTextWarning: () => void
   onConfirm: (dest: TaskDestination) => void
   onClose: () => void
 }) {
+  // Destructive-conversion warning. Voice: ALWAYS shown (the audio recording is
+  // deleted and can't be re-typed — categorically worse than losing text). Text:
+  // first-time only, dismissable forever via "Don't show again".
+  const isVoice = note.note_mode === 'audio'
+  const showTextWarning = !isVoice && !textWarningDismissed
   // Pre-fill from content; for voice notes content holds the transcript. An empty
   // transcript (succeeded-but-no-text) just yields an empty field to type into.
   const [label, setLabel] = useState((note.content ?? '').trim())
@@ -73,12 +82,33 @@ export default function MakeTaskModal({
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '20px 24px', borderBottom: '1px solid rgba(19,4,38,0.10)' }}>
-          <p style={{ fontSize: 18, fontWeight: 700, color: '#130426', margin: 0 }}>Create a task</p>
+          <p style={{ fontSize: 18, fontWeight: 700, color: '#130426', margin: 0 }}>Convert to a task</p>
           <button onClick={onClose} aria-label="Close" style={{ fontSize: 22, lineHeight: 1, color: 'rgba(19,4,38,0.6)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>×</button>
         </div>
 
         {/* Body */}
         <div style={{ overflowY: 'auto', padding: '16px 24px' }}>
+          {isVoice ? (
+            <div style={{ background: '#F8E8DD', border: '1px solid rgba(219,88,53,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: '#8A3D1C', lineHeight: 1.5, margin: 0 }}>
+                Converting to task <strong>permanently deletes this note and the voice recording.</strong>
+              </p>
+            </div>
+          ) : showTextWarning ? (
+            <div style={{ background: '#F8E8DD', border: '1px solid rgba(219,88,53,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <p style={{ fontSize: 13, color: '#8A3D1C', lineHeight: 1.5, margin: 0 }}>
+                Converting to task <strong>permanently deletes this note.</strong>
+              </p>
+              <button
+                onClick={onDismissTextWarning}
+                style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#8A3D1C', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                className="hover:opacity-75 transition-opacity"
+              >
+                Don&apos;t show again
+              </button>
+            </div>
+          ) : null}
+
           <p style={{ fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 6px 0' }}>Task</p>
           <input
             ref={labelRef}
