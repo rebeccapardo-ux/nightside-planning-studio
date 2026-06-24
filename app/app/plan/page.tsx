@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import DomainStateCard from '@/app/components/DomainStateCard'
 import DomainNullStateBanner from '@/app/components/DomainNullStateBanner'
+import type { UserTask } from '@/lib/user-tasks'
 import PlanOverview from '@/app/components/PlanOverview'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
 import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
@@ -85,6 +86,7 @@ export default async function PlanPage() {
     { data: entries },
     { data: allNotesRaw },
     { data: domainContainers },
+    { data: userTasksRaw },
   ] = await Promise.all([
     supabase
       .from('entries')
@@ -102,9 +104,20 @@ export default async function PlanPage() {
       .eq('type', 'domain')
       .eq('user_id', user.id)
       .order('title'),
+    supabase
+      .from('user_checkboxes')
+      .select('id, domain_id, row_key, label, checked, created_at, updated_at')
+      .eq('user_id', user.id),
   ])
 
   const allNotes = allNotesRaw ?? []
+
+  // One batched fetch for all user tasks, grouped by domain so each card gets
+  // only its own (no per-card fetch). Counts only — the cards don't render tasks.
+  const tasksByDomain: Record<string, UserTask[]> = {}
+  for (const t of (userTasksRaw ?? []) as UserTask[]) {
+    (tasksByDomain[t.domain_id] ||= []).push(t)
+  }
 
   // Deduplicate domains by title — handles any duplicate rows already in DB
   const _seenTitles = new Set<string>()
@@ -267,7 +280,7 @@ export default async function PlanPage() {
         </p>
 
         {/* ── Null state banner (above grid so it doesn't offset card alignment) ── */}
-        {allDomains.length > 0 && <DomainNullStateBanner domains={allDomains} />}
+        {allDomains.length > 0 && <DomainNullStateBanner domains={allDomains} tasksByDomain={tasksByDomain} />}
 
         {/* ── Domain cards + Key details grid ── */}
         <div className="plan-domain-keydetails-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0 40px', alignItems: 'stretch', marginBottom: 64 }}>
@@ -281,6 +294,7 @@ export default async function PlanPage() {
                     key={domain.id}
                     domain={domain}
                     colorIndex={i}
+                    userTasks={tasksByDomain[domain.id] ?? []}
                   />
                 ))}
               </div>
