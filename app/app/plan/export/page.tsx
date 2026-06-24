@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState } from '@/lib/domain-state'
+import { fetchUserTasksFromDB } from '@/lib/user-tasks'
 import AlertIcon from '@/app/components/AlertIcon'
 import { buildMaterials, buildKeyDetails, buildDomainStatuses } from '@/lib/pdf/buildPlanData'
 import { ACTIVITY } from '@/lib/content-metadata'
@@ -58,7 +59,7 @@ export default function PlanExportPage() {
       setFirstName(_first)
       setLastName(_last)
 
-      const [{ data: entries }, { data: domainContainers }, { state: domainState }] = await Promise.all([
+      const [{ data: entries }, { data: domainContainers }, { state: domainState }, userTasks] = await Promise.all([
         supabase
           .from('entries')
           .select('id, title, content, created_at, activity, document_type')
@@ -70,13 +71,14 @@ export default function PlanExportPage() {
           .eq('type', 'domain')
           .order('title'),
         loadDomainState(supabase),
+        fetchUserTasksFromDB(supabase, user.id),
       ])
 
       const allEntries = entries ?? []
       const allDomains = domainContainers ?? []
 
       setKeyDetails(buildKeyDetails(domainState, allDomains, allEntries))
-      setDomainStatuses(buildDomainStatuses(domainState, allDomains))
+      setDomainStatuses(buildDomainStatuses(domainState, allDomains, userTasks))
 
       // Activity reflections now live in the notes table (origin_type='reflection'),
       // linked to their entry via entry_notes — not in entries.content. Fetch them into

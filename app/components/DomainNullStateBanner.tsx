@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react'
 import { loadDomainState } from '@/lib/domain-state'
 import { computeDomainProgress } from '@/lib/domain-status'
+import type { UserTask } from '@/lib/user-tasks'
 
 export default function DomainNullStateBanner({
   domains,
+  tasksByDomain = {},
 }: {
   domains: { id: string; title: string; domain_code?: string | null }[]
+  tasksByDomain?: Record<string, UserTask[]>
 }) {
   const [isNullState, setIsNullState] = useState(false)
 
@@ -17,12 +20,12 @@ export default function DomainNullStateBanner({
       const { state } = await loadDomainState()
       if (cancelled) return
       const anyStarted = domains.some(
-        (d) => computeDomainProgress(d.id, d.domain_code, state, []).checked > 0,   // PR3: real user tasks
+        (d) => computeDomainProgress(d.id, d.domain_code, state, tasksByDomain[d.id] ?? []).checked > 0,
       )
       setIsNullState(!anyStarted)
     })()
     return () => { cancelled = true }
-  }, [domains])
+  }, [domains, tasksByDomain])
 
   if (!isNullState) return null
 

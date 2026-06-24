@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { loadDomainState } from '@/lib/domain-state'
 import { getDomainCheckboxSlots } from '@/lib/domain-structure'
 import { qualitativeLabel, computeDomainProgress, type DomainProgress } from '@/lib/domain-status'
+import type { UserTask } from '@/lib/user-tasks'
 
 // ---------------------------------------------------------------------------
 // MiniProgressBar — proportional fill (fraction = checked / total)
@@ -13,10 +14,12 @@ import { qualitativeLabel, computeDomainProgress, type DomainProgress } from '@/
 function MiniProgressBar({
   domainId,
   code,
+  userTasks,
   labelColor,
 }: {
   domainId: string
   code: string | null | undefined
+  userTasks: UserTask[]
   labelColor: string
 }) {
   const [{ checked, total, pct }, setProgress] = useState<DomainProgress>({ checked: 0, total: 0, pct: 0 })
@@ -26,10 +29,10 @@ function MiniProgressBar({
     void (async () => {
       const { state } = await loadDomainState()
       if (cancelled) return
-      setProgress(computeDomainProgress(domainId, code, state, []))   // PR3: real user tasks
+      setProgress(computeDomainProgress(domainId, code, state, userTasks))
     })()
     return () => { cancelled = true }
-  }, [domainId, code])
+  }, [domainId, code, userTasks])
 
   return (
     <div>
@@ -61,9 +64,11 @@ const DOMAIN_STYLES = [
 export default function DomainStateCard({
   domain,
   colorIndex,
+  userTasks = [],
 }: {
   domain: { id: string; title: string; domain_code?: string | null }
   colorIndex: number
+  userTasks?: UserTask[]
 }) {
   const style    = DOMAIN_STYLES[colorIndex % DOMAIN_STYLES.length]
   const slots    = getDomainCheckboxSlots(domain.domain_code)
@@ -80,10 +85,15 @@ export default function DomainStateCard({
       </div>
 
       <div className="flex-1 mb-4">
-        {slots.length > 0 ? (
+        {/* Show the bar if the domain has platform checkboxes OR any user task —
+            the userTasks clause covers a domain with zero platform slots but
+            user-added tasks (it would otherwise read "No topics yet" despite
+            having trackable progress). */}
+        {slots.length > 0 || userTasks.length > 0 ? (
           <MiniProgressBar
             domainId={domain.id}
             code={domain.domain_code}
+            userTasks={userTasks}
             labelColor={style.labelColor}
           />
         ) : (
