@@ -34,6 +34,9 @@ import { qualitativeLabel, computeDomainProgress } from '@/lib/domain-status'
 import {
   fetchUserTasks,
   toggleUserTask,
+  createUserTask,
+  updateUserTaskLabel,
+  deleteUserTask,
   bucketTasksByRow,
   OTHER_ROW_KEY,
   type UserTask,
@@ -459,6 +462,52 @@ function PlanningStatusSection({
     }).catch(() => {})
   }
 
+  // Add a task — await-then-append (D6): the row only appears once the DB insert
+  // returns. Returns true so the inline input can clear on success.
+  async function handleAddTask(rowKey: string, label: string): Promise<boolean> {
+    const created = await createUserTask(domainId, rowKey, label)
+    if (!created) { setSaveError(true); return false }
+    setUserTasks((prev) => [...prev, created])
+    setSaveError(false)
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'user_task_added', metadata: { domain_id: domainId, field_key: `user_task:${rowKey}` } }),
+    }).catch(() => {})
+    return true
+  }
+
+  // Rename a task — optimistic, with rollback on save failure.
+  function handleSaveTaskLabel(task: UserTask, label: string) {
+    const prevLabel = task.label
+    setUserTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, label } : t)))
+    void updateUserTaskLabel(task.id, label)
+      .then((ok) => {
+        if (ok) { setSaveError(false); return }
+        setUserTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, label: prevLabel } : t)))
+        setSaveError(true)
+      })
+      .catch(() => {
+        setUserTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, label: prevLabel } : t)))
+        setSaveError(true)
+      })
+  }
+
+  // Delete a task — optimistic remove; on failure re-insert in creation order.
+  function handleDeleteTask(task: UserTask) {
+    setUserTasks((prev) => prev.filter((t) => t.id !== task.id))
+    void deleteUserTask(task.id)
+      .then((ok) => {
+        if (ok) { setSaveError(false); return }
+        setUserTasks((prev) => [...prev, task].sort((a, b) => a.created_at.localeCompare(b.created_at)))
+        setSaveError(true)
+      })
+      .catch(() => {
+        setUserTasks((prev) => [...prev, task].sort((a, b) => a.created_at.localeCompare(b.created_at)))
+        setSaveError(true)
+      })
+  }
+
   function handleCheckbox(itemKey: string, idx: number, total: number) {
     if (!domainStateLoaded) return
     setCheckboxes((prev) => {
@@ -527,6 +576,9 @@ function PlanningStatusSection({
             onToggle={(idx) => handleCheckbox(item.key, idx, item.checkboxes.length)}
             userTasks={byRow[item.key] ?? []}
             onToggleTask={handleUserTaskToggle}
+            onAddTask={handleAddTask}
+            onSaveTaskLabel={handleSaveTaskLabel}
+            onDeleteTask={handleDeleteTask}
           />
         ))}
         {/* Synthetic catch-all — only when tasks live here (other + stale-key fall-through) */}
@@ -537,6 +589,9 @@ function PlanningStatusSection({
             matched={[]}
             userTasks={other}
             onToggleTask={handleUserTaskToggle}
+            onAddTask={handleAddTask}
+            onSaveTaskLabel={handleSaveTaskLabel}
+            onDeleteTask={handleDeleteTask}
           />
         )}
       </div>
@@ -555,7 +610,8 @@ function ReadinessCard({
   onToggle,
   userTasks = [],
   onToggleTask,
-  onEditTask,
+  onAddTask,
+  onSaveTaskLabel,
   onDeleteTask,
 }: {
   item: ReadinessItemDef
@@ -564,9 +620,54 @@ function ReadinessCard({
   onToggle?: (idx: number) => void
   userTasks?: UserTask[]
   onToggleTask?: (task: UserTask) => void
-  onEditTask?: (task: UserTask) => void
+  onAddTask?: (rowKey: string, label: string) => Promise<boolean>
+  onSaveTaskLabel?: (task: UserTask, label: string) => void
   onDeleteTask?: (task: UserTask) => void
 }) {
+  // Inline interaction state, local to this row.
+  const [addOpen, setAddOpen] = useState(false)
+  const [addText, setAddText] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+  // Escape during edit must cancel without the input's blur re-committing it.
+  const editCancelRef = useRef(false)
+
+  // Ref-based focus (jsx-a11y forbids the autoFocus prop). Keyed on the open/edit
+  // state, not on text, so typing doesn't refocus. The confirm button must be
+  // focused so its onBlur ("click elsewhere") cancels the delete.
+  const addInputRef = useRef<HTMLInputElement>(null)
+  const editInputRef = useRef<HTMLInputElement>(null)
+  const confirmBtnRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => { if (addOpen) addInputRef.current?.focus() }, [addOpen])
+  useEffect(() => { if (editingId) editInputRef.current?.focus() }, [editingId])
+  useEffect(() => { if (confirmId) confirmBtnRef.current?.focus() }, [confirmId])
+
+  async function submitAdd() {
+    const text = addText.trim()
+    if (!text || !onAddTask) { setAddOpen(false); setAddText(''); return }
+    const ok = await onAddTask(item.key, text)
+    if (ok) setAddText('')            // keep the input open for rapid entry
+  }
+
+  function startEdit(task: UserTask) {
+    setConfirmId(null)
+    setEditingId(task.id)
+    setEditText(task.label)
+  }
+
+  // Single commit point — both Enter and Escape blur the input, so this runs once.
+  function commitEdit(task: UserTask) {
+    setEditingId(null)
+    if (editCancelRef.current) { editCancelRef.current = false; return }
+    const text = editText.trim()
+    if (text && text !== task.label) onSaveTaskLabel?.(task, text)
+  }
+
+  const taskActionBtn = { fontSize: 11, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1.2 } as const
+  const taskInputCls = 'flex-1 min-w-0 text-[12px] leading-snug text-[#130426] bg-white rounded px-1.5 py-0.5 outline-none'
+  const taskInputStyle = { border: '1px solid rgba(19,4,38,0.25)' } as const
+
   return (
     <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(19,4,38,0.08)' }}>
       <div className="p-4">
@@ -595,27 +696,92 @@ function ReadinessCard({
               )}
             </div>
           ))}
-          {/* User-defined tasks — same visual treatment as platform checkboxes,
-              with Edit/Delete affordances. (Edit/Delete wired in Chunk C.) */}
+          {/* User-defined tasks — inline edit + confirm-delete; same visual
+              treatment as platform checkboxes. */}
           {userTasks.map((task) => (
             <div key={task.id} className="flex items-start gap-2.5 group">
-              <label className="flex items-start gap-2.5 cursor-pointer min-w-0 flex-1">
-                <input
-                  type="checkbox"
-                  checked={task.checked}
-                  onChange={() => onToggleTask?.(task)}
-                  className="mt-0.5 shrink-0 accent-[#DB5835]"
-                />
-                <span className={`text-[12px] leading-snug transition-colors ${task.checked ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
-                  {task.label}
-                </span>
-              </label>
-              <div className="flex items-center gap-3 shrink-0" style={{ marginTop: 1 }}>
-                <button onClick={() => onEditTask?.(task)} style={{ fontSize: 11, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1.2 }} className="hover:opacity-75 transition-opacity">Edit</button>
-                <button onClick={() => onDeleteTask?.(task)} style={{ fontSize: 11, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1.2 }} className="hover:opacity-75 transition-opacity">Delete</button>
-              </div>
+              {editingId === task.id ? (
+                <>
+                  <input
+                    type="checkbox"
+                    checked={task.checked}
+                    onChange={() => onToggleTask?.(task)}
+                    className="mt-0.5 shrink-0 accent-[#DB5835]"
+                    aria-label={task.label}
+                  />
+                  <input
+                    ref={editInputRef}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() }
+                      else if (e.key === 'Escape') { editCancelRef.current = true; e.currentTarget.blur() }
+                    }}
+                    onBlur={() => commitEdit(task)}
+                    className={taskInputCls}
+                    style={taskInputStyle}
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="flex items-start gap-2.5 cursor-pointer min-w-0 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={task.checked}
+                      onChange={() => onToggleTask?.(task)}
+                      className="mt-0.5 shrink-0 accent-[#DB5835]"
+                    />
+                    <span className={`text-[12px] leading-snug transition-colors ${task.checked ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
+                      {task.label}
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3 shrink-0" style={{ marginTop: 1 }}>
+                    <button onClick={() => startEdit(task)} style={taskActionBtn} className="hover:opacity-75 transition-opacity">Edit</button>
+                    {confirmId === task.id ? (
+                      <button
+                        ref={confirmBtnRef}
+                        onClick={() => { onDeleteTask?.(task); setConfirmId(null) }}
+                        onBlur={() => setConfirmId(null)}
+                        style={{ ...taskActionBtn, color: '#B23A1E', fontWeight: 600 }}
+                        className="hover:opacity-75 transition-opacity"
+                      >
+                        Delete?
+                      </button>
+                    ) : (
+                      <button onClick={() => setConfirmId(task.id)} style={taskActionBtn} className="hover:opacity-75 transition-opacity">Delete</button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ))}
+          {/* Inline "+ Add task" — expanding input; Enter submits, Escape cancels,
+              blur-while-empty collapses. Persist only on explicit submit (D3). */}
+          {onAddTask && (
+            addOpen ? (
+              <input
+                ref={addInputRef}
+                value={addText}
+                onChange={(e) => setAddText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); void submitAdd() }
+                  else if (e.key === 'Escape') { setAddOpen(false); setAddText('') }
+                }}
+                onBlur={() => { if (!addText.trim()) setAddOpen(false) }}
+                placeholder="Add a task…"
+                className={taskInputCls}
+                style={{ ...taskInputStyle, marginLeft: 22 }}
+              />
+            ) : (
+              <button
+                onClick={() => setAddOpen(true)}
+                style={{ fontSize: 12, fontWeight: 600, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 22 }}
+                className="hover:opacity-75 transition-opacity"
+              >
+                + Add task
+              </button>
+            )
+          )}
         </div>
         {matched.length > 0 && <ItemMaterials matched={matched} />}
         {item.staticLinks && item.staticLinks.length > 0 && (
