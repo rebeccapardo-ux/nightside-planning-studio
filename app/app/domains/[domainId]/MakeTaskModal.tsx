@@ -73,7 +73,7 @@ export default function MakeTaskModal({
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '20px 24px', borderBottom: '1px solid rgba(19,4,38,0.10)' }}>
-          <p style={{ fontSize: 18, fontWeight: 700, color: '#130426', margin: 0 }}>Make this a task</p>
+          <p style={{ fontSize: 18, fontWeight: 700, color: '#130426', margin: 0 }}>Create a task</p>
           <button onClick={onClose} aria-label="Close" style={{ fontSize: 22, lineHeight: 1, color: 'rgba(19,4,38,0.6)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>×</button>
         </div>
 

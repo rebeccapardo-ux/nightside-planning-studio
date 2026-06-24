@@ -47,10 +47,18 @@ BEGIN
   -- route treats an empty return as "already handled," not an error. The owner
   -- predicate (user_id = p_user_id) doubles as the authorization check, since
   -- SECURITY DEFINER + service-role context bypasses RLS and auth.uid() is null.
-  SELECT id, user_id, origin_type, note_mode, audio_url
+  -- Alias the notes table (`n`) and qualify every column. The RETURNS TABLE OUT
+  -- column `note_mode` shadows notes.note_mode, so an UNQUALIFIED reference is
+  -- ambiguous (42702 "column reference note_mode is ambiguous"). Aliasing states
+  -- the intent — "the notes table's column" — and is immune to the shadow.
+  -- Scan of all OUT columns vs the columns this body reads: only `note_mode`
+  -- collides. `note_audio_url` does NOT (the column is `audio_url`); the `task_*`
+  -- OUT columns don't match any column name read here; the later DELETEs and the
+  -- RETURN QUERY are already unambiguous (single-table / v_note./v_task. qualified).
+  SELECT n.id, n.user_id, n.origin_type, n.note_mode, n.audio_url
     INTO v_note
-    FROM notes
-   WHERE id = p_note_id AND user_id = p_user_id;
+    FROM notes n
+   WHERE n.id = p_note_id AND n.user_id = p_user_id;
   IF NOT FOUND THEN
     RETURN;  -- empty set
   END IF;
