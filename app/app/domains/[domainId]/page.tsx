@@ -311,7 +311,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               </p>
             )}
             {domainStructure && (
-              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} domainTitle={domain?.title ?? 'this area'} structure={domainStructure} entries={allUserEntries} tasksRefreshKey={tasksRefreshKey} />
+              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} structure={domainStructure} entries={allUserEntries} tasksRefreshKey={tasksRefreshKey} />
             )}
           </div>
 
@@ -445,14 +445,12 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 function PlanningStatusSection({
   domainId,
   domainCode,
-  domainTitle,
   structure,
   entries = [],
   tasksRefreshKey = 0,
 }: {
   domainId: string
   domainCode: string | null | undefined
-  domainTitle: string
   structure: DomainStructure
   entries?: EntryRef[]
   tasksRefreshKey?: number
@@ -639,19 +637,24 @@ function PlanningStatusSection({
             onDeleteTask={handleDeleteTask}
           />
         ))}
-        {/* Synthetic catch-all — only when tasks live here (other + stale-key fall-through) */}
-        {other.length > 0 && (
-          <ReadinessCard
-            item={{ key: OTHER_ROW_KEY, title: `Other tasks for ${domainTitle}`, explanation: '', checkboxes: [] }}
-            vals={[]}
-            matched={[]}
-            userTasks={other}
-            onToggleTask={handleUserTaskToggle}
-            onAddTask={handleAddTask}
-            onSaveTaskLabel={handleSaveTaskLabel}
-            onDeleteTask={handleDeleteTask}
-          />
-        )}
+        {/* Catch-all row — ALWAYS rendered, so "+ Add task" here is the path to
+            create an unhomed task (and where converted 'other'/stale-key tasks land).
+            Empty shows null-state copy; populated behaves like any readiness row. */}
+        <ReadinessCard
+          item={{
+            key: OTHER_ROW_KEY,
+            title: 'Other tasks',
+            explanation: other.length === 0 ? "Optional space for tasks that don't fit the topics above." : '',
+            checkboxes: [],
+          }}
+          vals={[]}
+          matched={[]}
+          userTasks={other}
+          onToggleTask={handleUserTaskToggle}
+          onAddTask={handleAddTask}
+          onSaveTaskLabel={handleSaveTaskLabel}
+          onDeleteTask={handleDeleteTask}
+        />
       </div>
     </div>
   )
