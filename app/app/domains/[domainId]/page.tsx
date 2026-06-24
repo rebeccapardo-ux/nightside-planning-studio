@@ -31,6 +31,13 @@ import {
   type ReadinessItem as ReadinessItemDef,
 } from '@/lib/domain-structure'
 import { qualitativeLabel, computeDomainProgress } from '@/lib/domain-status'
+import {
+  fetchUserTasks,
+  toggleUserTask,
+  bucketTasksByRow,
+  OTHER_ROW_KEY,
+  type UserTask,
+} from '@/lib/user-tasks'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
@@ -264,7 +271,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               </p>
             )}
             {domainStructure && (
-              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} structure={domainStructure} entries={allUserEntries} />
+              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} domainTitle={domain?.title ?? 'this area'} structure={domainStructure} entries={allUserEntries} />
             )}
           </div>
 
@@ -381,11 +388,13 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 function PlanningStatusSection({
   domainId,
   domainCode,
+  domainTitle,
   structure,
   entries = [],
 }: {
   domainId: string
   domainCode: string | null | undefined
+  domainTitle: string
   structure: DomainStructure
   entries?: EntryRef[]
 }) {
@@ -393,6 +402,10 @@ function PlanningStatusSection({
   const [domainStateLoaded, setDomainStateLoaded] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const domainStateRef = useRef<DomainState>({})
+
+  // User-defined tasks for this domain (user_checkboxes). Owned here alongside the
+  // platform checkbox state so the bar and the readiness rows share one source.
+  const [userTasks, setUserTasks] = useState<UserTask[]>([])
 
   // Load readiness checkbox state from Supabase (source of truth). loadDomainState()
   // also performs the one-time legacy backfill. domainStateLoaded gates checkbox
@@ -412,6 +425,39 @@ function PlanningStatusSection({
     })()
     return () => { cancelled = true }
   }, [structure, domainId])
+
+  // Load this domain's user-defined tasks (DB-only; no localStorage backfill).
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const tasks = await fetchUserTasks(domainId)
+      if (cancelled) return
+      setUserTasks(tasks)
+    })()
+    return () => { cancelled = true }
+  }, [domainId])
+
+  // Toggle a user task — optimistic, with rollback on save failure. Mirrors
+  // handleCheckbox (immediate UI update; analytics document_field_saved).
+  function handleUserTaskToggle(task: UserTask) {
+    const next = !task.checked
+    setUserTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, checked: next } : t)))
+    void toggleUserTask(task.id, next)
+      .then((ok) => {
+        if (ok) { setSaveError(false); return }
+        setUserTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, checked: task.checked } : t)))
+        setSaveError(true)
+      })
+      .catch(() => {
+        setUserTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, checked: task.checked } : t)))
+        setSaveError(true)
+      })
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, field_type: 'user_task', field_key: `user_task:${task.row_key}` } }),
+    }).catch(() => {})
+  }
 
   function handleCheckbox(itemKey: string, idx: number, total: number) {
     if (!domainStateLoaded) return
@@ -442,10 +488,13 @@ function PlanningStatusSection({
   // Planning status routes through the shared computeDomainProgress helper.
   // Wrap local `checkboxes` as a DomainState so the helper sees this domain's
   // live state — domainStateRef lags toggles by the debounce interval, and the
-  // bar must move the instant a box is ticked. (PR3: pass real user tasks.)
+  // bar must move the instant a box is ticked. User tasks count too.
   const { checked, total, pct } = computeDomainProgress(
-    domainId, domainCode, { [domainId]: { checkboxes } }, [],
+    domainId, domainCode, { [domainId]: { checkboxes } }, userTasks,
   )
+
+  // Bucket user tasks by readiness row; `other` = catch-all + stale-key fall-through.
+  const { byRow, other } = bucketTasksByRow(userTasks, structure.readiness.map((r) => r.key))
 
   return (
     <div>
@@ -467,7 +516,7 @@ function PlanningStatusSection({
         )}
       </div>
 
-      {/* Readiness rows — checkboxes only, no status pills */}
+      {/* Readiness rows — platform checkboxes + user tasks, no status pills */}
       <div className="space-y-3">
         {structure.readiness.map((item) => (
           <ReadinessCard
@@ -476,8 +525,20 @@ function PlanningStatusSection({
             vals={checkboxes[item.key] ?? item.checkboxes.map(() => false)}
             matched={itemEntries(item)}
             onToggle={(idx) => handleCheckbox(item.key, idx, item.checkboxes.length)}
+            userTasks={byRow[item.key] ?? []}
+            onToggleTask={handleUserTaskToggle}
           />
         ))}
+        {/* Synthetic catch-all — only when tasks live here (other + stale-key fall-through) */}
+        {other.length > 0 && (
+          <ReadinessCard
+            item={{ key: OTHER_ROW_KEY, title: `Other tasks for ${domainTitle}`, explanation: '', checkboxes: [] }}
+            vals={[]}
+            matched={[]}
+            userTasks={other}
+            onToggleTask={handleUserTaskToggle}
+          />
+        )}
       </div>
     </div>
   )
@@ -492,11 +553,19 @@ function ReadinessCard({
   vals,
   matched,
   onToggle,
+  userTasks = [],
+  onToggleTask,
+  onEditTask,
+  onDeleteTask,
 }: {
   item: ReadinessItemDef
   vals: boolean[]
   matched: EntryRef[]
-  onToggle: (idx: number) => void
+  onToggle?: (idx: number) => void
+  userTasks?: UserTask[]
+  onToggleTask?: (task: UserTask) => void
+  onEditTask?: (task: UserTask) => void
+  onDeleteTask?: (task: UserTask) => void
 }) {
   return (
     <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(19,4,38,0.08)' }}>
@@ -512,7 +581,7 @@ function ReadinessCard({
                 <input
                   type="checkbox"
                   checked={vals[idx] ?? false}
-                  onChange={() => onToggle(idx)}
+                  onChange={() => onToggle?.(idx)}
                   className="mt-0.5 shrink-0 accent-[#DB5835]"
                 />
                 <span className={`text-[12px] leading-snug transition-colors ${vals[idx] ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
@@ -524,6 +593,27 @@ function ReadinessCard({
                   {item.checkboxHelpers[idx]}
                 </p>
               )}
+            </div>
+          ))}
+          {/* User-defined tasks — same visual treatment as platform checkboxes,
+              with Edit/Delete affordances. (Edit/Delete wired in Chunk C.) */}
+          {userTasks.map((task) => (
+            <div key={task.id} className="flex items-start gap-2.5 group">
+              <label className="flex items-start gap-2.5 cursor-pointer min-w-0 flex-1">
+                <input
+                  type="checkbox"
+                  checked={task.checked}
+                  onChange={() => onToggleTask?.(task)}
+                  className="mt-0.5 shrink-0 accent-[#DB5835]"
+                />
+                <span className={`text-[12px] leading-snug transition-colors ${task.checked ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
+                  {task.label}
+                </span>
+              </label>
+              <div className="flex items-center gap-3 shrink-0" style={{ marginTop: 1 }}>
+                <button onClick={() => onEditTask?.(task)} style={{ fontSize: 11, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1.2 }} className="hover:opacity-75 transition-opacity">Edit</button>
+                <button onClick={() => onDeleteTask?.(task)} style={{ fontSize: 11, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1.2 }} className="hover:opacity-75 transition-opacity">Delete</button>
+              </div>
             </div>
           ))}
         </div>
