@@ -16,6 +16,7 @@ const ALLOWED_EVENTS = new Set([
   'activity_contributed',
   'export_generated',
   'sign_in',
+  'user_task_added',
 ])
 
 export async function POST(req: NextRequest) {
