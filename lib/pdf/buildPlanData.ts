@@ -8,7 +8,7 @@ import type { DomainState } from '@/lib/domain-state'
 import type { PDFData, PDFContactEntry } from './types'
 import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanReadinessGroup } from './PlanPDFDocument'
 import { DOMAIN_STRUCTURES } from '@/lib/domain-structure'
-import { qualitativeLabel } from '@/lib/domain-status'
+import { qualitativeLabel, computeDomainProgress } from '@/lib/domain-status'
 
 // ---------------------------------------------------------------------------
 // Entry type
@@ -588,31 +588,30 @@ export function buildDomainStatuses(
     const dbDomain = domains.find(d => d.domain_code === def.code)
     const { readiness } = def.structure
 
-    // Planning status is per-CHECKBOX now (orientation rows are back-end-only and
-    // not counted). totalTopics/topicsStarted carry checkbox totals; the field
-    // names are retained for the PlanDomainStatus shape consumed by the PDF.
-    let totalTopics = 0
-    let topicsStarted = 0
-
     // Checkbox items grouped under their readiness row title, in definition order.
+    // (The per-checkbox detail list is PDF-only; counts come from the shared
+    // computeDomainProgress helper below so every surface agrees.)
     const readinessGroups: PlanReadinessGroup[] = readiness.map(r => {
       const vals = dbDomain
         ? getCheckboxes(domainState, dbDomain.id, r.key, r.checkboxes.length)
         : r.checkboxes.map(() => false)
-      totalTopics += r.checkboxes.length
-      topicsStarted += vals.filter(Boolean).length
       return {
         title: r.title,
         items: r.checkboxes.map((label, i) => ({ label, checked: vals[i] === true })),
       }
     })
 
+    // Planning status is per-CHECKBOX (orientation rows are back-end-only and not
+    // counted). topicsStarted/totalTopics retain their names for the PlanDomainStatus
+    // shape but now carry checked/total from computeDomainProgress. (PR3: user tasks.)
+    const { checked, total } = computeDomainProgress(dbDomain?.id ?? '', def.code, domainState, [])
+
     return {
       title: dbDomain?.title ?? def.displayName,
       domainCode: def.code,
-      label: qualitativeLabel(topicsStarted, totalTopics),
-      topicsStarted,
-      totalTopics,
+      label: qualitativeLabel(checked, total),
+      topicsStarted: checked,
+      totalTopics: total,
       readinessGroups,
     }
   })
