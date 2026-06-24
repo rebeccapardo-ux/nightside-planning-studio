@@ -121,6 +121,35 @@ export async function deleteUserTask(id: string): Promise<boolean> {
   return true
 }
 
+// Convert a note into a user task (PR 4 "Make this a task"). Goes through the
+// server route (/api/notes/convert-to-task), which calls the convert_note_to_task
+// RPC (atomic DB teardown of the note + its links + origin-aware its entry) and
+// best-effort deletes any voice-note audio. Returns:
+//   { ok: true,  task }       — converted; append `task` (it lives in destination domain)
+//   { ok: true,  task: null } — the note was already gone (idempotent no-op); still
+//                               safe to drop the note from the stream
+//   { ok: false, task: null } — failed; leave the note in place
+export async function convertNoteToTask(params: {
+  noteId: string
+  domainId: string
+  rowKey: string
+  label: string
+}): Promise<{ ok: boolean; task: UserTask | null }> {
+  try {
+    const res = await fetch('/api/notes/convert-to-task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+    if (!res.ok) { console.error('convertNoteToTask failed:', res.status); return { ok: false, task: null } }
+    const json = await res.json().catch(() => null)
+    return { ok: true, task: (json?.task as UserTask) ?? null }
+  } catch (err) {
+    console.error('convertNoteToTask error:', err)
+    return { ok: false, task: null }
+  }
+}
+
 // Bucket a domain's tasks for render: each task either belongs to a predefined
 // readiness row (its row_key is in readinessKeys) or falls through to `other`
 // (row_key === OTHER_ROW_KEY, OR a stale row_key no longer in the structure —
