@@ -37,10 +37,12 @@ import {
   createUserTask,
   updateUserTaskLabel,
   deleteUserTask,
+  convertNoteToTask,
   bucketTasksByRow,
   OTHER_ROW_KEY,
   type UserTask,
 } from '@/lib/user-tasks'
+import MakeTaskModal, { type TaskDestination } from './MakeTaskModal'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
@@ -104,7 +106,15 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   const [allUserEntries, setAllUserEntries] = useState<EntryRef[]>([])
   const [hiddenNoteIds, setHiddenNoteIds] = useState<Set<string>>(new Set())
   const [domain, setDomain] = useState<Container | null>(null)
+  const [allContainers, setAllContainers] = useState<Container[]>([])  // all domains, for the destination picker
   const [loading, setLoading] = useState(true)
+
+  // "Make this a task": the note being converted (modal open when non-null), a
+  // refresh key the conversion bumps so PlanningStatusSection refetches this
+  // domain's tasks, and a transient error flag.
+  const [makeTaskNote, setMakeTaskNote] = useState<Note | null>(null)
+  const [tasksRefreshKey, setTasksRefreshKey] = useState(0)
+  const [conversionError, setConversionError] = useState(false)
 
   // Scratchpad / voice capture
   const [composerText, setComposerText] = useState('')
@@ -128,6 +138,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       setNotes(loadedNotes)
       setAllUserEntries(allEnts)
       setDomain(containers.find((c) => c.id === domainId) ?? null)
+      setAllContainers(containers)
       setAllUserNotes(allNotes)
       setHiddenNoteIds(new Set(hiddenIds))
       setLoading(false)
@@ -239,6 +250,32 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
     setAddModalOpen(false)
   }
 
+  // "Make this a task": convert the open note into a task at the chosen
+  // destination (any domain). The note is deleted DB-side by the RPC; here we
+  // drop it from local stream state and, if it landed in THIS domain, bump
+  // tasksRefreshKey so PlanningStatusSection refetches and shows it.
+  async function handleMakeTaskConfirm(dest: TaskDestination) {
+    const note = makeTaskNote
+    if (!note) return
+    setMakeTaskNote(null)
+    const { ok } = await convertNoteToTask({ noteId: note.id, domainId: dest.domainId, rowKey: dest.rowKey, label: dest.label })
+    if (!ok) {
+      setConversionError(true)
+      setTimeout(() => setConversionError(false), 4000)
+      return  // leave the note in the stream so the user can retry
+    }
+    // Converted (or already gone): remove the note from every local list.
+    setNotes((prev) => prev.filter((n) => n.id !== note.id))
+    setAllUserNotes((prev) => prev.filter((n) => n.id !== note.id))
+    setHiddenNoteIds((prev) => { if (!prev.has(note.id)) return prev; const next = new Set(prev); next.delete(note.id); return next })
+    if (dest.domainId === domainId) setTasksRefreshKey((k) => k + 1)
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName: 'note_converted_to_task', metadata: { origin_type: note.origin_type ?? null, destination_domain_id: dest.domainId, destination_row_key: dest.rowKey } }),
+    }).catch(() => {})
+  }
+
   // Hold a clean background while initial data resolves (avoids header/title flash).
   if (loading) {
     return <div className="min-h-screen" style={{ background: '#EDE7FF' }} />
@@ -274,7 +311,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               </p>
             )}
             {domainStructure && (
-              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} domainTitle={domain?.title ?? 'this area'} structure={domainStructure} entries={allUserEntries} />
+              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} domainTitle={domain?.title ?? 'this area'} structure={domainStructure} entries={allUserEntries} tasksRefreshKey={tasksRefreshKey} />
             )}
           </div>
 
@@ -282,6 +319,11 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           <div className="rounded-xl" style={{ background: '#F8F4EB', border: '1px solid rgba(242,152,54,0.35)', padding: 24, alignSelf: 'start' }}>
             <p style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A', margin: 0 }}>Your thoughts</p>
             <p style={{ marginTop: 6, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.65)' }}>Notes you&apos;ve captured for this area.</p>
+            {conversionError && (
+              <p style={{ marginTop: 8, fontSize: 13, color: '#8B0000' }}>
+                <AlertIcon color="#8B0000" size={13} />Couldn&apos;t make that into a task. Please try again.
+              </p>
+            )}
 
             {streamNotes.length > 0 ? (
               <div className="grid grid-cols-1 gap-3 items-start" style={{ marginTop: 20, marginBottom: 16 }}>
@@ -292,6 +334,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
                       idx={idx}
                       onRemoveWrite={() => handleRemoveWrite(note.id)}
                       onRemoved={() => handleRemoveCommit(note.id)}
+                      onMakeTask={() => setMakeTaskNote(note)}
                       onUpdated={(newContent) => {
                         setNotes((prev) => prev.map((n) => n.id === note.id ? { ...n, content: newContent } : n))
                         setAllUserNotes((prev) => prev.map((n) => n.id === note.id ? { ...n, content: newContent } : n))
@@ -380,6 +423,17 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           onClose={() => setAddModalOpen(false)}
         />
       )}
+
+      {/* ── Make this a task: destination picker ── */}
+      {makeTaskNote && (
+        <MakeTaskModal
+          note={makeTaskNote}
+          domains={allContainers}
+          currentDomainId={domainId}
+          onConfirm={handleMakeTaskConfirm}
+          onClose={() => setMakeTaskNote(null)}
+        />
+      )}
     </div>
   )
 }
@@ -394,12 +448,14 @@ function PlanningStatusSection({
   domainTitle,
   structure,
   entries = [],
+  tasksRefreshKey = 0,
 }: {
   domainId: string
   domainCode: string | null | undefined
   domainTitle: string
   structure: DomainStructure
   entries?: EntryRef[]
+  tasksRefreshKey?: number
 }) {
   const [checkboxes, setCheckboxes] = useState<Record<string, boolean[]>>({})
   const [domainStateLoaded, setDomainStateLoaded] = useState(false)
@@ -430,6 +486,8 @@ function PlanningStatusSection({
   }, [structure, domainId])
 
   // Load this domain's user-defined tasks (DB-only; no localStorage backfill).
+  // Re-runs when tasksRefreshKey changes — e.g. after a note is converted into a
+  // task in this domain (the new task lives in user_checkboxes, fetched here).
   useEffect(() => {
     let cancelled = false
     void (async () => {
@@ -438,7 +496,7 @@ function PlanningStatusSection({
       setUserTasks(tasks)
     })()
     return () => { cancelled = true }
-  }, [domainId])
+  }, [domainId, tasksRefreshKey])
 
   // Toggle a user task — optimistic, with rollback on save failure. Mirrors
   // handleCheckbox (immediate UI update; analytics document_field_saved).
@@ -868,15 +926,20 @@ function EntryOutputIcon() {
 // ---------------------------------------------------------------------------
 
 function NoteCard({
-  note, idx = 0, onRemoveWrite, onRemoved, onUpdated,
+  note, idx = 0, onRemoveWrite, onRemoved, onMakeTask, onUpdated,
 }: {
   note: Note
   idx?: number
   onRemoveWrite: () => void | Promise<void>   // DB write (hide / unlink); no parent state change
   onRemoved: () => void                        // parent drops the note from the stream
+  onMakeTask: () => void                       // open the destination picker for this note
   onUpdated?: (newContent: string) => void
 }) {
   const [removePhase, setRemovePhase] = useState<'idle' | 'show' | 'hide'>('idle')
+  // Voice notes can only convert once a transcript exists (the label comes from
+  // it). A click while still transcribing shows an inline note instead.
+  const [taskBlocked, setTaskBlocked] = useState(false)
+  const voicePending = note.note_mode === 'audio' && note.transcription_status !== 'complete'
 
   async function handleRemove() {
     await onRemoveWrite()
@@ -888,15 +951,22 @@ function NoteCard({
     await updateNote(note.id, newContent)
     onUpdated?.(newContent)
   }
+  function handleMakeTaskClick() {
+    if (voicePending) { setTaskBlocked(true); setTimeout(() => setTaskBlocked(false), 4000); return }
+    onMakeTask()
+  }
   const stickyBg = STICKY_COLORS[idx % STICKY_COLORS.length]
 
+  const actionBtnStyle = { fontSize: '12px', fontWeight: 500, color: 'rgba(0,0,0,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: '1.2' } as const
+
   const removeBtn = (
-    <button
-      onClick={handleRemove}
-      style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(0,0,0,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: '1.2' }}
-      className="hover:opacity-75 transition-opacity"
-    >
+    <button onClick={handleRemove} style={actionBtnStyle} className="hover:opacity-75 transition-opacity">
       Remove
+    </button>
+  )
+  const makeTaskBtn = (
+    <button onClick={handleMakeTaskClick} style={actionBtnStyle} className="hover:opacity-75 transition-opacity">
+      Make task
     </button>
   )
 
@@ -915,7 +985,14 @@ function NoteCard({
       <VoiceNoteCard
         note={note}
         promptContext={note.origin_type === 'prompt' ? note.prompt_context ?? null : null}
-        actions={removeBtn}
+        actions={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>{makeTaskBtn}{removeBtn}</div>
+            {taskBlocked && (
+              <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.6)', margin: 0 }}>Still transcribing — try again once it&apos;s ready.</p>
+            )}
+          </div>
+        }
       />
     )
   }
@@ -930,14 +1007,11 @@ function NoteCard({
         <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%) rotate(-1deg)', width: '36px', height: '20px', backgroundColor: 'rgba(255,255,255,0.7)' }} />
       }
       actionsContent={(onEdit) => (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          <button
-            onClick={onEdit}
-            style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(0,0,0,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: '1.2' }}
-            className="hover:opacity-75 transition-opacity"
-          >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%' }}>
+          <button onClick={onEdit} style={actionBtnStyle} className="hover:opacity-75 transition-opacity">
             Edit
           </button>
+          {makeTaskBtn}
           {removeBtn}
         </div>
       )}
