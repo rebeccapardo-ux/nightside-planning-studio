@@ -30,7 +30,7 @@ import {
   type DomainStructure,
   type ReadinessItem as ReadinessItemDef,
 } from '@/lib/domain-structure'
-import { qualitativeLabel } from '@/lib/domain-status'
+import { qualitativeLabel, computeDomainProgress } from '@/lib/domain-status'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
@@ -264,7 +264,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
               </p>
             )}
             {domainStructure && (
-              <PlanningStatusSection domainId={domainId} structure={domainStructure} entries={allUserEntries} />
+              <PlanningStatusSection domainId={domainId} domainCode={domain?.domain_code} structure={domainStructure} entries={allUserEntries} />
             )}
           </div>
 
@@ -380,10 +380,12 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
 function PlanningStatusSection({
   domainId,
+  domainCode,
   structure,
   entries = [],
 }: {
   domainId: string
+  domainCode: string | null | undefined
   structure: DomainStructure
   entries?: EntryRef[]
 }) {
@@ -437,10 +439,13 @@ function PlanningStatusSection({
     )
   }
 
-  // Planning status = one binary segment per readiness checkbox.
-  const slots = structure.readiness.flatMap((r) => r.checkboxes.map((_, index) => ({ rowKey: r.key, index })))
-  const total = slots.length
-  const checked = slots.filter((s) => (checkboxes[s.rowKey]?.[s.index]) === true).length
+  // Planning status routes through the shared computeDomainProgress helper.
+  // Wrap local `checkboxes` as a DomainState so the helper sees this domain's
+  // live state — domainStateRef lags toggles by the debounce interval, and the
+  // bar must move the instant a box is ticked. (PR3: pass real user tasks.)
+  const { checked, total, pct } = computeDomainProgress(
+    domainId, domainCode, { [domainId]: { checkboxes } }, [],
+  )
 
   return (
     <div>
@@ -448,17 +453,9 @@ function PlanningStatusSection({
         Planning Status
       </h2>
 
-      {/* Per-checkbox binary segment bar */}
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 480, margin: '0 auto' }}>
-        {slots.map((s, i) => {
-          const isDone = (checkboxes[s.rowKey]?.[s.index]) === true
-          return (
-            <div
-              key={i}
-              style={{ flex: '1 1 18px', minWidth: 18, maxWidth: 40, height: 12, borderRadius: 6, background: isDone ? '#D85A30' : '#FAECE7', border: isDone ? 'none' : '1px solid #C9967E' }}
-            />
-          )
-        })}
+      {/* Proportional planning-status bar (fraction = checked / total) */}
+      <div style={{ maxWidth: 480, height: 12, margin: '0 auto', borderRadius: 6, background: '#FAECE7', border: '1px solid #C9967E', overflow: 'hidden' }}>
+        <div style={{ width: `${Math.round(pct * 100)}%`, height: '100%', background: '#D85A30', transition: 'width 200ms ease' }} />
       </div>
       <div style={{ textAlign: 'center', marginTop: 12, marginBottom: 28 }}>
         <p style={{ fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 4px 0' }}>{qualitativeLabel(checked, total)}</p>

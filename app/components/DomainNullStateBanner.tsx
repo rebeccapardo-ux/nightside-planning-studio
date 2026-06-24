@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { loadDomainState } from '@/lib/domain-state'
-import { getDomainCheckboxSlots } from '@/lib/domain-structure'
+import { computeDomainProgress } from '@/lib/domain-status'
 
 export default function DomainNullStateBanner({
   domains,
@@ -16,15 +16,9 @@ export default function DomainNullStateBanner({
     void (async () => {
       const { state } = await loadDomainState()
       if (cancelled) return
-      let anyStarted = false
-      outer: for (const domain of domains) {
-        for (const slot of getDomainCheckboxSlots(domain.domain_code)) {
-          if (state[domain.id]?.checkboxes?.[slot.rowKey]?.[slot.index] === true) {
-            anyStarted = true
-            break outer
-          }
-        }
-      }
+      const anyStarted = domains.some(
+        (d) => computeDomainProgress(d.id, d.domain_code, state, []).checked > 0,   // PR3: real user tasks
+      )
       setIsNullState(!anyStarted)
     })()
     return () => { cancelled = true }

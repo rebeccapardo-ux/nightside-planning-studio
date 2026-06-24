@@ -2,57 +2,39 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { loadDomainState, type DomainState } from '@/lib/domain-state'
-import { getDomainCheckboxSlots, type CheckboxSlot } from '@/lib/domain-structure'
-import { qualitativeLabel } from '@/lib/domain-status'
+import { loadDomainState } from '@/lib/domain-state'
+import { getDomainCheckboxSlots } from '@/lib/domain-structure'
+import { qualitativeLabel, computeDomainProgress, type DomainProgress } from '@/lib/domain-status'
 
 // ---------------------------------------------------------------------------
-// Helpers — each segment is one readiness checkbox; binary done / not-done.
+// MiniProgressBar — proportional fill (fraction = checked / total)
 // ---------------------------------------------------------------------------
 
-function slotDone(domainId: string, slot: CheckboxSlot, state: DomainState): boolean {
-  return state[domainId]?.checkboxes?.[slot.rowKey]?.[slot.index] === true
-}
-
-// ---------------------------------------------------------------------------
-// MiniSegmentBar — one binary segment per readiness checkbox
-// ---------------------------------------------------------------------------
-
-function MiniSegmentBar({
+function MiniProgressBar({
   domainId,
-  slots,
+  code,
   labelColor,
 }: {
   domainId: string
-  slots: CheckboxSlot[]
+  code: string | null | undefined
   labelColor: string
 }) {
-  const [done, setDone] = useState<boolean[]>(() => slots.map(() => false))
+  const [{ checked, total, pct }, setProgress] = useState<DomainProgress>({ checked: 0, total: 0, pct: 0 })
 
   useEffect(() => {
     let cancelled = false
     void (async () => {
       const { state } = await loadDomainState()
       if (cancelled) return
-      setDone(slots.map((slot) => slotDone(domainId, slot, state)))
+      setProgress(computeDomainProgress(domainId, code, state, []))   // PR3: real user tasks
     })()
     return () => { cancelled = true }
-  }, [domainId, slots])
-
-  const total   = slots.length
-  const checked = done.filter(Boolean).length
-  // Filled-left progress fill: completed segments first, then the rest.
-  const sorted  = [...done].sort((a, b) => Number(b) - Number(a))
+  }, [domainId, code])
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
-        {sorted.map((isDone, i) => (
-          <div
-            key={i}
-            style={{ width: 24, height: 6, borderRadius: 3, flexShrink: 0, background: isDone ? '#D85A30' : '#F8F4EB', border: '1px solid rgba(216,90,48,0.45)' }}
-          />
-        ))}
+      <div style={{ height: 6, marginBottom: 8, borderRadius: 3, background: '#F8F4EB', border: '1px solid rgba(216,90,48,0.45)', overflow: 'hidden' }}>
+        <div style={{ width: `${Math.round(pct * 100)}%`, height: '100%', background: '#D85A30', transition: 'width 200ms ease' }} />
       </div>
       <p style={{ fontSize: 13, fontWeight: 600, color: labelColor, margin: '0 0 4px 0' }}>
         {qualitativeLabel(checked, total)}
@@ -99,9 +81,9 @@ export default function DomainStateCard({
 
       <div className="flex-1 mb-4">
         {slots.length > 0 ? (
-          <MiniSegmentBar
+          <MiniProgressBar
             domainId={domain.id}
-            slots={slots}
+            code={domain.domain_code}
             labelColor={style.labelColor}
           />
         ) : (
