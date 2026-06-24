@@ -9,6 +9,7 @@ import type { PDFData, PDFContactEntry } from './types'
 import type { PlanMaterial, PlanKeyDetail, PlanDomainStatus, PlanReadinessGroup } from './PlanPDFDocument'
 import { DOMAIN_STRUCTURES } from '@/lib/domain-structure'
 import { qualitativeLabel, computeDomainProgress } from '@/lib/domain-status'
+import { bucketTasksByRow, type UserTask } from '@/lib/user-tasks'
 
 // ---------------------------------------------------------------------------
 // Entry type
@@ -583,12 +584,19 @@ export function buildKeyDetails(
 export function buildDomainStatuses(
   domainState: DomainState,
   domains: DomainContainer[],
+  userCheckboxes: UserTask[] = [],
 ): PlanDomainStatus[] {
   return DOMAIN_STRUCTURES.map(def => {
     const dbDomain = domains.find(d => d.domain_code === def.code)
     const { readiness } = def.structure
 
-    // Checkbox items grouped under their readiness row title, in definition order.
+    // This domain's user tasks, bucketed by row (shared helper so the PDF and the
+    // on-screen domain page place tasks identically). `other` = catch-all + stale keys.
+    const domainTasks = dbDomain ? userCheckboxes.filter(t => t.domain_id === dbDomain.id) : []
+    const { byRow, other } = bucketTasksByRow(domainTasks, readiness.map(r => r.key))
+
+    // Checkbox items grouped under their readiness row title, in definition order;
+    // each row's user tasks append after its platform checkboxes (D9 per-row).
     // (The per-checkbox detail list is PDF-only; counts come from the shared
     // computeDomainProgress helper below so every surface agrees.)
     const readinessGroups: PlanReadinessGroup[] = readiness.map(r => {
@@ -597,14 +605,25 @@ export function buildDomainStatuses(
         : r.checkboxes.map(() => false)
       return {
         title: r.title,
-        items: r.checkboxes.map((label, i) => ({ label, checked: vals[i] === true })),
+        items: [
+          ...r.checkboxes.map((label, i) => ({ label, checked: vals[i] === true })),
+          ...(byRow[r.key] ?? []).map(t => ({ label: t.label, checked: t.checked })),
+        ],
       }
     })
 
+    // Trailing "Other tasks" group for catch-all + stale-key tasks (D9).
+    if (other.length > 0) {
+      readinessGroups.push({
+        title: 'Other tasks',
+        items: other.map(t => ({ label: t.label, checked: t.checked })),
+      })
+    }
+
     // Planning status is per-CHECKBOX (orientation rows are back-end-only and not
     // counted). topicsStarted/totalTopics retain their names for the PlanDomainStatus
-    // shape but now carry checked/total from computeDomainProgress. (PR3: user tasks.)
-    const { checked, total } = computeDomainProgress(dbDomain?.id ?? '', def.code, domainState, [])
+    // shape but now carry checked/total from computeDomainProgress, user tasks included.
+    const { checked, total } = computeDomainProgress(dbDomain?.id ?? '', def.code, domainState, domainTasks)
 
     return {
       title: dbDomain?.title ?? def.displayName,

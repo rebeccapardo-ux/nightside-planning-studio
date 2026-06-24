@@ -49,6 +49,7 @@ import {
   type DomainContainer,
 } from '@/lib/pdf/buildPlanData'
 import { loadDomainStateFromDB } from '@/lib/domain-state'
+import { fetchUserTasksFromDB } from '@/lib/user-tasks'
 
 // ───────────────────────────────────────────────────────────────────────────
 // Types
@@ -335,6 +336,7 @@ async function main() {
   const domains = (domainData ?? []) as DomainContainer[]
 
   const domainState = await loadDomainStateFromDB(admin, userId)
+  const userTasks = await fetchUserTasksFromDB(admin, userId)
 
   // Active descriptors: the default 6 always, opt-ins per preference.
   const activeDescriptors = RELEASE_SET.filter(d => !d.pref || prefs[d.pref])
@@ -414,7 +416,7 @@ async function main() {
     userName: name,
     exportDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
     keyDetails: buildKeyDetails(domainState, domains, allEntries),
-    domainStatuses: buildDomainStatuses(domainState, domains),
+    domainStatuses: buildDomainStatuses(domainState, domains, userTasks),
     materials,
     mode: 'full',
     logoUrl: LOGO_URL,
