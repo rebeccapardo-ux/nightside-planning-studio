@@ -23,7 +23,7 @@ export default function FloatingNotepad() {
   const isWillsLearn = pathname === '/app/learn/wills'
   const isHealthcareLearn = pathname === '/app/learn/healthcare'
   const isAppHome = pathname === '/app'
-  const isPlanPage = pathname === '/app/plan'
+  const isPlanPage = pathname.startsWith('/app/plan')
   const isPersonalAdminDoc = pathname === '/app/capture/personal-admin'
   const isImportantContactsDoc = pathname === '/app/capture/important-contacts'
   const isFinancialInfoDoc = pathname === '/app/capture/financial-information'

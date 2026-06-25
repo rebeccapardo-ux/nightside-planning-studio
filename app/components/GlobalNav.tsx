@@ -161,9 +161,13 @@ const NAV_ITEMS: NavItem[] = [
   {
     href: '/app/plan',
     label: 'Plan',
-    // Plan is the active item across the whole planning flow: the Plan page, domain
+    // Plan is the active item across the whole planning flow: the Plan section, domain
     // pages, and the capture documents reached from them.
     activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
+    rows: [
+      { type: 'item', href: '/app/plan/progress', label: 'Progress Tracking', activePrefixes: ['/app/plan/progress'] },
+      { type: 'item', href: '/app/plan/materials', label: 'Your Materials', activePrefixes: ['/app/plan/materials'] },
+    ],
   },
 ]
 
