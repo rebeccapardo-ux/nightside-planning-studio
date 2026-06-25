@@ -136,6 +136,8 @@ A sticky in a domain's Your-Thoughts stream has a third action, **"Convert"** (E
 
 **`ContinuePlanningPanel` (`app/components/ContinuePlanningPanel.tsx`)** is the **single shared "Continue in Your Plan" panel** on all six Learn pages (replaced six drifted inline copies — don't re-inline). Props: `domainHref` + optional `documents` (per-area relevant docs from `DOCUMENT_TYPE_META`). Wills passes **no docs** → only "Track your progress →" renders (the no-docs case). Each Learn page resolves its domain's container UUID server-side; the **fallback is `/app/plan/progress`** (not `/app/plan`). The header matches the sibling "Next steps" panel headers (28px); header→link and link→docs gaps are **equal** so the link reads as a sister section to "Relevant documents".
 
+**Keepsakes Inventory moved Wills → Legacy.** The Wills & Estates `meaningful_objects` readiness row (and its two checkboxes) was **deleted**; Keepsakes Inventory is now a `staticLink` on the Legacy `sharing_what_matters` row in `DOMAIN_STRUCTURES` (`lib/domain-structure.ts`), and the Legacy learn page's `ContinuePlanningPanel` surfaces it. **Don't reintroduce the Wills belongings row.** (Stale `domain_state` checkboxes for the removed row orphan silently — all readers are structure-driven, so no migration was needed.)
+
 ---
 
 ## Wishes docs Relevant Materials — two cross-doc conventions
