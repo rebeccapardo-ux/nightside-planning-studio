@@ -119,6 +119,25 @@ A sticky in a domain's Your-Thoughts stream has a third action, **"Convert"** (E
 
 ---
 
+## The Plan section — three surfaces (landing · progress · materials)
+
+`/app/plan` is split into **three** routes; do not collapse them back into one combined page.
+
+- **`/app/plan`** — the **landing chooser** (section root). A lightweight two-card chooser (**Your Materials** first, **Progress Tracking** second — engagement order, matching the sub-nav), no data fetch. Gets the **landing title treatment**: `SectionTitleReveal` "Your Plan" with the orange reveal-underline, **no breadcrumb**. Intro copy notes you can export from either surface. **No** key-details, null-state banner, or export button here (it's a chooser, not a destination).
+- **`/app/plan/progress`** — **Progress Tracking**: the domain cards (`DomainStateCard`) + `DomainNullStateBanner` + the key-details panel on top.
+- **`/app/plan/materials`** — **Your Materials**: `YourMaterialsPanel` (full width) + the key-details panel on top.
+- **Sub-pages, NOT the landing**, get a **42px/600 H1 with NO orange underline** + a **breadcrumb** (`Plan / Progress Tracking` etc). `<PlanExportButton/>` renders on **progress + materials only**, never the landing.
+
+**`ensureCanonicalDomains(supabase, userId)` (`lib/ensure-canonical-domains.ts`)** idempotently seeds the **six** canonical domains (`CANONICAL_DOMAINS`, matched on stable `domain_code` with a title fallback for legacy rows). It runs on **every Plan-section page** (landing / progress / materials) because **each is a direct entry point** — don't assume one seeds for the others.
+
+**`PlanOverview` (the key-details panel)** is shared by progress + materials: a client component that **fetches its own data**, read-only (links out — label-as-FK, never matches on prose). **Collapsible** (`nightside.keyDetailsCollapsed`, lazy SSR-guarded init; default collapsed when complete, expanded when gaps). Rendered at **full content width** (matches the domain-cards grid — no inner max-width). Contacts column lays out **Substitute decision-maker full-width + Doctor | Lawyer side-by-side** (`.kd-pair` auto-collapses); label↔status are a **left-hugging pair** (no `flex:1` — never stretch status to the far column edge).
+
+**The Plan sub-nav (`GlobalNav`) mirrors Learn:** a **"Your Materials" singleton**, then a **"Progress Tracking" non-clickable group header** (like Learn's "Areas of Planning"), then **direct links to each domain page**. Domain pages live at `/app/domains/<container-uuid>` — **per-user UUIDs, not static** — so GlobalNav **fetches the user's domain containers** once on load and builds the links, ordered by **`PLAN_DOMAIN_ORDER`** (Healthcare-first, matches Learn). The group is **omitted until domains load** (no empty-header flash) and on a brand-new account before any Plan page seeds. **The aggregate `/app/plan/progress` page is NOT a dropdown item** — it's reached from the landing card; the domain pages under the header ARE the per-area progress views. Domain-page breadcrumbs are `Plan / Progress Tracking / [Domain]`.
+
+**`ContinuePlanningPanel` (`app/components/ContinuePlanningPanel.tsx`)** is the **single shared "Continue in Your Plan" panel** on all six Learn pages (replaced six drifted inline copies — don't re-inline). Props: `domainHref` + optional `documents` (per-area relevant docs from `DOCUMENT_TYPE_META`). Wills passes **no docs** → only "Track your progress →" renders (the no-docs case). Each Learn page resolves its domain's container UUID server-side; the **fallback is `/app/plan/progress`** (not `/app/plan`). The header matches the sibling "Next steps" panel headers (28px); header→link and link→docs gaps are **equal** so the link reads as a sister section to "Relevant documents".
+
+---
+
 ## Wishes docs Relevant Materials — two cross-doc conventions
 
 The "Relevant materials" panels in the two wishes documents (`advance-directive` = My Care Wishes, `funeral-wishes`) must stay consistent. They drifted once (advance-directive lagged behind funeral-wishes) and produced launch-blocking bugs.
