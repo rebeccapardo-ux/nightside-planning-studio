@@ -11,7 +11,7 @@ export default function ExportFieldHelper() {
         lineHeight: 1.5,
       }}
     >
-      This will be included in your export, but won&apos;t be saved to your plan.
+      This will be included in your export, but won&apos;t be saved to Your Plan.
     </p>
   )
 }

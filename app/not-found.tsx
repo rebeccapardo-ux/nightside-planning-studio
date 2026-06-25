@@ -23,10 +23,10 @@ export default function NotFound() {
           Page not found
         </h1>
         <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.65)', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 420 }}>
-          This page doesn&apos;t exist. You can head back to your plan, or go to the home page.
+          This page doesn&apos;t exist. You can head back to Your Plan, or go to the home page.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/app/plan" style={primaryBtn}>Go to your plan</Link>
+          <Link href="/app/plan" style={primaryBtn}>Go to Your Plan</Link>
           <Link href="/" style={secondaryBtn}>Go home</Link>
         </div>
       </div>
