@@ -7,41 +7,43 @@ import type { Note, Container } from '@/lib/notes'
 
 export type TaskDestination = { domainId: string; rowKey: string; label: string }
 
-// "Make this a task" destination picker (PR 4). Editable label (pre-filled from
-// the note's content / voice transcript) + a destination: pick a domain (defaults
-// to the one the user is on) then a readiness row, or "Other tasks for [domain]".
+// "Convert to a task" picker (PR 4). Editable label (pre-filled from the note's
+// content / voice transcript) + a destination row WITHIN the current domain
+// (conversions always land here; to file elsewhere, add the note to that domain
+// first). A destructive-conversion warning sits above, dismissable per note type.
 // Component only — NoteCard wiring + the conversion handler live in chunk 4.
 export default function MakeTaskModal({
   note,
-  domains,
-  currentDomainId,
+  domain,
   textWarningDismissed,
+  voiceWarningDismissed,
   onDismissTextWarning,
+  onDismissVoiceWarning,
   onConfirm,
   onClose,
 }: {
   note: Note
-  domains: Container[]
-  currentDomainId: string
+  domain: Container
   textWarningDismissed: boolean
+  voiceWarningDismissed: boolean
   onDismissTextWarning: () => void
+  onDismissVoiceWarning: () => void
   onConfirm: (dest: TaskDestination) => void
   onClose: () => void
 }) {
-  // Destructive-conversion warning. Voice: ALWAYS shown (the audio recording is
-  // deleted and can't be re-typed — categorically worse than losing text). Text:
-  // first-time only, dismissable forever via "Don't show again".
+  // Destructive-conversion warning — symmetric: both note types can dismiss it
+  // (the copy is the load-bearing part; a dismiss is an informed choice). Separate
+  // flags so a user can keep the higher-stakes voice warning while hiding text.
   const isVoice = note.note_mode === 'audio'
-  const showTextWarning = !isVoice && !textWarningDismissed
+  const showWarning = isVoice ? !voiceWarningDismissed : !textWarningDismissed
+  const warningTail = isVoice
+    ? 'permanently deletes this note and the voice recording.'
+    : 'permanently deletes this note.'
+  const onDismissWarning = isVoice ? onDismissVoiceWarning : onDismissTextWarning
+
   // Pre-fill from content; for voice notes content holds the transcript. An empty
   // transcript (succeeded-but-no-text) just yields an empty field to type into.
   const [label, setLabel] = useState((note.content ?? '').trim())
-  // Default the domain to the one the user is on (the overwhelmingly likely
-  // destination) — they still choose the specific row. Cross-domain remains a
-  // domain switch away.
-  const [domainId, setDomainId] = useState(
-    domains.some((d) => d.id === currentDomainId) ? currentDomainId : (domains[0]?.id ?? ''),
-  )
   const [rowKey, setRowKey] = useState<string | null>(null)
   const labelRef = useRef<HTMLInputElement>(null)
 
@@ -53,20 +55,12 @@ export default function MakeTaskModal({
 
   useEffect(() => { labelRef.current?.focus() }, [])
 
-  const activeDomain = domains.find((d) => d.id === domainId)
-  const rows = getDomainStructureByCode(activeDomain?.domain_code)?.readiness ?? []
+  const rows = getDomainStructureByCode(domain.domain_code)?.readiness ?? []
   const canCreate = label.trim().length > 0 && rowKey !== null
-
-  // Row keys are domain-scoped, so switching domains clears the selected row.
-  function selectDomain(id: string) {
-    if (id === domainId) return
-    setDomainId(id)
-    setRowKey(null)
-  }
 
   function handleCreate() {
     if (!canCreate || rowKey === null) return
-    onConfirm({ domainId, rowKey, label: label.trim() })
+    onConfirm({ domainId: domain.id, rowKey, label: label.trim() })
   }
 
   return (
@@ -88,26 +82,20 @@ export default function MakeTaskModal({
 
         {/* Body */}
         <div style={{ overflowY: 'auto', padding: '16px 24px' }}>
-          {isVoice ? (
-            <div style={{ background: '#F8E8DD', border: '1px solid rgba(219,88,53,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
-              <p style={{ fontSize: 13, color: '#8A3D1C', lineHeight: 1.5, margin: 0 }}>
-                Converting to task <strong>permanently deletes this note and the voice recording.</strong>
-              </p>
-            </div>
-          ) : showTextWarning ? (
+          {showWarning && (
             <div style={{ background: '#F8E8DD', border: '1px solid rgba(219,88,53,0.35)', borderRadius: 8, padding: '10px 12px', marginBottom: 16, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <p style={{ fontSize: 13, color: '#8A3D1C', lineHeight: 1.5, margin: 0 }}>
-                Converting to task <strong>permanently deletes this note.</strong>
+                Converting to task <strong>{warningTail}</strong>
               </p>
               <button
-                onClick={onDismissTextWarning}
+                onClick={onDismissWarning}
                 style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#8A3D1C', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
                 className="hover:opacity-75 transition-opacity"
               >
                 Don&apos;t show again
               </button>
             </div>
-          ) : null}
+          )}
 
           <p style={{ fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 6px 0' }}>Task</p>
           <input
@@ -119,31 +107,8 @@ export default function MakeTaskModal({
             style={{ width: '100%', fontSize: 14, color: '#130426', background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.20)', borderRadius: 8, padding: '8px 10px', outline: 'none', marginBottom: 18 }}
           />
 
-          {/* Domain switcher — defaults to the current domain */}
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 8px 0' }}>Area</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
-            {domains.map((d) => {
-              const isActive = d.id === domainId
-              return (
-                <button
-                  key={d.id}
-                  onClick={() => selectDomain(d.id)}
-                  style={{
-                    fontSize: 13, fontWeight: 600, borderRadius: 999, padding: '6px 12px', cursor: 'pointer',
-                    background: isActive ? '#130426' : '#FFFFFF',
-                    color: isActive ? '#FFFFFF' : '#130426',
-                    border: `1px solid ${isActive ? '#130426' : 'rgba(19,4,38,0.18)'}`,
-                  }}
-                  className="hover:opacity-90 transition-opacity"
-                >
-                  {d.title}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Rows for the selected domain */}
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 8px 0' }}>Where in {activeDomain?.title ?? 'this area'}?</p>
+          {/* Destination row — always the current domain */}
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#130426', margin: '0 0 8px 0' }}>Where in {domain.title}?</p>
           <div className="space-y-1">
             {rows.map((r) => (
               <DestOption
@@ -154,7 +119,7 @@ export default function MakeTaskModal({
               />
             ))}
             <DestOption
-              title={`Other tasks for ${activeDomain?.title ?? 'this area'}`}
+              title="Other tasks"
               muted
               selected={rowKey === OTHER_ROW_KEY}
               onSelect={() => setRowKey(OTHER_ROW_KEY)}

@@ -83,7 +83,15 @@ function getEntryHref(entry: EntryRef): string {
 }
 
 const STICKY_COLORS = ['#f5f2e3', '#eae7f5', '#f3ede8']
-const CREATE_TASK_WARNING_KEY = 'nightside.createTaskWarningDismissed'  // text-note conversion "Don't show again"
+// Per-note-type "Don't show again" for the conversion warning (separate keys so a
+// user can keep the higher-stakes voice warning while hiding text). Device-level;
+// cleared on sign-out, which re-warns a fresh session.
+const TEXT_WARNING_KEY = 'nightside.textConversionWarningDismissed'
+const VOICE_WARNING_KEY = 'nightside.voiceConversionWarningDismissed'
+function readWarningDismissed(key: string): boolean {
+  if (typeof window === 'undefined') return false
+  try { return window.localStorage.getItem(key) === '1' } catch { return false }
+}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -107,7 +115,6 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   const [allUserEntries, setAllUserEntries] = useState<EntryRef[]>([])
   const [hiddenNoteIds, setHiddenNoteIds] = useState<Set<string>>(new Set())
   const [domain, setDomain] = useState<Container | null>(null)
-  const [allContainers, setAllContainers] = useState<Container[]>([])  // all domains, for the destination picker
   const [loading, setLoading] = useState(true)
 
   // "Make this a task": the note being converted (modal open when non-null), a
@@ -116,15 +123,17 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
   const [makeTaskNote, setMakeTaskNote] = useState<Note | null>(null)
   const [tasksRefreshKey, setTasksRefreshKey] = useState(0)
   const [conversionError, setConversionError] = useState(false)
-  // "Don't show again" for the text-note conversion warning (device preference;
-  // voice notes always warn regardless). Cleared on sign-out, which re-warns.
-  const [textWarningDismissed, setTextWarningDismissed] = useState(false)
-  useEffect(() => {
-    try { setTextWarningDismissed(window.localStorage.getItem(CREATE_TASK_WARNING_KEY) === '1') } catch { /* ignore */ }
-  }, [])
+  // "Don't show again" for the conversion warning, per note type. Read at init
+  // (these flags aren't rendered until the modal opens, so no hydration concern).
+  const [textWarningDismissed, setTextWarningDismissed] = useState(() => readWarningDismissed(TEXT_WARNING_KEY))
+  const [voiceWarningDismissed, setVoiceWarningDismissed] = useState(() => readWarningDismissed(VOICE_WARNING_KEY))
   function dismissTextWarning() {
     setTextWarningDismissed(true)
-    try { window.localStorage.setItem(CREATE_TASK_WARNING_KEY, '1') } catch { /* ignore */ }
+    try { window.localStorage.setItem(TEXT_WARNING_KEY, '1') } catch { /* ignore */ }
+  }
+  function dismissVoiceWarning() {
+    setVoiceWarningDismissed(true)
+    try { window.localStorage.setItem(VOICE_WARNING_KEY, '1') } catch { /* ignore */ }
   }
 
   // Scratchpad / voice capture
@@ -149,7 +158,6 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       setNotes(loadedNotes)
       setAllUserEntries(allEnts)
       setDomain(containers.find((c) => c.id === domainId) ?? null)
-      setAllContainers(containers)
       setAllUserNotes(allNotes)
       setHiddenNoteIds(new Set(hiddenIds))
       setLoading(false)
@@ -435,14 +443,15 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
         />
       )}
 
-      {/* ── Make this a task: destination picker ── */}
-      {makeTaskNote && (
+      {/* ── Convert to a task: destination picker (scoped to current domain) ── */}
+      {makeTaskNote && domain && (
         <MakeTaskModal
           note={makeTaskNote}
-          domains={allContainers}
-          currentDomainId={domainId}
+          domain={domain}
           textWarningDismissed={textWarningDismissed}
+          voiceWarningDismissed={voiceWarningDismissed}
           onDismissTextWarning={dismissTextWarning}
+          onDismissVoiceWarning={dismissVoiceWarning}
           onConfirm={handleMakeTaskConfirm}
           onClose={() => setMakeTaskNote(null)}
         />
