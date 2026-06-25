@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import HealthcareAnimations from './HealthcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
 
 
 export const metadata: Metadata = {
@@ -13,7 +15,7 @@ export default async function HealthcareLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let healthcareDomainHref = '/app/plan'
+  let healthcareDomainHref = '/app/plan/progress'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -292,31 +294,13 @@ export default async function HealthcareLearnPage() {
 
             </div>
 
-            {/* Row 2: Continue in your plan */}
-            <div style={{ marginTop: '24px', maxWidth: '760px' }}>
-              <div style={{ background: '#DBD2F6', borderRadius: '24px', padding: '36px' }}>
-                <div style={{ maxWidth: '480px' }}>
-                  <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}>
-                    Continue in your plan
-                  </h3>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0' }}>
-                    {['Identify a decision-maker', 'Document your healthcare preferences'].map((item) => (
-                      <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' }}>
-                        <span style={{ color: '#130426', fontWeight: 700, flexShrink: 0, lineHeight: '1.75' }}>·</span>
-                        <span style={{ fontFamily: inter, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426' }}>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={healthcareDomainHref}
-                    className="inline-block hover:opacity-90 transition-opacity"
-                    style={{ fontFamily: inter, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF' }}
-                  >
-                    Go to Healthcare Planning →
-                  </Link>
-                </div>
-              </div>
-            </div>
+            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
+            <ContinuePlanningPanel
+              domainHref={healthcareDomainHref}
+              documents={[
+                { label: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: DOCUMENT_TYPE_META.advance_directive_supplement.href },
+              ]}
+            />
 
           </div>
         </section>
