@@ -49,7 +49,6 @@ export default async function ProgressTrackingPage() {
     return true
   })
 
-  const apfel = "'Apfel Grotezk', sans-serif"
   const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
   return (
@@ -78,16 +77,11 @@ export default async function ProgressTrackingPage() {
 
       {/* ── Main content ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
-        {/* Key details — collapsible, at the top, constrained width (so the cards
-            below are the page's primary focus). Hydrates after the cards paint. */}
-        <div style={{ maxWidth: 720, marginBottom: 40 }}>
+        {/* Key details — collapsible, at the top (so the cards below are the page's
+            primary focus). Hydrates after the cards paint. */}
+        <div style={{ maxWidth: 920, marginBottom: 40 }}>
           <PlanOverview domains={allDomains} />
         </div>
-
-        <h2 style={{ fontFamily: apfel, fontSize: 22, fontWeight: 500, color: '#130426', marginBottom: 12, marginTop: 0 }}>Areas of planning</h2>
-        <p style={{ fontFamily: inter, fontSize: 17, color: 'rgba(19,4,38,0.85)', maxWidth: 600, marginBottom: 24, marginTop: 0, lineHeight: 1.6 }}>
-          Click into an area to track your progress, view key tasks, and access related materials.
-        </p>
 
         {allDomains.length > 0 && <DomainNullStateBanner domains={allDomains} tasksByDomain={tasksByDomain} />}
 

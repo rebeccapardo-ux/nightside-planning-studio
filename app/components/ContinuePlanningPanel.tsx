@@ -24,13 +24,13 @@ export default function ContinuePlanningPanel({
         </h3>
         <div style={{ height: 1, background: 'rgba(19,4,38,0.15)', margin: '0 0 24px 0' }} />
 
-        {/* "Track your progress" and "Relevant documents" are peer paths — neither
-            dominates. The progress link is a normal navy/underlined link, matching
-            the doc links; the docs sit under a bold sub-header, indented. */}
+        {/* "Track your progress" and "Relevant documents" are visual sisters —
+            same 18px bold; the role differs only by styling: the progress link is
+            navy + underlined + clickable, the sub-header is dark + plain. */}
         <Link
           href={domainHref}
           className="hover:opacity-75 transition-opacity"
-          style={{ fontFamily: hv, fontSize: 16, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 3 }}
+          style={{ fontFamily: hv, fontSize: 18, fontWeight: 700, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 3 }}
         >
           Track your progress →
         </Link>

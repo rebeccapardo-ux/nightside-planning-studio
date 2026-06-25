@@ -229,7 +229,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
   function renderContactField({ label, value }: ContactField) {
     return (
-      <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.5, margin: 0 }}>
+      <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.5, margin: 0, overflowWrap: 'anywhere' }}>
         <span style={{ color: 'rgba(19,4,38,0.65)' }}>{label}: </span>
         {value ? (
           <span style={{ color: 'rgba(19,4,38,0.7)' }}>{value}</span>
@@ -237,6 +237,37 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
           <span style={{ color: 'rgba(19,4,38,0.65)', fontStyle: 'italic' }}>Not recorded</span>
         )}
       </p>
+    )
+  }
+
+  // One contact's content (header link + fields, or a "Not recorded" null line).
+  // Used three ways below: SDM full-width, then Doctor | Lawyer side by side.
+  function renderContactBlock(block: ContactBlock) {
+    if (block.name) {
+      return (
+        <>
+          <Link href={block.href} className="po-contact-header" style={{ fontFamily: hv, fontSize: 13, display: 'block', marginBottom: 4 }}>
+            {block.header}
+          </Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.5, margin: 0, overflowWrap: 'anywhere' }}>
+              <span style={{ color: 'rgba(19,4,38,0.65)' }}>Name: </span>
+              <span style={{ color: 'rgba(19,4,38,0.7)' }}>{block.name}</span>
+            </p>
+            {block.fields.map((val, j) => (<div key={j}>{renderContactField(val)}</div>))}
+          </div>
+        </>
+      )
+    }
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Link href={block.href} className="po-contact-header" style={{ fontFamily: hv, fontSize: 13, flex: 1 }}>
+          {block.header}
+        </Link>
+        <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic', flexShrink: 0 }}>
+          Not recorded
+        </span>
+      </div>
     )
   }
 
@@ -295,7 +326,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         .po-contact-header { text-decoration: underline; color: #2C3777; }
         .po-contact-header:hover { color: #1a2255; }
         .kd-header:hover .kd-chevron { opacity: 0.7; }
-        @media (max-width: 640px) { .kd-grid { grid-template-columns: 1fr !important; gap: 8px !important; } }
+        @media (max-width: 640px) { .kd-grid { grid-template-columns: 1fr !important; gap: 8px !important; } .kd-pair { grid-template-columns: 1fr !important; gap: 14px !important; } }
       `}</style>
 
       <div style={{
@@ -328,9 +359,10 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         {!collapsed && (
           <>
             <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 18px' }} />
-            {/* Two parallel reference columns — Wishes | Contacts — so the panel
-                fits the vertical footprint one column used to take. 1-col on mobile. */}
-            <div className="kd-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'start' }}>
+            {/* Two parallel reference columns — Wishes | Contacts. Wishes rows are
+                short (label + status) so its column is narrow; Contacts is wider to
+                hold the Doctor | Lawyer pair side by side. Both stack on mobile. */}
+            <div className="kd-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 260px) minmax(0, 1fr)', gap: 32, alignItems: 'start' }}>
 
           {/* Wishes & documentation */}
           <div>
@@ -338,50 +370,18 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
             {docRows.map((row, i) => renderDocRow(row, i === docRows.length - 1))}
           </div>
 
-          {/* Contacts */}
+          {/* Contacts — Substitute decision maker spans the full column width; Doctor
+              and Lawyer sit side by side beneath it (so two detailed contacts don't
+              stack and eat vertical space). The pair collapses to 1-col on mobile. */}
           <div>
             <p style={sectionLabel}>Contacts</p>
-            {contactBlocks.map((block, i) => (
-              <div
-                key={block.header}
-                style={{
-                  padding: '10px 0',
-                  borderBottom: i === contactBlocks.length - 1 ? 'none' : '1px solid rgba(19,4,38,0.06)',
-                }}
-              >
-                {block.name ? (
-                  // Expanded: name is known — show title + all fields
-                  <>
-                    <Link href={block.href} className="po-contact-header"
-                      style={{ fontFamily: hv, fontSize: 13, display: 'block', marginBottom: 4 }}
-                    >
-                      {block.header}
-                    </Link>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <p style={{ fontFamily: hv, fontSize: 12, lineHeight: 1.5, margin: 0 }}>
-                        <span style={{ color: 'rgba(19,4,38,0.65)' }}>Name: </span>
-                        <span style={{ color: 'rgba(19,4,38,0.7)' }}>{block.name}</span>
-                      </p>
-                      {block.fields.map((val, j) => (
-                        <div key={j}>{renderContactField(val)}</div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  // Null state: no name — single line matching Wishes & documentation pattern
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Link href={block.href} className="po-contact-header"
-                      style={{ fontFamily: hv, fontSize: 13, flex: 1 }}
-                    >
-                      {block.header}
-                    </Link>
-                    <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic', flexShrink: 0 }}>
-                      Not recorded
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
+            <div style={{ padding: '4px 0 14px', marginBottom: 14, borderBottom: '1px solid rgba(19,4,38,0.06)' }}>
+              {renderContactBlock(contactBlocks[0])}
+            </div>
+            <div className="kd-pair" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
+              <div>{renderContactBlock(contactBlocks[1])}</div>
+              <div>{renderContactBlock(contactBlocks[2])}</div>
+            </div>
           </div>
             </div>
           </>
