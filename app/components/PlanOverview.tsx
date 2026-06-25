@@ -9,6 +9,10 @@ import { loadDomainState, getCheckboxes } from '@/lib/domain-state'
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apf = "'Apfel Grotezk', sans-serif"
 
+// Collapse preference, SHARED across the Plan sub-pages (Progress + Materials) —
+// one key, read on mount, so collapsing on one page applies to the other.
+const KEY_DETAILS_COLLAPSED_KEY = 'nightside.keyDetailsCollapsed'
+
 type CareStatus = 'communicated' | 'documented' | 'both' | null
 type ContactInfo = { name: string; institution: string; phone: string; email: string }
 type SecondaryLine = { label: string; value: string | null; href: string }
@@ -39,6 +43,17 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   const [restingDocumented, setRestingDocumented] = useState(false)
   const [restingShared, setRestingShared]         = useState(false)
   const [loaded, setLoaded]             = useState(false)
+
+  // Tri-state collapse preference: true/false = explicit user choice; null = no
+  // choice yet → fall back to the data-driven default (collapsed when everything's
+  // filled in, expanded when there are gaps) computed below. Read once (SSR-safe).
+  const [storedCollapse, setStoredCollapse] = useState<boolean | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const v = window.localStorage.getItem(KEY_DETAILS_COLLAPSED_KEY)
+      return v === 'true' ? true : v === 'false' ? false : null
+    } catch { return null }
+  })
 
   const healthcareDomain = domains.find(d => d.domain_code === 'healthcare')
   const willsDomain      = domains.find(d => d.domain_code === 'wills_estates')
@@ -260,29 +275,61 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
     },
   ]
 
+  // Completion count uses the SAME signals the expanded panel shows as "done": a
+  // doc row's checkbox-driven `done`, and a contact's `name` present (its
+  // expanded-vs-"Not recorded" split). Keeps the collapsed summary honest.
+  const detailsTotal = docRows.length + contactBlocks.length
+  const detailsFilled = docRows.filter((r) => r.done).length + contactBlocks.filter((b) => !!b.name).length
+  const allFilled = detailsTotal > 0 && detailsFilled === detailsTotal
+  const collapsed = storedCollapse ?? allFilled
+
+  function toggleCollapse() {
+    const next = !collapsed
+    setStoredCollapse(next)
+    try { window.localStorage.setItem(KEY_DETAILS_COLLAPSED_KEY, String(next)) } catch { /* ignore */ }
+  }
+
   return (
-    <div style={{ height: '100%' }}>
+    <div>
       <style>{`
         .po-row-label { text-decoration: underline; color: #2C3777; }
         .po-row-label:hover { color: #1a2255; }
         .po-contact-header { text-decoration: underline; color: #2C3777; }
         .po-contact-header:hover { color: #1a2255; }
+        .kd-header:hover .kd-chevron { opacity: 0.7; }
       `}</style>
 
       <div style={{
         background: '#FFFFFF', border: '1.5px solid #F29836', borderRadius: 20, padding: '20px 22px',
-        height: '100%', boxSizing: 'border-box',
-        display: 'flex', flexDirection: 'column',
+        boxSizing: 'border-box',
       }}>
 
-        {/* Section heading */}
-        <h2 style={{ fontFamily: apf, fontSize: 20, fontWeight: 400, color: '#130426', margin: '0 0 12px' }}>
-          Key details
-        </h2>
-        <div style={{ height: 1, background: '#F0EAE0', marginBottom: 14 }} />
+        {/* Header — collapsible (matches the Your-materials panel pattern) */}
+        <button
+          className="kd-header"
+          onClick={toggleCollapse}
+          style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <h2 style={{ fontFamily: apf, fontSize: 20, fontWeight: 400, color: '#130426', margin: 0, flex: 1, textAlign: 'left' }}>
+            Key details
+          </h2>
+          <span className="kd-chevron" style={{ transition: 'opacity 150ms', display: 'inline-flex' }}>
+            <Chevron open={!collapsed} />
+          </span>
+        </button>
 
-        {/* Flexible content area: wishes at top, contacts below */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Collapsed → completion summary only */}
+        {collapsed && (
+          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0', lineHeight: 1.4 }}>
+            {detailsFilled} of {detailsTotal} filled in
+          </p>
+        )}
+
+        {/* Expanded → full details */}
+        {!collapsed && (
+          <>
+            <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 14px' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* Wishes & documentation */}
           <div>
@@ -336,9 +383,19 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
               </div>
             ))}
           </div>
-
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
+  )
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+      style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}>
+      <path d="M4 6l4 4 4-4" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

@@ -36,13 +36,13 @@ function MiniProgressBar({
 
   return (
     <div>
-      <div style={{ height: 6, marginBottom: 8, borderRadius: 3, background: '#F8F4EB', border: '1px solid rgba(216,90,48,0.45)', overflow: 'hidden' }}>
+      <div style={{ height: 9, marginBottom: 10, borderRadius: 5, background: '#F8F4EB', border: '1px solid rgba(216,90,48,0.45)', overflow: 'hidden' }}>
         <div style={{ width: `${Math.round(pct * 100)}%`, height: '100%', background: '#D85A30', transition: 'width 200ms ease' }} />
       </div>
-      <p style={{ fontSize: 13, fontWeight: 600, color: labelColor, margin: '0 0 4px 0' }}>
+      <p style={{ fontSize: 15, fontWeight: 600, color: labelColor, margin: '0 0 4px 0' }}>
         {qualitativeLabel(checked, total)}
       </p>
-      <p style={{ fontSize: 12, color: labelColor, margin: 0 }}>
+      <p style={{ fontSize: 13, color: labelColor, margin: 0 }}>
         {checked} of {total} complete
       </p>
     </div>
@@ -78,9 +78,9 @@ export default function DomainStateCard({
     <Link
       href={`/app/domains/${domain.id}`}
       className={`flex flex-col h-full transition-transform duration-150 ease-out hover:scale-[1.02] ${style.bg}`}
-      style={{ borderRadius: 20, minHeight: 220, padding: 34, overflow: 'hidden' }}
+      style={{ borderRadius: 20, minHeight: 248, padding: 34, overflow: 'hidden' }}
     >
-      <div className={`text-[18px] font-semibold leading-snug mb-4 ${style.text}`}>
+      <div className={`text-[20px] font-semibold leading-snug mb-4 ${style.text}`}>
         {domain.title}
       </div>
 
@@ -109,9 +109,9 @@ export default function DomainStateCard({
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '8px 14px',
+          padding: '9px 16px',
           borderRadius: 999,
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: 500,
           background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
           color: isDark ? '#FFFFFF' : '#130426',
