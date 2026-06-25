@@ -78,8 +78,8 @@ export default async function ProgressTrackingPage() {
       {/* ── Main content ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
         {/* Key details — collapsible, at the top (so the cards below are the page's
-            primary focus). Hydrates after the cards paint. */}
-        <div style={{ maxWidth: 920, marginBottom: 40 }}>
+            primary focus). Full content width, matching the cards grid. */}
+        <div style={{ marginBottom: 40 }}>
           <PlanOverview domains={allDomains} />
         </div>
 

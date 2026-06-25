@@ -661,7 +661,7 @@ function PersonalAdminPage() {
                         fontWeight: 500, alignSelf: 'flex-start' as const,
                       }}
                     >
-                      + Add second decision maker
+                      + Add second decision-maker
                     </button>
                   )}
                 </div>
@@ -734,7 +734,7 @@ function PersonalAdminPage() {
                         fontWeight: 500, alignSelf: 'flex-start' as const,
                       }}
                     >
-                      + Add second decision maker
+                      + Add second decision-maker
                     </button>
                   )}
                 </div>

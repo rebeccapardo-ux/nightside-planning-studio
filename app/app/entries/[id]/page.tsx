@@ -832,7 +832,7 @@ function ImportantContactsSnapshot({ entry }: { entry: EntryRow }) {
     type NewContact = { id: string; name: string; role: string; phone: string; email: string; address: string }
     const sections: { key: string; label: string }[] = [
       { key: 'healthcare', label: 'Doctors & Healthcare' },
-      { key: 'legal', label: 'Legal & Decision Makers' },
+      { key: 'legal', label: 'Legal & Decision-Makers' },
       { key: 'relatives', label: 'Relatives' },
       { key: 'friends', label: 'Friends & Support Network' },
       { key: 'spiritual', label: 'Spiritual / Religious' },

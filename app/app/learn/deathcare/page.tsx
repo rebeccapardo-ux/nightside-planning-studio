@@ -262,7 +262,7 @@ export default async function DeathcareLearnPage() {
                   <p
                     style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginBottom: '32px' }}
                   >
-                    Documenting your preferences and sharing your choices with loved ones and decision makers ensures they understand your wishes and can carry them out.
+                    Documenting your preferences and sharing your choices with loved ones and decision-makers ensures they understand your wishes and can carry them out.
                   </p>
                   <Link
                     href={deathcareDomainHref}

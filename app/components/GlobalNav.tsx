@@ -132,44 +132,57 @@ type NavItem = {
   rows?: NavRow[]          // optional hover/focus dropdown (Plan has none)
 }
 
-// Reflect + Learn carry dropdown shortcuts; the label still navigates to the
-// landing page (the dropdown is an *additional* affordance). Plan is a plain link.
-// Learn's "Areas of Planning" items reuse LEARN_AREAS (single source of truth) and
-// link to the LEARN page for each area, not to domain pages.
-const NAV_ITEMS: NavItem[] = [
-  {
-    href: '/app/reflect',
-    label: 'Reflect',
-    activePrefixes: ['/app/reflect'],
-    rows: [
-      { type: 'item', href: '/app/reflect/reflection-prompts', label: 'Reflection Prompts' },
-      { type: 'item', href: '/app/reflect/values-and-fears', label: 'Values & Fears Ranking', activePrefixes: ['/app/reflect/values-and-fears', '/app/reflect/values-ranking', '/app/reflect/fears-ranking'] },
-      { type: 'item', href: '/app/reflect/scenario-navigator', label: 'Scenario Navigator' },
-      { type: 'item', href: '/app/reflect/legacy-map', label: 'Legacy Map' },
-    ],
-  },
-  {
-    href: '/app/learn',
-    label: 'Learn',
-    activePrefixes: ['/app/learn'],
-    rows: [
-      { type: 'item', href: '/app/learn/trivia', label: 'Deathcare Trivia' },
-      { type: 'divider', label: 'Areas of Planning' },
-      ...LEARN_AREAS.map((a): NavRow => ({ type: 'item', href: `/app/learn/${a.id}`, label: a.title })),
-    ],
-  },
-  {
-    href: '/app/plan',
-    label: 'Plan',
-    // Plan is the active item across the whole planning flow: the Plan section, domain
-    // pages, and the capture documents reached from them.
-    activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
-    rows: [
-      { type: 'item', href: '/app/plan/progress', label: 'Progress Tracking', activePrefixes: ['/app/plan/progress'] },
-      { type: 'item', href: '/app/plan/materials', label: 'Your Materials', activePrefixes: ['/app/plan/materials'] },
-    ],
-  },
-]
+// Canonical display order for the Plan dropdown's domain links — matches the Learn
+// area order (Healthcare-first), keyed by stable domain_code. Domain pages live at
+// /app/domains/<container-uuid>, so the actual links are built per-user from the
+// fetched containers (GlobalNav's `domains` state) and slotted into this order.
+const PLAN_DOMAIN_ORDER = ['healthcare', 'deathcare', 'wills_estates', 'legacy', 'personal_admin', 'ritual']
+
+// Reflect + Learn carry dropdown shortcuts; the label still navigates to the landing
+// page (the dropdown is an *additional* affordance). Learn's "Areas of Planning" items
+// reuse LEARN_AREAS (single source of truth) and link to the LEARN page for each area.
+// Plan mirrors that shape: a "Your Materials" singleton, then a "Progress Tracking"
+// group of direct links to each domain page (built per-user from `domainRows`).
+function buildNavItems(domainRows: NavRow[]): NavItem[] {
+  return [
+    {
+      href: '/app/reflect',
+      label: 'Reflect',
+      activePrefixes: ['/app/reflect'],
+      rows: [
+        { type: 'item', href: '/app/reflect/reflection-prompts', label: 'Reflection Prompts' },
+        { type: 'item', href: '/app/reflect/values-and-fears', label: 'Values & Fears Ranking', activePrefixes: ['/app/reflect/values-and-fears', '/app/reflect/values-ranking', '/app/reflect/fears-ranking'] },
+        { type: 'item', href: '/app/reflect/scenario-navigator', label: 'Scenario Navigator' },
+        { type: 'item', href: '/app/reflect/legacy-map', label: 'Legacy Map' },
+      ],
+    },
+    {
+      href: '/app/learn',
+      label: 'Learn',
+      activePrefixes: ['/app/learn'],
+      rows: [
+        { type: 'item', href: '/app/learn/trivia', label: 'Deathcare Trivia' },
+        { type: 'divider', label: 'Areas of Planning' },
+        ...LEARN_AREAS.map((a): NavRow => ({ type: 'item', href: `/app/learn/${a.id}`, label: a.title })),
+      ],
+    },
+    {
+      href: '/app/plan',
+      label: 'Plan',
+      // Plan is the active item across the whole planning flow: the Plan section, domain
+      // pages, and the capture documents reached from them.
+      activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
+      rows: [
+        { type: 'item', href: '/app/plan/materials', label: 'Your Materials', activePrefixes: ['/app/plan/materials'] },
+        // "Progress Tracking" is a non-clickable group header (like Learn's "Areas of
+        // Planning"); the domain pages beneath it ARE the per-area progress views. The
+        // aggregate /app/plan/progress page is reached from the Plan landing chooser.
+        // Omitted entirely until domains are fetched (avoids an empty header flash).
+        ...(domainRows.length > 0 ? [{ type: 'divider', label: 'Progress Tracking' } as NavRow, ...domainRows] : []),
+      ],
+    },
+  ]
+}
 
 // Now that Supabase is the source of truth for every piece of user-created
 // data (documents, activity outputs, notes, domain checkboxes/orient, etc),
@@ -213,6 +226,9 @@ export default function GlobalNav() {
   const style = NAV_STYLES[entry.theme]
   // null = auth state not yet known (prevents flash between authed/unauthed UI)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
+  // The user's domain containers — powers the Plan dropdown's "Progress Tracking"
+  // links. Empty until fetched (or if the user has none seeded yet).
+  const [domains, setDomains] = useState<{ id: string; title: string; domain_code: string | null }[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
   // Which desktop sub-menu is open (by label), or null. Hover/focus driven.
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -221,12 +237,26 @@ export default function GlobalNav() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
+    // Fetch the user's domain containers once we know there's a session — feeds the
+    // Plan dropdown's per-area links. Cheap (6 rows); GlobalNav mounts once per full
+    // load, so this isn't per-navigation.
+    const loadDomains = (userId: string) => {
+      supabase
+        .from('containers')
+        .select('id, title, domain_code')
+        .eq('type', 'domain')
+        .eq('user_id', userId)
+        .then(({ data }) => { if (data) setDomains(data) })
+    }
     // getSession() is a local read — fast, no network round-trip
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthed(!!session)
+      if (session) loadDomains(session.user.id)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setIsAuthed(!!session)
+      if (session) loadDomains(session.user.id)
+      else setDomains([])
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -376,6 +406,13 @@ export default function GlobalNav() {
         itemHoverClass: 'hover:bg-[rgba(255,255,255,0.08)]',
       }
 
+  // Per-user domain links for the Plan dropdown, slotted into canonical order.
+  const domainRows: NavRow[] = PLAN_DOMAIN_ORDER
+    .map((code) => domains.find((d) => d.domain_code === code))
+    .filter((d): d is { id: string; title: string; domain_code: string | null } => !!d)
+    .map((d) => ({ type: 'item', href: `/app/domains/${d.id}`, label: d.title, activePrefixes: [`/app/domains/${d.id}`] }))
+  const navItems = buildNavItems(domainRows)
+
   return (
     <>
       <nav className={`border-b ${style.border} ${entry.navBg} sticky top-0 z-50`}>
@@ -411,7 +448,7 @@ export default function GlobalNav() {
             <div className="hidden md:flex items-center gap-6">
               {isAuthed === true && (
                 <>
-                  {NAV_ITEMS.map((item) => {
+                  {navItems.map((item) => {
                     const active = item.activePrefixes.some((p) => pathname.startsWith(p))
                     const panelOn = openMenu === item.label
                     return (
@@ -609,7 +646,7 @@ export default function GlobalNav() {
             <nav className="flex-1 overflow-y-auto py-2" aria-label="Primary">
               {isAuthed === true && (
                 <>
-                  {NAV_ITEMS.map(renderDrawerSection)}
+                  {navItems.map(renderDrawerSection)}
                   <button
                     type="button"
                     onClick={handleSignOut}

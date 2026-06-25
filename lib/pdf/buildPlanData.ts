@@ -522,7 +522,7 @@ export function buildKeyDetails(
 
   const careLabel = syncHasEOL ? (
     careStatus === 'documented'   ? 'Formally documented' :
-    careStatus === 'communicated' ? 'Communicated to decision maker' :
+    careStatus === 'communicated' ? 'Communicated to decision-maker' :
     careStatus === 'both'         ? 'Documented and communicated' :
     'Documented or communicated'
   ) : null
@@ -549,7 +549,7 @@ export function buildKeyDetails(
       details: [],
     },
     {
-      label: 'Substitute decision maker',
+      label: 'Substitute decision-maker',
       value: cdmName,
       details: [
         cdmPhone ? `Phone: ${cdmPhone}` : null,

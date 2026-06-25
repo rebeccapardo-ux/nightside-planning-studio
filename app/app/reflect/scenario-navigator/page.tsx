@@ -245,7 +245,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
                 You may notice that your reactions are shaped by personal experiences, caregiving roles, medical situations you've witnessed, cultural expectations, or conversations you've had with others over time.
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
-                This activity can also be useful to do with a partner, family member, or substitute decision maker to surface differences in assumptions, preferences, or expectations.
+                This activity can also be useful to do with a partner, family member, or substitute decision-maker to surface differences in assumptions, preferences, or expectations.
               </p>
             </div>
           </div>

@@ -18,11 +18,13 @@ export default function ContinuePlanningPanel({
 }) {
   return (
     <div style={{ marginTop: 24, maxWidth: 520 }}>
-      <div style={{ background: '#DBD2F6', borderRadius: 24, padding: 36 }}>
-        <h3 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 16px 0' }}>
+      <div style={{ background: '#DBD2F6', borderRadius: 24, padding: 32 }}>
+        {/* Header is sized just above the body items (21 vs 18) — a recognizable panel
+            title, not a major-section banner. No rule beneath: the panel holds two
+            small items, so a divider would over-emphasize it. */}
+        <h3 style={{ fontFamily: apfel, fontSize: 21, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 14px 0' }}>
           Continue in Your Plan
         </h3>
-        <div style={{ height: 1, background: 'rgba(19,4,38,0.15)', margin: '0 0 24px 0' }} />
 
         {/* "Track your progress" and "Relevant documents" are visual sisters —
             same 18px bold; the role differs only by styling: the progress link is

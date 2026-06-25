@@ -143,7 +143,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   const funeralWishesHref   = DOCUMENT_TYPE_META.funeral_wishes.href
 
   const careLabel = careStatus === 'documented'   ? 'Formally documented'
-    : careStatus === 'communicated' ? 'Communicated to decision maker'
+    : careStatus === 'communicated' ? 'Communicated to decision-maker'
     : careStatus === 'both'         ? 'Documented and communicated'
     : 'Documented or communicated'
 
@@ -206,8 +206,10 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         }}
       >
         <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: row.done ? '#2C3777' : 'rgba(19,4,38,0.2)' }} />
+        {/* Label + status are a left-hugging pair (no flex:1 — the status must not
+            be flung to the far right of a wide column; the empty space sits after). */}
         <Link href={row.href} className="po-row-label"
-          style={{ fontFamily: hv, fontSize: 13, flex: 1 }}
+          style={{ fontFamily: hv, fontSize: 13 }}
         >
           {row.label}
         </Link>
@@ -261,7 +263,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
     }
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <Link href={block.href} className="po-contact-header" style={{ fontFamily: hv, fontSize: 13, flex: 1 }}>
+        <Link href={block.href} className="po-contact-header" style={{ fontFamily: hv, fontSize: 13 }}>
           {block.header}
         </Link>
         <span style={{ fontFamily: hv, fontSize: 12, color: 'rgba(19,4,38,0.65)', fontStyle: 'italic', flexShrink: 0 }}>
@@ -273,7 +275,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
   const contactBlocks: ContactBlock[] = [
     {
-      header: 'Substitute decision maker',
+      header: 'Substitute decision-maker',
       href: `${adminHref}?section=legal`,
       name: cdmName,
       fields: [
@@ -362,7 +364,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
             {/* Two parallel reference columns — Wishes | Contacts. Wishes rows are
                 short (label + status) so its column is narrow; Contacts is wider to
                 hold the Doctor | Lawyer pair side by side. Both stack on mobile. */}
-            <div className="kd-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 260px) minmax(0, 1fr)', gap: 32, alignItems: 'start' }}>
+            <div className="kd-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 380px) minmax(0, 1fr)', gap: 40, alignItems: 'start' }}>
 
           {/* Wishes & documentation */}
           <div>
@@ -370,7 +372,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
             {docRows.map((row, i) => renderDocRow(row, i === docRows.length - 1))}
           </div>
 
-          {/* Contacts — Substitute decision maker spans the full column width; Doctor
+          {/* Contacts — Substitute decision-maker spans the full column width; Doctor
               and Lawyer sit side by side beneath it (so two detailed contacts don't
               stack and eat vertical space). The pair collapses to 1-col on mobile. */}
           <div>
@@ -378,7 +380,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
             <div style={{ padding: '4px 0 14px', marginBottom: 14, borderBottom: '1px solid rgba(19,4,38,0.06)' }}>
               {renderContactBlock(contactBlocks[0])}
             </div>
-            <div className="kd-pair" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
+            <div className="kd-pair" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24, alignItems: 'start' }}>
               <div>{renderContactBlock(contactBlocks[1])}</div>
               <div>{renderContactBlock(contactBlocks[2])}</div>
             </div>
