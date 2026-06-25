@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import WillsAnimations from './WillsAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
 
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default async function WillsLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let willsDomainHref = '/app/plan'
+  let willsDomainHref = '/app/plan/progress'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -247,7 +248,7 @@ export default async function WillsLearnPage() {
                 <p
                   style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}
                 >
-                  Provincial rules vary on wills and estates. In the Resource Hub, you'll find province-specific templates and guides for creating a valid will.
+                  Provincial rules vary on wills and estates. In the Resource Hub, you&apos;ll find province-specific templates and guides for creating a valid will.
                 </p>
                 <a
                   href="https://thenightside.net/resources"
@@ -262,30 +263,9 @@ export default async function WillsLearnPage() {
 
             </div>
 
-            {/* Row 2: Continue in your plan — light lavender */}
-            <div style={{ marginTop: '24px', maxWidth: '760px', height: 'auto' }}>
-              <div style={{ background: '#DBD2F6', borderRadius: '24px', padding: '36px', height: 'auto' }}>
-                <div style={{ maxWidth: '480px' }}>
-                  <h3
-                    style={{ fontFamily: apfel, fontSize: '32px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}
-                  >
-                    Continue in your plan
-                  </h3>
-                  <p
-                    style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginBottom: '32px' }}
-                  >
-                    Start documenting your estate details and creating your will to ensure your wishes are carried out.
-                  </p>
-                  <Link
-                    href={willsDomainHref}
-                    className="inline-block hover:opacity-90 transition-opacity"
-                    style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF' }}
-                  >
-                    Go to Wills &amp; Estates Planning →
-                  </Link>
-                </div>
-              </div>
-            </div>
+            {/* Continue in Your Plan — shared panel. Wills has no relevant platform
+                document, so only "Track your progress →" renders (the no-docs case). */}
+            <ContinuePlanningPanel domainHref={willsDomainHref} />
 
           </div>
         </section>

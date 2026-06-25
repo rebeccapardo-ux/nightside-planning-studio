@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import PersonalAdminAnimations from './PersonalAdminAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
+import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
 
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default async function PersonalAdminLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let personalAdminDomainHref = '/app/plan'
+  let personalAdminDomainHref = '/app/plan/progress'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -199,45 +200,36 @@ export default async function PersonalAdminLearnPage() {
               Use these resources to keep moving in your personal admin planning.
             </p>
 
-            <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
-
-              {/* Card 1: Explore resources — cream */}
-              <div style={{ background: '#F8F4EB', borderRadius: '24px', padding: '36px', display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Explore resources on digital legacy and personal admin
-                </h3>
-                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}>
-                  You&apos;ll find guides on digital asset planning, password management, social media legacy, benefits, and more.
-                </p>
-                <a
-                  href="https://thenightside.net/canada-wide"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block hover:opacity-90 transition-opacity"
-                  style={{ background: '#2C3777', color: '#FFFFFF', fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', marginTop: 'auto', alignSelf: 'flex-start' }}
-                >
-                  View resources →
-                </a>
-              </div>
-
-              {/* Card 2: Continue in your plan — lavender */}
-              <div style={{ background: '#DBD2F6', borderRadius: '24px', padding: '36px', display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Continue in your plan
-                </h3>
-                <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}>
-                  Start documenting your personal details in Your Plan: biographical info, contacts, finances, passwords, and more.
-                </p>
-                <Link
-                  href={personalAdminDomainHref}
-                  className="inline-block hover:opacity-90 transition-opacity"
-                  style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF', marginTop: 'auto', alignSelf: 'flex-start' }}
-                >
-                  Go to Personal Admin Planning →
-                </Link>
-              </div>
-
+            {/* Explore resources — full-width card now that Continue is a standalone
+                panel below (this page has no paired Relevant Activities card). */}
+            <div style={{ background: '#F8F4EB', borderRadius: '24px', padding: '36px', display: 'flex', flexDirection: 'column', maxWidth: '760px' }}>
+              <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
+                Explore resources on digital legacy and personal admin
+              </h3>
+              <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}>
+                You&apos;ll find guides on digital asset planning, password management, social media legacy, benefits, and more.
+              </p>
+              <a
+                href="https://thenightside.net/canada-wide"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:opacity-90 transition-opacity"
+                style={{ background: '#2C3777', color: '#FFFFFF', fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', alignSelf: 'flex-start' }}
+              >
+                View resources →
+              </a>
             </div>
+
+            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
+            <ContinuePlanningPanel
+              domainHref={personalAdminDomainHref}
+              documents={[
+                { label: DOCUMENT_TYPE_META.personal_admin_info.label, href: DOCUMENT_TYPE_META.personal_admin_info.href },
+                { label: DOCUMENT_TYPE_META.important_contacts.label, href: DOCUMENT_TYPE_META.important_contacts.href },
+                { label: DOCUMENT_TYPE_META.financial_information.label, href: DOCUMENT_TYPE_META.financial_information.href },
+                { label: DOCUMENT_TYPE_META.devices_and_accounts.label, href: DOCUMENT_TYPE_META.devices_and_accounts.href },
+              ]}
+            />
 
           </div>
         </section>

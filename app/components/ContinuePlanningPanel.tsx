@@ -21,8 +21,11 @@ export default function ContinuePlanningPanel({
       <div style={{ background: '#DBD2F6', borderRadius: 24, padding: 32 }}>
         {/* Header matches the sibling "Next steps" panel headers ("Relevant Activities",
             "Explore province-specific resources") at 28px — they're all peer sections.
-            No rule beneath, and a tight gap to the link, so the panel still reads compact. */}
-        <h3 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 14px 0' }}>
+            No rule beneath. The header->link and link->docs gaps are EQUAL (30px) so
+            "Track your progress" reads as a sister section to "Relevant documents"
+            rather than glued to the header; the docs->item gap (12px) stays smaller
+            (parent-child). */}
+        <h3 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 30px 0' }}>
           Continue in Your Plan
         </h3>
 
@@ -38,7 +41,7 @@ export default function ContinuePlanningPanel({
         </Link>
 
         {documents.length > 0 && (
-          <div style={{ marginTop: 28 }}>
+          <div style={{ marginTop: 30 }}>
             <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 700, color: '#130426', margin: '0 0 12px 0' }}>
               Relevant documents
             </p>
