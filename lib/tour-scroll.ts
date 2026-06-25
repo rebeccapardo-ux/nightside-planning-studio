@@ -1,4 +1,4 @@
-// Shared scroll helper used by PlanTour and DomainTour. Brings the step's
+// Scroll helper used by DomainTour. Brings the step's
 // target element into view at roughly the upper fifth of the viewport so
 // the modal and arrow have room below. Respects prefers-reduced-motion.
 //
