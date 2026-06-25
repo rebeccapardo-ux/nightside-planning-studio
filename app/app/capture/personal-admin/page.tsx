@@ -499,7 +499,7 @@ function PersonalAdminPage() {
             When you&apos;re incapacitated or after you die, the people handling your affairs need basic information about you and your family, and they need to know where to find your important documents. Most people have no idea where their loved ones keep these things. This document gives them a map.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Identification and health numbers are designed to be added at the moment of export rather than saved to your plan.{' '}
+            Identification and health numbers are designed to be added at the moment of export rather than saved to Your Plan.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
           <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>
@@ -661,7 +661,7 @@ function PersonalAdminPage() {
                         fontWeight: 500, alignSelf: 'flex-start' as const,
                       }}
                     >
-                      + Add second decision maker
+                      + Add second decision-maker
                     </button>
                   )}
                 </div>
@@ -734,7 +734,7 @@ function PersonalAdminPage() {
                         fontWeight: 500, alignSelf: 'flex-start' as const,
                       }}
                     >
-                      + Add second decision maker
+                      + Add second decision-maker
                     </button>
                   )}
                 </div>

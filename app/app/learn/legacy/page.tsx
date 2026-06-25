@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
+import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
 
 
 export const metadata: Metadata = {
@@ -12,7 +14,7 @@ export default async function LegacyLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let legacyDomainHref = '/app/plan'
+  let legacyDomainHref = '/app/plan/progress'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -196,26 +198,13 @@ export default async function LegacyLearnPage() {
               </div>
             </div>
 
-            {/* Continue in your plan card */}
-            <div style={{ marginTop: '24px', maxWidth: '760px' }}>
-              <div style={{ background: '#DBD2F6', borderRadius: '24px', padding: '36px' }}>
-                <div style={{ maxWidth: '480px' }}>
-                  <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '24px' }}>
-                    Continue in your plan
-                  </h3>
-                  <p style={{ fontFamily: hv, fontSize: '18px', fontWeight: 400, lineHeight: '1.75', color: '#130426', marginBottom: '32px' }}>
-                    Document your legacy preferences and personal reflections so they can be preserved and shared as intended.
-                  </p>
-                  <Link
-                    href={legacyDomainHref}
-                    className="inline-block hover:opacity-90 transition-opacity"
-                    style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, padding: '16px 28px', borderRadius: '999px', background: '#130426', color: '#FFFFFF' }}
-                  >
-                    Go to Legacy Planning →
-                  </Link>
-                </div>
-              </div>
-            </div>
+            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
+            <ContinuePlanningPanel
+              domainHref={legacyDomainHref}
+              documents={[
+                { label: DOCUMENT_TYPE_META.keepsake_inventory.label, href: DOCUMENT_TYPE_META.keepsake_inventory.href },
+              ]}
+            />
 
           </div>
         </section>

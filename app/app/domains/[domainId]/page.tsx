@@ -311,7 +311,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
       {/* ── Header — dark gradient ── */}
       <div style={{ background: 'radial-gradient(circle at 20% 20%, #1a0535 0%, #130426 70%)' }}>
         <div className="max-w-6xl mx-auto" style={{ paddingTop: 16, paddingLeft: 40, paddingRight: 40, paddingBottom: 8 }}>
-          <Breadcrumbs theme="navy" items={[{ label: 'Plan', href: '/app/plan' }, { label: domain?.title ?? '…' }]} />
+          <Breadcrumbs theme="navy" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Progress Tracking', href: '/app/plan/progress' }, { label: domain?.title ?? '…' }]} />
         </div>
         <div className="max-w-6xl mx-auto" style={{ padding: '4px 40px 56px' }}>
           <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>

@@ -480,7 +480,7 @@ export default function DevicesAndAccountsPage() {
             {' '}rather than here. This document focuses on access; that one focuses on the financial picture.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to your plan. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
+            Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to Your Plan. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
           <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>

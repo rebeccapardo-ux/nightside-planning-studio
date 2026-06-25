@@ -446,7 +446,7 @@ export default function FinancialInformationPage() {
             Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Account numbers are designed to be added at the moment of export rather than saved to your plan. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
+            Account numbers are designed to be added at the moment of export rather than saved to Your Plan. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
           <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>

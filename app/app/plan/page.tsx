@@ -1,374 +1,75 @@
 import type { Metadata } from 'next'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
-import DomainStateCard from '@/app/components/DomainStateCard'
-import DomainNullStateBanner from '@/app/components/DomainNullStateBanner'
-import type { UserTask } from '@/lib/user-tasks'
-import PlanOverview from '@/app/components/PlanOverview'
-import SectionTitleReveal from '@/app/components/SectionTitleReveal'
-import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
-import PlanTour from '@/app/components/PlanTour'
 import Link from 'next/link'
-
-type EntryRow = {
-  id: string
-  title: string | null
-  content: unknown
-  created_at: string | null
-  section: string | null
-  activity: string | null
-  document_type: string | null
-}
-
-// ---------------------------------------------------------------------------
-// Known document types — always shown, split into in-progress / not-started
-// ---------------------------------------------------------------------------
-
-const KNOWN_DOCUMENTS = DOCUMENT_TYPES.map((code) => ({
-  type: code,
-  label: DOCUMENT_TYPE_META[code].label,
-  href: DOCUMENT_TYPE_META[code].href,
-}))
-
-const KNOWN_ACTIVITIES = [
-  { activity: ACTIVITY.VALUES_RANKING, label: 'Values Ranking', href: '/app/reflect/values-ranking' },
-  { activity: ACTIVITY.FEARS_RANKING,  label: 'Fears Ranking',  href: '/app/reflect/fears-ranking'  },
-  { activity: ACTIVITY.LEGACY_MAP,     label: 'Legacy Map',     href: '/app/reflect/legacy-map'      },
-]
-
-// ---------------------------------------------------------------------------
-
+import SectionTitleReveal from '@/app/components/SectionTitleReveal'
 
 export const metadata: Metadata = {
-  title: "Your Plan",
+  title: 'Your Plan',
 }
 
-export default async function PlanPage() {
-  const supabase = await createSupabaseServerClient()
+const apfel = "'Apfel Grotezk', sans-serif"
+const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-  const { data: { user } } = await supabase.auth.getUser()
-  // proxy.ts middleware enforces auth on /app/*; this branch is unreachable.
-  // The throw preserves type narrowing for user.id below.
-  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/plan')
-
-  // Ensure all six canonical domains exist for this user, with no duplicates.
-  // Idempotent on the stable domain_code (and title, as a safety net for any
-  // legacy row that predates the code backfill) so re-seeding never duplicates.
-  const CANONICAL_DOMAINS: { title: string; code: string }[] = [
-    { title: 'Deathcare',         code: 'deathcare' },
-    { title: 'Healthcare Wishes', code: 'healthcare' },
-    { title: 'Legacy',            code: 'legacy' },
-    { title: 'Personal Admin',    code: 'personal_admin' },
-    { title: 'Ritual & Ceremony', code: 'ritual' },
-    { title: 'Wills & Estates',   code: 'wills_estates' },
-  ]
-
-  const { data: existingDomains } = await supabase
-    .from('containers')
-    .select('title, domain_code')
-    .eq('type', 'domain')
-    .eq('user_id', user.id)
-
-  const existingCodes = new Set(
-    (existingDomains ?? []).map((d) => d.domain_code).filter((c): c is string => !!c)
-  )
-  const existingTitles = new Set((existingDomains ?? []).map((d) => d.title))
-  const toInsert = CANONICAL_DOMAINS.filter(
-    (d) => !existingCodes.has(d.code) && !existingTitles.has(d.title)
-  )
-  if (toInsert.length > 0) {
-    await supabase
-      .from('containers')
-      .insert(toInsert.map((d) => ({ user_id: user.id, type: 'domain', title: d.title, domain_code: d.code })))
-  }
-
-  const [
-    { data: entries },
-    { data: allNotesRaw },
-    { data: domainContainers },
-    { data: userTasksRaw },
-  ] = await Promise.all([
-    supabase
-      .from('entries')
-      .select('id, title, content, created_at, section, activity, document_type')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('notes')
-      .select('id, content, created_at, origin_type, prompt_context, note_mode, transcript, audio_url, duration_seconds, transcription_status')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('containers')
-      .select('id, title, domain_code')
-      .eq('type', 'domain')
-      .eq('user_id', user.id)
-      .order('title'),
-    supabase
-      .from('user_checkboxes')
-      .select('id, domain_id, row_key, label, checked, created_at, updated_at')
-      .eq('user_id', user.id),
-  ])
-
-  const allNotes = allNotesRaw ?? []
-
-  // One batched fetch for all user tasks, grouped by domain so each card gets
-  // only its own (no per-card fetch). Counts only — the cards don't render tasks.
-  const tasksByDomain: Record<string, UserTask[]> = {}
-  for (const t of (userTasksRaw ?? []) as UserTask[]) {
-    (tasksByDomain[t.domain_id] ||= []).push(t)
-  }
-
-  // Deduplicate domains by title — handles any duplicate rows already in DB
-  const _seenTitles = new Set<string>()
-  const allDomains = (domainContainers ?? []).filter((d) => {
-    if (_seenTitles.has(d.title)) return false
-    _seenTitles.add(d.title)
-    return true
-  })
-
-  // --- Documents: split into in-progress / not-started ---
-  type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId: string }
-  const inProgressDocs: InProgressDoc[] = []
-  const notStartedDocs: typeof KNOWN_DOCUMENTS = []
-  for (const doc of KNOWN_DOCUMENTS) {
-    const entry = entries?.find((e) => e.document_type === doc.type)
-    if (entry && hasContent(entry)) {
-      inProgressDocs.push({ ...doc, entryId: entry.id })
-    } else {
-      notStartedDocs.push(doc)
-    }
-  }
-
-  // --- Activities: split into in-progress / not-started ---
-  type InProgressActivity = (typeof KNOWN_ACTIVITIES)[number] & { entryId: string }
-  const inProgressActivities: InProgressActivity[] = []
-  const notStartedActivities: typeof KNOWN_ACTIVITIES = []
-  for (const act of KNOWN_ACTIVITIES) {
-    const entry = (entries ?? []).find((e) => e.activity === act.activity)
-    if (entry) {
-      inProgressActivities.push({ ...act, entryId: entry.id })
-    } else {
-      notStartedActivities.push(act)
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Styles
-  // ---------------------------------------------------------------------------
-
-  const apfel = "'Apfel Grotezk', sans-serif"
-  const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-
-  const sectionHeader: React.CSSProperties = {
-    fontFamily: inter,
-    fontSize: 20,
-    fontWeight: 600,
-    color: '#130426',
-    marginBottom: 16,
-    marginTop: 0,
-  }
-
-  const groupPanel: React.CSSProperties = {
-    background: '#ede9f8',
-    border: '1px solid rgba(19,4,38,0.08)',
-    borderRadius: 12,
-    padding: '20px 24px',
-    marginBottom: 16,
-  }
-
-  const groupHeader: React.CSSProperties = {
-    fontFamily: inter,
-    fontSize: 16,
-    fontWeight: 600,
-    color: '#130426',
-    marginBottom: 16,
-    marginTop: 0,
-  }
-
-  const docButton: React.CSSProperties = {
-    position: 'relative',
-    width: '100%',
-    background: '#ffffff',
-    border: '1px solid rgba(19,4,38,0.1)',
-    borderRadius: 22,
-    padding: '14px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 10,
-    transition: 'background 150ms ease',
-    boxSizing: 'border-box',
-  }
-
-  const outputButton: React.CSSProperties = {
-    width: 220,
-    minHeight: 36,
-    background: '#ffffff',
-    border: '1px solid rgba(19,4,38,0.1)',
-    borderRadius: 22,
-    padding: '8px 14px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    transition: 'background 150ms ease',
-  }
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
-
+// /app/plan — the Plan section landing: a lightweight chooser between the two
+// surfaces (Progress Tracking · Your Materials). The section root, so it gets the
+// landing title treatment (SectionTitleReveal's orange reveal-underline) and no
+// breadcrumb. Deliberately a chooser, not a content destination — no key details,
+// null-state banner, or export here.
+export default function PlanLandingPage() {
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: '#F8F4EB' }}
-    >
+    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
       <style>{`
-        .plan-pill-doc:hover { background: #f5f5f5 !important; }
-        .plan-primary-btn:hover { background: rgba(19,4,38,0.06) !important; }
-        .plan-export-link:hover { text-decoration: underline !important; }
-        .plan-pill-out:hover { background: #f5f5f5 !important; }
-        .plan-export-btn:hover { background: #C04828 !important; }
+        .plan-chooser-card { transition: transform 150ms ease, box-shadow 150ms ease; }
+        .plan-chooser-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(19,4,38,0.14); }
         @media (max-width: 767px) {
-          .plan-domain-keydetails-grid {
-            grid-template-columns: 1fr !important;
-            gap: 32px 0 !important;
-          }
-          /* Domain cards: 2-up was too cramped — revert to 1-per-row */
-          .plan-domain-keydetails-grid > div#tour-areas > div {
-            grid-template-columns: 1fr !important;
-          }
+          .plan-chooser-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
-      {/* ── Page header ── */}
-      <div className="plan-page-header" style={{ position: 'relative', paddingTop: 64 }}>
-        {/* Title — centered with same max-width as content */}
-        <div style={{ maxWidth: 1100, margin: '0 auto', paddingLeft: 24, paddingRight: 24 }}>
-          <SectionTitleReveal title="Your Plan" color="#130426" size={64} />
-        </div>
-        {/* Export button — absolutely positioned so it stays a fixed distance from the notepad */}
-        <div className="plan-export-bar" style={{ position: 'absolute', top: 20, right: 148 }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 96px' }}>
+        <SectionTitleReveal title="Your Plan" color="#130426" size={64} />
+        <p style={{ fontFamily: inter, fontSize: 18, color: 'rgba(19,4,38,0.72)', maxWidth: 560, margin: '20px 0 0', lineHeight: 1.6 }}>
+          Your plan is made up of two spaces: one to hold all of your stuff, and one to track your progress. You can export your full plan as a PDF from either.
+        </p>
+
+        {/* Your Materials first — the natural order of engagement: Materials is where
+            the work happens (filling documents, doing activities), Progress Tracking is
+            the view of that work. Order matches the Plan sub-nav. */}
+        <div className="plan-chooser-grid" style={{ marginTop: 44, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+          {/* Your Materials */}
           <Link
-            href="/app/plan/export"
-            className="plan-export-btn mobile-sticky-export"
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              borderRadius: 999, padding: '10px 20px',
-              fontFamily: inter, fontSize: 14, fontWeight: 600,
-              background: '#DB5835', color: '#130426',
-              textDecoration: 'none', border: 'none', whiteSpace: 'nowrap',
-            }}
+            href="/app/plan/materials"
+            className="plan-chooser-card"
+            style={{ display: 'block', background: '#F29836', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
           >
-            <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-              <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-            <span className="hidden md:inline">Preview &amp; </span>Export
+            <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, lineHeight: 1.1, margin: 0 }}>
+              Your Materials
+            </h2>
+            <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 0', maxWidth: 380 }}>
+              All your notes and activity outputs, as well as documents to fill out.
+            </p>
+            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 28, padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
+              Begin →
+            </span>
+          </Link>
+
+          {/* Progress Tracking */}
+          <Link
+            href="/app/plan/progress"
+            className="plan-chooser-card"
+            style={{ display: 'block', background: '#BBABF4', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
+          >
+            <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, lineHeight: 1.1, margin: 0 }}>
+              Progress Tracking
+            </h2>
+            <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 0', maxWidth: 380 }}>
+              See your progress across each area of planning, and work through the tasks that matter to you.
+            </p>
+            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 28, padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
+              Begin →
+            </span>
           </Link>
         </div>
       </div>
-
-      {/* ── Main content ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 80px' }}>
-
-        {/* ── Areas heading ── */}
-        <h2 data-tour-anchor="tour-areas-header" style={{ fontFamily: apfel, fontSize: 22, fontWeight: 500, color: '#130426', marginBottom: 12, marginTop: 0 }}>Areas of planning</h2>
-        <p style={{ fontFamily: inter, fontSize: 17, color: 'rgba(19,4,38,0.85)', maxWidth: 600, marginBottom: 24, marginTop: 0, lineHeight: 1.6 }}>
-          Click into an area to track your progress, view key tasks, and access related materials.
-        </p>
-
-        {/* ── Null state banner (above grid so it doesn't offset card alignment) ── */}
-        {allDomains.length > 0 && <DomainNullStateBanner domains={allDomains} tasksByDomain={tasksByDomain} />}
-
-        {/* ── Domain cards + Key details grid ── */}
-        <div className="plan-domain-keydetails-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0 40px', alignItems: 'stretch', marginBottom: 64 }}>
-
-          {/* Left: domain cards */}
-          <div id="tour-areas">
-            {allDomains.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 20 }}>
-                {allDomains.map((domain, i) => (
-                  <DomainStateCard
-                    key={domain.id}
-                    domain={domain}
-                    colorIndex={i}
-                    userTasks={tasksByDomain[domain.id] ?? []}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p style={{ fontFamily: inter, fontSize: 16, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
-                No areas yet.
-              </p>
-            )}
-          </div>
-
-          {/* Right: Key details */}
-          <div id="tour-key-details">
-            <PlanOverview domains={allDomains} />
-          </div>
-
-        </div>
-
-        {/* ── Your materials ── */}
-        <div id="tour-materials">
-          <YourMaterialsPanel
-            inProgressDocs={inProgressDocs}
-            notStartedDocs={notStartedDocs}
-            inProgressActivities={inProgressActivities}
-            notStartedActivities={notStartedActivities}
-            allNotes={allNotes}
-            allDomains={allDomains}
-            userId={user.id}
-          />
-        </div>
-
-        <PlanTour userId={user.id} />
-      </div>
     </div>
   )
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function DocIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke="#2C3777" strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
-      <path d="M10 1v3h3" stroke="#2C3777" strokeWidth="1.25" strokeLinejoin="round" fill="none"/>
-      <path d="M5.5 7.5h5M5.5 10h5" stroke="#2C3777" strokeWidth="1.25" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function hasContent(entry: EntryRow): boolean {
-  return hasAnyStringContent(entry.content)
-}
-
-function hasAnyStringContent(value: unknown): boolean {
-  if (typeof value === 'string') return value.trim().length > 0
-  if (Array.isArray(value)) return value.some(hasAnyStringContent)
-  if (value && typeof value === 'object') {
-    return Object.values(value as Record<string, unknown>).some(hasAnyStringContent)
-  }
-  return false
-}
-
-function getDisplayTitle(entry: EntryRow): string {
-  if (entry.document_type === DOCUMENT_TYPE.ADVANCE_DIRECTIVE_SUPPLEMENT) return DOCUMENT_TYPE_META.advance_directive_supplement.label
-  if (entry.document_type === DOCUMENT_TYPE.FUNERAL_WISHES) return DOCUMENT_TYPE_META.funeral_wishes.label
-  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) return DOCUMENT_TYPE_META.personal_admin_info.label
-  if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) return DOCUMENT_TYPE_META.important_contacts.label
-  if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.label
-  if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.label
-  if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.label
-  if (entry.activity === ACTIVITY.VALUES_RANKING) return 'Values Ranking'
-  if (entry.activity === ACTIVITY.FEARS_RANKING) return 'Fears Ranking'
-  if (entry.activity === ACTIVITY.LEGACY_MAP) return 'Legacy Map'
-  if (entry.title?.trim()) return entry.title.trim()
-  return 'Untitled'
 }

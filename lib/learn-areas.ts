@@ -20,7 +20,7 @@ export const LEARN_AREAS: LearnArea[] = [
       'Plan for a time when you may not be able to make decisions about your care.',
     color: '#6B8E8D',
     keyPoints: [
-      'Choosing a substitute decision maker',
+      'Choosing a substitute decision-maker',
       'Clarifying values and priorities',
       'Communicating wishes with loved ones and care providers',
     ],

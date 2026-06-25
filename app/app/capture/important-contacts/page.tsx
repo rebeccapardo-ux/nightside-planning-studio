@@ -424,7 +424,7 @@ function ImportantContactsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {renderSection(0, 'healthcare', 'Doctors & Healthcare', 'Doctors, specialists, and other healthcare providers.', 'Add contact', 'Add another contact', 'Untitled contact')}
-          {renderSection(1, 'legal', 'Legal & Decision Makers', 'Executors, attorneys, and people who may make decisions on your behalf.', 'Add contact', 'Add another contact', 'Untitled contact')}
+          {renderSection(1, 'legal', 'Legal & Decision-Makers', 'Executors, attorneys, and people who may make decisions on your behalf.', 'Add contact', 'Add another contact', 'Untitled contact')}
           {renderSection(2, 'relatives', 'Relatives', 'Family members and next of kin.', 'Add contact', 'Add another contact', 'Untitled contact')}
           {renderSection(3, 'friends', 'Friends & Support Network', 'Friends or others who would support or be contacted.', 'Add contact', 'Add another contact', 'Untitled contact')}
           {renderSection(4, 'spiritual', 'Spiritual / Religious', 'Clergy, spiritual advisors, or community leaders.', 'Add contact', 'Add another contact', 'Untitled contact')}
