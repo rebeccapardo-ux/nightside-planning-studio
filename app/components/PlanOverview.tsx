@@ -185,8 +185,6 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
     letterSpacing: '0.06em', marginBottom: 10, marginTop: 0,
   }
 
-  const divider = <div style={{ height: 1, background: '#F0EAE0', margin: '14px 0' }} />
-
   function DocIcon() {
     return (
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, display: 'inline-block', verticalAlign: '-2px', marginRight: 6 }} aria-hidden="true">
@@ -297,6 +295,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         .po-contact-header { text-decoration: underline; color: #2C3777; }
         .po-contact-header:hover { color: #1a2255; }
         .kd-header:hover .kd-chevron { opacity: 0.7; }
+        @media (max-width: 640px) { .kd-grid { grid-template-columns: 1fr !important; gap: 8px !important; } }
       `}</style>
 
       <div style={{
@@ -328,8 +327,10 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         {/* Expanded → full details */}
         {!collapsed && (
           <>
-            <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 14px' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 18px' }} />
+            {/* Two parallel reference columns — Wishes | Contacts — so the panel
+                fits the vertical footprint one column used to take. 1-col on mobile. */}
+            <div className="kd-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'start' }}>
 
           {/* Wishes & documentation */}
           <div>
@@ -339,7 +340,6 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
           {/* Contacts */}
           <div>
-            {divider}
             <p style={sectionLabel}>Contacts</p>
             {contactBlocks.map((block, i) => (
               <div

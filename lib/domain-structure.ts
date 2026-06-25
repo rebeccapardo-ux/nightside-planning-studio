@@ -225,13 +225,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           explanation: '',
           checkboxes: ['I have consulted professional support if needed'],
         },
-        {
-          key: 'meaningful_objects',
-          title: 'What should happen to my belongings',
-          explanation: '',
-          staticLinks: [{ href: DOCUMENT_TYPE_META.keepsake_inventory.href, label: DOCUMENT_TYPE_META.keepsake_inventory.label }],
-          checkboxes: ['I have documented what should happen to items that matter to me', 'I have shared these wishes with people who may need to act'],
-        },
       ],
     },
   },
@@ -313,6 +306,10 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'sharing_what_matters',
           title: 'Sharing what matters to me',
           explanation: 'Some people choose to share their stories, values, or messages directly with others. This might happen through conversation, writing, or something else entirely.',
+          // Keepsakes Inventory moved here from Wills & Estates: it's about the
+          // emotional significance of objects (what they mean, who they go to),
+          // which is Legacy work, not legal estate work.
+          staticLinks: [{ href: DOCUMENT_TYPE_META.keepsake_inventory.href, label: DOCUMENT_TYPE_META.keepsake_inventory.label }],
           checkboxes: [
             'I have created or captured something I want to leave behind (if I choose to)',
             'I have documented my obituary wishes or what I want said about my life',

@@ -17,29 +17,30 @@ export default function ContinuePlanningPanel({
   documents?: ContinuePlanningDoc[]
 }) {
   return (
-    <div style={{ marginTop: 24, maxWidth: 760 }}>
+    <div style={{ marginTop: 24, maxWidth: 520 }}>
       <div style={{ background: '#DBD2F6', borderRadius: 24, padding: 36 }}>
-        <h3 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 24px 0' }}>
+        <h3 style={{ fontFamily: apfel, fontSize: 28, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 16px 0' }}>
           Continue in Your Plan
         </h3>
+        <div style={{ height: 1, background: 'rgba(19,4,38,0.15)', margin: '0 0 24px 0' }} />
 
-        {/* Primary action — button-weight, navy on cream */}
+        {/* "Track your progress" and "Relevant documents" are peer paths — neither
+            dominates. The progress link is a normal navy/underlined link, matching
+            the doc links; the docs sit under a bold sub-header, indented. */}
         <Link
           href={domainHref}
-          className="inline-block hover:opacity-90 transition-opacity"
-          style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, padding: '16px 28px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', textDecoration: 'none' }}
+          className="hover:opacity-75 transition-opacity"
+          style={{ fontFamily: hv, fontSize: 16, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 3 }}
         >
           Track your progress →
         </Link>
 
         {documents.length > 0 && (
-          <div style={{ marginTop: 36 }}>
-            {/* Sub-header — bold, smaller than the panel header, heavier than the
-                doc links (which are navy/underlined) so the hierarchy is clear. */}
-            <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 700, color: '#130426', margin: '0 0 14px 0' }}>
+          <div style={{ marginTop: 28 }}>
+            <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 700, color: '#130426', margin: '0 0 12px 0' }}>
               Relevant documents
             </p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            <ul style={{ listStyle: 'none', margin: 0, padding: '0 0 0 16px' }}>
               {documents.map((doc) => (
                 <li key={doc.href} style={{ marginBottom: 10 }}>
                   <Link
