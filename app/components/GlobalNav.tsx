@@ -120,10 +120,13 @@ function getNavEntry(pathname: string): RouteThemeEntry {
 // Component
 // ---------------------------------------------------------------------------
 
-// A dropdown row is either a navigable item or a non-clickable section divider.
+// A dropdown row is either a navigable item or a divider. A divider with a `label`
+// is a non-clickable group header (Learn's "Areas of Planning"); a label-less divider
+// is a bare rule (Plan, between two peer destination links). `indent` marks a child
+// item nested under the row above it (Plan's domain pages under Progress Tracking).
 type NavRow =
-  | { type: 'item'; href: string; label: string; activePrefixes?: string[] }
-  | { type: 'divider'; label: string }
+  | { type: 'item'; href: string; label: string; activePrefixes?: string[]; indent?: boolean }
+  | { type: 'divider'; label?: string }
 
 type NavItem = {
   href: string            // the label itself navigates here (landing page)
@@ -174,11 +177,14 @@ function buildNavItems(domainRows: NavRow[]): NavItem[] {
       activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
       rows: [
         { type: 'item', href: '/app/plan/materials', label: 'Your Materials', activePrefixes: ['/app/plan/materials'] },
-        // "Progress Tracking" is a non-clickable group header (like Learn's "Areas of
-        // Planning"); the domain pages beneath it ARE the per-area progress views. The
-        // aggregate /app/plan/progress page is reached from the Plan landing chooser.
-        // Omitted entirely until domains are fetched (avoids an empty header flash).
-        ...(domainRows.length > 0 ? [{ type: 'divider', label: 'Progress Tracking' } as NavRow, ...domainRows] : []),
+        // Your Materials and Progress Tracking are genuine peer destinations, so —
+        // UNLIKE Learn's non-clickable "Areas of Planning" header — Progress Tracking
+        // is a plain LINK under a bare rule. The domain pages are its indented children
+        // (parent-child via indentation, not sub-header styling). They appear once the
+        // containers fetch resolves; Progress Tracking itself always shows.
+        { type: 'divider' },
+        { type: 'item', href: '/app/plan/progress', label: 'Progress Tracking', activePrefixes: ['/app/plan/progress'] },
+        ...domainRows,
       ],
     },
   ]
@@ -317,41 +323,43 @@ export default function GlobalNav() {
 
     const subLink = (row: Extract<NavRow, { type: 'item' }>) => {
       const subActive = (row.activePrefixes ?? [row.href]).some((p) => pathname.startsWith(p))
+      // Indented children (Plan's domain pages) sit a step deeper than top-level
+      // sub-items (pl-12); the extra indent carries the parent-child relationship.
       return (
         <Link
           key={row.href}
           href={row.href}
-          className={`block w-full pl-12 pr-6 py-3.5 text-[16.5px] ${style.link} ${subActive ? 'font-semibold underline underline-offset-4 decoration-2' : 'font-normal'}`}
+          className={`block w-full ${row.indent ? 'pl-[4.5rem]' : 'pl-12'} pr-6 py-3.5 text-[16.5px] ${style.link} ${subActive ? 'font-semibold underline underline-offset-4 decoration-2' : 'font-normal'}`}
         >
           {row.label}
         </Link>
       )
     }
 
+    // Render rows in order: items become sub-links (deeper if `indent`); a labelled
+    // divider is a group caption (Learn's "Areas of Planning"); a label-less divider
+    // is a bare rule between peer links (Plan's Your Materials | Progress Tracking).
     let body: React.ReactNode = null
     if (item.rows) {
-      const dividerIdx = item.rows.findIndex((r) => r.type === 'divider')
-      const isItem = (r: NavRow): r is Extract<NavRow, { type: 'item' }> => r.type === 'item'
-      if (dividerIdx === -1) {
-        body = item.rows.filter(isItem).map(subLink)
-      } else {
-        const lead = item.rows.slice(0, dividerIdx).filter(isItem)
-        const grouped = item.rows.slice(dividerIdx + 1).filter(isItem)
-        const dividerLabel = (item.rows[dividerIdx] as Extract<NavRow, { type: 'divider' }>).label
-        body = (
-          <>
-            {lead.map(subLink)}
-            <div className="px-6" style={{ paddingTop: 20, paddingBottom: 14 }}>
-              <span aria-hidden="true" className="block uppercase" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.07em', color: drawerCaptionColor }}>
-                {dividerLabel}
-              </span>
+      body = item.rows.map((row, i) => {
+        if (row.type === 'divider') {
+          if (row.label) {
+            return (
+              <div key={`d${i}`} className="px-6" style={{ paddingTop: 20, paddingBottom: 14 }}>
+                <span aria-hidden="true" className="block uppercase" style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.07em', color: drawerCaptionColor }}>
+                  {row.label}
+                </span>
+              </div>
+            )
+          }
+          return (
+            <div key={`d${i}`} className="px-6" style={{ paddingTop: 10, paddingBottom: 10 }} aria-hidden="true">
+              <div style={{ height: 1, background: style.divider }} />
             </div>
-            <div role="group" aria-label={dividerLabel}>
-              {grouped.map(subLink)}
-            </div>
-          </>
-        )
-      }
+          )
+        }
+        return subLink(row)
+      })
     }
 
     return (
@@ -406,11 +414,12 @@ export default function GlobalNav() {
         itemHoverClass: 'hover:bg-[rgba(255,255,255,0.08)]',
       }
 
-  // Per-user domain links for the Plan dropdown, slotted into canonical order.
+  // Per-user domain links for the Plan dropdown, slotted into canonical order and
+  // marked `indent` (children nested under the Progress Tracking link).
   const domainRows: NavRow[] = PLAN_DOMAIN_ORDER
     .map((code) => domains.find((d) => d.domain_code === code))
     .filter((d): d is { id: string; title: string; domain_code: string | null } => !!d)
-    .map((d) => ({ type: 'item', href: `/app/domains/${d.id}`, label: d.title, activePrefixes: [`/app/domains/${d.id}`] }))
+    .map((d) => ({ type: 'item', href: `/app/domains/${d.id}`, label: d.title, activePrefixes: [`/app/domains/${d.id}`], indent: true }))
   const navItems = buildNavItems(domainRows)
 
   return (
@@ -509,11 +518,15 @@ export default function GlobalNav() {
                             >
                               {item.rows.map((row, i) => {
                                 if (row.type === 'divider') {
+                                  // Labelled divider → group header (Learn). Label-less
+                                  // → a bare rule between peer links (Plan).
                                   return (
-                                    <div key={`d${i}`} style={{ borderTop: `1px solid ${panel.dividerLine}`, marginTop: 6, paddingTop: 8 }}>
-                                      <span style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: panel.dividerLabel, padding: '0 8px 4px' }}>
-                                        {row.label}
-                                      </span>
+                                    <div key={`d${i}`} style={{ borderTop: `1px solid ${panel.dividerLine}`, marginTop: 6, paddingTop: row.label ? 8 : 6 }}>
+                                      {row.label && (
+                                        <span style={{ display: 'block', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: panel.dividerLabel, padding: '0 8px 4px' }}>
+                                          {row.label}
+                                        </span>
+                                      )}
                                     </div>
                                   )
                                 }
@@ -527,7 +540,7 @@ export default function GlobalNav() {
                                     className={subActive ? undefined : panel.itemHoverClass}
                                     style={{
                                       display: 'block',
-                                      padding: '5px 12px',
+                                      padding: row.indent ? '5px 12px 5px 28px' : '5px 12px',
                                       borderRadius: 8,
                                       fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
                                       fontSize: 14,

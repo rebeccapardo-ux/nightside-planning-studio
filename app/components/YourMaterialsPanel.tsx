@@ -6,7 +6,6 @@ import Link from 'next/link'
 import PlanNotesGridComp from '@/app/components/PlanNotesGrid'
 import type { Container } from '@/lib/notes'
 
-const apf = "'Apfel Grotezk', sans-serif"
 const hv  = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 type InProgressDoc  = { type: string; label: string; href: string; entryId: string }
@@ -46,17 +45,6 @@ function ActivityOutputIcon() {
   )
 }
 
-function Chevron({ open }: { open: boolean }) {
-  return (
-    <svg
-      width={26} height={26} viewBox="0 0 20 20" fill="none"
-      style={{ flexShrink: 0, transition: 'transform 200ms ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-    >
-      <path d="M5 7.5l5 5 5-5" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 const WISHES_TYPES = new Set<string>(DOCUMENT_TYPES.filter(c => DOCUMENT_TYPE_META[c].category === 'wishes'))
 
 export default function YourMaterialsPanel({
@@ -76,12 +64,6 @@ export default function YourMaterialsPanel({
   allDomains: Container[]
   userId: string
 }) {
-  const [open, setOpen] = useState(() => {
-    if (typeof window === 'undefined') return true
-    const stored = sessionStorage.getItem('nightside.myPlan.materialsExpanded')
-    return stored === null ? true : stored === 'true'
-  })
-
   const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
@@ -127,15 +109,6 @@ export default function YourMaterialsPanel({
     gap: 8, transition: 'background 150ms ease',
   }
 
-  // Summary counter — covers all three sub-sections
-  const totalInProgress  = inProgressDocs.length + inProgressActivities.length
-  const totalNotStarted  = notStartedDocs.length  + notStartedActivities.length
-  const summaryParts: string[] = []
-  if (totalInProgress > 0) summaryParts.push(`${totalInProgress} in progress`)
-  if (totalNotStarted > 0) summaryParts.push(`${totalNotStarted} not started`)
-  if (allNotes.length  > 0) summaryParts.push(`${allNotes.length} note${allNotes.length !== 1 ? 's' : ''}`)
-  const summaryLine = summaryParts.join(' · ')
-
   return (
     <div>
       <style>{`
@@ -143,7 +116,6 @@ export default function YourMaterialsPanel({
         .plan-primary-btn:hover { background: rgba(19,4,38,0.06) !important; }
         .plan-export-link:hover { text-decoration: underline !important; }
         .plan-pill-out:hover  { background: #f5f5f5 !important; }
-        .ym-header:hover .ym-chevron { opacity: 0.7; }
         @media (max-width: 767px) {
           .ym-status-cols {
             grid-template-columns: 1fr !important;
@@ -188,34 +160,10 @@ export default function YourMaterialsPanel({
 
       <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
 
-        {/* Header row */}
-        <button
-          className="ym-header"
-          onClick={() => setOpen(prev => {
-            const next = !prev
-            sessionStorage.setItem('nightside.myPlan.materialsExpanded', String(next))
-            return next
-          })}
-          style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: open ? 16 : 0 }}
-        >
-          <h2 style={{ fontFamily: apf, fontSize: 24, fontWeight: 400, color: '#130426', margin: 0, flex: 1, textAlign: 'left' }}>
-            Your materials
-          </h2>
-          <span className="ym-chevron" style={{ transition: 'opacity 150ms' }}>
-            <Chevron open={open} />
-          </span>
-        </button>
-
-        {/* Summary line — visible only when collapsed */}
-        {!open && summaryLine && (
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0', lineHeight: 1.4 }}>
-            {summaryLine}
-          </p>
-        )}
-
-        {/* Collapsible body */}
-        {open && (
-          <>
+        {/* Content shown directly — no panel header. The page H1 "Your Materials"
+            already identifies this surface; the group sub-headers (Wishes documents,
+            Practical documents, Activity outputs, Notes) do the organizing. */}
+        <>
             {/* Wishes documents group */}
             <div style={groupPanel}>
               <h3 style={groupHeader}>Wishes documents</h3>
@@ -438,7 +386,6 @@ export default function YourMaterialsPanel({
               )}
             </div>
           </>
-        )}
       </div>
     </div>
   )
