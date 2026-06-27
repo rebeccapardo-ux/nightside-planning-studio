@@ -205,7 +205,7 @@ export default function YourMaterialsPanel({
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#DBD2F6', border: '1.5px solid #BBABF4', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 168, alignSelf: 'start' }}>
+      <div key={id} className="ym-tile" style={{ background: '#DBD2F6', border: '1.5px solid #BBABF4', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 190, alignSelf: 'start', display: 'flex', flexDirection: 'column' }}>
         <button
           type="button"
           className="ym-tile-header"
@@ -217,8 +217,12 @@ export default function YourMaterialsPanel({
           <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>
         </button>
         {description}
+        {/* Count summary — pushed to the tile's bottom edge (margin-top:auto) so the
+            counters share a baseline across tiles regardless of description length, and
+            set apart from the prose above by a divider + smaller, muted, label-weight
+            text so it reads as at-a-glance status, not more body copy. */}
         {!isExpanded && (
-          <p style={{ fontFamily: hv, fontSize: 13.5, fontWeight: 500, color: 'rgba(19,4,38,0.55)', margin: '14px 0 0', lineHeight: 1.4 }}>{summary}</p>
+          <p style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, color: 'rgba(19,4,38,0.5)', margin: 0, marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(19,4,38,0.14)', lineHeight: 1.4 }}>{summary}</p>
         )}
         {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
       </div>
