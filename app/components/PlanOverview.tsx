@@ -143,7 +143,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   const funeralWishesHref   = DOCUMENT_TYPE_META.funeral_wishes.href
 
   const careLabel = careStatus === 'documented'   ? 'Formally documented'
-    : careStatus === 'communicated' ? 'Communicated to substitute decision-maker'
+    : careStatus === 'communicated' ? 'Communicated to substitute decision-maker for care'
     : careStatus === 'both'         ? 'Documented and communicated'
     : 'Documented or communicated'
 
@@ -275,7 +275,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
   const contactBlocks: ContactBlock[] = [
     {
-      header: 'Substitute decision-maker',
+      header: 'Substitute decision-maker for care',
       href: `${adminHref}?section=legal`,
       name: cdmName,
       fields: [
@@ -372,7 +372,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
             {docRows.map((row, i) => renderDocRow(row, i === docRows.length - 1))}
           </div>
 
-          {/* Contacts — Substitute decision-maker spans the full column width; Doctor
+          {/* Contacts — Substitute decision-maker for care spans the full column width; Doctor
               and Lawyer sit side by side beneath it (so two detailed contacts don't
               stack and eat vertical space). The pair collapses to 1-col on mobile. */}
           <div>
