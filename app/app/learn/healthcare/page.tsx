@@ -279,7 +279,7 @@ export default async function HealthcareLearnPage() {
                   Explore province-specific resources
                 </h3>
                 <p style={{ fontFamily: inter, fontSize: '18px', fontWeight: 400, lineHeight: '1.7', color: '#130426', marginBottom: '28px' }}>
-                  It&apos;s important to know that legal requirements vary by province. In the Resource Hub, you&apos;ll find province-specific templates for things like designating a decision-maker or completing an Advance Directive.
+                  It&apos;s important to know that legal requirements vary by province. In the Resource Hub, you&apos;ll find province-specific templates for things like designating a substitute decision-maker or completing an Advance Directive.
                 </p>
                 <a
                   href="https://thenightside.net/resources"

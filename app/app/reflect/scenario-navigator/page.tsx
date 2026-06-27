@@ -405,7 +405,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
           Your medical team has told your substitute decision-maker that further treatment is unlikely to cure the cancer or meaningfully extend your life, but options remain: continuing aggressive treatment, shifting to comfort-focused care, or enrolling in a clinical trial that may offer experimental options — each with different implications for how you spend your remaining time.
         </p>
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-          <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
+          <strong>If you could not speak for yourself, what would you want your substitute decision-maker to choose?</strong>
         </p>
       </div>
 
@@ -747,7 +747,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
           Your substitute decision-maker must now make ongoing decisions about how aggressively to treat each new medical issue as it arises, and where you will receive care.
         </p>
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-          <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
+          <strong>If you could not speak for yourself, what would you want your substitute decision-maker to choose?</strong>
         </p>
       </div>
 
@@ -1067,7 +1067,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
           They can attempt full resuscitation — chest compressions, electric shocks to restart your heart, a breathing tube, and ICU admission. This is an aggressive intervention. It may save your life, and it carries significant physical risks. Without intervention, you will not survive.
         </p>
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-          <strong>If you could not speak for yourself in this moment, what would you want your decision-maker to choose?</strong>
+          <strong>If you could not speak for yourself in this moment, what would you want your substitute decision-maker to choose?</strong>
         </p>
       </div>
 
@@ -1387,7 +1387,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
           You cannot communicate your wishes in this moment. Your substitute decision-maker must decide how to proceed, knowing that each path involves a different set of tradeoffs between length of life, comfort, and the level of medical intervention required.
         </p>
         <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.6, color: '#1A1A1A', marginBottom: 20 }}>
-          <strong>If you could not speak for yourself, what would you want your decision-maker to choose?</strong>
+          <strong>If you could not speak for yourself, what would you want your substitute decision-maker to choose?</strong>
         </p>
       </div>
 

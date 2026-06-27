@@ -143,7 +143,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
   const funeralWishesHref   = DOCUMENT_TYPE_META.funeral_wishes.href
 
   const careLabel = careStatus === 'documented'   ? 'Formally documented'
-    : careStatus === 'communicated' ? 'Communicated to decision-maker'
+    : careStatus === 'communicated' ? 'Communicated to substitute decision-maker'
     : careStatus === 'both'         ? 'Documented and communicated'
     : 'Documented or communicated'
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import type { User } from '@supabase/supabase-js'
+import LegacyContactEmailPreview from '@/app/components/LegacyContactEmailPreview'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -150,6 +151,8 @@ export default function AccountPage() {
   })
 
   // Legacy Contact flow state
+  const [showPrimaryLcPreview,   setShowPrimaryLcPreview]   = useState(false)
+  const [showSecondaryLcPreview, setShowSecondaryLcPreview] = useState(false)
   const [activeFlow,          setActiveFlow]          = useState<ActiveFlow | null>(null)
   const [replaceStep,         setReplaceStep]         = useState<ReplaceStep>('warning')
   const [promoteSecondary,    setPromoteSecondary]    = useState(false)
@@ -651,6 +654,10 @@ export default function AccountPage() {
 
   const primaryContact   = legacyContacts.find(c => c.contact_type === 'primary')
   const secondaryContact = legacyContacts.find(c => c.contact_type === 'secondary')
+  // Account holder's name for the LC email previews (same source the send route uses).
+  const acctMeta  = user?.user_metadata ?? {}
+  const acctFirst = (acctMeta.first_name as string) || ''
+  const acctLast  = (acctMeta.last_name  as string) || ''
   const msgLen = flowMessage.length
   const msgWarn  = msgLen >= MSG_SOFT && msgLen < MSG_HARD
   const msgLimit = msgLen >= MSG_HARD
@@ -821,6 +828,22 @@ export default function AccountPage() {
                     Replace with a different Legacy Contact
                   </button>
                 </div>
+                <div style={{ paddingTop: 2 }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPrimaryLcPreview(v => !v)}
+                    aria-expanded={showPrimaryLcPreview}
+                    style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 13.5, fontWeight: 600, color: '#2C3777', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ transition: 'transform 200ms ease', transform: showPrimaryLcPreview ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                      <path d="M2.5 5L7 9.5L11.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {showPrimaryLcPreview ? 'Hide email preview' : 'View email preview'}
+                  </button>
+                  {showPrimaryLcPreview && (
+                    <LegacyContactEmailPreview lcRole="primary" userFirst={acctFirst} userLast={acctLast} contactFirst={primaryContact.first_name} />
+                  )}
+                </div>
               </div>
             ) : (
               <div style={{ ...card, padding: '16px 20px' }}>
@@ -846,6 +869,22 @@ export default function AccountPage() {
                   </button>
                   <button style={{ ...ghostSmall, color: '#C04828', borderColor: 'rgba(192,72,40,0.3)' }}
                           onClick={() => openFlow({ type: 'remove-secondary', contactType: 'secondary', existing: secondaryContact })}>Remove</button>
+                </div>
+                <div style={{ paddingTop: 2 }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowSecondaryLcPreview(v => !v)}
+                    aria-expanded={showSecondaryLcPreview}
+                    style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 13.5, fontWeight: 600, color: '#2C3777', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ transition: 'transform 200ms ease', transform: showSecondaryLcPreview ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                      <path d="M2.5 5L7 9.5L11.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {showSecondaryLcPreview ? 'Hide email preview' : 'View email preview'}
+                  </button>
+                  {showSecondaryLcPreview && (
+                    <LegacyContactEmailPreview lcRole="secondary" userFirst={acctFirst} userLast={acctLast} contactFirst={secondaryContact.first_name} />
+                  )}
                 </div>
               </div>
             ) : (

@@ -105,7 +105,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           checkboxes: [
             'I have identified a substitute decision-maker for my care',
             'My substitute decision-maker has agreed to take on this role',
-            'I have legally documented my decision-maker',
+            'I have legally documented my substitute decision-maker',
           ],
         },
         {
@@ -114,7 +114,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           explanation: '',
           staticLinks: [{ href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label }],
           checkboxes: [
-            'I have communicated my wishes to my decision-maker',
+            'I have communicated my wishes to my substitute decision-maker',
             'I have formally documented my wishes',
           ],
           checkboxHelpers: [

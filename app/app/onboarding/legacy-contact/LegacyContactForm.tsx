@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
+import LegacyContactEmailPreview from '@/app/components/LegacyContactEmailPreview'
 
 const hv    = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -23,9 +24,20 @@ function isValidEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
 }
 
-function toTitleCase(name: string): string {
-  if (!name) return name
-  return name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+function PreviewToggleButton({ open, onClick, label }: { open: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ background: 'none', border: 'none', padding: 0, fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#2C3777', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+    >
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"
+        style={{ transition: 'transform 200ms ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+        <path d="M2.5 5L7 9.5L11.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      {label}
+    </button>
+  )
 }
 
 // ─── Contact field (module-scope so React never remounts on re-render) ────────
@@ -88,71 +100,13 @@ function ContactGroup({
   )
 }
 
-// ─── Email preview ─────────────────────────────────────────────────────────
-
-function EmailPreview({
-  userName,
-  contactName,
-  message,
-}: {
-  userName:    string
-  contactName: string
-  message:     string
-}) {
-  const name    = toTitleCase(userName) || 'you'
-  const contact = contactName.trim() ? toTitleCase(contactName) : '[Legacy Contact first name]'
-  const trimmed = message.trim()
-
-  const p: React.CSSProperties  = { fontFamily: hv, fontSize: 14, lineHeight: 1.65, color: 'rgba(19,4,38,0.75)', margin: '0 0 12px' }
-  const h: React.CSSProperties  = { fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#130426', margin: '20px 0 4px' }
-  const hr: React.CSSProperties = { border: 'none', borderTop: '1px solid rgba(19,4,38,0.15)', margin: '16px 0' }
-
-  return (
-    <div style={{
-      background: 'rgba(19,4,38,0.04)',
-      borderLeft: '3px solid rgba(19,4,38,0.15)',
-      borderRadius: '0 8px 8px 0',
-      padding: '20px 24px',
-      marginTop: 12,
-    }}>
-      <p style={p}>Hi {contact},</p>
-      <p style={p}>{name} has designated you as a Legacy Contact on The Nightside Planning Studio, an end-of-life planning platform.</p>
-
-      <p style={h}>What this means</p>
-      <p style={p}>{name} has created a plan on the platform that includes information their family or community may need after their death — things like wishes for their body and funeral, important contacts, financial information, and other administrative details. By designating you as their Legacy Contact, {name} has named you as someone we can release those planning materials to if they die.</p>
-
-      <p style={h}>What you don&apos;t need to do</p>
-      <p style={p}>You don&apos;t have any access to {name}&apos;s plan while they&apos;re alive. You have no role to play unless they die. Most users export and share their plan with the people who&apos;ll need it during their lifetime, so this designation may never need to be activated.</p>
-      <p style={p}>Your designation as Legacy Contact does not give you any legal authority over {name}&apos;s estate, healthcare decisions, or other matters. It only allows us to release their planning materials from this platform if they die. If {name} wants you to have other authority, that needs to be designated separately through legal documents like a will or representation agreement.</p>
-
-      <p style={h}>What to do if {name} dies</p>
-      <p style={p}>If {name} dies and you need to activate your role as Legacy Contact, contact us at contact@thenightside.net. We&apos;ll work with you to verify the death and release {name}&apos;s planning materials. Verification may include a death certificate, a Statement of Death from a funeral director, or other comparable documentation.</p>
-
-      <p style={h}>If you&apos;d rather not be {name}&apos;s Legacy Contact</p>
-      <p style={p}>If you don&apos;t want to be designated as {name}&apos;s Legacy Contact, please let them know directly. They can update their designation at any time.</p>
-      <p style={{ ...p, margin: 0 }}>{name} may reach out to you soon to talk about this designation. If they haven&apos;t yet, feel free to reach out to them too.</p>
-
-      {trimmed && (
-        <>
-          <div style={hr} />
-          <p style={h}>A message from {name}</p>
-          <p style={{ ...p, whiteSpace: 'pre-wrap', margin: 0 }}>{trimmed}</p>
-          <div style={hr} />
-        </>
-      )}
-
-      <p style={{ ...p, marginTop: trimmed ? 0 : 20 }}>If you have any questions about the platform or this role, you can reach us at contact@thenightside.net.</p>
-      <p style={{ ...p, margin: 0 }}>— The Nightside</p>
-    </div>
-  )
-}
-
 // ─── Main form ──────────────────────────────────────────────────────────────
 
 export default function LegacyContactForm() {
   const router = useRouter()
 
   const [userFirstName,    setUserFirstName]    = useState('you')
+  const [userLastName,     setUserLastName]     = useState('')
   const [primary,          setPrimary]          = useState<ContactFields>(EMPTY)
   const [primaryErrors,    setPrimaryErrors]    = useState<Partial<Record<keyof ContactFields, string>>>({})
   const [showSecondary,    setShowSecondary]    = useState(false)
@@ -160,6 +114,7 @@ export default function LegacyContactForm() {
   const [secondaryErrors,  setSecondaryErrors]  = useState<Partial<Record<keyof ContactFields, string>>>({})
   const [message,          setMessage]          = useState('')
   const [showPreview,      setShowPreview]      = useState(false)
+  const [showSecondaryPreview, setShowSecondaryPreview] = useState(false)
   const [submitError,      setSubmitError]      = useState('')
   const [submitting,       setSubmitting]       = useState(false)
 
@@ -169,6 +124,7 @@ export default function LegacyContactForm() {
       const meta = data.user?.user_metadata ?? {}
       const firstName = (meta.first_name as string) || data.user?.email?.split('@')[0] || 'you'
       setUserFirstName(firstName)
+      setUserLastName((meta.last_name as string) || '')
     })
   }, [])
 
@@ -301,13 +257,13 @@ export default function LegacyContactForm() {
 
         {/* Intro */}
         <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.75, color: '#130426', margin: '0 0 14px' }}>
-          Before you start planning, you&apos;ll designate someone we can release your practical planning materials to if you die. This includes your wishes for your body, important contacts, financial information, and other administrative details. It does not include your reflective work or personal notes; those stay private unless you choose to add them.
+          Your Legacy Contact will only receive your practical planning materials in the event of your death — they won&apos;t have access while you&apos;re alive. The materials they receive include your wishes for your body, important contacts, financial information, and other administrative details. They won&apos;t include your reflective work or personal notes unless you choose to add them.
         </p>
         <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.75, color: '#130426', margin: '0 0 14px' }}>
           You can update your Legacy Contact and what they&apos;ll receive at any time from your account.
         </p>
         <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.75, color: '#130426', margin: '0 0 32px' }}>
-          This is required to use the platform. End-of-life planning that doesn&apos;t account for what happens to the plan after death isn&apos;t complete planning.
+          This is required to use the platform. We know that people often create these materials in vulnerable circumstances, and we want to make sure that if something happens to you, your wishes can reach the people who need to act on them.
         </p>
 
         {/* Important callout — only section with visual emphasis */}
@@ -330,7 +286,7 @@ export default function LegacyContactForm() {
             Most people designate a family member, a close friend, or a professional like a lawyer. Choose someone who will be reachable and trustworthy.
           </p>
           <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.65, color: 'rgba(19,4,38,0.75)', margin: 0 }}>
-            Plan to reach out to them after you designate them, so they understand the role and have a chance to ask questions. You can update your designation anytime.
+            After you designate them, we&apos;ll send them an email explaining the role. We recommend you also reach out personally to talk it through and answer any questions. You can update your designation anytime.
           </p>
         </div>
 
@@ -382,31 +338,41 @@ export default function LegacyContactForm() {
             <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.6, color: 'rgba(19,4,38,0.6)', fontStyle: 'italic', margin: '6px 0 10px' }}>
               Your Legacy Contact will receive an email explaining their designation, what it means, and what to do if you die. You can optionally add a personal message below, which will be included in the email.
             </p>
-            <button
-              type="button"
+            {/* Primary preview. When a secondary is being added, the secondary's email
+                differs (the "About this designation" paragraph), so it gets its own
+                preview toggle — shown only once the user has opened the secondary form. */}
+            <PreviewToggleButton
+              open={showPreview}
               onClick={() => setShowPreview(v => !v)}
-              style={{
-                background: 'none', border: 'none', padding: 0,
-                fontFamily: hv, fontSize: 14, fontWeight: 600,
-                color: '#2C3777', cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-              }}
-            >
-              <svg
-                width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"
-                style={{ transition: 'transform 200ms ease', transform: showPreview ? 'rotate(180deg)' : 'rotate(0deg)' }}
-              >
-                <path d="M2.5 5L7 9.5L11.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {showPreview ? 'Hide preview' : 'View preview'}
-            </button>
-
+              label={showPreview ? 'Hide preview' : showSecondary ? 'View primary preview' : 'View preview'}
+            />
             {showPreview && (
-              <EmailPreview
-                userName={userFirstName}
-                contactName={primary.firstName.trim()}
+              <LegacyContactEmailPreview
+                lcRole="primary"
+                userFirst={userFirstName}
+                userLast={userLastName}
+                contactFirst={primary.firstName.trim()}
                 message={message}
               />
+            )}
+
+            {showSecondary && (
+              <div style={{ marginTop: 16 }}>
+                <PreviewToggleButton
+                  open={showSecondaryPreview}
+                  onClick={() => setShowSecondaryPreview(v => !v)}
+                  label={showSecondaryPreview ? 'Hide secondary preview' : 'View secondary preview'}
+                />
+                {showSecondaryPreview && (
+                  <LegacyContactEmailPreview
+                    lcRole="secondary"
+                    userFirst={userFirstName}
+                    userLast={userLastName}
+                    contactFirst={secondary.firstName.trim()}
+                    message={message}
+                  />
+                )}
+              </div>
             )}
           </div>
 

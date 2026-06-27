@@ -522,7 +522,7 @@ export function buildKeyDetails(
 
   const careLabel = syncHasEOL ? (
     careStatus === 'documented'   ? 'Formally documented' :
-    careStatus === 'communicated' ? 'Communicated to decision-maker' :
+    careStatus === 'communicated' ? 'Communicated to substitute decision-maker' :
     careStatus === 'both'         ? 'Documented and communicated' :
     'Documented or communicated'
   ) : null

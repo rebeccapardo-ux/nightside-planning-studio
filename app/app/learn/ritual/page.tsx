@@ -147,7 +147,7 @@ export default async function RitualLearnPage() {
                 {[
                   {
                     heading: 'Healthcare discrimination',
-                    body: 'LGBTQ+ individuals may face bias in medical settings; identifying chosen family and decision-makers in advance is essential.',
+                    body: 'LGBTQ+ individuals may face bias in medical settings; identifying chosen family and substitute decision-makers in advance is essential.',
                   },
                   {
                     heading: 'Cultural sensitivity',

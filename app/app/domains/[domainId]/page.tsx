@@ -329,7 +329,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
           <div className="rounded-xl" style={{ background: '#BBABF4', padding: 28 }}>
             {isWills && (
               <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 24px 0' }}>
-                The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating decision-makers, consult a lawyer in your province.
+                The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating substitute decision-makers, consult a lawyer in your province.
               </p>
             )}
             {domainStructure && (
