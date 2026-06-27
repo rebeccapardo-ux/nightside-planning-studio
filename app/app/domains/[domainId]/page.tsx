@@ -310,7 +310,10 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
 
       {/* ── Header — dark gradient ── */}
       <div style={{ background: 'radial-gradient(circle at 20% 20%, #1a0535 0%, #130426 70%)' }}>
-        <div className="max-w-6xl mx-auto" style={{ paddingTop: 16, paddingLeft: 40, paddingRight: 40, paddingBottom: 8 }}>
+        {/* pt-16 (64px) on mobile clears the floating Notepad button (fixed top-24,
+            right-4) so the title isn't truncated behind it — matching the Reflect/Learn
+            sub-page banner convention; desktop keeps its compact 16px (no overlap there). */}
+        <div className="max-w-6xl mx-auto pt-16 md:pt-4" style={{ paddingLeft: 40, paddingRight: 40, paddingBottom: 8 }}>
           <Breadcrumbs theme="navy" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Progress Tracking', href: '/app/plan/progress' }, { label: domain?.title ?? '…' }]} />
         </div>
         <div className="max-w-6xl mx-auto" style={{ padding: '4px 40px 56px' }}>

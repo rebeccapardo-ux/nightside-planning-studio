@@ -238,6 +238,16 @@ export default function GlobalNav() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   // Which desktop sub-menu is open (by label), or null. Hover/focus driven.
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  // Which mobile-drawer sections are expanded (keyed by section href). Reset to
+  // empty (all collapsed) each time the drawer opens — keeps the menu scannable.
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  const toggleSection = (href: string) =>
+    setExpandedSections((prev) => {
+      const next = new Set(prev)
+      if (next.has(href)) next.delete(href)
+      else next.add(href)
+      return next
+    })
   const drawerRef = useRef<HTMLDivElement>(null)
   const hamburgerBtnRef = useRef<HTMLButtonElement>(null)
 
@@ -310,12 +320,12 @@ export default function GlobalNav() {
   // caption): 0.65 cream → 5.21:1 over #2C3777; 0.62 navy → 5.47:1 over #f8f4eb.
   const drawerCaptionColor = entry.theme === 'dark' ? 'rgba(248,244,235,0.65)' : 'rgba(19,4,38,0.62)'
 
-  // Mobile drawer section (Approach B — always-expanded). The header is a LINK to the
-  // landing page (its tap navigates — never an expand control); it reads as a tappable
-  // row from its size/weight + active underline, no chevron. Sub-items are always shown,
-  // indented and subordinate. Learn's `divider` row becomes an "Areas of planning"
-  // caption + inner group, so Deathcare Trivia (above it) reads parallel to the whole
-  // group — mirroring desktop.
+  // Mobile drawer section. The header is two separate tap zones: a LINK (label →
+  // section landing) and a chevron BUTTON (expand/collapse the sub-items). Sections
+  // open COLLAPSED — with Reflect/Learn/Plan each carrying 3–8 sub-items, showing them
+  // all at once overwhelmed the menu. Sub-items render only when expanded; the body
+  // itself is built the same way (item sub-links, a caption for a labelled divider,
+  // a bare rule for a label-less one, deeper indent for `indent` children).
   function renderDrawerSection(item: NavItem) {
     const headerActive = item.activePrefixes.some((p) => pathname.startsWith(p))
     const slug = item.href.split('/').pop() || item.label.toLowerCase()
@@ -362,17 +372,39 @@ export default function GlobalNav() {
       })
     }
 
+    const expanded = item.rows ? expandedSections.has(item.href) : false
+
     return (
       <div key={item.href} className="pb-2">
-        <Link
-          href={item.href}
-          id={item.rows ? headerId : undefined}
-          className={`block w-full px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
-        >
-          {item.label}
-        </Link>
-        {item.rows && (
-          <div role="group" aria-labelledby={headerId}>
+        {/* Two separate tap zones (each ≥44px): the label LINK navigates to the
+            section's landing page; the chevron BUTTON expands/collapses its sub-items.
+            Sections open collapsed (reset on every drawer open) so the menu stays
+            scannable — one extra tap to reach a deep destination. */}
+        <div style={{ display: 'flex', alignItems: 'stretch' }}>
+          <Link
+            href={item.href}
+            id={item.rows ? headerId : undefined}
+            className={`flex-1 px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
+          >
+            {item.label}
+          </Link>
+          {item.rows && (
+            <button
+              type="button"
+              onClick={() => toggleSection(item.href)}
+              aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
+              aria-expanded={expanded}
+              aria-controls={`${headerId}-group`}
+              className={`flex items-center justify-center px-6 ${style.link}`}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ transition: 'transform 200ms ease', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {item.rows && expanded && (
+          <div id={`${headerId}-group`} role="group" aria-labelledby={headerId}>
             {body}
           </div>
         )}
@@ -594,7 +626,7 @@ export default function GlobalNav() {
               <button
                 ref={hamburgerBtnRef}
                 type="button"
-                onClick={() => setDrawerOpen(true)}
+                onClick={() => { setExpandedSections(new Set()); setDrawerOpen(true) }}
                 aria-label="Open navigation menu"
                 aria-expanded={drawerOpen}
                 aria-controls="mobile-nav-drawer"
