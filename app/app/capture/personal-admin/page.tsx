@@ -610,7 +610,7 @@ function PersonalAdminPage() {
             {/* Care Decision Maker */}
             <div>
               <CheckboxItem
-                label="I have formally designated decision-maker/s for care"
+                label="I have formally designated substitute decision-maker/s for care"
                 checked={form.hasCareDecisionMaker}
                 onChange={(v) => updateBoolField('hasCareDecisionMaker', v)}
               />
@@ -618,7 +618,7 @@ function PersonalAdminPage() {
                 <div style={{ marginTop: 14, paddingLeft: 30, display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <Field label="Document location:" value={form.careDecisionMakerDocLocation} onChange={(v) => updateField('careDecisionMakerDocLocation', v)} onBlur={handleBlur} rows={3} />
                   <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 600, color: '#2C3777', margin: 0, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>
-                    Decision maker details
+                    Substitute decision-maker for care details
                   </p>
                   <Field label="Name" value={form.careDecisionMaker1Name} onChange={(v) => updateField('careDecisionMaker1Name', v)} onBlur={handleBlur} rows={2} />
                   <Field label="Phone" value={form.careDecisionMaker1Phone} onChange={(v) => updateField('careDecisionMaker1Phone', v)} onBlur={handleBlur} rows={2} />
@@ -661,7 +661,7 @@ function PersonalAdminPage() {
                         fontWeight: 500, alignSelf: 'flex-start' as const,
                       }}
                     >
-                      + Add second decision-maker
+                      + Add second substitute decision-maker for care
                     </button>
                   )}
                 </div>
