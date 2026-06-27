@@ -124,6 +124,9 @@ export default async function YourMaterialsPage() {
           <h1 style={{ fontSize: 42, fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em', color: '#130426', margin: 0, fontFamily: inter }}>
             Your Materials
           </h1>
+          <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 620, margin: '18px 0 0', lineHeight: 1.6 }}>
+            This is where everything that makes up your plan lives: documents to fill out, your activity outputs, and notes you&rsquo;ve captured. Review, continue working, or export from this page.
+          </p>
         </div>
       </div>
 
