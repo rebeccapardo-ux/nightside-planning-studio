@@ -24,8 +24,8 @@ type NoteRow = {
   transcription_status?: 'pending' | 'complete' | 'failed' | null
 }
 
-// Item-level type markers (documents / activity outputs). Section headers carry NO
-// icon — the title alone is enough; these signal type within the expanded lists.
+// Item-level type markers (documents / activity outputs). Section tiles carry NO
+// header icon — the title alone is enough; these signal type within the lists.
 function DocIcon({ size = 22, color = '#2C3777' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
@@ -110,6 +110,9 @@ export default function YourMaterialsPanel({
   const notStartedPractical = notStartedDocs.filter(d => !WISHES_TYPES.has(d.type))
 
   // ── Shared styles ──────────────────────────────────────────────────────────
+  const tileDesc: React.CSSProperties = {
+    fontFamily: hv, fontSize: 14.5, fontWeight: 400, color: 'rgba(19,4,38,0.72)', margin: '12px 0 0', lineHeight: 1.5,
+  }
   const columnHeader: React.CSSProperties = {
     fontFamily: hv, fontSize: 13, fontWeight: 700, color: '#130426',
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14, marginTop: 0,
@@ -195,10 +198,14 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  function tile(id: string, title: string, summary: string, body: React.ReactNode) {
+  // Light-lavender fill + darker-lavender outline (the platform's lavender card
+  // pattern). The title row is the toggle; the description (what) shows in BOTH
+  // states; the count summary (how much) shows when collapsed; the lists when
+  // expanded. A min-height keeps collapsed tiles substantial, not anemic.
+  function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#BBABF4', borderRadius: 16, padding: '22px 24px', alignSelf: 'start' }}>
+      <div key={id} className="ym-tile" style={{ background: '#DBD2F6', border: '1.5px solid #BBABF4', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 168, alignSelf: 'start' }}>
         <button
           type="button"
           className="ym-tile-header"
@@ -206,15 +213,14 @@ export default function YourMaterialsPanel({
           aria-expanded={isExpanded}
           style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
         >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2 }}>{title}</h2>
-            {!isExpanded && (
-              <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.72)', margin: '8px 0 0', lineHeight: 1.4 }}>{summary}</p>
-            )}
-          </div>
+          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
           <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>
         </button>
-        {isExpanded && <div style={{ marginTop: 20 }}>{body}</div>}
+        {description}
+        {!isExpanded && (
+          <p style={{ fontFamily: hv, fontSize: 13.5, fontWeight: 500, color: 'rgba(19,4,38,0.55)', margin: '14px 0 0', lineHeight: 1.4 }}>{summary}</p>
+        )}
+        {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
       </div>
     )
   }
@@ -222,7 +228,7 @@ export default function YourMaterialsPanel({
   const docCount = (a: unknown[], b: unknown[]) => `${a.length} in progress, ${b.length} not started`
 
   return (
-    <div style={{ background: '#ede9f8', borderRadius: 24, padding: 20 }}>
+    <div>
       <style>{`
         .plan-pill-doc:hover  { background: #f7f6fc !important; }
         .plan-pill-out:hover  { background: #f7f6fc !important; }
@@ -231,7 +237,7 @@ export default function YourMaterialsPanel({
         .ym-tile-header:hover .ym-chevron { opacity: 0.65; }
         @media (max-width: 767px) {
           .ym-grid { grid-template-columns: 1fr !important; }
-          .ym-tile { padding: 20px 18px !important; }
+          .ym-tile { padding: 22px 20px !important; }
           .plan-pill-doc,
           .plan-pill-out {
             max-width: 100% !important;
@@ -257,53 +263,48 @@ export default function YourMaterialsPanel({
         }
       `}</style>
 
-      {/* 2×2 grid of collapsible tiles. align-items:start keeps a collapsed tile
-          compact while its row-mate expands — the opposite row pushes down. 1-col on
-          mobile. */}
+      {/* 2×2 grid of independent collapsible tiles (no outer wrapper). align-items:start
+          keeps a collapsed tile compact while its row-mate expands — the opposite row
+          pushes down. 1 column on mobile. */}
       <div className="ym-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
 
         {/* Wishes documents */}
         {tile(
           'wishes',
           'Wishes documents',
+          <p style={tileDesc}>
+            Documents to help synthesize your values, priorities, and preferences; recommended to fill in after exploring the{' '}
+            <Link href="/app/reflect" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Reflect</Link>{' '}
+            and{' '}
+            <Link href="/app/learn" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Learn</Link>{' '}
+            sections.
+          </p>,
           docCount(inProgressWishes, notStartedWishes),
-          <>
-            <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: 'rgba(19,4,38,0.72)', marginBottom: 24, marginTop: 0, lineHeight: 1.55 }}>
-              Documents to help synthesize your values, priorities, and preferences; recommended to fill in after exploring the{' '}
-              <Link href="/app/reflect" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Reflect</Link>{' '}
-              and{' '}
-              <Link href="/app/learn" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Learn</Link>{' '}
-              sections.
-            </p>
-            {statusStack(
-              inProgressWishes.map((d) => renderDocCard(d, true)),
-              notStartedWishes.map((d) => renderDocCard(d, false)),
-              'None yet', 'All started',
-            )}
-          </>,
+          statusStack(
+            inProgressWishes.map((d) => renderDocCard(d, true)),
+            notStartedWishes.map((d) => renderDocCard(d, false)),
+            'None yet', 'All started',
+          ),
         )}
 
         {/* Practical documents */}
         {tile(
           'practical',
           'Practical documents',
+          <p style={tileDesc}>Templates for practical information; fill them in at any time.</p>,
           docCount(inProgressPractical, notStartedPractical),
-          <>
-            <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: 'rgba(19,4,38,0.72)', marginBottom: 24, marginTop: 0, lineHeight: 1.55 }}>
-              Templates for practical information; fill them in at any time.
-            </p>
-            {statusStack(
-              inProgressPractical.map((d) => renderDocCard(d, true)),
-              notStartedPractical.map((d) => renderDocCard(d, false)),
-              'None yet', 'All started',
-            )}
-          </>,
+          statusStack(
+            inProgressPractical.map((d) => renderDocCard(d, true)),
+            notStartedPractical.map((d) => renderDocCard(d, false)),
+            'None yet', 'All started',
+          ),
         )}
 
         {/* Activity outputs */}
         {tile(
           'activity',
           'Activity outputs',
+          <p style={tileDesc}>Your work from Reflect activities.</p>,
           docCount(inProgressActivities, notStartedActivities),
           statusStack(
             inProgressActivities.map((a) => renderActivityCard(a, true)),
@@ -316,6 +317,7 @@ export default function YourMaterialsPanel({
         {tile(
           'notes',
           'Notes',
+          <p style={tileDesc}>Text and voice notes you&rsquo;ve captured across the platform.</p>,
           `${allNotes.length} total`,
           allNotes.length > 0 ? (
             <PlanNotesGridComp notes={allNotes} allDomains={allDomains} />
