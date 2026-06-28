@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DeathcareAnimations from './DeathcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
 
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function DeathcareLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let deathcareDomainHref = '/app/plan/progress'
+  let deathcareDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -208,7 +208,7 @@ export default async function DeathcareLearnPage() {
                 <h3
                   style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}
                 >
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
@@ -224,6 +224,10 @@ export default async function DeathcareLearnPage() {
                       </span>
                     </Link>
                   ))}
+                  {/* Relevant documents — underlined-link styling, distinct from the bordered activity rows */}
+                  <Link href={DOCUMENT_TYPE_META.funeral_wishes.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                    {DOCUMENT_TYPE_META.funeral_wishes.label}
+                  </Link>
                 </div>
               </div>
 
@@ -252,13 +256,8 @@ export default async function DeathcareLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={deathcareDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.funeral_wishes.label, href: DOCUMENT_TYPE_META.funeral_wishes.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={deathcareDomainHref} label="Deathcare Planning" />
 
           </div>
         </section>

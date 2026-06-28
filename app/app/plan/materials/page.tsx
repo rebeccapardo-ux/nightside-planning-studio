@@ -130,7 +130,7 @@ export default async function YourMaterialsPage() {
         </div>
       </div>
 
-      {/* ── Main content: materials only. Key Details lives on Progress Tracking
+      {/* ── Main content: materials only. Key Details lives on Areas of Planning
           (plan status), not here — Your Materials is platform content the user can
           engage with, not status-of-facts like whether a legal will exists. ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>

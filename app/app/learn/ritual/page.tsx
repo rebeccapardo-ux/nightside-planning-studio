@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
 
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default async function RitualLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let ritualDomainHref = '/app/plan/progress'
+  let ritualDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -189,7 +189,7 @@ export default async function RitualLearnPage() {
               {/* Card 1: Relevant Activities — orange */}
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
@@ -205,6 +205,12 @@ export default async function RitualLearnPage() {
                       </span>
                     </Link>
                   ))}
+                  {/* Relevant documents — underlined-link styling. (My Care Wishes /
+                      advance_directive_supplement already appears as an activity row above,
+                      so only the non-duplicate Funeral Wishes doc is added here.) */}
+                  <Link href={DOCUMENT_TYPE_META.funeral_wishes.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                    {DOCUMENT_TYPE_META.funeral_wishes.label}
+                  </Link>
                 </div>
               </div>
 
@@ -229,14 +235,8 @@ export default async function RitualLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={ritualDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.funeral_wishes.label, href: DOCUMENT_TYPE_META.funeral_wishes.href },
-                { label: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: DOCUMENT_TYPE_META.advance_directive_supplement.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={ritualDomainHref} label="Ritual & Ceremony Planning" />
 
           </div>
         </section>

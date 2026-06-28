@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import HealthcareAnimations from './HealthcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
 
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function HealthcareLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let healthcareDomainHref = '/app/plan/progress'
+  let healthcareDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -256,7 +256,7 @@ export default async function HealthcareLearnPage() {
 
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
@@ -271,6 +271,11 @@ export default async function HealthcareLearnPage() {
                       </span>
                     </Link>
                   ))}
+                  {/* Relevant documents — underlined-link styling, distinct from the
+                      bordered activity rows above; both share this panel. */}
+                  <Link href={DOCUMENT_TYPE_META.advance_directive_supplement.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: inter, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                    {DOCUMENT_TYPE_META.advance_directive_supplement.label}
+                  </Link>
                 </div>
               </div>
 
@@ -294,13 +299,8 @@ export default async function HealthcareLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={healthcareDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: DOCUMENT_TYPE_META.advance_directive_supplement.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={healthcareDomainHref} label="Healthcare Wishes Planning" />
 
           </div>
         </section>

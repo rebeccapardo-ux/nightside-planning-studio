@@ -173,7 +173,7 @@ export default function LearnPage() {
         <div className="px-5 md:px-16" style={{ ...inner, marginTop: '56px', paddingBottom: '96px' }}>
           <div style={{ background: 'rgba(248, 244, 235, 0.28)', border: '1px solid rgba(19, 4, 38, 0.08)', borderRadius: '24px', padding: '48px' }}>
           <h2 style={{ fontFamily: apfel, fontSize: '32px', fontWeight: 600, lineHeight: '1.1', color: '#130426', margin: 0 }}>
-            Areas of planning
+            Areas
           </h2>
           <p style={{ fontFamily: hv, fontSize: '18px', lineHeight: '1.6', color: 'rgba(19,4,38,0.75)', marginTop: '12px', marginBottom: 0 }}>
             Explore key areas of end-of-life planning and understand your options.

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
 
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default async function LegacyLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let legacyDomainHref = '/app/plan/progress'
+  let legacyDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -178,7 +178,7 @@ export default async function LegacyLearnPage() {
             <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
@@ -194,17 +194,16 @@ export default async function LegacyLearnPage() {
                       </span>
                     </Link>
                   ))}
+                  {/* Relevant documents — underlined-link styling, distinct from the bordered activity rows */}
+                  <Link href={DOCUMENT_TYPE_META.keepsake_inventory.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                    {DOCUMENT_TYPE_META.keepsake_inventory.label}
+                  </Link>
                 </div>
               </div>
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={legacyDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.keepsake_inventory.label, href: DOCUMENT_TYPE_META.keepsake_inventory.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={legacyDomainHref} label="Legacy Planning" />
 
           </div>
         </section>
