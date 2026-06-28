@@ -5,6 +5,7 @@ import PersonalAdminAnimations from './PersonalAdminAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -92,6 +93,18 @@ export default async function PersonalAdminLearnPage() {
           gap: 72px;
           align-items: start;
         }
+        .pa-doc-row {
+          display: flex;
+          align-items: center;
+          padding: 16px 20px;
+          border-radius: 12px;
+          background: rgba(0,0,0,0.06);
+          text-decoration: none;
+          transition: background 150ms ease;
+        }
+        .pa-doc-row:hover { background: rgba(0,0,0,0.12); }
+        .pa-doc-row:hover .pa-arrow { transform: translateX(4px); }
+        .pa-arrow { transition: transform 150ms ease; }
         @media (max-width: 768px) {
           .pa-why-grid { grid-template-columns: 1fr; gap: 40px; }
         }
@@ -216,8 +229,12 @@ export default async function PersonalAdminLearnPage() {
                     DOCUMENT_TYPE_META.financial_information,
                     DOCUMENT_TYPE_META.devices_and_accounts,
                   ].map((doc) => (
-                    <Link key={doc.href} href={doc.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                      {doc.label}
+                    <Link key={doc.href} href={doc.href} className="pa-doc-row" style={{ display: 'flex', width: '100%' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        <DocumentIcon />
+                        <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>{doc.label}</span>
+                        <span className="pa-arrow" style={{ color: '#130426', fontSize: '18px', opacity: 0.6 }}>→</span>
+                      </span>
                     </Link>
                   ))}
                 </div>

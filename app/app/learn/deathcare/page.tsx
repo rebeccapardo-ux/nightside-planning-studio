@@ -5,6 +5,7 @@ import DeathcareAnimations from './DeathcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon, DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -212,11 +213,13 @@ export default async function DeathcareLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect', label: 'Reflection Prompts' },
-                    { href: '/app/learn/trivia', label: 'Deathcare Trivia' },
-                  ].map(({ href, label }) => (
+                    { href: '/app/reflect', label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/learn/trivia', label: 'Deathcare Trivia', type: 'activity' },
+                    { href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.label, type: 'document' },
+                  ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="dc-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {type === 'document' ? <DocumentIcon /> : <ActivityIcon />}
                         <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>
                           {label}
                         </span>
@@ -224,10 +227,6 @@ export default async function DeathcareLearnPage() {
                       </span>
                     </Link>
                   ))}
-                  {/* Relevant documents — underlined-link styling, distinct from the bordered activity rows */}
-                  <Link href={DOCUMENT_TYPE_META.funeral_wishes.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    {DOCUMENT_TYPE_META.funeral_wishes.label}
-                  </Link>
                 </div>
               </div>
 

@@ -5,6 +5,7 @@ import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import HealthcareAnimations from './HealthcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon, DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -260,22 +261,19 @@ export default async function HealthcareLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect/values-and-fears', label: 'Values and Fears Ranking' },
-                    { href: '/app/reflect',    label: 'Reflection Prompts' },
-                    { href: '/app/reflect/scenario-navigator',    label: 'Scenario Navigator' },
-                  ].map(({ href, label }) => (
+                    { href: '/app/reflect/values-and-fears', label: 'Values and Fears Ranking', type: 'activity' },
+                    { href: '/app/reflect',    label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/reflect/scenario-navigator',    label: 'Scenario Navigator', type: 'activity' },
+                    { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
+                  ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="hc-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {type === 'document' ? <DocumentIcon color="#1F1A44" /> : <ActivityIcon color="#1F1A44" />}
                         <span style={{ fontFamily: inter, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#1F1A44' }}>{label}</span>
                         <span className="hc-arrow" style={{ color: '#1F1A44', fontSize: '18px', opacity: 0.6 }}>→</span>
                       </span>
                     </Link>
                   ))}
-                  {/* Relevant documents — underlined-link styling, distinct from the
-                      bordered activity rows above; both share this panel. */}
-                  <Link href={DOCUMENT_TYPE_META.advance_directive_supplement.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: inter, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    {DOCUMENT_TYPE_META.advance_directive_supplement.label}
-                  </Link>
                 </div>
               </div>
 

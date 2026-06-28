@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon, DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -174,7 +175,8 @@ export default async function LegacyLearnPage() {
               Use these activities and resources to keep moving in your legacy planning.
             </p>
 
-            {/* Activities card */}
+            {/* Single panel + CTA to its right (Legacy has no Explore-resources card,
+                so the button fills the second column rather than sitting underneath). */}
             <div className="learn-next-steps-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
@@ -182,11 +184,13 @@ export default async function LegacyLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect/legacy-map', label: 'Legacy Map' },
-                    { href: '/app/capture/advance-directive', label: 'My Care Wishes' },
-                  ].map(({ href, label }) => (
+                    { href: '/app/reflect/legacy-map', label: 'Legacy Map', type: 'activity' },
+                    { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
+                    { href: DOCUMENT_TYPE_META.keepsake_inventory.href, label: DOCUMENT_TYPE_META.keepsake_inventory.label, type: 'document' },
+                  ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="lg-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {type === 'document' ? <DocumentIcon /> : <ActivityIcon />}
                         <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>
                           {label}
                         </span>
@@ -194,16 +198,13 @@ export default async function LegacyLearnPage() {
                       </span>
                     </Link>
                   ))}
-                  {/* Relevant documents — underlined-link styling, distinct from the bordered activity rows */}
-                  <Link href={DOCUMENT_TYPE_META.keepsake_inventory.href} className="hover:opacity-75 transition-opacity" style={{ fontFamily: hv, fontSize: '16px', fontWeight: 500, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    {DOCUMENT_TYPE_META.keepsake_inventory.label}
-                  </Link>
                 </div>
               </div>
+              {/* CTA into this area's planning page (Areas of Planning) */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <DomainPlanningButton href={legacyDomainHref} label="Legacy Planning" marginTop={0} />
+              </div>
             </div>
-
-            {/* CTA into this area's planning page (Areas of Planning) */}
-            <DomainPlanningButton href={legacyDomainHref} label="Legacy Planning" />
 
           </div>
         </section>

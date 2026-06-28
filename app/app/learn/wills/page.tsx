@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import WillsAnimations from './WillsAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -227,6 +228,7 @@ export default async function WillsLearnPage() {
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="wl-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        <ActivityIcon />
                         <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>
                           {label}
                         </span>
