@@ -314,7 +314,7 @@ export default function DomainDetailPage({ params }: { params: Promise<{ domainI
             right-4) so the title isn't truncated behind it — matching the Reflect/Learn
             sub-page banner convention; desktop keeps its compact 16px (no overlap there). */}
         <div className="max-w-6xl mx-auto pt-16 md:pt-4" style={{ paddingLeft: 40, paddingRight: 40, paddingBottom: 8 }}>
-          <Breadcrumbs theme="navy" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Progress Tracking', href: '/app/plan/progress' }, { label: domain?.title ?? '…' }]} />
+          <Breadcrumbs theme="navy" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Areas of Planning', href: '/app/plan/areas' }, { label: domain?.title ?? '…' }]} />
         </div>
         <div className="max-w-6xl mx-auto" style={{ padding: '4px 40px 56px' }}>
           <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>

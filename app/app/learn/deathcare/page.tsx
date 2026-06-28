@@ -4,7 +4,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import DeathcareAnimations from './DeathcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon, DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default async function DeathcareLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let deathcareDomainHref = '/app/plan/progress'
+  let deathcareDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -208,15 +209,17 @@ export default async function DeathcareLearnPage() {
                 <h3
                   style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}
                 >
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect', label: 'Reflection Prompts' },
-                    { href: '/app/learn/trivia', label: 'Deathcare Trivia' },
-                  ].map(({ href, label }) => (
+                    { href: '/app/reflect', label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/learn/trivia', label: 'Deathcare Trivia', type: 'activity' },
+                    { href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.label, type: 'document' },
+                  ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="dc-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {type === 'document' ? <DocumentIcon /> : <ActivityIcon />}
                         <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>
                           {label}
                         </span>
@@ -252,13 +255,8 @@ export default async function DeathcareLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={deathcareDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.funeral_wishes.label, href: DOCUMENT_TYPE_META.funeral_wishes.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={deathcareDomainHref} label="Deathcare Planning" />
 
           </div>
         </section>

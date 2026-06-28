@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import WillsAnimations from './WillsAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default async function WillsLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let willsDomainHref = '/app/plan/progress'
+  let willsDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -224,10 +225,10 @@ export default async function WillsLearnPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
                     { href: '/app/reflect', label: 'Reflection Prompts' },
-                    { href: '/app/plan', label: 'Estate Planning Resources' },
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="wl-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        <ActivityIcon />
                         <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>
                           {label}
                         </span>
@@ -263,9 +264,8 @@ export default async function WillsLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel. Wills has no relevant platform
-                document, so only "Track your progress →" renders (the no-docs case). */}
-            <ContinuePlanningPanel domainHref={willsDomainHref} />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={willsDomainHref} label="Wills & Estates Planning" />
 
           </div>
         </section>

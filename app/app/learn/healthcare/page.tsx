@@ -4,7 +4,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import HealthcareAnimations from './HealthcareAnimations'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon, DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default async function HealthcareLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let healthcareDomainHref = '/app/plan/progress'
+  let healthcareDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -256,16 +257,18 @@ export default async function HealthcareLearnPage() {
 
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect/values-and-fears', label: 'Values and Fears Ranking' },
-                    { href: '/app/reflect',    label: 'Reflection Prompts' },
-                    { href: '/app/reflect/scenario-navigator',    label: 'Scenario Navigator' },
-                  ].map(({ href, label }) => (
+                    { href: '/app/reflect/values-and-fears', label: 'Values and Fears Ranking', type: 'activity' },
+                    { href: '/app/reflect',    label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/reflect/scenario-navigator',    label: 'Scenario Navigator', type: 'activity' },
+                    { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
+                  ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="hc-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {type === 'document' ? <DocumentIcon color="#1F1A44" /> : <ActivityIcon color="#1F1A44" />}
                         <span style={{ fontFamily: inter, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#1F1A44' }}>{label}</span>
                         <span className="hc-arrow" style={{ color: '#1F1A44', fontSize: '18px', opacity: 0.6 }}>→</span>
                       </span>
@@ -294,13 +297,8 @@ export default async function HealthcareLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={healthcareDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: DOCUMENT_TYPE_META.advance_directive_supplement.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={healthcareDomainHref} label="Healthcare Wishes Planning" />
 
           </div>
         </section>

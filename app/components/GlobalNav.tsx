@@ -121,9 +121,9 @@ function getNavEntry(pathname: string): RouteThemeEntry {
 // ---------------------------------------------------------------------------
 
 // A dropdown row is either a navigable item or a divider. A divider with a `label`
-// is a non-clickable group header (Learn's "Areas of Planning"); a label-less divider
+// is a non-clickable group header (Learn's "Areas"); a label-less divider
 // is a bare rule (Plan, between two peer destination links). `indent` marks a child
-// item nested under the row above it (Plan's domain pages under Progress Tracking).
+// item nested under the row above it (Plan's domain pages under Areas of Planning).
 type NavRow =
   | { type: 'item'; href: string; label: string; activePrefixes?: string[]; indent?: boolean }
   | { type: 'divider'; label?: string }
@@ -142,9 +142,9 @@ type NavItem = {
 const PLAN_DOMAIN_ORDER = ['healthcare', 'deathcare', 'wills_estates', 'legacy', 'personal_admin', 'ritual']
 
 // Reflect + Learn carry dropdown shortcuts; the label still navigates to the landing
-// page (the dropdown is an *additional* affordance). Learn's "Areas of Planning" items
+// page (the dropdown is an *additional* affordance). Learn's "Areas" items
 // reuse LEARN_AREAS (single source of truth) and link to the LEARN page for each area.
-// Plan mirrors that shape: a "Your Materials" singleton, then a "Progress Tracking"
+// Plan mirrors that shape: a "Your Materials" singleton, then a "Areas of Planning"
 // group of direct links to each domain page (built per-user from `domainRows`).
 function buildNavItems(domainRows: NavRow[]): NavItem[] {
   return [
@@ -165,7 +165,7 @@ function buildNavItems(domainRows: NavRow[]): NavItem[] {
       activePrefixes: ['/app/learn'],
       rows: [
         { type: 'item', href: '/app/learn/trivia', label: 'Deathcare Trivia' },
-        { type: 'divider', label: 'Areas of Planning' },
+        { type: 'divider', label: 'Areas' },
         ...LEARN_AREAS.map((a): NavRow => ({ type: 'item', href: `/app/learn/${a.id}`, label: a.title })),
       ],
     },
@@ -177,13 +177,13 @@ function buildNavItems(domainRows: NavRow[]): NavItem[] {
       activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
       rows: [
         { type: 'item', href: '/app/plan/materials', label: 'Your Materials', activePrefixes: ['/app/plan/materials'] },
-        // Your Materials and Progress Tracking are genuine peer destinations, so —
-        // UNLIKE Learn's non-clickable "Areas of Planning" header — Progress Tracking
+        // Your Materials and Areas of Planning are genuine peer destinations, so —
+        // UNLIKE Learn's non-clickable "Areas of Planning" header — Areas of Planning
         // is a plain LINK under a bare rule. The domain pages are its indented children
         // (parent-child via indentation, not sub-header styling). They appear once the
-        // containers fetch resolves; Progress Tracking itself always shows.
+        // containers fetch resolves; Areas of Planning itself always shows.
         { type: 'divider' },
-        { type: 'item', href: '/app/plan/progress', label: 'Progress Tracking', activePrefixes: ['/app/plan/progress'] },
+        { type: 'item', href: '/app/plan/areas', label: 'Areas of Planning', activePrefixes: ['/app/plan/areas'] },
         ...domainRows,
       ],
     },
@@ -232,7 +232,7 @@ export default function GlobalNav() {
   const style = NAV_STYLES[entry.theme]
   // null = auth state not yet known (prevents flash between authed/unauthed UI)
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
-  // The user's domain containers — powers the Plan dropdown's "Progress Tracking"
+  // The user's domain containers — powers the Plan dropdown's "Areas of Planning"
   // links. Empty until fetched (or if the user has none seeded yet).
   const [domains, setDomains] = useState<{ id: string; title: string; domain_code: string | null }[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -347,8 +347,8 @@ export default function GlobalNav() {
     }
 
     // Render rows in order: items become sub-links (deeper if `indent`); a labelled
-    // divider is a group caption (Learn's "Areas of Planning"); a label-less divider
-    // is a bare rule between peer links (Plan's Your Materials | Progress Tracking).
+    // divider is a group caption (Learn's "Areas"); a label-less divider
+    // is a bare rule between peer links (Plan's Your Materials | Areas of Planning).
     let body: React.ReactNode = null
     if (item.rows) {
       body = item.rows.map((row, i) => {
@@ -447,7 +447,7 @@ export default function GlobalNav() {
       }
 
   // Per-user domain links for the Plan dropdown, slotted into canonical order and
-  // marked `indent` (children nested under the Progress Tracking link).
+  // marked `indent` (children nested under the Areas of Planning link).
   const domainRows: NavRow[] = PLAN_DOMAIN_ORDER
     .map((code) => domains.find((d) => d.domain_code === code))
     .filter((d): d is { id: string; title: string; domain_code: string | null } => !!d)

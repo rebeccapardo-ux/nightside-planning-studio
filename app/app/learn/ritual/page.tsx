@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
-import ContinuePlanningPanel from '@/app/components/ContinuePlanningPanel'
+import DomainPlanningButton from '@/app/components/DomainPlanningButton'
+import { ActivityIcon, DocumentIcon } from '@/app/components/LearnNextStepsIcons'
 
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default async function RitualLearnPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let ritualDomainHref = '/app/plan/progress'
+  let ritualDomainHref = '/app/plan/areas'
   if (user) {
     const { data: domains } = await supabase
       .from('containers')
@@ -189,15 +190,17 @@ export default async function RitualLearnPage() {
               {/* Card 1: Relevant Activities — orange */}
               <div style={{ background: '#F29836', borderRadius: '24px', padding: '36px' }}>
                 <h3 style={{ fontFamily: apfel, fontSize: '28px', fontWeight: 600, lineHeight: '1.2', color: '#130426', marginBottom: '20px' }}>
-                  Relevant Activities
+                  Relevant Activities and Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect', label: 'Reflection Prompts' },
-                    { href: '/app/capture/advance-directive', label: 'My Care Wishes' },
-                  ].map(({ href, label }) => (
+                    { href: '/app/reflect', label: 'Reflection Prompts', type: 'activity' },
+                    { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
+                    { href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.label, type: 'document' },
+                  ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="rc-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                        {type === 'document' ? <DocumentIcon /> : <ActivityIcon />}
                         <span style={{ fontFamily: hv, fontSize: '18px', fontWeight: 500, lineHeight: '1.5', color: '#130426' }}>
                           {label}
                         </span>
@@ -229,14 +232,8 @@ export default async function RitualLearnPage() {
 
             </div>
 
-            {/* Continue in Your Plan — shared panel: progress link + relevant docs */}
-            <ContinuePlanningPanel
-              domainHref={ritualDomainHref}
-              documents={[
-                { label: DOCUMENT_TYPE_META.funeral_wishes.label, href: DOCUMENT_TYPE_META.funeral_wishes.href },
-                { label: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: DOCUMENT_TYPE_META.advance_directive_supplement.href },
-              ]}
-            />
+            {/* CTA into this area's planning page (Areas of Planning) */}
+            <DomainPlanningButton href={ritualDomainHref} label="Ritual & Ceremony Planning" />
 
           </div>
         </section>
