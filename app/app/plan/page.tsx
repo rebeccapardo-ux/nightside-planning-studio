@@ -39,16 +39,16 @@ export default function PlanLandingPage() {
           <Link
             href="/app/plan/materials"
             className="plan-chooser-card"
-            style={{ display: 'block', background: '#F29836', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
+            style={{ display: 'flex', flexDirection: 'column', background: '#F29836', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
           >
             <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, lineHeight: 1.1, margin: 0 }}>
               Your Materials
             </h2>
-            <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 0', maxWidth: 380 }}>
+            <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 28px', maxWidth: 380 }}>
               All your notes and activity outputs, as well as documents to fill out.
             </p>
-            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 28, padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
-              Begin →
+            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'auto', padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
+              Explore →
             </span>
           </Link>
 
@@ -56,16 +56,16 @@ export default function PlanLandingPage() {
           <Link
             href="/app/plan/areas"
             className="plan-chooser-card"
-            style={{ display: 'block', background: '#BBABF4', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
+            style={{ display: 'flex', flexDirection: 'column', background: '#BBABF4', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
           >
             <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, lineHeight: 1.1, margin: 0 }}>
               Areas of Planning
             </h2>
-            <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 0', maxWidth: 380 }}>
+            <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 28px', maxWidth: 380 }}>
               Organize your notes and track progress on the tasks that matter to you, across each of the 6 areas.
             </p>
-            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 28, padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
-              Begin →
+            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'auto', padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
+              Explore →
             </span>
           </Link>
         </div>
