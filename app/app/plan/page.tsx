@@ -47,7 +47,7 @@ export default function PlanLandingPage() {
             <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 28px', maxWidth: 380 }}>
               All your notes and activity outputs, as well as documents to fill out.
             </p>
-            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'auto', padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
+            <span style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', marginTop: 'auto', padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
               Explore →
             </span>
           </Link>
@@ -64,7 +64,7 @@ export default function PlanLandingPage() {
             <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 28px', maxWidth: 380 }}>
               Organize your notes and track progress on the tasks that matter to you, across each of the 6 areas.
             </p>
-            <span style={{ display: 'inline-flex', alignItems: 'center', marginTop: 'auto', padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
+            <span style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', marginTop: 'auto', padding: '12px 22px', borderRadius: 999, background: '#2C3777', color: '#F8F4EB', fontFamily: inter, fontSize: 15, fontWeight: 500 }}>
               Explore →
             </span>
           </Link>
