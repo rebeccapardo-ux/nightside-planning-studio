@@ -11,29 +11,8 @@ import type { UserTask } from '@/lib/user-tasks'
 // MiniProgressBar — proportional fill (fraction = checked / total)
 // ---------------------------------------------------------------------------
 
-function MiniProgressBar({
-  domainId,
-  code,
-  userTasks,
-  labelColor,
-}: {
-  domainId: string
-  code: string | null | undefined
-  userTasks: UserTask[]
-  labelColor: string
-}) {
-  const [{ checked, total, pct }, setProgress] = useState<DomainProgress>({ checked: 0, total: 0, pct: 0 })
-
-  useEffect(() => {
-    let cancelled = false
-    void (async () => {
-      const { state } = await loadDomainState()
-      if (cancelled) return
-      setProgress(computeDomainProgress(domainId, code, state, userTasks))
-    })()
-    return () => { cancelled = true }
-  }, [domainId, code, userTasks])
-
+function MiniProgressBar({ progress, labelColor }: { progress: DomainProgress; labelColor: string }) {
+  const { checked, total, pct } = progress
   return (
     <div>
       <div style={{ height: 9, marginBottom: 10, borderRadius: 5, background: '#F8F4EB', border: '1px solid rgba(216,90,48,0.45)', overflow: 'hidden' }}>
@@ -74,6 +53,21 @@ export default function DomainStateCard({
   const slots    = getDomainCheckboxSlots(domain.domain_code)
   const isDark   = style.text === 'text-[#f8f4eb]'
 
+  // Progress lifted here (was inside MiniProgressBar) so the CTA can reflect the
+  // same status: "Start planning" before any progress, "Continue planning" after.
+  const [progress, setProgress] = useState<DomainProgress>({ checked: 0, total: 0, pct: 0 })
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const { state } = await loadDomainState()
+      if (cancelled) return
+      setProgress(computeDomainProgress(domain.id, domain.domain_code, state, userTasks))
+    })()
+    return () => { cancelled = true }
+  }, [domain.id, domain.domain_code, userTasks])
+
+  const notStarted = qualitativeLabel(progress.checked, progress.total) === 'Not yet started'
+
   return (
     <Link
       href={`/app/domains/${domain.id}`}
@@ -90,12 +84,7 @@ export default function DomainStateCard({
             user-added tasks (it would otherwise read "No topics yet" despite
             having trackable progress). */}
         {slots.length > 0 || userTasks.length > 0 ? (
-          <MiniProgressBar
-            domainId={domain.id}
-            code={domain.domain_code}
-            userTasks={userTasks}
-            labelColor={style.labelColor}
-          />
+          <MiniProgressBar progress={progress} labelColor={style.labelColor} />
         ) : (
           <p style={{ fontSize: 12, color: style.labelColor, margin: 0 }}>
             No topics yet
@@ -117,7 +106,7 @@ export default function DomainStateCard({
           color: isDark ? '#FFFFFF' : '#130426',
           border: isDark ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(0,0,0,0.15)',
         }}>
-          Continue planning →
+          {notStarted ? 'Start planning' : 'Continue planning'} →
         </span>
       </div>
     </Link>

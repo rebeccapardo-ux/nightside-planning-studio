@@ -73,7 +73,10 @@ export default async function AreasOfPlanningPage() {
             Areas of Planning
           </h1>
           <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 680, margin: '18px 0 0', lineHeight: 1.6 }}>
-            End-of-life planning is about reflecting on your values, having meaningful conversations, and understanding what matters most to you. It also involves practical decisions and documentation: designating people, completing forms, and recording details. This is where you&rsquo;ll work through each area of planning. You should periodically revisit this section to ensure your decisions and documentation are up-to-date, particularly as your circumstances, values, or relationships change.
+            End-of-life planning involves reflection and conversation as well as practical decisions and documentation. This is where you&rsquo;ll work through each area of planning.
+          </p>
+          <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 680, margin: '14px 0 0', lineHeight: 1.6 }}>
+            You should periodically revisit this section to ensure your decisions and documentation are up-to-date, particularly as your circumstances, values, or relationships change.
           </p>
         </div>
       </div>
