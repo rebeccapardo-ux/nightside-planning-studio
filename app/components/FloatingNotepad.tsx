@@ -24,11 +24,12 @@ export default function FloatingNotepad() {
   const isHealthcareLearn = pathname === '/app/learn/healthcare'
   const isAppHome = pathname === '/app'
   const isPlanPage = pathname.startsWith('/app/plan')
+  const isAreaPage = pathname.startsWith('/app/area')
   const isPersonalAdminDoc = pathname === '/app/capture/personal-admin'
   const isImportantContactsDoc = pathname === '/app/capture/important-contacts'
   const isFinancialInfoDoc = pathname === '/app/capture/financial-information'
   const isDevicesDoc = pathname === '/app/capture/devices-and-accounts'
-  const buttonStyle = isAppHome || isExploreLanding || isLegacyMap || isLegacyLearn || isPersonalAdminLearn || isRitualLearn || isDeathcareLearn || isWillsLearn || isHealthcareLearn || isPersonalAdminDoc || isImportantContactsDoc || isFinancialInfoDoc || isDevicesDoc ? 'lavender' : isScenarioPage || isTriviaPage || isReflectLanding || isValuesRanking || isFearsRanking ? 'orange' : isPlanPage ? 'sunrise' : 'navy'
+  const buttonStyle = isAppHome || isExploreLanding || isLegacyMap || isLegacyLearn || isPersonalAdminLearn || isRitualLearn || isDeathcareLearn || isWillsLearn || isHealthcareLearn || isPersonalAdminDoc || isImportantContactsDoc || isFinancialInfoDoc || isDevicesDoc ? 'lavender' : isScenarioPage || isTriviaPage || isReflectLanding || isValuesRanking || isFearsRanking ? 'orange' : isPlanPage || isAreaPage ? 'sunrise' : 'navy'
 
   return <NotepadModal buttonStyle={buttonStyle} />
 }

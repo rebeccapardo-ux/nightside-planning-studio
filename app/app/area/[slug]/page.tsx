@@ -49,7 +49,9 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const hasActivities = !!area.activities && area.activities.length > 0
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
+    // Page base is lavender (matching the last/Plan section) so the min-h-screen filler
+    // below the final section blends in rather than showing a stray cream bar.
+    <div className="min-h-screen" style={{ background: '#ECE7F7' }}>
       <style>{`
         .area-activity-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         @media (max-width: 720px) { .area-activity-grid { grid-template-columns: 1fr; } }
@@ -57,12 +59,13 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
       <AreaHeader slug={area.slug} title={area.title} intro={area.intro}>{learnContent}</AreaHeader>
 
-      {/* ── Relevant activities — cream (page bg); color-blocked against the lavender
-          Overview band above and the lavender Plan band below. Omitted when an area
-          has no activities. ── */}
+      {/* ── Relevant activities — full-width cream band; color-blocked against the
+          lavender Overview band above and the lavender Plan band below. Omitted when an
+          area has no activities. ── */}
       {hasActivities && (
-        <div className="max-w-6xl mx-auto px-10" style={{ paddingTop: 48, paddingBottom: 48 }}>
-          <CollapsibleSection title="Relevant Activities">
+        <div style={{ background: '#F8F4EB' }}>
+          <div className="max-w-6xl mx-auto px-10">
+            <CollapsibleSection title="Relevant Activities">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Reflective activities and exercises for thinking through this area. Use alone or with others.
             </p>
@@ -90,15 +93,16 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
                   </div>
                 )
               })}
-            </div>
-          </CollapsibleSection>
+              </div>
+            </CollapsibleSection>
+          </div>
         </div>
       )}
 
       {/* ── Plan — full-width light lavender, matching the Overview band. Color-blocked
           against the cream Relevant activities (or the navy header) above it. ── */}
       <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.08)' }}>
-        <div className="max-w-6xl mx-auto px-10" style={{ paddingTop: 48, paddingBottom: 64 }}>
+        <div className="max-w-6xl mx-auto px-10">
           <CollapsibleSection title="Plan">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.

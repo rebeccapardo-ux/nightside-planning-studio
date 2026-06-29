@@ -12,7 +12,10 @@ const apfel = "'Apfel Grotezk', sans-serif"
 export default function CollapsibleSection({ title, children }: { title: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(true)
   return (
-    <section>
+    // Vertical padding lives here (not the route wrapper) so it can shrink when
+    // collapsed — matching the Overview band's values exactly, so all three section
+    // bands are the same height when collapsed.
+    <section style={{ paddingTop: open ? 28 : 24, paddingBottom: open ? 48 : 24 }}>
       <style>{`.cs-header:hover .cs-chevron { opacity: 0.65; }`}</style>
       <button
         type="button"
