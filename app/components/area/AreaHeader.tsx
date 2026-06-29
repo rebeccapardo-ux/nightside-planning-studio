@@ -45,26 +45,39 @@ export default function AreaHeader({
       </div>
 
       {/* Overview band — a peer section ("Overview" header matching the page's other
-          section headers, with the See more/less toggle beside it). Light-lavender,
+          section headers, toggled by a chevron exactly like them). Light-lavender,
           full-bleed (sibling of the navy block). */}
       {children && (
         <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.12)' }}>
+          <style>{`.ah-header:hover .ah-chevron { opacity: 0.65; }`}</style>
           <div className="max-w-6xl mx-auto" style={{ padding: open ? '28px 40px 48px' : '24px 40px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="ah-header"
+              onClick={toggle}
+              aria-expanded={open}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+            >
               <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, color: '#130426', margin: 0 }}>Overview</h2>
-              <button
-                type="button"
-                onClick={toggle}
-                aria-expanded={open}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(19,4,38,0.06)', color: '#130426', border: '1px solid rgba(19,4,38,0.15)', borderRadius: 999, padding: '7px 16px', fontFamily: apfel, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
-              >
-                {open ? 'See less ▴' : 'See more ▾'}
-              </button>
-            </div>
+              <span className="ah-chevron" style={{ display: 'inline-flex', transition: 'opacity 150ms' }}>
+                <Chevron open={open} />
+              </span>
+            </button>
             {open && <div style={{ maxWidth: 760, marginTop: 20 }}>{children}</div>}
           </div>
         </div>
       )}
     </>
+  )
+}
+
+// Matches the chevron used by CollapsibleSection (Relevant activities / Plan) so the
+// Overview section toggles identically.
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+      style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}>
+      <path d="M4 6l4 4 4-4" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

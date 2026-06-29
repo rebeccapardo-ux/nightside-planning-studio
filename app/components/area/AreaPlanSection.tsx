@@ -112,7 +112,7 @@ function readWarningDismissed(key: string): boolean {
 //              page supplies the header/intro/Activities and the section container).
 // domainId is the user's container UUID (the area page resolves slug → domain_code →
 // container and passes it). Surfacing/tasks/notes logic is unchanged.
-export default function AreaPlanSection({ domainId, variant = 'domain', topSlot = null }: { domainId: string; variant?: 'domain' | 'area'; topSlot?: React.ReactNode }) {
+export default function AreaPlanSection({ domainId, variant = 'domain' }: { domainId: string; variant?: 'domain' | 'area' }) {
   const isDomainVariant = variant === 'domain'
 
   // Scroll to top on mount — prevents router cache from restoring a previous position.
@@ -337,10 +337,9 @@ export default function AreaPlanSection({ domainId, variant = 'domain', topSlot 
       <div className={isDomainVariant ? 'max-w-6xl mx-auto px-6 py-12' : ''}>
         <div className="domain-layout">
 
-          {/* Left column — per-area Relevant Documents callout (area variant) above
-              the lavender Planning Status panel. */}
+          {/* Left column — the lavender Planning Status panel (relevant documents are
+              surfaced inline within it, per readiness row, not as a top callout). */}
           <div>
-            {topSlot && <div style={{ marginBottom: 18 }}>{topSlot}</div>}
           <div className="rounded-xl" style={{ background: '#BBABF4', padding: 28 }}>
             {isWills && (
               <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 24px 0' }}>
@@ -924,7 +923,8 @@ function ItemMaterials({ matched }: { matched: EntryRef[] }) {
   if (matched.length === 0) return null
   return (
     <div className="mt-4 space-y-2">
-      {matched.map((entry) => (
+      {matched.map((entry) => entry.activity ? (
+        // Activity output — full-width card (icon + label left, arrow at the far right).
         <a
           key={entry.id}
           href={getEntryHref(entry)}
@@ -934,10 +934,29 @@ function ItemMaterials({ matched }: { matched: EntryRef[] }) {
           style={{ background: 'rgba(242,152,54,0.10)', border: '1px solid rgba(242,152,54,0.24)' }}
         >
           <span className="flex items-center gap-2 text-[13px] font-semibold leading-snug" style={{ color: '#130426' }}>
-            {entry.activity ? <EntryOutputIcon /> : <EntryDocIcon />}
+            <EntryOutputIcon />
             {entryLabel(entry)}
           </span>
           <span className="text-[11px] shrink-0 ml-3" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
+        </a>
+      ) : (
+        // Relevant document — a "Relevant document:" labelled pill that HUGS its text
+        // (width: fit-content), with the arrow directly after the label rather than at
+        // the row's far edge.
+        <a
+          key={entry.id}
+          href={getEntryHref(entry)}
+          className="rounded-lg transition-opacity hover:opacity-75"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'flex', width: 'fit-content', maxWidth: '100%', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(242,152,54,0.10)', border: '1px solid rgba(242,152,54,0.24)', color: '#130426' }}
+        >
+          <EntryDocIcon />
+          <span className="text-[13px] leading-snug">
+            <span style={{ color: 'rgba(19,4,38,0.55)', fontWeight: 500 }}>Relevant document: </span>
+            <span style={{ fontWeight: 600 }}>{entryLabel(entry)}</span>
+          </span>
+          <span className="text-[11px] shrink-0" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
         </a>
       ))}
     </div>

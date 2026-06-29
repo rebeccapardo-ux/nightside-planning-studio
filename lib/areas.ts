@@ -33,7 +33,11 @@ export type AreaConfig = {
   title: string
   intro: string             // brief header intro (validated copy from the mockups)
   activities: AreaActivity[] | null   // null → no Relevant activities section renders at all
-  documents: DocumentType[] | null    // null → no Relevant Documents panel renders in the Plan section
+  // Per-area platform documents. The standalone "Relevant Documents" panel was removed
+  // (documents now surface inline in the Planning Status panel, per readiness row, via
+  // DOMAIN_STRUCTURES `relatedDocumentTypes`). This mapping is retained as canonical
+  // area→document config for Phase 2 surfaces (home / Your Materials). Currently unconsumed.
+  documents: DocumentType[] | null
 }
 
 const VALUES_RANKING: AreaActivity = { label: 'Values Ranking', href: '/app/reflect/values-ranking', blurb: 'Surface and rank what matters most to you.', kind: 'output', activity: 'values_ranking' }

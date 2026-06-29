@@ -6,7 +6,6 @@ import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { areaBySlug } from '@/lib/areas'
 import AreaPlanSection from '@/app/components/area/AreaPlanSection'
 import AreaHeader from '@/app/components/area/AreaHeader'
-import RelevantDocuments from '@/app/components/area/RelevantDocuments'
 import CollapsibleSection from '@/app/components/area/CollapsibleSection'
 import HealthcareLearnContent from '@/app/components/area/learn/HealthcareLearnContent'
 
@@ -48,9 +47,6 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   // Per-area Learn-content band (Phase 1: Healthcare; others land in Phase 2).
   const learnContent = area.slug === 'healthcare-wishes' ? <HealthcareLearnContent /> : null
   const hasActivities = !!area.activities && area.activities.length > 0
-  const relevantDocs = area.documents && area.documents.length > 0
-    ? <RelevantDocuments documents={area.documents} />
-    : null
 
   return (
     <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
@@ -107,7 +103,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.
             </p>
-            <AreaPlanSection domainId={container.id} variant="area" topSlot={relevantDocs} />
+            <AreaPlanSection domainId={container.id} variant="area" />
           </CollapsibleSection>
         </div>
       </div>
