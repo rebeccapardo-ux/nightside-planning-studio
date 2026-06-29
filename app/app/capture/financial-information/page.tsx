@@ -446,10 +446,10 @@ export default function FinancialInformationPage() {
             Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Account numbers are designed to be added at the moment of export rather than saved to Your Plan. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
+            Account numbers are designed to be added at the moment of export rather than saved to Your Materials. This protects information that&apos;s most often targeted by identity theft and financial fraud.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
-          <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>
+          <AutosaveNotice>Information you add will save automatically to Your Materials.</AutosaveNotice>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
@@ -756,7 +756,7 @@ function EntryCard({ id, title, isOpen, onToggle, onDelete, isEmpty, pendingFocu
                   <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.65)" strokeWidth="1.3" />
                   <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.65)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your Plan</span>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your Materials</span>
               </div>
             )}
           </div>

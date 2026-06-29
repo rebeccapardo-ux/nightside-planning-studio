@@ -239,7 +239,7 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
               <circle cx="7" cy="7" r="6" stroke={c.status} strokeWidth="1.3" />
               <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke={c.status} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span style={{ fontSize: 13, fontWeight: 500, color: c.status }}>Saved to Your Plan</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: c.status }}>Saved to Your Materials</span>
           </div>
         ) : saveStatus === 'audio_failed' ? (
           <ErrorMessagePill>We couldn&apos;t save your recording. You can delete and re-record.</ErrorMessagePill>

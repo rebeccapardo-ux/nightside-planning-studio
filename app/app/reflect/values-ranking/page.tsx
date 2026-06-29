@@ -755,7 +755,7 @@ function ValuesRankingContent() {
                     </p>
                   )}
                 </div>
-                <AutosaveNotice theme="dark" style={{ marginBottom: 20 }}>Your work saves automatically to Your Plan.</AutosaveNotice>
+                <AutosaveNotice theme="dark" style={{ marginBottom: 20 }}>Your work saves automatically to Your Materials.</AutosaveNotice>
 
                 {/* Error */}
                 {errorMessage && (
@@ -880,7 +880,7 @@ function ValuesRankingContent() {
                     <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                     <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span>Saved to Your Plan</span>
+                  <span>Saved to Your Materials</span>
                 </>
               )}
               {reflectionSaveStatus === 'error' && <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>}
@@ -916,7 +916,7 @@ function ValuesRankingContent() {
           <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
             To see all your placements side-by-side, open this activity on a larger screen.
           </p>
-          <AutosaveNotice theme="dark" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your Plan.</AutosaveNotice>
+          <AutosaveNotice theme="dark" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your Materials.</AutosaveNotice>
 
           {/* Drawn card area */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 22 }}>
@@ -1204,7 +1204,7 @@ function ValuesRankingContent() {
                       <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                       <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span>Saved to Your Plan</span>
+                    <span>Saved to Your Materials</span>
                   </>
                 )}
                 {reflectionSaveStatus === 'error' && <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>}

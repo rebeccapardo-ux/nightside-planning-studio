@@ -36,11 +36,11 @@ export default function Error({
           Something went wrong
         </h1>
         <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.65)', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 420 }}>
-          Something didn&apos;t work. You can try again, or head back to Your Plan.
+          Something didn&apos;t work. You can try again, or head back to Home.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={reset} style={primaryBtn}>Try again</button>
-          <Link href="/app/plan" style={secondaryBtn}>Go to Your Plan</Link>
+          <Link href="/app" style={secondaryBtn}>Go to Home</Link>
         </div>
       </div>
     </div>

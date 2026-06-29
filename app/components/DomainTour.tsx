@@ -49,7 +49,7 @@ const STEPS: Step[] = [
   },
   {
     title: 'Your Thoughts',
-    body: "Capture thoughts in the notes section below. They'll save to Your Plan and stay attached to this section.",
+    body: "Capture thoughts in the notes section below. They'll save to Your Materials and stay attached to this section.",
     anchor: 'your-thoughts',
   },
 ]

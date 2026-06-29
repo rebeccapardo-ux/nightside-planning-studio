@@ -73,7 +73,7 @@ export default function RecoverConfirmForm({
             Add a recovery email
           </Link>
           <Link href="/app" style={{ display: 'inline-block', marginTop: 16, fontFamily: hv, fontSize: 14, color: '#2d3a6b', fontWeight: 500, textDecoration: 'none' }}>
-            Continue to Your Plan →
+            Continue to Home →
           </Link>
         </div>
       )
@@ -87,7 +87,7 @@ export default function RecoverConfirmForm({
             You&apos;re signed in with your previous email (<strong>{primaryMasked}</strong>). We couldn&apos;t change your sign-in email — you can try again from Account settings, or contact us at <a href="mailto:contact@thenightside.net" style={{ color: '#2d3a6b' }}>contact@thenightside.net</a>. Other sessions have been signed out for security.
           </p>
           <Link href="/app" style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 14, background: '#2d3a6b', color: '#fff', borderRadius: 100, fontSize: 15, fontWeight: 500, fontFamily: hv, textDecoration: 'none' }}>
-            Continue to Your Plan →
+            Continue to Home →
           </Link>
         </div>
       )
@@ -100,7 +100,7 @@ export default function RecoverConfirmForm({
           You&apos;re signed in, and you&apos;ll keep signing in with your previous email (<strong>{primaryMasked}</strong>) and your new password. Other sessions have been signed out.
         </p>
         <Link href="/app" style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: 14, background: '#2d3a6b', color: '#fff', borderRadius: 100, fontSize: 15, fontWeight: 500, fontFamily: hv, textDecoration: 'none' }}>
-          Continue to Your Plan →
+          Continue to Home →
         </Link>
       </div>
     )

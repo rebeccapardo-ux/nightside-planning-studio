@@ -206,7 +206,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
           You don&apos;t need to arrive with your decisions made. Each scenario lets you try a choice on, so you can see where it leads and notice how it sits with you. Then you can back up and explore a different path to feel the difference.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
-          {['Choose any scenario to start', 'Explore different paths to compare outcomes', 'Notes save to Your Plan'].map((text) => (
+          {['Choose any scenario to start', 'Explore different paths to compare outcomes', 'Notes save to Your Materials'].map((text) => (
             <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
               {text}
             </span>
@@ -592,7 +592,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                       <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                       <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Materials</span>
                   </>
                 )}
               </div>
@@ -934,7 +934,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                       <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                       <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Materials</span>
                   </>
                 )}
               </div>
@@ -1254,7 +1254,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                       <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                       <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Materials</span>
                   </>
                 )}
               </div>
@@ -1664,7 +1664,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
                       <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                       <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span style={{ fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                    <span style={{ fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Materials</span>
                   </>
                 )}
               </div>
@@ -1849,7 +1849,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                       <circle cx="7" cy="7" r="6" stroke="rgba(26,26,26,0.72)" strokeWidth="1.3" />
                       <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(26,26,26,0.72)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Plan</span>
+                    <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(26,26,26,0.72)' }}>Saved to Your Materials</span>
                   </>
                 )}
               </div>

@@ -261,17 +261,17 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
                 </p>
                 {entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION && (
                   <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
-                    Account numbers added here will be included in this export, but <strong>won&apos;t be saved to Your Plan.</strong>
+                    Account numbers added here will be included in this export, but <strong>won&apos;t be saved to Your Materials.</strong>
                   </p>
                 )}
                 {entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO && (
                   <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
-                    SIN and health card numbers added here will be included in this export, but <strong>won&apos;t be saved to Your Plan.</strong>
+                    SIN and health card numbers added here will be included in this export, but <strong>won&apos;t be saved to Your Materials.</strong>
                   </p>
                 )}
                 {entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS && (
                   <p style={{ fontFamily: hv, fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 24, lineHeight: 1.55 }}>
-                    Passwords and PIN numbers added here will be included in this export, but <strong>won&apos;t be saved to Your Plan.</strong>
+                    Passwords and PIN numbers added here will be included in this export, but <strong>won&apos;t be saved to Your Materials.</strong>
                   </p>
                 )}
               </>
