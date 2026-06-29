@@ -49,9 +49,10 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const hasActivities = !!area.activities && area.activities.length > 0
 
   return (
-    // Page base is lavender (matching the last/Plan section) so the min-h-screen filler
-    // below the final section blends in rather than showing a stray cream bar.
-    <div className="min-h-screen" style={{ background: '#ECE7F7' }}>
+    // Page base is the dark footer colour (#130426), so the min-h-screen filler below
+    // the final section reads as the footer zone — not as a stray cream bar, and not as
+    // an over-tall extension of the lavender Plan section.
+    <div className="min-h-screen" style={{ background: '#130426' }}>
       <style>{`
         .area-activity-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         @media (max-width: 720px) { .area-activity-grid { grid-template-columns: 1fr; } }
@@ -65,7 +66,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       {hasActivities && (
         <div style={{ background: '#F8F4EB' }}>
           <div className="max-w-6xl mx-auto px-10">
-            <CollapsibleSection title="Relevant Activities">
+            <CollapsibleSection title="Relevant Activities" storageKey={`nightside.areaSection.${area.slug}.activities`}>
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Reflective activities and exercises for thinking through this area. Use alone or with others.
             </p>
@@ -103,7 +104,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           against the cream Relevant activities (or the navy header) above it. ── */}
       <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.08)' }}>
         <div className="max-w-6xl mx-auto px-10">
-          <CollapsibleSection title="Plan">
+          <CollapsibleSection title="Plan" storageKey={`nightside.areaSection.${area.slug}.plan`}>
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.
             </p>

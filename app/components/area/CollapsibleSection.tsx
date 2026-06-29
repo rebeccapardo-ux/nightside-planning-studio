@@ -1,16 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useSectionCollapse } from './useSectionCollapse'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 
-// Section-level collapse for the area page's "Relevant activities" and "Plan"
-// sections. Default EXPANDED for everyone on every visit — no first-visit / per-area
-// localStorage (that logic belongs to the Learn band, where "I've seen it" matters;
-// here collapse is just transient focus, "hide this for now"). The header (title +
-// chevron) stays visible when collapsed; the body unmounts. Subtle chevron toggle.
-export default function CollapsibleSection({ title, children }: { title: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(true)
+// Section-level collapse for the area page's "Relevant Activities" and "Plan" sections.
+// Default EXPANDED on a user's first visit to the area, then remembers their choice per
+// section (shared model with the Overview band — see useSectionCollapse). The header
+// (title + chevron) stays visible when collapsed; the body unmounts.
+export default function CollapsibleSection({ title, storageKey, children }: { title: string; storageKey: string; children: React.ReactNode }) {
+  const [open, toggle] = useSectionCollapse(storageKey)
   return (
     // Vertical padding lives here (not the route wrapper) so it can shrink when
     // collapsed — matching the Overview band's values exactly, so all three section
@@ -20,7 +19,7 @@ export default function CollapsibleSection({ title, children }: { title: string;
       <button
         type="button"
         className="cs-header"
-        onClick={() => setOpen((p) => !p)}
+        onClick={toggle}
         aria-expanded={open}
         style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
       >

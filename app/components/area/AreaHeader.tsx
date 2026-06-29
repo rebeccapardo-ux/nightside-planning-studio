@@ -1,33 +1,22 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useSectionCollapse } from './useSectionCollapse'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 // Area-page header: navy band (breadcrumb + title + intro) and, beneath it, the
 // full-width "Overview" band. The band is a peer section — its "Overview" header
-// matches the page's other section headers (Relevant activities / Plan), with the
-// See-more/less toggle sitting beside it. Light-lavender, full-bleed (SIBLING of the
-// navy block). Collapsed → header + "See more ▾" only; expanded → header + "See less
-// ▴" + the content (≤760px reading width). Default state: EXPANDED on first visit to
-// this area, COLLAPSED thereafter (per-area localStorage, per-device).
+// matches the page's other section headers (Relevant Activities / Plan), with a chevron
+// toggle beside it. Light-lavender, full-bleed (SIBLING of the navy block). Collapsed →
+// header only; expanded → header + the content (≤760px reading width). Default state:
+// EXPANDED on first visit to this area, then remembers the user's choice (shared model
+// with the other sections — see useSectionCollapse).
 export default function AreaHeader({
   slug, title, intro, children,
 }: { slug: string; title: string; intro: string; children: React.ReactNode }) {
-  const storageKey = `nightside.areaSeen.${slug}`
-  const [open, setOpen] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    try { return window.localStorage.getItem(storageKey) !== 'seen' } catch { return false }
-  })
-  function toggle() {
-    setOpen((prev) => {
-      const next = !prev
-      try { window.localStorage.setItem(storageKey, 'seen') } catch { /* private mode */ }
-      return next
-    })
-  }
+  const [open, toggle] = useSectionCollapse(`nightside.areaSection.${slug}.overview`)
 
   return (
     <>
