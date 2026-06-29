@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPE, type DocumentType } from '@/lib/content-metadata'
 import {
   addNoteToContainer,
   removeNoteFromContainer,
@@ -631,6 +631,12 @@ function PlanningStatusSection({
     )
   }
 
+  // Document types the user has started (an entry of that type exists) — drives the
+  // inline "Not started / In progress" status on relevant-document links. Derived from
+  // ALL the user's entries, not just this row's matches, so a staticLink document with
+  // no relatedDocumentTypes mapping still reports the right status.
+  const startedDocTypes = new Set<string>((entries ?? []).filter((e) => e.document_type).map((e) => e.document_type as string))
+
   // Planning status routes through the shared computeDomainProgress helper.
   // Wrap local `checkboxes` as a DomainState so the helper sees this domain's
   // live state — domainStateRef lags toggles by the debounce interval, and the
@@ -670,6 +676,7 @@ function PlanningStatusSection({
             item={item}
             vals={checkboxes[item.key] ?? item.checkboxes.map(() => false)}
             matched={itemEntries(item)}
+            startedDocTypes={startedDocTypes}
             onToggle={(idx) => handleCheckbox(item.key, idx, item.checkboxes.length)}
             userTasks={byRow[item.key] ?? []}
             onToggleTask={handleUserTaskToggle}
@@ -709,6 +716,7 @@ function ReadinessCard({
   item,
   vals,
   matched,
+  startedDocTypes = new Set<string>(),
   onToggle,
   userTasks = [],
   onToggleTask,
@@ -719,6 +727,7 @@ function ReadinessCard({
   item: ReadinessItemDef
   vals: boolean[]
   matched: EntryRef[]
+  startedDocTypes?: Set<string>
   onToggle?: (idx: number) => void
   userTasks?: UserTask[]
   onToggleTask?: (task: UserTask) => void
@@ -769,6 +778,17 @@ function ReadinessCard({
   const taskActionBtn = { fontSize: 11, fontWeight: 500, color: 'rgba(19,4,38,0.55)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1.2 } as const
   const taskInputCls = 'flex-1 min-w-0 text-[12px] leading-snug text-[#130426] bg-white rounded px-1.5 py-0.5 outline-none'
   const taskInputStyle = { border: '1px solid rgba(19,4,38,0.25)' } as const
+
+  // Split the row's surfaced items into three buckets:
+  // - relevant documents: platform-document staticLinks ∪ matched document entries
+  //   (deduped by document type) → always shown with a Not started / In progress status.
+  // - activity outputs: the user's matching activity entries → ItemMaterials cards.
+  // - other static links: non-document links (external resources) → generic panel.
+  const docStaticLinks = (item.staticLinks ?? []).map((l) => documentTypeForHref(l.href)).filter((d): d is DocumentType => !!d)
+  const docMatched = matched.filter((e) => e.document_type).map((e) => e.document_type as DocumentType)
+  const relevantDocTypes = Array.from(new Set<DocumentType>([...docStaticLinks, ...docMatched]))
+  const activityOutputs = matched.filter((e) => !!e.activity)
+  const otherStaticLinks = (item.staticLinks ?? []).filter((l) => !documentTypeForHref(l.href))
 
   return (
     <div className="rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid rgba(19,4,38,0.08)' }}>
@@ -885,10 +905,14 @@ function ReadinessCard({
             )
           )}
         </div>
-        {matched.length > 0 && <ItemMaterials matched={matched} />}
-        {item.staticLinks && item.staticLinks.length > 0 && (
+        {/* Relevant documents — always shown, with status */}
+        <RelevantDocLinks docTypes={relevantDocTypes} startedDocTypes={startedDocTypes} />
+        {/* Activity outputs — the user's created materials */}
+        {activityOutputs.length > 0 && <ItemMaterials matched={activityOutputs} />}
+        {/* Other static links (external resources / learn) — generic full-width panel */}
+        {otherStaticLinks.length > 0 && (
           <div style={{ marginTop: 12, marginBottom: 4 }}>
-            {item.staticLinks.map(({ href, label }) => (
+            {otherStaticLinks.map(({ href, label }) => (
               <a
                 key={href}
                 href={href}
@@ -919,12 +943,14 @@ function ReadinessCard({
 // ItemMaterials — the user's matching activity outputs / documents for a row
 // ---------------------------------------------------------------------------
 
+// ItemMaterials renders the user's activity OUTPUTS for a row (relatedActivities).
+// Relevant documents are rendered separately (RelevantDocLinks) so they can always
+// appear and carry a status; this only receives activity entries.
 function ItemMaterials({ matched }: { matched: EntryRef[] }) {
   if (matched.length === 0) return null
   return (
     <div className="mt-4 space-y-2">
-      {matched.map((entry) => entry.activity ? (
-        // Activity output — full-width card (icon + label left, arrow at the far right).
+      {matched.map((entry) => (
         <a
           key={entry.id}
           href={getEntryHref(entry)}
@@ -934,32 +960,63 @@ function ItemMaterials({ matched }: { matched: EntryRef[] }) {
           style={{ background: 'rgba(242,152,54,0.10)', border: '1px solid rgba(242,152,54,0.24)' }}
         >
           <span className="flex items-center gap-2 text-[13px] font-semibold leading-snug" style={{ color: '#130426' }}>
-            <EntryOutputIcon />
+            {entry.activity ? <EntryOutputIcon /> : <EntryDocIcon />}
             {entryLabel(entry)}
           </span>
           <span className="text-[11px] shrink-0 ml-3" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
         </a>
-      ) : (
-        // Relevant document — a "Relevant document:" labelled pill that HUGS its text
-        // (width: fit-content), with the arrow directly after the label rather than at
-        // the row's far edge.
-        <a
-          key={entry.id}
-          href={getEntryHref(entry)}
-          className="rounded-lg transition-opacity hover:opacity-75"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'flex', width: 'fit-content', maxWidth: '100%', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(242,152,54,0.10)', border: '1px solid rgba(242,152,54,0.24)', color: '#130426' }}
-        >
-          <EntryDocIcon />
-          <span className="text-[13px] leading-snug">
-            <span style={{ color: 'rgba(19,4,38,0.55)', fontWeight: 500 }}>Relevant document: </span>
-            <span style={{ fontWeight: 600 }}>{entryLabel(entry)}</span>
-          </span>
-          <span className="text-[11px] shrink-0" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
-        </a>
       ))}
     </div>
+  )
+}
+
+// Reverse-map a static-link href to its platform document type (label-as-FK: identity
+// via the canonical href, never prose). Non-document links (external resources, learn
+// pages) return null and keep their generic rendering.
+function documentTypeForHref(href: string): DocumentType | null {
+  const entry = (Object.entries(DOCUMENT_TYPE_META) as [DocumentType, { href: string }][]).find(([, m]) => m.href === href)
+  return entry ? entry[0] : null
+}
+
+// RelevantDocLinks — the area's relevant platform documents for a readiness row. Always
+// rendered (regardless of whether the user has started them — these come from staticLinks
+// and/or relatedDocumentTypes), as a "Relevant document:" pill that hugs its text, with a
+// Not started / In progress status badge to the right of the document name.
+function RelevantDocLinks({ docTypes, startedDocTypes }: { docTypes: DocumentType[]; startedDocTypes: Set<string> }) {
+  if (docTypes.length === 0) return null
+  return (
+    <div className="mt-4 space-y-2">
+      {docTypes.map((dt) => {
+        const meta = DOCUMENT_TYPE_META[dt]
+        const started = startedDocTypes.has(dt)
+        return (
+          <a
+            key={dt}
+            href={meta.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-opacity hover:opacity-75"
+            style={{ display: 'flex', width: 'fit-content', maxWidth: '100%', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#F8F4EB', border: '1px solid #F29836', color: '#130426', textDecoration: 'none' }}
+          >
+            <EntryDocIcon />
+            <span className="text-[13px] leading-snug">
+              <span style={{ color: 'rgba(19,4,38,0.55)', fontWeight: 500 }}>Relevant document: </span>
+              <span style={{ fontWeight: 600 }}>{meta.label}</span>
+            </span>
+            <DocStatusBadge started={started} />
+            <span className="text-[11px] shrink-0" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
+          </a>
+        )
+      })}
+    </div>
+  )
+}
+
+function DocStatusBadge({ started }: { started: boolean }) {
+  return started ? (
+    <span style={{ flexShrink: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, color: '#9A4A1E', background: 'rgba(216,90,48,0.16)', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>In progress</span>
+  ) : (
+    <span style={{ flexShrink: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, color: 'rgba(19,4,38,0.55)', background: 'rgba(19,4,38,0.07)', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>Not started</span>
   )
 }
 

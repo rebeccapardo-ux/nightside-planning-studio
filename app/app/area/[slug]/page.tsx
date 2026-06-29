@@ -62,7 +62,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           has no activities. ── */}
       {hasActivities && (
         <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 48, paddingBottom: 48 }}>
-          <CollapsibleSection title="Relevant activities">
+          <CollapsibleSection title="Relevant Activities">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Reflective activities and exercises for thinking through this area. Use alone or with others.
             </p>

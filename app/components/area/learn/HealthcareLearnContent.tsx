@@ -35,6 +35,24 @@ export default function HealthcareLearnContent() {
           <li style={{ ...para, marginBottom: 0 }}>Are they able to handle tough conversations under pressure?</li>
         </ul>
       </div>
+
+      {/* Province-specific resources — carried over from the old Healthcare Learn page's
+          "Next steps" section. Lives at the bottom of the Overview band on every area
+          page (per-area copy; this is Healthcare's). White card with the Sunrise CTA so
+          it reads as a distinct resource callout against the lavender band. */}
+      <div style={{ background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.1)', borderRadius: 16, padding: '26px 28px', marginTop: 32 }}>
+        <h3 style={{ fontFamily: apfel, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 10px' }}>Explore province-specific resources</h3>
+        <p style={{ ...para, fontSize: 16, marginBottom: 20 }}>It&rsquo;s important to know that legal requirements vary by province. In the Resource Hub, you&rsquo;ll find province-specific templates for things like designating a substitute decision-maker or completing an Advance Directive.</p>
+        <a
+          href="https://thenightside.net/resources"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block hover:opacity-90 transition-opacity"
+          style={{ background: '#DB5835', color: '#130426', fontFamily: hv, fontSize: 15, fontWeight: 500, padding: '12px 22px', borderRadius: 999, textDecoration: 'none' }}
+        >
+          View resources →
+        </a>
+      </div>
     </div>
   )
 }
