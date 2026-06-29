@@ -782,11 +782,21 @@ function ReadinessCard({
   // Split the row's surfaced items into three buckets:
   // - relevant documents: platform-document staticLinks ∪ matched document entries
   //   (deduped by document type) → always shown with a Not started / In progress status.
+  //   staticLinks preserve their (possibly deep-linked, e.g. ?section=legal) href; matched
+  //   docs use the canonical doc href. On a dup, the staticLink (deep link) wins.
   // - activity outputs: the user's matching activity entries → ItemMaterials cards.
   // - other static links: non-document links (external resources) → generic panel.
-  const docStaticLinks = (item.staticLinks ?? []).map((l) => documentTypeForHref(l.href)).filter((d): d is DocumentType => !!d)
-  const docMatched = matched.filter((e) => e.document_type).map((e) => e.document_type as DocumentType)
-  const relevantDocTypes = Array.from(new Set<DocumentType>([...docStaticLinks, ...docMatched]))
+  const docFromStatic = (item.staticLinks ?? [])
+    .map((l) => { const dt = documentTypeForHref(l.href); return dt ? { docType: dt, href: l.href } : null })
+    .filter((x): x is { docType: DocumentType; href: string } => !!x)
+  const docFromMatched = matched
+    .filter((e) => e.document_type)
+    .map((e) => ({ docType: e.document_type as DocumentType, href: DOCUMENT_TYPE_META[e.document_type as DocumentType].href }))
+  const relevantDocs: { docType: DocumentType; href: string }[] = []
+  const seenDocType = new Set<string>()
+  for (const d of [...docFromStatic, ...docFromMatched]) {
+    if (!seenDocType.has(d.docType)) { seenDocType.add(d.docType); relevantDocs.push(d) }
+  }
   const activityOutputs = matched.filter((e) => !!e.activity)
   const otherStaticLinks = (item.staticLinks ?? []).filter((l) => !documentTypeForHref(l.href))
 
@@ -906,7 +916,7 @@ function ReadinessCard({
           )}
         </div>
         {/* Relevant documents — always shown, with status */}
-        <RelevantDocLinks docTypes={relevantDocTypes} startedDocTypes={startedDocTypes} />
+        <RelevantDocLinks docs={relevantDocs} startedDocTypes={startedDocTypes} />
         {/* Activity outputs — the user's created materials */}
         {activityOutputs.length > 0 && <ItemMaterials matched={activityOutputs} />}
         {/* Other static links (external resources / learn) — generic full-width panel */}
@@ -971,28 +981,32 @@ function ItemMaterials({ matched }: { matched: EntryRef[] }) {
 }
 
 // Reverse-map a static-link href to its platform document type (label-as-FK: identity
-// via the canonical href, never prose). Non-document links (external resources, learn
-// pages) return null and keep their generic rendering.
+// via the canonical href, never prose). The query string is stripped first, so a
+// deep-linked href (e.g. `/app/capture/personal-admin?section=legal`) still resolves to
+// its document. Non-document links (external resources, learn pages) return null and
+// keep their generic rendering.
 function documentTypeForHref(href: string): DocumentType | null {
-  const entry = (Object.entries(DOCUMENT_TYPE_META) as [DocumentType, { href: string }][]).find(([, m]) => m.href === href)
+  const base = href.split('?')[0]
+  const entry = (Object.entries(DOCUMENT_TYPE_META) as [DocumentType, { href: string }][]).find(([, m]) => m.href === base)
   return entry ? entry[0] : null
 }
 
 // RelevantDocLinks — the area's relevant platform documents for a readiness row. Always
 // rendered (regardless of whether the user has started them — these come from staticLinks
 // and/or relatedDocumentTypes), as a "Relevant document:" pill that hugs its text, with a
-// Not started / In progress status badge to the right of the document name.
-function RelevantDocLinks({ docTypes, startedDocTypes }: { docTypes: DocumentType[]; startedDocTypes: Set<string> }) {
-  if (docTypes.length === 0) return null
+// Not started / In progress status badge to the right of the document name. Each doc keeps
+// its own href so deep links (e.g. to a specific, expanded doc section) are preserved.
+function RelevantDocLinks({ docs, startedDocTypes }: { docs: { docType: DocumentType; href: string }[]; startedDocTypes: Set<string> }) {
+  if (docs.length === 0) return null
   return (
     <div className="mt-4 space-y-2">
-      {docTypes.map((dt) => {
-        const meta = DOCUMENT_TYPE_META[dt]
-        const started = startedDocTypes.has(dt)
+      {docs.map(({ docType, href }) => {
+        const meta = DOCUMENT_TYPE_META[docType]
+        const started = startedDocTypes.has(docType)
         return (
           <a
-            key={dt}
-            href={meta.href}
+            key={docType}
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             className="transition-opacity hover:opacity-75"
@@ -1000,11 +1014,11 @@ function RelevantDocLinks({ docTypes, startedDocTypes }: { docTypes: DocumentTyp
           >
             <EntryDocIcon />
             <span className="text-[13px] leading-snug">
-              <span style={{ color: 'rgba(19,4,38,0.55)', fontWeight: 500 }}>Relevant document: </span>
+              <span style={{ color: 'rgba(19,4,38,0.7)', fontWeight: 500 }}>Relevant document: </span>
               <span style={{ fontWeight: 600 }}>{meta.label}</span>
             </span>
             <DocStatusBadge started={started} />
-            <span className="text-[11px] shrink-0" style={{ color: 'rgba(19,4,38,0.45)' }}>→</span>
+            <span className="text-[11px] shrink-0" style={{ color: 'rgba(19,4,38,0.55)' }}>→</span>
           </a>
         )
       })}
@@ -1014,9 +1028,9 @@ function RelevantDocLinks({ docTypes, startedDocTypes }: { docTypes: DocumentTyp
 
 function DocStatusBadge({ started }: { started: boolean }) {
   return started ? (
-    <span style={{ flexShrink: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, color: '#9A4A1E', background: 'rgba(216,90,48,0.16)', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>In progress</span>
+    <span style={{ flexShrink: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, color: '#8A3E18', background: 'rgba(216,90,48,0.18)', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>In progress</span>
   ) : (
-    <span style={{ flexShrink: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, color: 'rgba(19,4,38,0.55)', background: 'rgba(19,4,38,0.07)', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>Not started</span>
+    <span style={{ flexShrink: 0, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 11, fontWeight: 600, color: 'rgba(19,4,38,0.7)', background: 'rgba(19,4,38,0.08)', borderRadius: 999, padding: '2px 9px', whiteSpace: 'nowrap' }}>Not started</span>
   )
 }
 

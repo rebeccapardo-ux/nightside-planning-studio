@@ -61,7 +61,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           Overview band above and the lavender Plan band below. Omitted when an area
           has no activities. ── */}
       {hasActivities && (
-        <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 48, paddingBottom: 48 }}>
+        <div className="max-w-6xl mx-auto px-10" style={{ paddingTop: 48, paddingBottom: 48 }}>
           <CollapsibleSection title="Relevant Activities">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Reflective activities and exercises for thinking through this area. Use alone or with others.
@@ -98,7 +98,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       {/* ── Plan — full-width light lavender, matching the Overview band. Color-blocked
           against the cream Relevant activities (or the navy header) above it. ── */}
       <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.08)' }}>
-        <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 48, paddingBottom: 64 }}>
+        <div className="max-w-6xl mx-auto px-10" style={{ paddingTop: 48, paddingBottom: 64 }}>
           <CollapsibleSection title="Plan">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.

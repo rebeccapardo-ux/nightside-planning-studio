@@ -102,6 +102,10 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'who_will_decide',
           title: 'Who will make decisions for me',
           explanation: '',
+          // Deep-links into the Personal Admin Info doc's Legal & decision-making
+          // section (same destination Key Details uses for the substitute decision-maker)
+          // so it opens with that section expanded.
+          staticLinks: [{ href: `${DOCUMENT_TYPE_META.personal_admin_info.href}?section=legal`, label: DOCUMENT_TYPE_META.personal_admin_info.label }],
           checkboxes: [
             'I have identified a substitute decision-maker for my care',
             'My substitute decision-maker has agreed to take on this role',
@@ -119,7 +123,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           ],
           checkboxHelpers: [
             null,
-            'This may include an advance directive or equivalent document in your province. See the learn section for guidance.',
+            'This may include an advance directive or equivalent document in your province. See the information overview above for guidance.',
           ],
         },
       ],
