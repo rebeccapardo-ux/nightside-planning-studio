@@ -61,10 +61,11 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
       <AreaHeader slug={area.slug} title={area.title} intro={area.intro}>{learnContent}</AreaHeader>
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-
-        {/* ── Relevant activities section (omitted entirely when an area has none) ── */}
-        {hasActivities && (
+      {/* ── Relevant activities — cream (page bg); color-blocked against the lavender
+          Overview band above and the lavender Plan band below. Omitted when an area
+          has no activities. ── */}
+      {hasActivities && (
+        <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 48, paddingBottom: 48 }}>
           <CollapsibleSection title="Relevant activities">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Reflective activities and exercises for thinking through this area. Use alone or with others.
@@ -95,18 +96,20 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
               })}
             </div>
           </CollapsibleSection>
-        )}
+        </div>
+      )}
 
-        {/* Section divider — clear visual break between Relevant activities and Plan */}
-        {hasActivities && <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)', margin: '48px 0' }} />}
-
-        {/* ── Plan section ── */}
-        <CollapsibleSection title="Plan">
-          <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
-            Track the practical decisions and documentation, and capture related notes as you go.
-          </p>
-          <AreaPlanSection domainId={container.id} variant="area" topSlot={relevantDocs} />
-        </CollapsibleSection>
+      {/* ── Plan — full-width light lavender, matching the Overview band. Color-blocked
+          against the cream Relevant activities (or the navy header) above it. ── */}
+      <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.08)' }}>
+        <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 48, paddingBottom: 64 }}>
+          <CollapsibleSection title="Plan">
+            <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
+              Track the practical decisions and documentation, and capture related notes as you go.
+            </p>
+            <AreaPlanSection domainId={container.id} variant="area" topSlot={relevantDocs} />
+          </CollapsibleSection>
+        </div>
       </div>
     </div>
   )

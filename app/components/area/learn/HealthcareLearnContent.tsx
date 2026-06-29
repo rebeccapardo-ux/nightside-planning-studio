@@ -13,7 +13,9 @@
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const para: React.CSSProperties = { fontFamily: hv, fontSize: 17, lineHeight: 1.65, color: '#130426', margin: '0 0 18px' }
-const heading: React.CSSProperties = { fontFamily: apfel, fontSize: 26, fontWeight: 600, lineHeight: 1.15, color: '#130426', margin: '0 0 16px' }
+// Sub-subheader within the Overview section — clearly subordinate to the section's
+// "Overview" header (30/600, rendered by AreaHeader).
+const heading: React.CSSProperties = { fontFamily: apfel, fontSize: 21, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 14px' }
 
 export default function HealthcareLearnContent() {
   return (
@@ -25,7 +27,7 @@ export default function HealthcareLearnContent() {
       <p style={{ ...para, marginBottom: 36 }}>By reflecting on your values and priorities, you can give your substitute decision-maker the context they need to make thoughtful decisions on your behalf — even in unexpected situations.</p>
 
       <div style={{ background: 'rgba(187,171,244,0.18)', border: '1px solid rgba(19,4,38,0.1)', borderRadius: 16, padding: 28 }}>
-        <h3 style={{ fontFamily: apfel, fontSize: 22, fontWeight: 600, color: '#130426', margin: '0 0 12px' }}>Choosing your substitute decision-maker</h3>
+        <h3 style={{ fontFamily: apfel, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 12px' }}>Choosing your substitute decision-maker</h3>
         <p style={{ ...para, marginBottom: 16 }}>If someone had to speak on your behalf, what would you want them to understand?</p>
         <ul style={{ listStyle: 'disc', paddingLeft: 22, margin: 0 }}>
           <li style={{ ...para, marginBottom: 8 }}>Do they understand my values?</li>

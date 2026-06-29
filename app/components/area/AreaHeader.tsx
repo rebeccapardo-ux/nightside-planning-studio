@@ -7,14 +7,12 @@ const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 // Area-page header: navy band (breadcrumb + title + intro) and, beneath it, the
-// full-width Learn-content band. The See-more/less toggle is anchored to the band
-// (NOT the navy header) so it reads as expanding the region directly below: a
-// light-lavender bar with a visible top edge sits flush under the navy banner, the
-// toggle right-aligned in it. Collapsed → just that bar ("See more ▾"); expanded →
-// the same bar ("See less ▴") followed by the content (≤760px reading width). The
-// band is a SIBLING of the navy block, hence full-bleed, with no header text inside
-// (the top edge + button position do the anchoring). Default state: EXPANDED on first
-// visit to this area, COLLAPSED thereafter (per-area localStorage, per-device).
+// full-width "Overview" band. The band is a peer section — its "Overview" header
+// matches the page's other section headers (Relevant activities / Plan), with the
+// See-more/less toggle sitting beside it. Light-lavender, full-bleed (SIBLING of the
+// navy block). Collapsed → header + "See more ▾" only; expanded → header + "See less
+// ▴" + the content (≤760px reading width). Default state: EXPANDED on first visit to
+// this area, COLLAPSED thereafter (per-area localStorage, per-device).
 export default function AreaHeader({
   slug, title, intro, children,
 }: { slug: string; title: string; intro: string; children: React.ReactNode }) {
@@ -46,21 +44,24 @@ export default function AreaHeader({
         </div>
       </div>
 
-      {/* Learn band — toggle anchored to the band's top edge (sibling of navy block) */}
+      {/* Overview band — a peer section ("Overview" header matching the page's other
+          section headers, with the See more/less toggle beside it). Light-lavender,
+          full-bleed (sibling of the navy block). */}
       {children && (
         <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-          <div className="max-w-6xl mx-auto" style={{ padding: open ? '14px 40px 48px' : '14px 40px' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="max-w-6xl mx-auto" style={{ padding: open ? '28px 40px 48px' : '24px 40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+              <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, color: '#130426', margin: 0 }}>Overview</h2>
               <button
                 type="button"
                 onClick={toggle}
                 aria-expanded={open}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(19,4,38,0.06)', color: '#130426', border: '1px solid rgba(19,4,38,0.15)', borderRadius: 999, padding: '8px 18px', fontFamily: apfel, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(19,4,38,0.06)', color: '#130426', border: '1px solid rgba(19,4,38,0.15)', borderRadius: 999, padding: '7px 16px', fontFamily: apfel, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
               >
                 {open ? 'See less ▴' : 'See more ▾'}
               </button>
             </div>
-            {open && <div style={{ maxWidth: 760, marginTop: 12 }}>{children}</div>}
+            {open && <div style={{ maxWidth: 760, marginTop: 20 }}>{children}</div>}
           </div>
         </div>
       )}
