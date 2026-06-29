@@ -5,6 +5,9 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { areaBySlug } from '@/lib/areas'
 import AreaPlanSection from '@/app/components/area/AreaPlanSection'
+import AreaHeader from '@/app/components/area/AreaHeader'
+import AreaKeyDetails from '@/app/components/area/AreaKeyDetails'
+import HealthcareLearnContent from '@/app/components/area/learn/HealthcareLearnContent'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -42,25 +45,13 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const entryByActivity = new Map<string, string>()
   for (const e of entries ?? []) { if (e.activity && !entryByActivity.has(e.activity)) entryByActivity.set(e.activity, e.id) }
 
+  // Per-area Learn-content band (Phase 1: Healthcare; others land in Phase 2).
+  const learnContent = area.slug === 'healthcare-wishes' ? <HealthcareLearnContent /> : null
+
   return (
     <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
-      {/* ── Header — navy, area-themed (matches the domain-page treatment) ── */}
-      <div style={{ background: 'radial-gradient(circle at 20% 20%, #1a0535 0%, #130426 70%)' }}>
-        <div className="max-w-6xl mx-auto pt-16 md:pt-6" style={{ paddingLeft: 40, paddingRight: 40 }}>
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.7)', margin: 0 }}>
-            <Link href="/app" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Plan by area</Link>
-            {' / '}{area.title}
-          </p>
-        </div>
-        <div className="max-w-6xl mx-auto" style={{ padding: '12px 40px 56px' }}>
-          <h1 className="ns-title-activity text-white">{area.title}</h1>
-          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 640, margin: '16px 0 0' }}>
-            {area.intro}
-          </p>
-          {/* TODO (next step): <AreaSeeMore> pill + full-width Learn-content band */}
-        </div>
-      </div>
+      <AreaHeader slug={area.slug} title={area.title} intro={area.intro}>{learnContent}</AreaHeader>
 
       <div className="max-w-6xl mx-auto px-6 py-12">
 
@@ -107,8 +98,11 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
             Track the practical decisions and documentation, and capture related notes as you go.
           </p>
-          {/* TODO (next step): per-area <AreaKeyDetails rows={area.keyDetails}> above the workspace */}
-          <AreaPlanSection domainId={container.id} variant="area" />
+          <AreaPlanSection
+            domainId={container.id}
+            variant="area"
+            keyDetails={area.keyDetails && area.keyDetails.length > 0 ? <AreaKeyDetails rows={area.keyDetails} /> : null}
+          />
         </section>
       </div>
     </div>
