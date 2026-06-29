@@ -1,8 +1,10 @@
 // Canonical area config — the single source of truth that unifies the three id
 // systems (URL slug ↔ containers.domain_code ↔ LEARN_AREAS.id) plus per-area title,
-// intro, Activities list, and Key Details rows. Everything for the new /app/area/[slug]
+// intro, Activities list, and Relevant Documents. Everything for the new /app/area/[slug]
 // pages derives from here. Append-only on the slug/domainCode (persisted/routed);
 // display copy and lists can change freely.
+
+import type { DocumentType } from '@/lib/content-metadata'
 
 export type AreaSlug =
   | 'healthcare-wishes'
@@ -24,25 +26,14 @@ export type AreaActivity = {
   activity?: string // entries.activity slug, for 'output' cards (to find the user's entry)
 }
 
-// Key Details row ids that can render in an area's Plan section. The row's data
-// source + link logic stays exactly as in the current cross-domain panel; only which
-// rows render (and the destination URL) changes per area.
-export type KeyDetailsRowId =
-  | 'care_preferences'
-  | 'sdm_for_care'
-  | 'doctor'
-  | 'final_resting_place'
-  | 'legal_will'
-  | 'lawyer'
-
 export type AreaConfig = {
   slug: AreaSlug
   domainCode: string        // containers.domain_code (stable identity)
   learnId: string           // LEARN_AREAS.id (for Learn content)
   title: string
   intro: string             // brief header intro (validated copy from the mockups)
-  activities: AreaActivity[] | null   // null → no Activities section renders at all
-  keyDetails: KeyDetailsRowId[] | null // null → no Key Details panel renders
+  activities: AreaActivity[] | null   // null → no Relevant activities section renders at all
+  documents: DocumentType[] | null    // null → no Relevant Documents panel renders in the Plan section
 }
 
 const VALUES_RANKING: AreaActivity = { label: 'Values Ranking', href: '/app/reflect/values-ranking', blurb: 'Surface and rank what matters most to you.', kind: 'output', activity: 'values_ranking' }
@@ -57,37 +48,37 @@ export const AREAS: AreaConfig[] = [
     slug: 'healthcare-wishes', domainCode: 'healthcare', learnId: 'healthcare', title: 'Healthcare Wishes',
     intro: "Healthcare wishes are about how you want to be cared for if you can't speak for yourself — what matters to you about quality of life, what kind of treatment you'd want or want to avoid, and who you'd trust to make decisions on your behalf.",
     activities: [VALUES_RANKING, FEARS_RANKING, SCENARIO_NAV, REFLECTION],
-    keyDetails: ['care_preferences', 'sdm_for_care', 'doctor'],
+    documents: ['advance_directive_supplement'], // My Care Wishes
   },
   {
     slug: 'deathcare', domainCode: 'deathcare', learnId: 'deathcare', title: 'Deathcare',
     intro: 'Deathcare is about what happens to your body after you die — burial, cremation, and other options, and the cultural, spiritual, and practical considerations that shape them.',
     activities: [VALUES_RANKING, FEARS_RANKING, TRIVIA, REFLECTION],
-    keyDetails: ['final_resting_place'],
+    documents: ['funeral_wishes'], // Wishes for My Body, Funeral & Ceremony
   },
   {
     slug: 'wills-and-estates', domainCode: 'wills_estates', learnId: 'wills', title: 'Wills & Estates',
     intro: 'Wills and estates planning is about how your assets, responsibilities, and legal matters will be handled — creating a valid will, naming an executor, and the related tools.',
     activities: [REFLECTION],
-    keyDetails: ['legal_will', 'lawyer'],
+    documents: null, // no platform document for Wills & Estates → no Relevant Documents panel
   },
   {
     slug: 'legacy', domainCode: 'legacy', learnId: 'legacy', title: 'Legacy',
     intro: 'Legacy is about how you want to be remembered and what you want to leave behind — letters, messages, memory projects, and meaningful ways to express your values.',
     activities: [VALUES_RANKING, FEARS_RANKING, LEGACY_MAP, REFLECTION],
-    keyDetails: null,
+    documents: ['keepsake_inventory'], // Keepsakes Inventory
   },
   {
     slug: 'personal-admin', domainCode: 'personal_admin', learnId: 'personal-admin', title: 'Personal Admin',
     intro: 'Personal admin is the practical information your loved ones will need to manage your affairs — accounts, finances, documents, digital assets, and key contacts.',
     activities: null,
-    keyDetails: null,
+    documents: ['personal_admin_info', 'financial_information', 'important_contacts', 'devices_and_accounts'],
   },
   {
     slug: 'ritual-and-ceremony', domainCode: 'ritual', learnId: 'ritual', title: 'Ritual & Ceremony',
     intro: 'Ritual and ceremony is about the practices that honour life, death, and remembrance — cultural and religious traditions, personal rituals, and ways to support grief and connection.',
     activities: [VALUES_RANKING, FEARS_RANKING, REFLECTION],
-    keyDetails: null,
+    documents: ['funeral_wishes', 'advance_directive_supplement'], // Funeral & Ceremony wishes + My Care Wishes
   },
 ]
 

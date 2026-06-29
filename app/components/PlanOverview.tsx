@@ -5,6 +5,7 @@ import { DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState, getCheckboxes } from '@/lib/domain-state'
+import { areaByDomainCode } from '@/lib/areas'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apf = "'Apfel Grotezk', sans-serif"
@@ -26,7 +27,7 @@ type DocRow = {
   supplementaryLink?: { label?: string; text: string; href: string }
 }
 
-export default function PlanOverview({ domains }: { domains: { id: string; title: string; domain_code?: string | null }[] }) {
+export default function PlanOverview({ domains, title = 'Key details' }: { domains: { id: string; title: string; domain_code?: string | null }[]; title?: string }) {
   const [syncHasWill, setSyncHasWill]   = useState(false)
   const [syncHasCDM, setSyncHasCDM]     = useState(false)
   const [syncHasEOL, setSyncHasEOL]     = useState(false)
@@ -134,9 +135,12 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
   if (!loaded) return null
 
-  const healthHref     = healthcareDomain ? `/app/domains/${healthcareDomain.id}` : '#'
-  const willsHref      = willsDomain      ? `/app/domains/${willsDomain.id}`      : '#'
-  const deathHref      = deathcareDomain  ? `/app/domains/${deathcareDomain.id}`  : '#'
+  // Area-page destinations (replacing the legacy /app/domains/[uuid] links) — resolved
+  // from each domain's stable domain_code via the canonical area config.
+  const areaHref = (code: string) => { const a = areaByDomainCode(code); return a ? `/app/area/${a.slug}` : '#' }
+  const healthHref     = healthcareDomain ? areaHref('healthcare')     : '#'
+  const willsHref      = willsDomain      ? areaHref('wills_estates')  : '#'
+  const deathHref      = deathcareDomain  ? areaHref('deathcare')      : '#'
   const adminHref           = DOCUMENT_TYPE_META.personal_admin_info.href
   const contactsHref        = DOCUMENT_TYPE_META.important_contacts.href
   const yourWishesHref      = DOCUMENT_TYPE_META.advance_directive_supplement.href
@@ -343,7 +347,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
           style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <h2 style={{ fontFamily: apf, fontSize: 20, fontWeight: 400, color: '#130426', margin: 0, flex: 1, textAlign: 'left' }}>
-            Key details
+            {title}
           </h2>
           <span className="kd-chevron" style={{ transition: 'opacity 150ms', display: 'inline-flex' }}>
             <Chevron open={!collapsed} />

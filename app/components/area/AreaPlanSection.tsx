@@ -112,7 +112,7 @@ function readWarningDismissed(key: string): boolean {
 //              page supplies the header/intro/Activities and the section container).
 // domainId is the user's container UUID (the area page resolves slug → domain_code →
 // container and passes it). Surfacing/tasks/notes logic is unchanged.
-export default function AreaPlanSection({ domainId, variant = 'domain', keyDetails = null }: { domainId: string; variant?: 'domain' | 'area'; keyDetails?: React.ReactNode }) {
+export default function AreaPlanSection({ domainId, variant = 'domain', topSlot = null }: { domainId: string; variant?: 'domain' | 'area'; topSlot?: React.ReactNode }) {
   const isDomainVariant = variant === 'domain'
 
   // Scroll to top on mount — prevents router cache from restoring a previous position.
@@ -337,10 +337,10 @@ export default function AreaPlanSection({ domainId, variant = 'domain', keyDetai
       <div className={isDomainVariant ? 'max-w-6xl mx-auto px-6 py-12' : ''}>
         <div className="domain-layout">
 
-          {/* Left column — per-area Key Details (area variant) above the lavender
-              Planning Status panel. */}
+          {/* Left column — per-area Relevant Documents callout (area variant) above
+              the lavender Planning Status panel. */}
           <div>
-            {keyDetails && <div style={{ marginBottom: 18 }}>{keyDetails}</div>}
+            {topSlot && <div style={{ marginBottom: 18 }}>{topSlot}</div>}
           <div className="rounded-xl" style={{ background: '#BBABF4', padding: 28 }}>
             {isWills && (
               <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 24px 0' }}>
