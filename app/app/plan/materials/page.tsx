@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
 import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
+import PlanOverview from '@/app/components/PlanOverview'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import PlanExportButton from '@/app/components/PlanExportButton'
 
@@ -130,10 +131,13 @@ export default async function YourMaterialsPage() {
         </div>
       </div>
 
-      {/* ── Main content: materials only. Key Details lives on Areas of Planning
-          (plan status), not here — Your Materials is platform content the user can
-          engage with, not status-of-facts like whether a legal will exists. ── */}
+      {/* ── Main content: Key Details panel (cross-domain status overview) on top, then
+          the materials sections. Your Materials is a recurring working surface, so the
+          status overview lives here. ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
+        <div style={{ marginBottom: 40 }}>
+          <PlanOverview domains={allDomains} title="Key Details" />
+        </div>
         <YourMaterialsPanel
           inProgressDocs={inProgressDocs}
           notStartedDocs={notStartedDocs}

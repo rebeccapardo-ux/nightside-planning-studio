@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
-import PlanOverview from '@/app/components/PlanOverview'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'ApfelGrotezk', sans-serif"
@@ -22,7 +21,7 @@ const p3Props = { fill: '#F8F4EB', stroke: '#130426', strokeWidth: '1.5' }
 // Page
 // ---------------------------------------------------------------------------
 
-export default function AppHomePage({ domains }: { domains: { id: string; title: string; domain_code?: string | null }[] }) {
+export default function AppHomePage() {
   const headingRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -147,13 +146,6 @@ export default function AppHomePage({ domains }: { domains: { id: string; title:
             <span style={{ fontFamily: hv, fontSize: 14, color: '#2A2A2A' }}>
               Private by default — everything stays yours until you decide to share it
             </span>
-          </div>
-
-          {/* Your key details — cross-domain overview of the user's recorded facts +
-              contacts. Sits below the primary entry sections, above the philosophy
-              content. Always renders (even all "Not recorded") to set expectations. */}
-          <div style={{ marginTop: 48 }}>
-            <PlanOverview domains={domains} title="Your key details" />
           </div>
 
         </div>
