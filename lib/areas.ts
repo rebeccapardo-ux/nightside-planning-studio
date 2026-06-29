@@ -1,0 +1,100 @@
+// Canonical area config — the single source of truth that unifies the three id
+// systems (URL slug ↔ containers.domain_code ↔ LEARN_AREAS.id) plus per-area title,
+// intro, Activities list, and Key Details rows. Everything for the new /app/area/[slug]
+// pages derives from here. Append-only on the slug/domainCode (persisted/routed);
+// display copy and lists can change freely.
+
+export type AreaSlug =
+  | 'healthcare-wishes'
+  | 'deathcare'
+  | 'wills-and-estates'
+  | 'legacy'
+  | 'personal-admin'
+  | 'ritual-and-ceremony'
+
+// An activity card in an area's Activities section.
+// - 'output': produces a saved entry → Continue/Start + Export (resolved from the
+//   user's entries by `activity`).
+// - 'navigate': no saved output → "Go to activity →".
+export type AreaActivity = {
+  label: string
+  href: string
+  blurb: string
+  kind: 'output' | 'navigate'
+  activity?: string // entries.activity slug, for 'output' cards (to find the user's entry)
+}
+
+// Key Details row ids that can render in an area's Plan section. The row's data
+// source + link logic stays exactly as in the current cross-domain panel; only which
+// rows render (and the destination URL) changes per area.
+export type KeyDetailsRowId =
+  | 'care_preferences'
+  | 'sdm_for_care'
+  | 'doctor'
+  | 'final_resting_place'
+  | 'legal_will'
+  | 'lawyer'
+
+export type AreaConfig = {
+  slug: AreaSlug
+  domainCode: string        // containers.domain_code (stable identity)
+  learnId: string           // LEARN_AREAS.id (for Learn content)
+  title: string
+  intro: string             // brief header intro (validated copy from the mockups)
+  activities: AreaActivity[] | null   // null → no Activities section renders at all
+  keyDetails: KeyDetailsRowId[] | null // null → no Key Details panel renders
+}
+
+const VALUES_RANKING: AreaActivity = { label: 'Values Ranking', href: '/app/reflect/values-ranking', blurb: 'Surface and rank what matters most to you.', kind: 'output', activity: 'values_ranking' }
+const FEARS_RANKING:  AreaActivity = { label: 'Fears Ranking',  href: '/app/reflect/fears-ranking',  blurb: 'Name and rank what you most want to avoid.', kind: 'output', activity: 'fears_ranking' }
+const LEGACY_MAP:     AreaActivity = { label: 'Legacy Map',     href: '/app/reflect/legacy-map',     blurb: 'Map the people, stories, and things you want to pass on.', kind: 'output', activity: 'legacy_map' }
+const SCENARIO_NAV:   AreaActivity = { label: 'Scenario Navigator', href: '/app/reflect/scenario-navigator', blurb: 'Think through how your values might apply across different medical situations.', kind: 'navigate' }
+const REFLECTION:     AreaActivity = { label: 'Reflection Prompts', href: '/app/reflect', blurb: 'Open-ended prompts to help you explore your thinking. Browse all prompts or focus on specific themes.', kind: 'navigate' }
+const TRIVIA:         AreaActivity = { label: 'Deathcare Trivia', href: '/app/learn/trivia', blurb: 'A game to test and build your knowledge of deathcare options.', kind: 'navigate' }
+
+export const AREAS: AreaConfig[] = [
+  {
+    slug: 'healthcare-wishes', domainCode: 'healthcare', learnId: 'healthcare', title: 'Healthcare Wishes',
+    intro: "Healthcare wishes are about how you want to be cared for if you can't speak for yourself — what matters to you about quality of life, what kind of treatment you'd want or want to avoid, and who you'd trust to make decisions on your behalf.",
+    activities: [VALUES_RANKING, FEARS_RANKING, SCENARIO_NAV, REFLECTION],
+    keyDetails: ['care_preferences', 'sdm_for_care', 'doctor'],
+  },
+  {
+    slug: 'deathcare', domainCode: 'deathcare', learnId: 'deathcare', title: 'Deathcare',
+    intro: 'Deathcare is about what happens to your body after you die — burial, cremation, and other options, and the cultural, spiritual, and practical considerations that shape them.',
+    activities: [VALUES_RANKING, FEARS_RANKING, TRIVIA, REFLECTION],
+    keyDetails: ['final_resting_place'],
+  },
+  {
+    slug: 'wills-and-estates', domainCode: 'wills_estates', learnId: 'wills', title: 'Wills & Estates',
+    intro: 'Wills and estates planning is about how your assets, responsibilities, and legal matters will be handled — creating a valid will, naming an executor, and the related tools.',
+    activities: [REFLECTION],
+    keyDetails: ['legal_will', 'lawyer'],
+  },
+  {
+    slug: 'legacy', domainCode: 'legacy', learnId: 'legacy', title: 'Legacy',
+    intro: 'Legacy is about how you want to be remembered and what you want to leave behind — letters, messages, memory projects, and meaningful ways to express your values.',
+    activities: [VALUES_RANKING, FEARS_RANKING, LEGACY_MAP, REFLECTION],
+    keyDetails: null,
+  },
+  {
+    slug: 'personal-admin', domainCode: 'personal_admin', learnId: 'personal-admin', title: 'Personal Admin',
+    intro: 'Personal admin is the practical information your loved ones will need to manage your affairs — accounts, finances, documents, digital assets, and key contacts.',
+    activities: null,
+    keyDetails: null,
+  },
+  {
+    slug: 'ritual-and-ceremony', domainCode: 'ritual', learnId: 'ritual', title: 'Ritual & Ceremony',
+    intro: 'Ritual and ceremony is about the practices that honour life, death, and remembrance — cultural and religious traditions, personal rituals, and ways to support grief and connection.',
+    activities: [VALUES_RANKING, FEARS_RANKING, REFLECTION],
+    keyDetails: null,
+  },
+]
+
+export function areaBySlug(slug: string): AreaConfig | undefined {
+  return AREAS.find((a) => a.slug === slug)
+}
+
+export function areaByDomainCode(code: string | null | undefined): AreaConfig | undefined {
+  return code ? AREAS.find((a) => a.domainCode === code) : undefined
+}
