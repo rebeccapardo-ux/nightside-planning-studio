@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { useUserDomainContainers } from './useUserDomainContainers'
-import { LEARN_AREAS } from '@/lib/learn-areas'
+import { AREAS } from '@/lib/areas'
 
 // ---------------------------------------------------------------------------
 // Nav theme definitions
@@ -130,63 +130,46 @@ type NavRow =
   | { type: 'divider'; label?: string }
 
 type NavItem = {
-  href: string            // the label itself navigates here (landing page)
+  href?: string           // the label navigates here (landing). Omitted = non-clickable
+                          // dropdown trigger (Plan by area): label opens the menu only.
   label: string
   activePrefixes: string[] // top-nav is active when pathname starts with any of these
-  rows?: NavRow[]          // optional hover/focus dropdown (Plan has none)
+  rows?: NavRow[]          // optional hover/focus dropdown
 }
 
 // Canonical display order for the Plan dropdown's domain links — matches the Learn
-// area order (Healthcare-first), keyed by stable domain_code. Domain pages live at
-// /app/domains/<container-uuid>, so the actual links are built per-user from the
-// fetched containers (GlobalNav's `domains` state) and slotted into this order.
-const PLAN_DOMAIN_ORDER = ['healthcare', 'deathcare', 'wills_estates', 'legacy', 'personal_admin', 'ritual']
-
-// Reflect + Learn carry dropdown shortcuts; the label still navigates to the landing
-// page (the dropdown is an *additional* affordance). Learn's "Areas" items
-// reuse LEARN_AREAS (single source of truth) and link to the LEARN page for each area.
-// Plan mirrors that shape: a "Your materials" singleton, then a "Areas of Planning"
-// group of direct links to each domain page (built per-user from `domainRows`).
-function buildNavItems(domainRows: NavRow[]): NavItem[] {
+// Area-centric nav (Phase 2). Three peer destinations:
+// - Activities: clickable label (→ the Activities landing) with a dropdown of the five
+//   activity shortcuts.
+// - Plan by area: NON-clickable — the label is a hover/tap dropdown trigger only; the six
+//   areas are the destinations (/app/area/<slug>, static from the canonical AREAS config —
+//   no per-user container fetch needed).
+// - Your materials: a plain clickable link (no dropdown).
+// Sign out is rendered separately. Sentence case throughout.
+function buildNavItems(): NavItem[] {
   return [
     {
       href: '/app/reflect',
-      label: 'Reflect',
+      label: 'Activities',
       activePrefixes: ['/app/reflect'],
       rows: [
         { type: 'item', href: '/app/reflect/reflection-prompts', label: 'Reflection Prompts' },
         { type: 'item', href: '/app/reflect/values-and-fears', label: 'Values & Fears Ranking', activePrefixes: ['/app/reflect/values-and-fears', '/app/reflect/values-ranking', '/app/reflect/fears-ranking'] },
         { type: 'item', href: '/app/reflect/scenario-navigator', label: 'Scenario Navigator' },
         { type: 'item', href: '/app/reflect/legacy-map', label: 'Legacy Map' },
-      ],
-    },
-    {
-      href: '/app/learn',
-      label: 'Learn',
-      activePrefixes: ['/app/learn'],
-      rows: [
         { type: 'item', href: '/app/learn/trivia', label: 'Deathcare Trivia' },
-        { type: 'divider', label: 'Areas' },
-        ...LEARN_AREAS.map((a): NavRow => ({ type: 'item', href: `/app/learn/${a.id}`, label: a.title })),
       ],
     },
     {
-      href: '/app/plan',
-      label: 'Plan',
-      // Plan is the active item across the whole planning flow: the Plan section, domain
-      // pages, and the capture documents reached from them.
-      activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
-      rows: [
-        { type: 'item', href: '/app/plan/materials', label: 'Your materials', activePrefixes: ['/app/plan/materials'] },
-        // Your materials and Areas of Planning are genuine peer destinations, so —
-        // UNLIKE Learn's non-clickable "Areas of Planning" header — Areas of Planning
-        // is a plain LINK under a bare rule. The domain pages are its indented children
-        // (parent-child via indentation, not sub-header styling). They appear once the
-        // containers fetch resolves; Areas of Planning itself always shows.
-        { type: 'divider' },
-        { type: 'item', href: '/app/plan/areas', label: 'Areas of Planning', activePrefixes: ['/app/plan/areas'] },
-        ...domainRows,
-      ],
+      // Non-clickable dropdown trigger; the six areas are the destinations.
+      label: 'Plan by area',
+      activePrefixes: ['/app/area', '/app/domains', '/app/capture', '/app/plan/areas'],
+      rows: AREAS.map((a): NavRow => ({ type: 'item', href: `/app/area/${a.slug}`, label: a.title, activePrefixes: [`/app/area/${a.slug}`] })),
+    },
+    {
+      href: '/app/plan/materials',
+      label: 'Your materials',
+      activePrefixes: ['/app/plan/materials'],
     },
   ]
 }
@@ -232,10 +215,9 @@ export default function GlobalNav() {
   const entry = getNavEntry(pathname)
   const style = NAV_STYLES[entry.theme]
   // null = auth state not yet known (prevents flash between authed/unauthed UI)
-  // Auth state + the user's domain containers (powers the Plan dropdown's per-area
-  // links) — shared with FloatingNotepad via useUserDomainContainers so the
-  // domain_code → container lookup isn't duplicated.
-  const { domains, isAuthed } = useUserDomainContainers()
+  // Auth state — gates the nav. (Area links are now static /app/area/<slug>, so the nav
+  // no longer needs the domain-container fetch; the shared hook still supplies isAuthed.)
+  const { isAuthed } = useUserDomainContainers()
   const [drawerOpen, setDrawerOpen] = useState(false)
   // Which desktop sub-menu is open (by label), or null. Hover/focus driven.
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -303,7 +285,10 @@ export default function GlobalNav() {
   // a bare rule for a label-less one, deeper indent for `indent` children).
   function renderDrawerSection(item: NavItem) {
     const headerActive = item.activePrefixes.some((p) => pathname.startsWith(p))
-    const slug = item.href.split('/').pop() || item.label.toLowerCase()
+    // Stable id for keying + expand state — falls back to the label for the non-clickable
+    // "Plan by area" section (no href).
+    const stableKey = item.href ?? item.label
+    const slug = (item.href?.split('/').pop()) || item.label.toLowerCase().replace(/\s+/g, '-')
     const headerId = `navsec-${slug}`
 
     const subLink = (row: Extract<NavRow, { type: 'item' }>) => {
@@ -347,37 +332,54 @@ export default function GlobalNav() {
       })
     }
 
-    const expanded = item.rows ? expandedSections.has(item.href) : false
+    const expanded = item.rows ? expandedSections.has(stableKey) : false
+    const chevron = (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ transition: 'transform 200ms ease', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+        <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )
 
     return (
-      <div key={item.href} className="pb-2">
-        {/* Two separate tap zones (each ≥44px): the label LINK navigates to the
-            section's landing page; the chevron BUTTON expands/collapses its sub-items.
-            Sections open collapsed (reset on every drawer open) so the menu stays
-            scannable — one extra tap to reach a deep destination. */}
-        <div style={{ display: 'flex', alignItems: 'stretch' }}>
-          <Link
-            href={item.href}
-            id={item.rows ? headerId : undefined}
-            className={`flex-1 px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
+      <div key={stableKey} className="pb-2">
+        {/* A clickable section (href) splits into two ≥44px tap zones: the label LINK
+            navigates to its landing; the chevron BUTTON expands its sub-items. The
+            non-clickable "Plan by area" has no landing — its whole header is one button
+            that toggles the dropdown. Sections open collapsed (reset on each drawer open). */}
+        {item.href ? (
+          <div style={{ display: 'flex', alignItems: 'stretch' }}>
+            <Link
+              href={item.href}
+              id={item.rows ? headerId : undefined}
+              className={`flex-1 px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
+            >
+              {item.label}
+            </Link>
+            {item.rows && (
+              <button
+                type="button"
+                onClick={() => toggleSection(stableKey)}
+                aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
+                aria-expanded={expanded}
+                aria-controls={`${headerId}-group`}
+                className={`flex items-center justify-center px-6 ${style.link}`}
+              >
+                {chevron}
+              </button>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            id={headerId}
+            onClick={() => toggleSection(stableKey)}
+            aria-expanded={expanded}
+            aria-controls={`${headerId}-group`}
+            className={`flex w-full items-center justify-between px-6 py-4 text-[21px] font-semibold ${style.link} ${headerActive ? 'underline underline-offset-[6px] decoration-2' : ''}`}
           >
             {item.label}
-          </Link>
-          {item.rows && (
-            <button
-              type="button"
-              onClick={() => toggleSection(item.href)}
-              aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
-              aria-expanded={expanded}
-              aria-controls={`${headerId}-group`}
-              className={`flex items-center justify-center px-6 ${style.link}`}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ transition: 'transform 200ms ease', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          )}
-        </div>
+            {chevron}
+          </button>
+        )}
         {item.rows && expanded && (
           <div id={`${headerId}-group`} role="group" aria-labelledby={headerId}>
             {body}
@@ -421,13 +423,7 @@ export default function GlobalNav() {
         itemHoverClass: 'hover:bg-[rgba(255,255,255,0.08)]',
       }
 
-  // Per-user domain links for the Plan dropdown, slotted into canonical order and
-  // marked `indent` (children nested under the Areas of Planning link).
-  const domainRows: NavRow[] = PLAN_DOMAIN_ORDER
-    .map((code) => domains.find((d) => d.domain_code === code))
-    .filter((d): d is { id: string; title: string; domain_code: string | null } => !!d)
-    .map((d) => ({ type: 'item', href: `/app/domains/${d.id}`, label: d.title, activePrefixes: [`/app/domains/${d.id}`], indent: true }))
-  const navItems = buildNavItems(domainRows)
+  const navItems = buildNavItems()
 
   return (
     <>
@@ -473,7 +469,7 @@ export default function GlobalNav() {
                       // the resting nav spacing is unchanged (no reflow on hover) while the
                       // panel can still breathe 12px past the text on each side.
                       <div
-                        key={item.href}
+                        key={item.href ?? item.label}
                         style={{ position: 'relative', alignSelf: 'stretch', display: 'flex', margin: '0 -12px' }}
                         onMouseEnter={() => setOpenMenu(item.label)}
                         onMouseLeave={() => setOpenMenu(null)}
@@ -484,24 +480,48 @@ export default function GlobalNav() {
                         {/* The label IS the hover panel: full nav-height, square corners,
                             themed background on hover/focus, text recoloured to the panel's
                             surface (the active underline rides currentColor, so it flips too
-                            and stays visible). The label still navigates to its landing page;
-                            for Plan (no rows) the panel shows but opens no menu. */}
-                        <Link
-                          href={item.href}
-                          className={navLinkClass(active)}
-                          aria-haspopup={item.rows ? 'true' : undefined}
-                          aria-expanded={item.rows ? panelOn : undefined}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            height: '100%',
-                            padding: '0 12px',
-                            background: panelOn ? panel.bg : 'transparent',
-                            ...(panelOn ? { color: panel.text, textDecorationColor: panel.text } : {}),
-                          }}
-                        >
-                          {item.label}
-                        </Link>
+                            and stays visible). A label with an href navigates to its landing;
+                            "Plan by area" has no href — its label is a button that only opens
+                            the dropdown (hover, or click/Enter for keyboard). */}
+                        {item.href ? (
+                          <Link
+                            href={item.href}
+                            className={navLinkClass(active)}
+                            aria-haspopup={item.rows ? 'true' : undefined}
+                            aria-expanded={item.rows ? panelOn : undefined}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              height: '100%',
+                              padding: '0 12px',
+                              background: panelOn ? panel.bg : 'transparent',
+                              ...(panelOn ? { color: panel.text, textDecorationColor: panel.text } : {}),
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setOpenMenu(panelOn ? null : item.label)}
+                            className={navLinkClass(active)}
+                            aria-haspopup="true"
+                            aria-expanded={panelOn}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              height: '100%',
+                              padding: '0 12px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              background: panelOn ? panel.bg : 'transparent',
+                              ...(panelOn ? { color: panel.text, textDecorationColor: panel.text } : {}),
+                            }}
+                          >
+                            {item.label}
+                          </button>
+                        )}
                         {item.rows && panelOn && (
                           // A small 4px gap drops the dropdown (and its upward shadow) below
                           // the nav's underline row, so opening a menu never clips the
