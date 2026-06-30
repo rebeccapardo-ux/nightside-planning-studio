@@ -4,7 +4,7 @@ import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
 import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
 import PlanOverview from '@/app/components/PlanOverview'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
+import SectionTitleReveal from '@/app/components/SectionTitleReveal'
 import PlanExportButton from '@/app/components/PlanExportButton'
 
 export const metadata: Metadata = {
@@ -114,17 +114,12 @@ export default async function YourMaterialsPage() {
         .plan-export-btn:hover { background: #C04828 !important; }
       `}</style>
 
-      {/* ── Page header: breadcrumb + sub-page title (smaller than the landing,
-          no orange reveal-underline — that treatment is reserved for /app/plan) ── */}
+      {/* ── Page header: big reveal-underline title (matches the Activities landing) on
+          the cream page. ── */}
       <div className="plan-page-header" style={{ position: 'relative' }}>
         <PlanExportButton />
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 0' }}>
-          <div style={{ marginBottom: 20 }}>
-            <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Your materials' }]} />
-          </div>
-          <h1 style={{ fontSize: 42, fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em', color: '#130426', margin: 0, fontFamily: inter }}>
-            Your materials
-          </h1>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 0' }}>
+          <SectionTitleReveal title="Your materials" color="#130426" />
           <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 620, margin: '18px 0 0', lineHeight: 1.6 }}>
             This is where everything that makes up your plan lives: documents to fill out, your activity outputs, and notes you&rsquo;ve captured. Review, continue working, or export from this page.
           </p>

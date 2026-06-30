@@ -78,10 +78,9 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // App homepage — navy nav, exact match only
   { prefix: '/app',         exact: true, theme: 'dark',  navBg: 'bg-[#2C3777]' },
 
-  // Reflect/Explore landing: cream nav — exact match only,
-  // so sub-pages fall through to default nav.
-  { prefix: '/app/reflect', exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/reflect',  exact: true, theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  // Activities (formerly Reflect) landing: cream page → navy nav (must differ). Exact
+  // match only, so sub-pages fall through to default nav.
+  { prefix: '/app/reflect', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
 
   // Values & Fears landing + ranking activities — navy nav on blue workspace
   { prefix: '/app/reflect/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },

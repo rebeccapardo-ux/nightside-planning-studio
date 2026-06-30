@@ -54,6 +54,15 @@ const CARD_CONFIGS: CardConfig[] = [
     ctaBg: '#130426',
     ctaColor: '#FFFFFF',
   },
+  // index 4 — Sunrise (Deathcare Trivia)
+  {
+    bg: '#F29836',
+    border: '2px solid #000000',
+    titleColor: '#130426',
+    bodyColor: 'rgba(19,4,38,0.78)',
+    ctaBg: '#130426',
+    ctaColor: '#FFFFFF',
+  },
 ]
 
 export default function ExplorePage() {
@@ -118,7 +127,7 @@ export default function ExplorePage() {
         }
       `}</style>
 
-      <div style={{ minHeight: '100vh', background: '#2C3777' }}>
+      <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
         <div style={{
           maxWidth: 1200,
           margin: '0 auto',
@@ -133,7 +142,7 @@ export default function ExplorePage() {
               fontSize: 64,
               fontWeight: 500,
               lineHeight: 1.08,
-              color: '#FFFFFF',
+              color: '#130426',
               margin: 0,
             }}>
               <span className="ns-title-underline">Activities</span>
@@ -144,7 +153,7 @@ export default function ExplorePage() {
             fontSize: 22,
             fontWeight: 500,
             lineHeight: 1.55,
-            color: 'rgba(255,255,255,0.94)',
+            color: 'rgba(19,4,38,0.9)',
             maxWidth: 760,
             marginTop: 20,
             marginBottom: 0,
@@ -154,16 +163,16 @@ export default function ExplorePage() {
           </p>
 
           <div style={{ maxWidth: 760, marginTop: 32, marginBottom: 0 }}>
-            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
-              Before rushing into tasks like completing an advance directive, it's helpful to pause. Taking the time to think deeply about your values, feelings, and relationship to death will help ensure your plans are grounded in what matters most to you.
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(19,4,38,0.78)', marginTop: 0, marginBottom: 20 }}>
+              Before rushing into tasks like completing an advance directive, it&rsquo;s helpful to pause. Taking the time to think deeply about your values, feelings, and relationship to death will help ensure your plans are grounded in what matters most to you.
             </p>
-            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(19,4,38,0.78)', marginTop: 0, marginBottom: 20 }}>
               Activities in this section are designed to help you imagine what a good death looks like for you, clarify how your values translate into real choices, and consider what you want to leave behind.
             </p>
-            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 20 }}>
-              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you're working in Your Plan.</span>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(19,4,38,0.78)', marginTop: 0, marginBottom: 20 }}>
+              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you&rsquo;re working in Your materials.</span>
             </p>
-            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(255,255,255,0.85)', marginTop: 0, marginBottom: 0 }}>
+            <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(19,4,38,0.78)', marginTop: 0, marginBottom: 0 }}>
               Start anywhere, and move at your own pace.
             </p>
           </div>
