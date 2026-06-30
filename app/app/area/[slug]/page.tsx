@@ -7,9 +7,25 @@ import { areaBySlug } from '@/lib/areas'
 import AreaPlanSection from '@/app/components/area/AreaPlanSection'
 import AreaHeader from '@/app/components/area/AreaHeader'
 import CollapsibleSection from '@/app/components/area/CollapsibleSection'
+import type { AreaSlug } from '@/lib/areas'
 import HealthcareLearnContent from '@/app/components/area/learn/HealthcareLearnContent'
+import DeathcareLearnContent from '@/app/components/area/learn/DeathcareLearnContent'
+import WillsLearnContent from '@/app/components/area/learn/WillsLearnContent'
+import LegacyLearnContent from '@/app/components/area/learn/LegacyLearnContent'
+import PersonalAdminLearnContent from '@/app/components/area/learn/PersonalAdminLearnContent'
+import RitualLearnContent from '@/app/components/area/learn/RitualLearnContent'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+// Per-area Overview band content — each reflowed from its existing /app/learn/[area] page.
+const LEARN_CONTENT: Record<AreaSlug, React.ComponentType> = {
+  'healthcare-wishes': HealthcareLearnContent,
+  'deathcare': DeathcareLearnContent,
+  'wills-and-estates': WillsLearnContent,
+  'legacy': LegacyLearnContent,
+  'personal-admin': PersonalAdminLearnContent,
+  'ritual-and-ceremony': RitualLearnContent,
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -17,10 +33,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: area?.title ?? 'Plan by area' }
 }
 
-// New per-area page (/app/area/[slug]) — Relevant activities + Plan in one place,
+// New per-area page (/app/area/[slug]) — Relevant Activities + Plan in one place,
 // organised by topic. Resolves the URL slug → domain_code → the user's container, then
-// renders the shared <AreaPlanSection> for the Plan workspace. (Phase 1: Healthcare
-// slice — the Learn band has real content; other areas show only their header + lists.)
+// renders the shared <AreaPlanSection> for the Plan workspace. All six areas have their
+// own Overview band content (reflowed from /app/learn/[area]).
 export default async function AreaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const area = areaBySlug(slug)
@@ -44,9 +60,16 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const entryByActivity = new Map<string, string>()
   for (const e of entries ?? []) { if (e.activity && !entryByActivity.has(e.activity)) entryByActivity.set(e.activity, e.id) }
 
-  // Per-area Learn-content band (Phase 1: Healthcare; others land in Phase 2).
-  const learnContent = area.slug === 'healthcare-wishes' ? <HealthcareLearnContent /> : null
+  // Per-area Overview band content (all six areas).
+  const LearnContent = LEARN_CONTENT[area.slug]
+  const learnContent = LearnContent ? <LearnContent /> : null
   const hasActivities = !!area.activities && area.activities.length > 0
+
+  // Color-block the Plan section against whatever sits directly above it (no two adjacent
+  // sections share a background). Normally Activities (cream) is above → Plan is lavender.
+  // When an area has no Activities section, the lavender Overview band is directly above
+  // Plan, so Plan flips to cream (e.g. Personal Admin).
+  const planBg = hasActivities ? '#ECE7F7' : '#F8F4EB'
 
   return (
     // Page base is the dark footer colour (#130426), so the min-h-screen filler below
@@ -100,9 +123,8 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         </div>
       )}
 
-      {/* ── Plan — full-width light lavender, matching the Overview band. Color-blocked
-          against the cream Relevant activities (or the navy header) above it. ── */}
-      <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.08)' }}>
+      {/* ── Plan — color-blocked against the section directly above it (see planBg). ── */}
+      <div style={{ background: planBg, borderTop: '1px solid rgba(19,4,38,0.08)' }}>
         <div className="max-w-6xl mx-auto px-10">
           <CollapsibleSection title="Plan" storageKey={`nightside.areaSection.${area.slug}.plan`}>
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>

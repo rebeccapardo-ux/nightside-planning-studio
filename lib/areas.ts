@@ -56,31 +56,31 @@ export const AREAS: AreaConfig[] = [
   },
   {
     slug: 'deathcare', domainCode: 'deathcare', learnId: 'deathcare', title: 'Deathcare',
-    intro: 'Deathcare is about what happens to your body after you die — burial, cremation, and other options, and the cultural, spiritual, and practical considerations that shape them.',
+    intro: 'Deathcare planning involves decisions about how your body will be cared for after you die. This includes choosing a final resting place for your body, such as traditional burial, cremation, green burial, or alternative methods like aquamation. Without clear instructions, decisions may be made based on default practices, family assumptions, or costs rather than personal wishes.',
     activities: [VALUES_RANKING, FEARS_RANKING, TRIVIA, REFLECTION],
     documents: ['funeral_wishes'], // Wishes for My Body, Funeral & Ceremony
   },
   {
     slug: 'wills-and-estates', domainCode: 'wills_estates', learnId: 'wills', title: 'Wills & Estates',
-    intro: 'Wills and estates planning is about how your assets, responsibilities, and legal matters will be handled — creating a valid will, naming an executor, and the related tools.',
+    intro: 'A will is a legal document that outlines how your assets, debts, and belongings will be handled after your death. It names an executor, identifies beneficiaries, appoints guardians for minor children or pets, and can include provisions for charitable donations or trusts. Estate planning refers to a broader process for managing your assets and property.',
     activities: [REFLECTION],
     documents: null, // no platform document for Wills & Estates → no Relevant Documents panel
   },
   {
     slug: 'legacy', domainCode: 'legacy', learnId: 'legacy', title: 'Legacy',
-    intro: 'Legacy is about how you want to be remembered and what you want to leave behind — letters, messages, memory projects, and meaningful ways to express your values.',
+    intro: 'The word "legacy" can feel like it belongs only to people with long careers, complicated estates, or their names on buildings. But legacy belongs to everyone, and can include simple things like the way you made people laugh, or a story you told that resonated with someone.',
     activities: [VALUES_RANKING, FEARS_RANKING, LEGACY_MAP, REFLECTION],
     documents: ['keepsake_inventory'], // Keepsakes Inventory
   },
   {
     slug: 'personal-admin', domainCode: 'personal_admin', learnId: 'personal-admin', title: 'Personal Admin',
-    intro: 'Personal admin is the practical information your loved ones will need to manage your affairs — accounts, finances, documents, digital assets, and key contacts.',
+    intro: "The practical details of your life — your accounts, passwords, contacts, and digital presence — rarely feel urgent until they're urgently needed. Getting this information organized is one of the most considerate things you can do for the people you love.",
     activities: null,
     documents: ['personal_admin_info', 'financial_information', 'important_contacts', 'devices_and_accounts'],
   },
   {
     slug: 'ritual-and-ceremony', domainCode: 'ritual', learnId: 'ritual', title: 'Ritual & Ceremony',
-    intro: 'Ritual and ceremony is about the practices that honour life, death, and remembrance — cultural and religious traditions, personal rituals, and ways to support grief and connection.',
+    intro: 'Rituals and ceremonies are meaningful ways to honor life, process loss, and create connection. They may draw from religious, spiritual, cultural, or secular traditions — or any combination of these that is meaningful to the dying person and their loved ones.',
     activities: [VALUES_RANKING, FEARS_RANKING, REFLECTION],
     documents: ['funeral_wishes', 'advance_directive_supplement'], // Funeral & Ceremony wishes + My Care Wishes
   },
