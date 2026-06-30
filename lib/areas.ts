@@ -36,7 +36,7 @@ export type AreaConfig = {
   // Per-area platform documents. The standalone "Relevant Documents" panel was removed
   // (documents now surface inline in the Planning Status panel, per readiness row, via
   // DOMAIN_STRUCTURES `relatedDocumentTypes`). This mapping is retained as canonical
-  // area→document config for Phase 2 surfaces (home / Your materials). Currently unconsumed.
+  // area→document config for the home / Your materials surfaces. Currently unconsumed.
   documents: DocumentType[] | null
 }
 

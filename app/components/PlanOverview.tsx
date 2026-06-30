@@ -135,8 +135,8 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
 
   if (!loaded) return null
 
-  // Area-page destinations (replacing the legacy /app/domains/[uuid] links) — resolved
-  // from each domain's stable domain_code via the canonical area config.
+  // Area-page destinations — resolved from each domain's stable domain_code via the
+  // canonical area config.
   const areaHref = (code: string) => { const a = areaByDomainCode(code); return a ? `/app/area/${a.slug}` : '#' }
   const healthHref     = healthcareDomain ? areaHref('healthcare')     : '#'
   const willsHref      = willsDomain      ? areaHref('wills_estates')  : '#'

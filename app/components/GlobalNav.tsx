@@ -143,7 +143,7 @@ type NavItem = {
 }
 
 // Canonical display order for the Plan dropdown's domain links — matches the Learn
-// Area-centric nav (Phase 2). Three peer destinations:
+// Area-centric nav — three peer destinations:
 // - Activities: clickable label (→ the Activities landing) with a dropdown of the five
 //   activity shortcuts.
 // - Plan by area: NON-clickable — the label is a hover/tap dropdown trigger only; the six

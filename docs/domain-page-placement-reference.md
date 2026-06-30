@@ -1,11 +1,10 @@
 # Domain Page — Placement Reference
 
-> **Surface note (post-restructure).** The "domain page" is now the **Plan section of the area
-> page** (`/app/area/[slug]` → `app/components/area/AreaPlanSection.tsx`). The standalone
-> `/app/domains/[domainId]` page was deleted; only a uuid→slug redirect stub remains. The
-> surfacing logic moved verbatim into `AreaPlanSection` — the file-path citations below that
-> still say `app/app/domains/[domainId]/page.tsx` refer to that moved code (now in
-> `AreaPlanSection`); line numbers are historical. The placement **policy is unchanged.**
+> **Surface note.** The "domain page" is the **Plan section of the area page**
+> (`/app/area/[slug]` → `app/components/area/AreaPlanSection.tsx`); `/app/domains/[domainId]`
+> is only a uuid→slug redirect stub. Older file-path citations below that say
+> `app/app/domains/[domainId]/page.tsx` refer to that same surfacing logic, which lives in
+> `AreaPlanSection` (the line numbers are historical).
 
 **Canonical source of truth** for what auto-surfaces on each domain (area) page, per row — across
 the **Reflection + Learning** (orientation) and **Practical Readiness** (readiness) sections.

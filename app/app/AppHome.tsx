@@ -100,7 +100,7 @@ export default function AppHomePage() {
             href="/app/activities"
             bg="#F29836"
             title="Activities"
-            description="Conversation starters and prompts to clarify what matters most."
+            description="Conversation starters, scenarios, and reflection prompts."
             puzzle={<ActivitiesPuzzle />}
           />
 

@@ -28,9 +28,9 @@ const LEARN_TO_AREA: Record<string, string> = {
   ritual: 'ritual-and-ceremony',
 }
 
-// Phase 3 route migration — permanent (308) redirects from deprecated URLs to the new
-// area-centric structure. The /app/domains/[uuid] redirect needs a DB lookup, so it lives
-// in an async page stub, not here.
+// Permanent (308) redirects from the old mode-based URLs to the area-centric structure.
+// The /app/domains/[uuid] redirect needs a DB lookup, so it lives in an async page stub,
+// not here.
 function resolveLegacyRedirect(pathname: string): string | null {
   // Activities landing + sub-pages: /app/reflect → /app/activities
   if (pathname === '/app/reflect' || pathname.startsWith('/app/reflect/')) {
@@ -61,7 +61,7 @@ function resolveLegacyRedirect(pathname: string): string | null {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
 
-  // ── Phase 3 legacy-URL redirects (before auth — the new URL re-runs the auth check) ──
+  // ── Legacy-URL redirects (before auth — the new URL re-runs the auth check) ──
   const redirectTarget = resolveLegacyRedirect(pathname)
   if (redirectTarget) {
     const url = request.nextUrl.clone()
