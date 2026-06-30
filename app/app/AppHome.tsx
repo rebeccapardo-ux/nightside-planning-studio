@@ -86,6 +86,7 @@ export default function AppHomePage() {
           <EntryCard
             href="/app/reflect"
             bg="#F29836"
+            align="start"
             title="Activities"
             description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others."
             puzzle={<ActivitiesPuzzle />}
@@ -106,6 +107,7 @@ export default function AppHomePage() {
             href="/app/plan/materials"
             bg="#DB5835"
             onDark
+            align="end"
             title="Your materials"
             description="This is where all your stuff lives: notes, activity outputs, and documents to fill out."
             puzzle={<MaterialsPuzzle />}
@@ -130,21 +132,22 @@ function CardTop({ title, description, onDark = false, children }: { title: stri
   )
 }
 
-// Activities + Your materials entry cards: title on its own full-width line (one line),
-// then the puzzle floated right AFTER it so it sits at the description level (effectively
-// moved down + right) and the description wraps around it / runs full-width. "Open →"
-// pinned bottom-right.
-function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; title: string; description: string; puzzle: React.ReactNode }) {
+// Activities + Your materials entry cards: title on its own full-width line, the puzzle
+// floated right after it (text wraps around / runs full-width), "Open →" bottom-right.
+// These are content-height (NOT stretched to the tall Plan by area card); `align` staggers
+// them — Activities top-aligned, Your materials bottom-aligned — so the leftover space is
+// intentional whitespace around the cards rather than blank space inside them.
+function EntryCard({ href, bg, onDark = false, align, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; align: 'start' | 'end'; title: string; description: string; puzzle: React.ReactNode }) {
   const titleColor = onDark ? '#F8F4EB' : '#130426'
   const descColor = onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)'
   return (
-    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none' }}>
+    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', minHeight: 0, alignSelf: align }}>
       <div style={{ overflow: 'hidden' }}>
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
         <div style={{ float: 'right', marginLeft: 16, marginBottom: 8 }}>{puzzle}</div>
         <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: descColor, margin: 0 }}>{description}</p>
       </div>
-      <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: titleColor, marginTop: 'auto', alignSelf: 'flex-end' }}>Open →</span>
+      <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: titleColor, marginTop: 24, alignSelf: 'flex-end' }}>Open →</span>
     </Link>
   )
 }
