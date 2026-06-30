@@ -88,7 +88,7 @@ export default function AppHomePage() {
             bg="#F29836"
             title="Activities"
             description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others."
-            puzzle={<ActivitiesPuzzle size={64} />}
+            puzzle={<ActivitiesPuzzle />}
           />
 
           {/* Plan by area (Dusk) — wider; the six areas are its links */}
@@ -108,7 +108,7 @@ export default function AppHomePage() {
             onDark
             title="Your materials"
             description="This is where all your stuff lives: notes, activity outputs, and documents to fill out."
-            puzzle={<MaterialsPuzzle size={64} />}
+            puzzle={<MaterialsPuzzle />}
           />
 
         </div>
