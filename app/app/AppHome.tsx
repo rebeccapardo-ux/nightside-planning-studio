@@ -49,20 +49,14 @@ function MaterialsPuzzle() {
   )
 }
 
-const ACTIVITIES = [
-  { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
-  { label: 'Values & Fears Ranking', href: '/app/reflect/values-and-fears' },
-  { label: 'Scenario Navigator', href: '/app/reflect/scenario-navigator' },
-  { label: 'Legacy Map', href: '/app/reflect/legacy-map' },
-  { label: 'Deathcare Trivia', href: '/app/learn/trivia' },
-]
-
 export default function AppHomePage() {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
         .home4 { max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px; }
-        .home4-primary { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        /* Activities + Your materials are simple entry cards (1fr each); Plan by area is
+           wider (it holds the six area links). */
+        .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: stretch; }
         .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; min-height: 340px; }
         .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; }
         .home4-sub { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease; }
@@ -84,20 +78,19 @@ export default function AppHomePage() {
           </p>
         </div>
 
-        {/* Primary row — Activities + Plan by area */}
+        {/* One row: Activities + Your materials are entry cards (title + Open link, whole
+            card clickable); Plan by area is wider and holds the six area links. */}
         <div className="home4-primary">
 
-          {/* Activities (Sunrise) */}
-          <section className="home4-card" style={{ background: '#F29836' }}>
+          {/* Activities (Sunrise) — entry card → the Activities landing */}
+          <Link href="/app/reflect" className="home4-card" style={{ background: '#F29836', textDecoration: 'none' }}>
             <CardTop title="Activities" description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others.">
               <ActivitiesPuzzle />
             </CardTop>
-            <div className="home4-subgrid">
-              {ACTIVITIES.map((a) => <SubItem key={a.label} href={a.href} label={a.label} />)}
-            </div>
-          </section>
+            <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', marginTop: 'auto' }}>Open →</span>
+          </Link>
 
-          {/* Plan by area (Dusk) */}
+          {/* Plan by area (Dusk) — wider; the six areas are its links */}
           <section className="home4-card" style={{ background: '#BBABF4' }}>
             <CardTop title="Plan by area" description="Work through each area of your end-of-life planning. Learn about your options, track tasks, and capture related thinking.">
               <PlanPuzzle />
@@ -107,36 +100,27 @@ export default function AppHomePage() {
             </div>
           </section>
 
-        </div>
+          {/* Your materials (Sunset) — entry card → Your materials */}
+          <Link href="/app/plan/materials" className="home4-card" style={{ background: '#DB5835', textDecoration: 'none' }}>
+            <CardTop title="Your materials" description="This is where all your stuff lives: notes, activity outputs, and documents to fill out." onDark>
+              <MaterialsPuzzle />
+            </CardTop>
+            <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#F8F4EB', marginTop: 'auto' }}>Open →</span>
+          </Link>
 
-        {/* Your materials (Sunset) — secondary surface, full-width beneath the two
-            primary cards. Whole card clickable. The puzzle sits directly to the RIGHT of
-            the content (not pushed to the banner's far edge). */}
-        <Link
-          href="/app/plan/materials"
-          style={{ display: 'flex', alignItems: 'center', gap: 28, background: '#DB5835', color: '#F8F4EB', textDecoration: 'none', borderRadius: 14, padding: '26px 28px', minHeight: 160 }}
-        >
-          <div style={{ minWidth: 0, maxWidth: 520 }}>
-            <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: '#F8F4EB', margin: '0 0 6px' }}>Your materials</h2>
-            <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: 'rgba(248,244,235,0.92)', margin: '0 0 10px' }}>
-              This is where all your stuff lives: notes, activity outputs, and documents to fill out.
-            </p>
-            <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#F8F4EB' }}>Open →</span>
-          </div>
-          <MaterialsPuzzle />
-        </Link>
+        </div>
 
       </main>
     </div>
   )
 }
 
-function CardTop({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+function CardTop({ title, description, onDark = false, children }: { title: string; description: string; onDark?: boolean; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
-      <div style={{ flex: 1 }}>
-        <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: '#130426', margin: '0 0 6px' }}>{title}</h2>
-        <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: 'rgba(19,4,38,0.85)', maxWidth: 320, margin: 0 }}>{description}</p>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: onDark ? '#F8F4EB' : '#130426', margin: '0 0 6px' }}>{title}</h2>
+        <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)', maxWidth: 320, margin: 0 }}>{description}</p>
       </div>
       {children}
     </div>
