@@ -14,8 +14,8 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 // EXPANDED on first visit to this area, then remembers the user's choice (shared model
 // with the other sections — see useSectionCollapse).
 export default function AreaHeader({
-  slug, title, intro, children,
-}: { slug: string; title: string; intro: string; children: React.ReactNode }) {
+  slug, title, intro, children, bandBg = '#ECE7F7',
+}: { slug: string; title: string; intro: string; children: React.ReactNode; bandBg?: string }) {
   const [open, toggle] = useSectionCollapse(`nightside.areaSection.${slug}.overview`)
 
   return (
@@ -37,7 +37,7 @@ export default function AreaHeader({
           section headers, toggled by a chevron exactly like them). Light-lavender,
           full-bleed (sibling of the navy block). */}
       {children && (
-        <div style={{ background: '#ECE7F7', borderTop: '1px solid rgba(19,4,38,0.12)' }}>
+        <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
           <style>{`.ah-header:hover .ah-chevron { opacity: 0.65; }`}</style>
           <div className="max-w-6xl mx-auto" style={{ padding: open ? '28px 40px 48px' : '24px 40px' }}>
             <button

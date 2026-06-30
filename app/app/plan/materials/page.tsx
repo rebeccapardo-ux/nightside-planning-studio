@@ -136,7 +136,7 @@ export default async function YourMaterialsPage() {
           status overview lives here. ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ marginBottom: 40 }}>
-          <PlanOverview domains={allDomains} title="Key Details" />
+          <PlanOverview domains={allDomains} title="Key details" />
         </div>
         <YourMaterialsPanel
           inProgressDocs={inProgressDocs}

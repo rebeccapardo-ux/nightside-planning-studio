@@ -65,11 +65,12 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const learnContent = LearnContent ? <LearnContent /> : null
   const hasActivities = !!area.activities && area.activities.length > 0
 
-  // Color-block the Plan section against whatever sits directly above it (no two adjacent
-  // sections share a background). Normally Activities (cream) is above → Plan is lavender.
-  // When an area has no Activities section, the lavender Overview band is directly above
-  // Plan, so Plan flips to cream (e.g. Personal Admin).
-  const planBg = hasActivities ? '#ECE7F7' : '#F8F4EB'
+  // Color-block: no two adjacent sections share a background. Plan is always lavender;
+  // the Overview band is lavender too WHEN a cream Activities section sits between them.
+  // When an area has no Activities section (e.g. Personal Admin), the Overview band flips
+  // to cream so it doesn't sit lavender-on-lavender against Plan.
+  const overviewBg = hasActivities ? '#ECE7F7' : '#F8F4EB'
+  const planBg = '#ECE7F7'
 
   return (
     // Page base is the dark footer colour (#130426), so the min-h-screen filler below
@@ -81,7 +82,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         @media (max-width: 720px) { .area-activity-grid { grid-template-columns: 1fr; } }
       `}</style>
 
-      <AreaHeader slug={area.slug} title={area.title} intro={area.intro}>{learnContent}</AreaHeader>
+      <AreaHeader slug={area.slug} title={area.title} intro={area.intro} bandBg={overviewBg}>{learnContent}</AreaHeader>
 
       {/* ── Relevant activities — full-width cream band; color-blocked against the
           lavender Overview band above and the lavender Plan band below. Omitted when an

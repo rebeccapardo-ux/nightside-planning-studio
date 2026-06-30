@@ -317,8 +317,8 @@ export default function PlanExportPage() {
           {/* Summary page label */}
           <p style={{ fontFamily: apf, fontSize: 22, fontWeight: 400, color: '#130426', margin: '0 0 20px' }}>Summary</p>
 
-          {/* Key Details */}
-          <SummarySection title="Key Details">
+          {/* Key details */}
+          <SummarySection title="Key details">
             {keyDetails.map((row, i) => (
               <div key={i} style={{ paddingBottom: 8, marginBottom: 8, borderBottom: i < keyDetails.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
