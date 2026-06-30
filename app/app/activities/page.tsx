@@ -147,7 +147,7 @@ export default function ExplorePage() {
           <div className="explore-grid">
             <ExploreActivityCard
               title="Reflection Prompts"
-              description="Use guided prompts to reflect on your priorities, experiences, and what a good death means to you."
+              description="Use guided prompts to reflect on your experiences, beliefs, and what a good death means to you."
               href="/app/activities/reflection-prompts"
               status="available"
               index={0}
@@ -155,28 +155,28 @@ export default function ExplorePage() {
             />
             <ExploreActivityCard
               title="Values & Fears Ranking"
-              description="Sort what matters most — and what you most want to avoid — into a clear order of priority."
+              description="Clarify what matters most at the end of life."
               href="/app/activities/values-and-fears"
               status="available"
               index={1}
             />
             <ExploreActivityCard
               title="Scenario Navigator"
-              description="Work through realistic situations to see how your values and preferences might apply in practice."
+              description="Work through realistic illness scenarios to see how your values and preferences might apply in practice."
               href="/app/activities/scenario-navigator"
               status="available"
               index={2}
             />
             <ExploreActivityCard
               title="Legacy Map"
-              description="Explore what you want to pass on, document, or make visible to others after your death."
+              description="Explore meaningful moments in your life, and consider what you want to leave behind."
               href="/app/activities/legacy-map"
               status="available"
               index={3}
             />
             <ExploreActivityCard
               title="Deathcare Trivia"
-              description="A game to test and build your knowledge of deathcare options."
+              description="Play a game to test and build your knowledge of options for dying, death, and what happens to your body."
               href="/app/activities/trivia"
               status="available"
               index={4}

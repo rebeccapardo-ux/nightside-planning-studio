@@ -50,10 +50,12 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
 }
 
 // "Open →" affordance inside the Plan by area card — routes to its landing page
-// (orientation), sits between the description and the area sub-items.
+// (orientation), sits between the description and the area sub-items, right-aligned to match
+// the bottom-right "Open →" on the Activities / Your materials cards. position/zIndex lift it
+// above the full-card overlay link so it stays independently clickable + focusable.
 function OpenLink({ href }: { href: string }) {
   return (
-    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 8 }}>Open →</Link>
+    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-end', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 8, position: 'relative', zIndex: 1 }}>Open →</Link>
   )
 }
 
@@ -64,9 +66,12 @@ export default function AppHomePage() {
         .home4 { max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px; }
         /* Activities + Your materials are entry cards (1fr each); Plan by area is wider
            (it holds the six area links + Open). */
-        .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: stretch; }
-        .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; min-height: 340px; }
-        .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        /* Side cards (Activities, Your materials) sit at natural content height (align-self:start),
+           so they're shorter than the taller Plan by area card — no forced min-height blank space. */
+        .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: start; }
+        .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; }
+        /* grid-auto-rows: 1fr → all six area cards share one (tallest) row height. */
+        .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; grid-auto-rows: 1fr; }
         .home4-sub { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease; }
         .home4-sub:hover { background: rgba(255,255,255,0.85); }
         @media (max-width: 900px) {
@@ -99,13 +104,18 @@ export default function AppHomePage() {
             puzzle={<ActivitiesPuzzle />}
           />
 
-          {/* Plan by area (Dusk) — "Open →" to the Plan by area landing, then the six areas */}
-          <section className="home4-card" style={{ background: '#BBABF4' }}>
+          {/* Plan by area (Dusk) — the whole card routes to the Plan by area landing via an
+              absolute overlay link (the six area links + "Open →" sit above it with z-index, so
+              they keep their own destinations; clicking anywhere else — title, description, gaps
+              — hits the overlay). Same full-card-click pattern as the YourMaterials item cards.
+              Keyboard route is the visible "Open →" + the six focusable area links. */}
+          <section className="home4-card" style={{ background: '#BBABF4', position: 'relative', isolation: 'isolate' }}>
+            <Link href="/app/area" aria-hidden="true" tabIndex={-1} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} />
             <CardTop title="Plan by area" description="Work through each area of your end-of-life planning. Learn about your options, track tasks, and capture related thinking.">
               <PlanPuzzle />
             </CardTop>
             <OpenLink href="/app/area" />
-            <div className="home4-subgrid">
+            <div className="home4-subgrid" style={{ position: 'relative', zIndex: 1 }}>
               {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} />)}
             </div>
           </section>
@@ -142,16 +152,16 @@ function CardTop({ title, description, onDark = false, children }: { title: stri
 }
 
 // Activities + Your materials entry cards: title on its own full-width line, the puzzle
-// floated right after it (text wraps around / runs full-width), "Open →" bottom-right.
-// They **stretch to the grid row height** (align-self: stretch) so both side cards share a
-// single height and their bottoms align with the Plan by area card. Content sits at the top
-// and any leftover height falls as empty space below "Open →" (most visible on Your
-// materials, which carries the least copy — accepted).
+// floated right after it (text wraps around / runs full-width), "Open →" bottom-right just
+// below the description. They sit at **natural content height** (align-self: start) — shorter
+// than the taller Plan by area card, with no forced blank space. Because both carry a
+// title + a short description + Open, their heights (and the "Open →" positions) land at
+// roughly the same place naturally.
 function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; title: string; description: string; puzzle: React.ReactNode }) {
   const titleColor = onDark ? '#F8F4EB' : '#130426'
   const descColor = onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)'
   return (
-    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', alignSelf: 'stretch' }}>
+    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', alignSelf: 'start' }}>
       <div style={{ overflow: 'hidden' }}>
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
         <div style={{ float: 'right', marginLeft: 8, marginRight: -10, marginBottom: 8 }}>{puzzle}</div>

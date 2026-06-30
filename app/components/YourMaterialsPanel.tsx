@@ -167,7 +167,7 @@ export default function YourMaterialsPanel({
           <span style={cardTitle}>{act.label}</span>
         </div>
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 18 }}>
-          <Link href={act.href} className="plan-primary-btn" style={navyPill}>{inProgress ? 'Continue' : 'Start'}</Link>
+          <Link href={act.href} className="plan-primary-btn" style={navyPill}>{inProgress ? 'Revisit activity' : 'Start'}</Link>
           {inProgress && (
             <Link href={`/app/entries/${(act as InProgressAct).entryId}/export`} className="plan-export-link" style={exportLink}>Export</Link>
           )}
@@ -311,7 +311,7 @@ export default function YourMaterialsPanel({
         {tile(
           'activity',
           'Activity outputs',
-          <p style={tileDesc}>Your work from Reflect activities.</p>,
+          <p style={tileDesc}>Your work from Activities.</p>,
           docCount(inProgressActivities, notStartedActivities),
           statusStack(
             inProgressActivities.map((a) => renderActivityCard(a, true)),

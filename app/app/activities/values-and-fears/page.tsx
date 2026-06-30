@@ -39,8 +39,7 @@ export default function ValuesAndFearsPage() {
               </h2>
 
               <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-[#140028]/82 md:text-[18px]">
-                Explore what matters most to you — comfort, connection, dignity,
-                independence, and more.
+                Explore what matters most to you in the context of end-of-life.
               </p>
 
               <div className="mt-8 inline-flex items-center rounded-full bg-[#140028] px-5 py-3 text-[15px] font-medium text-[#f8f4eb] transition group-hover:translate-x-0.5">
@@ -57,8 +56,7 @@ export default function ValuesAndFearsPage() {
               </h2>
 
               <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-[#140028]/82 md:text-[18px]">
-                Reflect on what worries you most, so your concerns can be
-                acknowledged and addressed.
+                Clarify your worries, so they can be communicated and addressed.
               </p>
 
               <div className="mt-8 inline-flex items-center rounded-full bg-[#2f3f8f] px-5 py-3 text-[15px] font-medium text-[#f8f4eb] transition group-hover:translate-x-0.5">
