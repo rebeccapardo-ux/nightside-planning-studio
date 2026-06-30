@@ -261,9 +261,9 @@ export default async function HealthcareLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect/values-and-fears', label: 'Values and Fears Ranking', type: 'activity' },
-                    { href: '/app/reflect',    label: 'Reflection Prompts', type: 'activity' },
-                    { href: '/app/reflect/scenario-navigator',    label: 'Scenario Navigator', type: 'activity' },
+                    { href: '/app/activities/values-and-fears', label: 'Values and Fears Ranking', type: 'activity' },
+                    { href: '/app/activities',    label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/activities/scenario-navigator',    label: 'Scenario Navigator', type: 'activity' },
                     { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
                   ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="hc-activity-row" style={{ display: 'flex', width: '100%' }}>

@@ -148,7 +148,7 @@ export default function ExplorePage() {
             <ExploreActivityCard
               title="Reflection Prompts"
               description="Use guided prompts to reflect on your priorities, experiences, and what a good death means to you."
-              href="/app/reflect/reflection-prompts"
+              href="/app/activities/reflection-prompts"
               status="available"
               index={0}
               cta="Open →"
@@ -156,28 +156,28 @@ export default function ExplorePage() {
             <ExploreActivityCard
               title="Values & Fears Ranking"
               description="Prioritize what matters most, using a guided card sort activity."
-              href="/app/reflect/values-and-fears"
+              href="/app/activities/values-and-fears"
               status="available"
               index={1}
             />
             <ExploreActivityCard
               title="Scenario Navigator"
               description="Work through realistic situations to see how your values and preferences might apply in practice."
-              href="/app/reflect/scenario-navigator"
+              href="/app/activities/scenario-navigator"
               status="available"
               index={2}
             />
             <ExploreActivityCard
               title="Legacy Map"
               description="Explore what you want to pass on, document, or make visible to others after your death."
-              href="/app/reflect/legacy-map"
+              href="/app/activities/legacy-map"
               status="available"
               index={3}
             />
             <ExploreActivityCard
               title="Deathcare Trivia"
               description="A game to test and build your knowledge of deathcare options."
-              href="/app/learn/trivia"
+              href="/app/activities/trivia"
               status="available"
               index={4}
             />

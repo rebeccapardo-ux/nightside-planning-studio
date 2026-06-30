@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 // Areas of Planning — the practical workspace half of the Plan section: the
 // domain cards (progress + tasks) plus the Key details panel. Materials live on
-// the sibling /app/plan/materials page. (PlanOverview fetches its own data
+// the sibling /app/materials page. (PlanOverview fetches its own data
 // client-side, so this server component only needs domains + tasks.)
 export default async function AreasOfPlanningPage() {
   const supabase = await createSupabaseServerClient()
@@ -67,7 +67,7 @@ export default async function AreasOfPlanningPage() {
         <PlanExportButton />
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
-            <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Areas of Planning' }]} />
+            <Breadcrumbs theme="light" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Areas of Planning' }]} />
           </div>
           <h1 style={{ fontSize: 42, fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em', color: '#130426', margin: 0, fontFamily: inter }}>
             Areas of Planning

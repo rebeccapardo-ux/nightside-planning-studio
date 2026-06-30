@@ -100,7 +100,7 @@ function ReflectPromptsInner() {
 
   useEffect(() => {
     if (initialIndex < 0) {
-      router.replace('/app/reflect/reflection-prompts')
+      router.replace('/app/activities/reflection-prompts')
       return
     }
     setCurrentIndex(initialIndex)
@@ -272,14 +272,14 @@ function ReflectPromptsInner() {
     setSaveStatus('idle')
     setVoiceSaveMode(null)
     setHasVoiceNote(false)
-    router.replace(`/app/reflect/prompts?prompt=${prompt.id}`)
+    router.replace(`/app/activities/prompts?prompt=${prompt.id}`)
   }
 
   function goToNext() {
     if (currentIndex < PROMPTS.length - 1) {
       goToPrompt(currentIndex + 1)
     } else {
-      router.push('/app/reflect/reflection-prompts')
+      router.push('/app/activities/reflection-prompts')
     }
   }
 
@@ -287,7 +287,7 @@ function ReflectPromptsInner() {
     if (currentIndex > 0) {
       goToPrompt(currentIndex - 1)
     } else {
-      router.push('/app/reflect/reflection-prompts')
+      router.push('/app/activities/reflection-prompts')
     }
   }
 
@@ -308,8 +308,8 @@ function ReflectPromptsInner() {
         <Breadcrumbs
           theme="light"
           items={[
-            { label: 'Reflect', href: '/app/reflect' },
-            { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+            { label: 'Activities', href: '/app/activities' },
+            { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
             { label: currentPrompt.crumb },
           ]}
         />
@@ -454,7 +454,7 @@ function ReflectPromptsInner() {
                 Next card →
               </button>
               <button
-                onClick={() => router.push('/app/reflect/reflection-prompts')}
+                onClick={() => router.push('/app/activities/reflection-prompts')}
                 style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
               >
                 Back to deck

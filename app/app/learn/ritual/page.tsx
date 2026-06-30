@@ -194,7 +194,7 @@ export default async function RitualLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect', label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/activities', label: 'Reflection Prompts', type: 'activity' },
                     { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
                     { href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.label, type: 'document' },
                   ].map(({ href, label, type }) => (

@@ -30,9 +30,9 @@ const KNOWN_DOCUMENTS = DOCUMENT_TYPES.map((code) => ({
 }))
 
 const KNOWN_ACTIVITIES = [
-  { activity: ACTIVITY.VALUES_RANKING, label: 'Values Ranking', href: '/app/reflect/values-ranking' },
-  { activity: ACTIVITY.FEARS_RANKING,  label: 'Fears Ranking',  href: '/app/reflect/fears-ranking'  },
-  { activity: ACTIVITY.LEGACY_MAP,     label: 'Legacy Map',     href: '/app/reflect/legacy-map'      },
+  { activity: ACTIVITY.VALUES_RANKING, label: 'Values Ranking', href: '/app/activities/values-ranking' },
+  { activity: ACTIVITY.FEARS_RANKING,  label: 'Fears Ranking',  href: '/app/activities/fears-ranking'  },
+  { activity: ACTIVITY.LEGACY_MAP,     label: 'Legacy Map',     href: '/app/activities/legacy-map'      },
 ]
 
 // Your materials — the reference-library half of the Plan section: the user's
@@ -43,7 +43,7 @@ export default async function YourMaterialsPage() {
   const supabase = await createSupabaseServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   // proxy.ts middleware enforces auth on /app/*; this branch is unreachable.
-  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/plan/materials')
+  if (!user) throw new Error('Unreachable: auth middleware bypassed on /app/materials')
 
   await ensureCanonicalDomains(supabase, user.id)
 

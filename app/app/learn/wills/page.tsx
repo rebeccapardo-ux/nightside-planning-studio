@@ -224,7 +224,7 @@ export default async function WillsLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect', label: 'Reflection Prompts' },
+                    { href: '/app/activities', label: 'Reflection Prompts' },
                   ].map(({ href, label }) => (
                     <Link key={label} href={href} className="wl-activity-row" style={{ display: 'flex', width: '100%' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>

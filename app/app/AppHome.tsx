@@ -92,7 +92,7 @@ export default function AppHomePage() {
 
           {/* Activities (Sunrise) — entry card → the Activities landing */}
           <EntryCard
-            href="/app/reflect"
+            href="/app/activities"
             bg="#F29836"
             align="start"
             title="Activities"
@@ -113,7 +113,7 @@ export default function AppHomePage() {
 
           {/* Your materials (Sunset) — entry card → Your materials */}
           <EntryCard
-            href="/app/plan/materials"
+            href="/app/materials"
             bg="#DB5835"
             onDark
             align="start"

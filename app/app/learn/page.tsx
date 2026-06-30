@@ -18,14 +18,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const inner = { maxWidth: '1280px', marginLeft: 'auto' as const, marginRight: 'auto' as const }
 
 export default function LearnPage() {
-  useEffect(() => {
-    fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'learn_page_viewed', metadata: { page: 'home' } }),
-    }).catch(() => {})
-  }, [])
-
+  // (learn_page_viewed analytics removed — Phase 3; /app/learn is redirected to /app.)
   useEffect(() => {
     const elements = document.querySelectorAll('.ln-animate')
     if (!elements.length) return
@@ -138,7 +131,7 @@ export default function LearnPage() {
 
         {/* ── DEATHCARE TRIVIA PANEL ── */}
         <div className="px-5 md:px-16" style={{ ...inner, marginTop: '48px' }}>
-          <Link href="/app/learn/trivia" className="ln-trivia-panel">
+          <Link href="/app/activities/trivia" className="ln-trivia-panel">
             <span style={{
               position: 'absolute',
               top: '18px',

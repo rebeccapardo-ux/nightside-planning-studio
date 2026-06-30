@@ -37,7 +37,7 @@ export default function PlanLandingPage() {
         <div className="plan-chooser-grid" style={{ marginTop: 44, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           {/* Your materials */}
           <Link
-            href="/app/plan/materials"
+            href="/app/materials"
             className="plan-chooser-card"
             style={{ display: 'flex', flexDirection: 'column', background: '#F29836', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
           >

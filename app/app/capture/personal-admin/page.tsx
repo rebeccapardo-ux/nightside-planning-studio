@@ -482,7 +482,7 @@ function PersonalAdminPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Plan', href: '/app/plan' },
+              { label: 'Plan by area', href: '/app/area' },
               { label: 'Personal Admin Information' },
             ]}
           />

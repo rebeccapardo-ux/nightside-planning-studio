@@ -62,10 +62,10 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     code: 'healthcare',
     displayName: 'Healthcare Wishes',
     bottomLinks: [
-      { label: 'Scenario Navigator', href: '/app/reflect/scenario-navigator' },
-      { label: 'Values Ranking', href: '/app/reflect/values-ranking' },
-      { label: 'Fears Ranking', href: '/app/reflect/fears-ranking' },
-      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Scenario Navigator', href: '/app/activities/scenario-navigator' },
+      { label: 'Values Ranking', href: '/app/activities/values-ranking' },
+      { label: 'Fears Ranking', href: '/app/activities/fears-ranking' },
+      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
       { label: 'Learn about Healthcare wishes', href: '/app/learn/healthcare' },
     ],
     structure: {
@@ -133,7 +133,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     code: 'deathcare',
     displayName: 'Deathcare',
     bottomLinks: [
-      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
       { label: 'Learn about Deathcare', href: '/app/learn/deathcare' },
     ],
     structure: {
@@ -236,7 +236,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     code: 'ritual',
     displayName: 'Ritual & Ceremony',
     bottomLinks: [
-      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
       { label: 'Learn about Ritual & Ceremony', href: '/app/learn/ritual' },
     ],
     structure: {
@@ -275,8 +275,8 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
     code: 'legacy',
     displayName: 'Legacy',
     bottomLinks: [
-      { label: 'Legacy Map', href: '/app/reflect/legacy-map' },
-      { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+      { label: 'Legacy Map', href: '/app/activities/legacy-map' },
+      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
       { label: 'Learn about Legacy', href: '/app/learn/legacy' },
     ],
     structure: {

@@ -13,7 +13,7 @@ export default function ScenarioNavigatorSourcesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
       <Link
-        href="/app/reflect/scenario-navigator"
+        href="/app/activities/scenario-navigator"
         className="text-[#f8f4eb] hover:text-[#BBABF4] transition-colors text-sm"
       >
         ← Back to Scenario Navigator

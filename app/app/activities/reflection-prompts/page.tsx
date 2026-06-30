@@ -150,7 +150,7 @@ export default function ReflectPage() {
           <Breadcrumbs
             theme="navy"
             items={[
-              { label: 'Reflect', href: '/app/reflect' },
+              { label: 'Activities', href: '/app/activities' },
               { label: 'Reflection Prompts' },
             ]}
           />
@@ -226,7 +226,7 @@ export default function ReflectPage() {
             return (
             <Link
               key={prompt.id}
-              href={`/app/reflect/prompts?prompt=${prompt.id}`}
+              href={`/app/activities/prompts?prompt=${prompt.id}`}
               className="reflect-card"
               style={{
                 display: 'flex',

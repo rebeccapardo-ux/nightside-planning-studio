@@ -213,8 +213,8 @@ export default async function DeathcareLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect', label: 'Reflection Prompts', type: 'activity' },
-                    { href: '/app/learn/trivia', label: 'Deathcare Trivia', type: 'activity' },
+                    { href: '/app/activities', label: 'Reflection Prompts', type: 'activity' },
+                    { href: '/app/activities/trivia', label: 'Deathcare Trivia', type: 'activity' },
                     { href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.label, type: 'document' },
                   ].map(({ href, label, type }) => (
                     <Link key={label} href={href} className="dc-activity-row" style={{ display: 'flex', width: '100%' }}>

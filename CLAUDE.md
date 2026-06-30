@@ -104,7 +104,7 @@ Users add their own checkboxes ("tasks") to domain pages, alongside the platform
 
 - **Interactions (domain page only).** Inline **add** ("+ Add task" per readiness row and on the visible Other row): expanding input, **persist only on explicit submit** (Enter), Escape/blur-while-empty collapses; stays open + cleared for rapid entry; **await-then-append** (the row appears once the insert returns). Inline **edit**: click Edit → label becomes a field; **single commit path** — Enter and Escape both `blur()`, `onBlur` is the only committer, an `editCancelRef` makes Escape skip (prevents double-save). Inline **confirm delete**: Delete → "Delete?" (the button is focused so its `onBlur` cancels on click-elsewhere). Toggle/edit/delete are **optimistic with rollback**; delete rollback re-inserts in `created_at` order. Focus is **ref-based** (the repo enforces `jsx-a11y/no-autofocus`), keyed on open/edit state not text.
 
-- **Analytics:** toggling a task emits `document_field_saved` with `field_type:'user_task'`, `field_key:'user_task:<row_key>'`; creating emits `user_task_added`; converting a note emits `note_converted_to_task` (`{ origin_type, destination_domain_id, destination_row_key }` — no label/content, PII). All three are in `ALLOWED_EVENTS` in `app/api/analytics/track/route.ts` (a new event 400s there until added — fire-and-forget, so non-functional, but the event is dropped). No `user_task_deleted`.
+- **Analytics:** toggling a task emits `document_field_saved` with `field_type:'user_task'`, `field_key:'user_task:<row_key>'`; creating emits `user_task_added`; converting a note emits `note_converted_to_task` (`{ origin_type, destination_domain_id, destination_domain_code, destination_row_key }` — no label/content, PII). All three carry **`domain_code`** (the stable cross-user slug) alongside the per-user `domain_id` (Phase 3). All three are in `ALLOWED_EVENTS` in `app/api/analytics/track/route.ts` (a new event 400s there until added — fire-and-forget, so non-functional, but the event is dropped). No `user_task_deleted`.
 
 ### "Convert to a task" (note → task conversion)
 
@@ -119,7 +119,32 @@ A sticky in a domain's Your-Thoughts stream has a third action, **"Convert"** (E
 
 ---
 
-## The Plan section — three surfaces (landing · progress · materials)
+## Area-centric restructure (Phase 3 — route migration shipped; old surfaces still present pending Phase 4 deletion)
+
+The app moved from a **mode-based** nav (Reflect / Learn / Plan) to an **area-centric** one. New canonical homes:
+
+- **`/app` (home)** — three-card landing: **Activities**, **Plan by area**, **Your Materials**. Server wrapper seeds `ensureCanonicalDomains` then renders `AppHome`.
+- **`/app/activities`** (was `/app/reflect`) — Activities landing + all sub-pages (reflection-prompts, values-and-fears, rankings, legacy-map, scenario-navigator, **trivia**). Deathcare Trivia moved here from `/app/learn/trivia`.
+- **`/app/area`** — "Plan by area" landing (Dusk area cards); seeds `ensureCanonicalDomains`.
+- **`/app/area/<slug>`** — the per-area page (`AreaPlanSection`), the central planning surface. Slugs in `lib/areas.ts` (`AREAS`, `areaBySlug()`, `areaByDomainCode()`) — the URL slug ↔ `containers.domain_code` ↔ `LEARN_AREAS.id` bridge. Learn content now lives in the area page's Overview band (no separate Learn pages).
+- **`/app/materials`** (was `/app/plan/materials`) — Your Materials; seeds `ensureCanonicalDomains`.
+- **`/app/materials/export`** (was `/app/plan/export`) — the PDF/JSON export surface.
+
+**Redirect map (all 308 permanent).** Static 1:1 redirects live in **`proxy.ts` → `resolveLegacyRedirect()`** (runs before auth; the hardcoded `LEARN_TO_AREA` map mirrors `AREAS` so the edge bundle stays minimal):
+- `/app/reflect[/*]` → `/app/activities[/*]`
+- `/app/learn/trivia[/*]` → `/app/activities/trivia[/*]`
+- `/app/learn/<area>` → `/app/area/<slug>` (via `LEARN_TO_AREA`); unknown area or bare `/app/learn` → `/app`
+- `/app/plan/materials[/*]` → `/app/materials[/*]`; `/app/plan/export[/*]` → `/app/materials/export[/*]`
+- any other `/app/plan[/*]` (landing, areas, progress) → `/app`
+- **`/app/domains/[uuid]`** needs a DB lookup (uuid → `domain_code` → slug), so it's an **async page stub** (`app/app/domains/[domainId]/page.tsx`), NOT in proxy — `containers.domain_code` → `areaByDomainCode()` → `redirect('/app/area/<slug>')`, falling back to `/app/area`.
+
+**Analytics (`lib/analytics.ts` → `analytics_events`).** Stable-slug dimension is **`domain_code`** (cross-user analyzable), not the per-user `domain_id` UUID. Phase 3 added `domain_code` to: `document_opened`, `document_field_saved` (checkbox + user_task), `user_task_added`, `note_converted_to_task` (as `destination_domain_code`). **`learn_page_viewed` was dropped** (fire site + `ALLOWED_EVENTS`). **`document_opened` fires on area-page views** — the name is kept for continuity (don't rename to `area_page_viewed`); the name-vs-meaning mismatch is intentional and documented here.
+
+The sections below (Plan section, GlobalNav sub-nav, Learn `ContinuePlanningPanel`) describe the **pre-restructure** surfaces. They are **redirected, not yet deleted** — Phase 4 removes the old route files, the Learn pages, and the `/app/domains/[domainId]/layout.tsx` metadata. Until then, treat them as historical context for the moved logic.
+
+---
+
+## The Plan section — three surfaces (landing · progress · materials)  ⚠️ superseded by the restructure above (routes redirect; deletion pending Phase 4)
 
 `/app/plan` is split into **three** routes; do not collapse them back into one combined page.
 

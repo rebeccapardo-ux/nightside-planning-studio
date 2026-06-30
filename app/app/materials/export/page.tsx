@@ -218,10 +218,10 @@ export default function PlanExportPage() {
         {/* Chrome */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
           <Link
-            href="/app/plan"
+            href="/app/materials"
             style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', textDecoration: 'none' }}
           >
-            ← Back to Plan
+            ← Back to Your materials
           </Link>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>

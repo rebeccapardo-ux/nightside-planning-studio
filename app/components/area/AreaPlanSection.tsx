@@ -174,7 +174,7 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventName: 'document_opened', metadata: { domain_id: domainId, domain_title: foundDomain?.title ?? null } }),
+        body: JSON.stringify({ eventName: 'document_opened', metadata: { domain_id: domainId, domain_code: foundDomain?.domain_code ?? null, domain_title: foundDomain?.title ?? null } }),
       }).catch(() => {})
     }
     load()
@@ -315,7 +315,7 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'note_converted_to_task', metadata: { origin_type: note.origin_type ?? null, destination_domain_id: dest.domainId, destination_row_key: dest.rowKey } }),
+      body: JSON.stringify({ eventName: 'note_converted_to_task', metadata: { origin_type: note.origin_type ?? null, destination_domain_id: dest.domainId, destination_domain_code: domain?.domain_code ?? null, destination_row_key: dest.rowKey } }),
     }).catch(() => {})
   }
 
@@ -339,7 +339,7 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
             right-4) so the title isn't truncated behind it — matching the Reflect/Learn
             sub-page banner convention; desktop keeps its compact 16px (no overlap there). */}
         <div className="max-w-6xl mx-auto pt-16 md:pt-4" style={{ paddingLeft: 40, paddingRight: 40, paddingBottom: 8 }}>
-          <Breadcrumbs theme="navy" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Areas of Planning', href: '/app/plan/areas' }, { label: domain?.title ?? '…' }]} />
+          <Breadcrumbs theme="navy" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Areas of Planning', href: '/app/plan/areas' }, { label: domain?.title ?? '…' }]} />
         </div>
         <div className="max-w-6xl mx-auto" style={{ padding: '4px 40px 56px' }}>
           <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
@@ -571,7 +571,7 @@ function PlanningStatusSection({
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, field_type: 'user_task', field_key: `user_task:${task.row_key}` } }),
+      body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, domain_code: domainCode ?? null, field_type: 'user_task', field_key: `user_task:${task.row_key}` } }),
     }).catch(() => {})
   }
 
@@ -585,7 +585,7 @@ function PlanningStatusSection({
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'user_task_added', metadata: { domain_id: domainId, field_key: `user_task:${rowKey}` } }),
+      body: JSON.stringify({ eventName: 'user_task_added', metadata: { domain_id: domainId, domain_code: domainCode ?? null, field_key: `user_task:${rowKey}` } }),
     }).catch(() => {})
     return true
   }
@@ -633,7 +633,7 @@ function PlanningStatusSection({
       fetch('/api/analytics/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, field_type: 'checkbox', field_key: itemKey } }),
+        body: JSON.stringify({ eventName: 'document_field_saved', metadata: { domain_id: domainId, domain_code: domainCode ?? null, field_type: 'checkbox', field_key: itemKey } }),
       }).catch(() => {})
       return { ...prev, [itemKey]: updated }
     })

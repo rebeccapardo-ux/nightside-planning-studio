@@ -278,9 +278,9 @@ export default function YourMaterialsPanel({
           'Wishes documents',
           <p style={tileDesc}>
             Documents to help synthesize your values, priorities, and preferences; recommended to fill in after exploring the{' '}
-            <Link href="/app/reflect" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Reflect</Link>{' '}
+            <Link href="/app/activities" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Activities</Link>{' '}
             and{' '}
-            <Link href="/app/learn" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Learn</Link>{' '}
+            <Link href="/app/area" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Plan by area</Link>{' '}
             sections.
           </p>,
           docCount(inProgressWishes, notStartedWishes),

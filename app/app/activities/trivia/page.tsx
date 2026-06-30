@@ -97,7 +97,7 @@ function DeckView({
           <Breadcrumbs
             theme="navy"
             items={[
-              { label: 'Learn', href: '/app/learn' },
+              { label: 'Activities', href: '/app/activities' },
               { label: 'Deathcare Trivia' },
             ]}
           />
@@ -266,7 +266,7 @@ function CardView({
         <Breadcrumbs
           theme="light"
           items={[
-            { label: 'Learn', href: '/app/learn' },
+            { label: 'Activities', href: '/app/activities' },
             { label: 'Deathcare Trivia', onClick: onBack },
             { label: card.crumb },
           ]}

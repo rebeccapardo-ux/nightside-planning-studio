@@ -9,7 +9,7 @@ export default function PlanExportButton() {
   return (
     <div className="plan-export-bar" style={{ position: 'absolute', top: 20, right: 148 }}>
       <Link
-        href="/app/plan/export"
+        href="/app/materials/export"
         className="plan-export-btn mobile-sticky-export"
         style={{
           display: 'flex', alignItems: 'center', gap: 6,

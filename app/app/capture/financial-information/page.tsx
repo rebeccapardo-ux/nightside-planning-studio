@@ -435,7 +435,7 @@ export default function FinancialInformationPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Financial Information' }]} />
+          <Breadcrumbs theme="light" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Financial Information' }]} />
         </div>
 
         <div style={{ marginBottom: 48 }}>

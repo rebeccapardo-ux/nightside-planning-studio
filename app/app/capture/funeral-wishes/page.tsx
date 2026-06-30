@@ -574,7 +574,7 @@ function FuneralWishesPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Plan', href: '/app/plan' },
+              { label: 'Plan by area', href: '/app/area' },
               { label: 'Wishes for My Body, Funeral & Ceremony', href: '/app/capture/funeral-wishes' },
             ]}
           />
@@ -594,7 +594,7 @@ function FuneralWishesPage() {
           {/* Legal note */}
           <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', marginBottom: 20, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
             This is <strong>not a legal document.</strong> Wishes for body disposition should also be included in your legal will. Regulations vary by province;{' '}
-            <a href="/app/learn/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
+            <a href="/app/area/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
               view province-specific resources →
             </a>
           </p>
@@ -736,7 +736,7 @@ function FuneralWishesPage() {
                                 <TF label="Any other wishes:" value={form.cremationOtherWishes} onChange={v => updateField('cremationOtherWishes', v)} fieldKey="cremationOtherWishes" onCursorChange={handleCursorChange} />
                               </FadeIn>
                               <FadeIn visible={form.dispositionType === 'aquamation'}>
-                                <HelperText italic>Aquamation is available in some provinces. <a href="/app/learn/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</a></HelperText>
+                                <HelperText italic>Aquamation is available in some provinces. <a href="/app/area/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</a></HelperText>
                                 <RadioGroup label="Direct aquamation (no ceremony before):" value={form.aquamationDirect} onChange={v => updateField('aquamationDirect', v)} options={[{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }, { value: 'no_preference', label: 'No preference' }]} />
                                 <TF label="Who should receive the remains:" value={form.aquamationRemains} onChange={v => updateField('aquamationRemains', v)} fieldKey="aquamationRemains" onCursorChange={handleCursorChange} />
                                 <TF label="Where should the remains go:" value={form.aquamationLocation} onChange={v => updateField('aquamationLocation', v)} fieldKey="aquamationLocation" onCursorChange={handleCursorChange} />
@@ -790,7 +790,7 @@ function FuneralWishesPage() {
                               </FadeIn>
                               <HelperText italic important>
                                 To make your donation wishes legally effective, you need to register with your provincial organ and tissue donation registry. Indicating your wishes here does not constitute registration. This is separate from body disposition — you can donate organs regardless of your other wishes.{' '}
-                                <a href="/app/learn/deathcare" style={{ color: '#130426', textDecoration: 'underline' }}>Learn more about organ donation in your province →</a>
+                                <a href="/app/area/deathcare" style={{ color: '#130426', textDecoration: 'underline' }}>Learn more about organ donation in your province →</a>
                               </HelperText>
                               <FadeIn visible={['yes_all', 'yes_some', 'not_sure'].includes(form.organDonationWishes)}>
                                 <TF
@@ -808,7 +808,7 @@ function FuneralWishesPage() {
                             <>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 <RadioGroup label="Would you like a home funeral?" value={form.homeFuneralPreference} onChange={v => updateField('homeFuneralPreference', v)} options={[{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }, { value: 'no_preference', label: 'No preference' }]} />
-                                <HelperText italic>Regulations vary by province — <a href="/app/learn/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</a>.</HelperText>
+                                <HelperText italic>Regulations vary by province — <a href="/app/area/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</a>.</HelperText>
                                 <FadeIn visible={form.homeFuneralPreference === 'yes'}>
                                   <TF label="Any specific wishes:" value={form.homeFuneralWishes} onChange={v => updateField('homeFuneralWishes', v)} fieldKey="homeFuneralWishes" onCursorChange={handleCursorChange} />
                                 </FadeIn>

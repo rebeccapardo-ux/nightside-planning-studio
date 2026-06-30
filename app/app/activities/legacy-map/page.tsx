@@ -854,7 +854,7 @@ export default function LegacyMapPage() {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/reflect' },
+                { label: 'Activities', href: '/app/activities' },
                 { label: 'Legacy Map' },
               ]}
             />

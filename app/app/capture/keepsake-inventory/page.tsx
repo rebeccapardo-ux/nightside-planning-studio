@@ -422,7 +422,7 @@ export default function KeepsakeDocumentPage() {
           <Breadcrumbs
             theme="light"
             items={[
-              { label: 'Plan', href: '/app/plan' },
+              { label: 'Plan by area', href: '/app/area' },
               { label: 'Keepsakes Inventory' },
             ]}
           />

@@ -462,7 +462,7 @@ export default function DevicesAndAccountsPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Devices & Accounts' }]} />
+          <Breadcrumbs theme="light" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Devices & Accounts' }]} />
         </div>
 
         <div style={{ marginBottom: 48 }}>
@@ -538,7 +538,7 @@ export default function DevicesAndAccountsPage() {
           >
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.7)', lineHeight: 1.55, margin: '0 0 16px 0' }}>
               Some platforms allow you to set what happens to your account after your death (e.g. memorialization, deletion, legacy contacts).{' '}
-              <a href="/app/learn/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
+              <a href="/app/area/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
                 Learn how to set up digital legacy and account preferences →
               </a>
             </p>
@@ -620,7 +620,7 @@ export default function DevicesAndAccountsPage() {
           >
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.7)', lineHeight: 1.55, margin: '0 0 16px 0' }}>
               Digital assets can include things like cryptocurrency, domain names, online businesses, or files stored in cloud services.{' '}
-              <a href="/app/learn/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
+              <a href="/app/area/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
                 Learn how to set up digital legacy and account preferences →
               </a>
             </p>

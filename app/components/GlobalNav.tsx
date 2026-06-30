@@ -68,7 +68,9 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-[#2C3777]' },
   { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-[#2C3777]' },
 
-  // Materials + Domains share a navy nav to complement their dark page bg
+  // Your materials (+ its export) — navy nav (cream/dark page bg)
+  { prefix: '/app/materials', theme: 'dark',  navBg: 'bg-[#2C3777]' },
+  // Legacy /app/plan + /app/domains (redirected in Phase 3) — navy nav for the brief window
   { prefix: '/app/plan',      theme: 'dark',  navBg: 'bg-[#2C3777]' },
   { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
 
@@ -80,23 +82,23 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
 
   // Activities (formerly Reflect) landing: cream page → navy nav (must differ). Exact
   // match only, so sub-pages fall through to default nav.
-  { prefix: '/app/reflect', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/activities', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
 
   // Plan by area landing: cream page → navy nav. Exact, so the area pages
   // (/app/area/<slug>, which have their own navy header) fall through to default.
   { prefix: '/app/area', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
 
   // Values & Fears landing + ranking activities — navy nav on blue workspace
-  { prefix: '/app/reflect/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/reflect/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/reflect/fears-ranking',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/activities/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/fears-ranking',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
 
   // Activity screens with dark/midnight banners — use cream nav for contrast
-  { prefix: '/app/reflect/reflection-prompts', theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/reflect/prompts',            theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/reflect/scenario-navigator', theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/reflect/legacy-map',         theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/learn/trivia',               theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/reflection-prompts', theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/prompts',            theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/scenario-navigator', theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/legacy-map',         theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/trivia',               theme: 'light', navBg: 'bg-[#f8f4eb]' },
 
   // Account management + legal pages — navy nav (page bg is cream, nav must differ)
   { prefix: '/app/account', theme: 'dark', navBg: 'bg-[#2C3777]' },
@@ -152,15 +154,15 @@ type NavItem = {
 function buildNavItems(): NavItem[] {
   return [
     {
-      href: '/app/reflect',
+      href: '/app/activities',
       label: 'Activities',
-      activePrefixes: ['/app/reflect'],
+      activePrefixes: ['/app/activities'],
       rows: [
-        { type: 'item', href: '/app/reflect/reflection-prompts', label: 'Reflection Prompts' },
-        { type: 'item', href: '/app/reflect/values-and-fears', label: 'Values & Fears Ranking', activePrefixes: ['/app/reflect/values-and-fears', '/app/reflect/values-ranking', '/app/reflect/fears-ranking'] },
-        { type: 'item', href: '/app/reflect/scenario-navigator', label: 'Scenario Navigator' },
-        { type: 'item', href: '/app/reflect/legacy-map', label: 'Legacy Map' },
-        { type: 'item', href: '/app/learn/trivia', label: 'Deathcare Trivia' },
+        { type: 'item', href: '/app/activities/reflection-prompts', label: 'Reflection Prompts' },
+        { type: 'item', href: '/app/activities/values-and-fears', label: 'Values & Fears Ranking', activePrefixes: ['/app/activities/values-and-fears', '/app/activities/values-ranking', '/app/activities/fears-ranking'] },
+        { type: 'item', href: '/app/activities/scenario-navigator', label: 'Scenario Navigator' },
+        { type: 'item', href: '/app/activities/legacy-map', label: 'Legacy Map' },
+        { type: 'item', href: '/app/activities/trivia', label: 'Deathcare Trivia' },
       ],
     },
     {
@@ -172,9 +174,9 @@ function buildNavItems(): NavItem[] {
       rows: AREAS.map((a): NavRow => ({ type: 'item', href: `/app/area/${a.slug}`, label: a.title, activePrefixes: [`/app/area/${a.slug}`] })),
     },
     {
-      href: '/app/plan/materials',
+      href: '/app/materials',
       label: 'Your materials',
-      activePrefixes: ['/app/plan/materials'],
+      activePrefixes: ['/app/materials'],
     },
   ]
 }

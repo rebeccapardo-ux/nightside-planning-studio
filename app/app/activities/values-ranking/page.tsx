@@ -16,48 +16,47 @@ import AutosaveNotice from '@/app/components/AutosaveNotice'
 type Bucket = 'essential' | 'important' | 'less_central'
 
 const CARD_RENAMES: Record<string, string> = {
-  'Feeling unprepared for changes to body, mind, or spirit that come with dying': 'Feeling unprepared for changes that come with dying',
+  'Reflecting on my life and accomplishments': 'Reflecting on my life',
 }
 const normalizeCard = (s: string) => CARD_RENAMES[s] ?? s
 
-const FEARS = [
-  'Being in unmanageable pain',
-  'Not being able to make my own decisions',
-  'Overly aggressive medical intervention',
-  'Being alone',
-  'Feeling confused or disoriented',
-  'Being a burden on loved ones',
-  'Losing my sight or hearing',
-  'Not being able to communicate verbally',
-  'Being dependent on others, e.g. for eating',
-  'Being incontinent',
-  'Feeling regret',
-  'Feeling like I have unresolved conflicts',
-  'Prolonged emotional/psychological suffering',
-  'Feeling like financial/logistic affairs are not organized',
-  'Not receiving enough attention/compassion from caregivers',
-  'Feeling betrayed by my body',
-  'Being negatively remembered or misunderstood after death',
-  'Leaving loved ones financially strained/unprepared',
-  'Losing a sense of purpose or meaning in life',
-  'Having doctors disregard my wishes',
-  'Feeling judged about my choices',
-  'Having spiritual or existential fear',
-  'Feeling embarrassed by physical changes',
-  'Feeling a lack of closure in my life journey',
-  'Having unresolved/unspoken truths that remain hidden',
-  'Not having time to say goodbye/feeling rushed in dying',
-  'Being dependent on life-support machines',
-  'Not having my stories/memories documented',
-  'Losing access to routines that bring comfort',
-  'Being physically restrained or immobilized in a medical setting',
-  "Feeling pressured into making choices I don't want",
-  'Feeling emotionally abandoned',
-  'Not being able to express emotions',
-  'Feeling unprepared for changes that come with dying',
-  'Having a diminished sense of humor or joy',
-  'Losing mobility',
-  'Having a slow death',
+const VALUES = [
+  'Being kept clean',
+  'Not dying alone',
+  'Maintaining dignity',
+  'Preventing family conflict',
+  'Having my identity respected',
+  'Having a chance to say goodbye',
+  'Being able to communicate verbally',
+  'Not having difficulty breathing',
+  'Being mentally cogent',
+  'Prayer/spiritual support',
+  'Not being anxious',
+  'Having physical touch',
+  'Being free from pain',
+  'Having companionship',
+  'Access to nature',
+  'Having financial/logistic affairs organized',
+  'Having funeral/memorial plans organized',
+  'Knowing what to expect with my body',
+  'Having my loved ones prepared',
+  'Reflecting on my life',
+  'Not burdening my loved ones',
+  'Dying at home',
+  'Having a care team I trust',
+  'Addressing unfinished business in relationships',
+  'Being able to talk about death/my fears',
+  'Being able to write',
+  'Feeling I have lived a complete life',
+  'Living as long as possible',
+  'Quality of life',
+  'Independence',
+  'Time with pets',
+  'Birthdays and special occasions',
+  'Religious/spiritual traditions',
+  'Letters/objects to be given to others after my death',
+  'Being able to enjoy food',
+  'Time with loved ones',
 ]
 
 type Assignments = Record<Bucket, string[]>
@@ -70,6 +69,7 @@ const EMPTY: Assignments = {
 
 const ESSENTIAL_SLOTS = 5
 const MIN_COL_SLOTS = 6
+
 
 type MoveMode =
   | { type: 'none' }
@@ -90,6 +90,9 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
+// Column slot cards: containerType: 'inline-size' is set on the button so cqw is relative to the card's actual rendered width.
+// Factor = 92 / (longestWordLen * 0.50) ensures the longest word occupies ≤92% of the card's inline size without splitting.
+// For short words (≤10 chars), 16px is safe at all expected viewport widths.
 function getCardFontStyle(value: string): { fontSize: string | number } {
   const words = value.split(/[\s/]+/)
   const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '')
@@ -99,6 +102,7 @@ function getCardFontStyle(value: string): { fontSize: string | number } {
   return { fontSize: `clamp(10px, ${factor}cqw, 16px)` }
 }
 
+// Fixed-width contexts (current-card slot, sticky preview): compute a static font size given the known text area.
 function getFixedCardFontSize(value: string, textAreaPx: number): number {
   const words = value.split(/[\s/]+/)
   const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '')
@@ -106,10 +110,10 @@ function getFixedCardFontSize(value: string, textAreaPx: number): number {
   return Math.max(10, Math.min(16, Math.floor((textAreaPx * 0.92) / (len * 0.5))))
 }
 
-function FearsRankingContent() {
+function ValuesRankingContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const entryIdFromUrl = searchParams.get('entry')
+  const router = useRouter()
 
   const [index, setIndex] = useState(0)
   const [assignments, setAssignments] = useState<Assignments>(EMPTY)
@@ -141,20 +145,21 @@ function FearsRankingContent() {
   const savedReflectionNoteIdRef = useRef<string | null>(null)
   const deckModuleRef = useRef<HTMLDivElement>(null)
 
-  const current = FEARS[index] ?? null
+  const current = VALUES[index] ?? null
   const sortedCount =
     assignments.essential.length +
     assignments.important.length +
     assignments.less_central.length
 
-  const remainingCount = FEARS.length - sortedCount
-  const isDone = index >= FEARS.length
+  const remainingCount = VALUES.length - sortedCount
+  const isDone = index >= VALUES.length
 
   const importantSlots = Math.max(assignments.important.length + 2, MIN_COL_SLOTS)
   const lessCentralSlots = Math.max(assignments.less_central.length + 2, MIN_COL_SLOTS)
 
   const currentCardIsActive = moveMode.type === 'none' && cardRevealed && !!current
 
+  // Load saved entry on mount — always fetch the most recent, not just by URL param
   useEffect(() => {
     async function loadSavedEntry() {
       const supabase = createSupabaseBrowserClient()
@@ -169,13 +174,13 @@ function FearsRankingContent() {
           .select('id, content, activity, created_at')
           .eq('id', entryIdFromUrl)
           .single()
-        if (!result.error && result.data?.activity === ACTIVITY.FEARS_RANKING) data = result.data
+        if (!result.error && result.data?.activity === ACTIVITY.VALUES_RANKING) data = result.data
       } else {
         const result = await supabase
           .from('entries')
           .select('id, content, activity, created_at')
           .eq('user_id', user.id)
-          .eq('activity', ACTIVITY.FEARS_RANKING)
+          .eq('activity', ACTIVITY.VALUES_RANKING)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
@@ -218,10 +223,11 @@ function FearsRankingContent() {
     fetch('/api/analytics/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: ACTIVITY.FEARS_RANKING } }),
+      body: JSON.stringify({ eventName: 'activity_opened', metadata: { activity: ACTIVITY.VALUES_RANKING } }),
     }).catch(() => {})
   }, [])
 
+  // Autosave card state 1500ms after assignments change
   useEffect(() => {
     if (!isDirty) return
     if (cardSaveTimerRef.current) clearTimeout(cardSaveTimerRef.current)
@@ -230,12 +236,14 @@ function FearsRankingContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignments, isDirty])
 
+  // Refresh timestamp display every 60s
   useEffect(() => {
     if (!lastSavedAt) return
     const interval = setInterval(() => setStatusNow(Date.now()), 60000)
     return () => clearInterval(interval)
   }, [lastSavedAt])
 
+  // Track whether deck module is visible in viewport
   useEffect(() => {
     const el = deckModuleRef.current
     if (!el) return
@@ -255,17 +263,17 @@ function FearsRankingContent() {
     setSaveStatus('saving')
     const currentEntryId = savedEntryIdRef.current
     const payload = {
-      title: 'Fears Ranking',
+      title: 'Values Ranking',
       user_id: user.id,
       section: 'explore',
-      activity: ACTIVITY.FEARS_RANKING,
+      activity: ACTIVITY.VALUES_RANKING,
       content: {
         essential: assignments.essential,
         important: assignments.important,
         less_central: assignments.less_central,
         is_complete: isDone,
         sorted_count: sortedCount,
-        total_count: FEARS.length,
+        total_count: VALUES.length,
       },
     }
 
@@ -281,7 +289,7 @@ function FearsRankingContent() {
         fetch('/api/analytics/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.FEARS_RANKING } }),
+          body: JSON.stringify({ eventName: 'activity_contributed', metadata: { activity: ACTIVITY.VALUES_RANKING } }),
         }).catch(() => {})
       }
       setIsDirty(false)
@@ -360,15 +368,16 @@ function FearsRankingContent() {
     }
   }
 
-  // liveInstruction kept for error/move state text only
   const liveInstruction = useMemo(() => {
+    if (isDone) return 'All values have been placed.'
+    if (!cardRevealed && moveMode.type === 'none') return ''
     if (moveMode.type === 'moving_existing') return 'Place this card in a new slot.'
     if (moveMode.type === 'making_room_for_incoming') {
-      if (!moveMode.selected) return 'Choose a card in Most pressing to move out.'
+      if (!moveMode.selected) return 'Choose a card in Essential to move out.'
       return 'Choose a new slot for this card.'
     }
-    return null
-  }, [moveMode])
+    return 'Select a column below to place this card.'
+  }, [moveMode, isDone, cardRevealed])
 
   function advance() {
     setIndex((prev) => prev + 1)
@@ -379,7 +388,7 @@ function FearsRankingContent() {
   function handleMobilePlace(bucket: Bucket) {
     if (!current || !cardRevealed) return
     if (bucket === 'essential' && assignments.essential.length >= ESSENTIAL_SLOTS) {
-      setErrorMessage('Most pressing is full. Open it and move a card out first.')
+      setErrorMessage('Essential is full. Open Essential and move a card out first.')
       return
     }
     setAssignments((prev) => ({ ...prev, [bucket]: [...prev[bucket], current] }))
@@ -418,7 +427,7 @@ function FearsRankingContent() {
   function handleMobileMove(fromBucket: Bucket, value: string, toBucket: Bucket) {
     if (fromBucket === toBucket) return
     if (toBucket === 'essential' && assignments.essential.length >= ESSENTIAL_SLOTS) {
-      setErrorMessage('Most pressing is full.')
+      setErrorMessage('Essential is full.')
       return
     }
     setAssignments((prev) => ({
@@ -463,11 +472,11 @@ function FearsRankingContent() {
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (!moveMode.selected) {
-        setErrorMessage('First choose a card in Most pressing to move out.')
+        setErrorMessage('First choose a card in Essential to move out.')
         return
       }
       if (bucket === 'essential') {
-        setErrorMessage('Choose an empty slot in Somewhat pressing or Less pressing.')
+        setErrorMessage('Choose an empty slot in Important or Less important.')
         return
       }
       if (!current) {
@@ -505,7 +514,7 @@ function FearsRankingContent() {
 
     if (moveMode.type === 'making_room_for_incoming') {
       if (bucket !== 'essential') {
-        setErrorMessage('Choose a card in Most pressing to move out.')
+        setErrorMessage('Choose a card in Essential to move out.')
         return
       }
       setMoveMode({
@@ -575,17 +584,17 @@ function FearsRankingContent() {
             <Breadcrumbs
               theme="navy"
               items={[
-                { label: 'Reflect', href: '/app/reflect' },
-                { label: 'Values & Fears Ranking', href: '/app/reflect/values-and-fears' },
-                { label: 'Fears Ranking' },
+                { label: 'Activities', href: '/app/activities' },
+                { label: 'Values & Fears Ranking', href: '/app/activities/values-and-fears' },
+                { label: 'Values Ranking' },
               ]}
             />
           </div>
           <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 16 }}>
-            Fears Ranking
+            Values Ranking
           </h1>
           <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>
-            Fear around death can often feel vague and shapeless. But underneath it are usually specific things: pain, being alone, confusion, losing the things you love to do, not being able to afford care. Naming which of those weigh on you most is the first step toward addressing them. Once a fear is specific, you can communicate it to the people around you and, where possible, build it into a plan — so you&apos;re met with care and support exactly where you&apos;re most afraid.
+            Many things can feel equally important in theory. Forced ranking helps clarify what matters most by asking you to make comparisons and notice your instinctive reactions.
           </p>
           <button
             type="button"
@@ -635,7 +644,7 @@ function FearsRankingContent() {
       <div className="hidden md:block" style={{ background: '#2C3777' }}>
         <div className="px-5 md:px-8" style={{ maxWidth: 1400, margin: '0 auto', paddingTop: 28, paddingBottom: 48 }}>
 
-          {/* Deck / card module */}
+          {/* Deck / card module — centered, compact */}
           <div ref={deckModuleRef} style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 28 }}>
 
@@ -644,84 +653,83 @@ function FearsRankingContent() {
 
                 {/* Deck + count */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                  <div style={{ position: 'relative', width: 120, height: 168, flexShrink: 0 }}>
-                    {isDone ? (
-                      <div style={{ position: 'absolute', inset: 0, borderRadius: 20, border: '2px solid rgba(23,3,39,0.2)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426' }}>Done</span>
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ position: 'absolute', left: 7, top: 6, width: 120, height: 168, borderRadius: 20, background: '#ddd8cf', border: '1.5px solid rgba(19,4,38,0.45)' }} />
-                        <div style={{ position: 'absolute', left: 4, top: 3, width: 120, height: 168, borderRadius: 20, background: '#eae5dc', border: '1.5px solid rgba(19,4,38,0.45)' }} />
-                        <div
-                          style={{
-                            position: 'absolute', inset: 0, borderRadius: 20,
-                            border: '1.5px solid rgba(248,244,235,0.20)',
-                            background: 'rgba(19,4,38,0.96)',
-                          }}
-                        />
-                      </>
-                    )}
-                  </div>
-
-                  {/* Count — below deck */}
-                  <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)', margin: 0, textAlign: 'center' }}>
-                    {Math.max(remainingCount, 0)} cards left
-                  </p>
+                <div style={{ position: 'relative', width: 120, height: 168, flexShrink: 0 }}>
+                  {isDone ? (
+                    <div style={{ position: 'absolute', inset: 0, borderRadius: 20, border: '2px solid rgba(23,3,39,0.2)', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426' }}>Done</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ position: 'absolute', left: 7, top: 6, width: 120, height: 168, borderRadius: 20, background: '#ddd8cf', border: '1.5px solid rgba(19,4,38,0.45)' }} />
+                      <div style={{ position: 'absolute', left: 4, top: 3, width: 120, height: 168, borderRadius: 20, background: '#eae5dc', border: '1.5px solid rgba(19,4,38,0.45)' }} />
+                      <div
+                        style={{
+                          position: 'absolute', inset: 0, borderRadius: 20,
+                          border: '1.5px solid rgba(248,244,235,0.20)',
+                          background: 'rgba(19,4,38,0.96)',
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+                {/* Count — below deck */}
+                <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)', margin: 0, textAlign: 'center' }}>
+                  {Math.max(remainingCount, 0)} cards left
+                </p>
                 </div>
 
                 {/* Current card slot */}
                 <div style={{ width: 120, height: 168, position: 'relative', flexShrink: 0 }}>
-                    {cardRevealed && current ? (
-                      <button
-                        type="button"
-                        onClick={handleCurrentCardClick}
-                        style={{
-                          position: 'absolute', inset: 0, borderRadius: 20,
-                          background: '#F8F4EB',
-                          color: '#130426',
-                          border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.10)',
-                          boxShadow: currentCardIsActive
-                            ? '0 0 18px rgba(219,88,53,0.22), 0 2px 6px rgba(0,0,0,0.05)'
-                            : '0 2px 6px rgba(0,0,0,0.05)',
-                          transform: currentCardIsActive ? 'translateY(-2px)' : 'none',
-                          cursor: moveMode.type !== 'none' ? 'pointer' : 'default',
-                          opacity: moveMode.type !== 'none' ? 0.5 : 1,
-                          transition: 'opacity 200ms, box-shadow 200ms, border-color 200ms, transform 200ms',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14,
-                        }}
-                      >
-                        <span style={{
-                          maxWidth: 92, textAlign: 'center', lineHeight: 1.25,
-                          fontFamily: hv, fontWeight: 500, fontSize: getFixedCardFontSize(current, 92), color: '#130426',
-                        }}>
-                          {current.replace(/\//g, '/​')}
-                        </span>
-                      </button>
-                    ) : !isDone ? (
-                      <button
-                        type="button"
-                        onClick={() => setCardRevealed(true)}
-                        style={{
-                          position: 'absolute', inset: 0, borderRadius: 20,
-                          border: '2px solid #DB5835',
-                          background: 'rgba(255,255,255,0.08)',
-                          boxShadow: '0 0 18px rgba(219,88,53,0.28)',
-                          transform: 'translateY(-2px)',
-                          cursor: 'pointer',
-                          transition: 'opacity 200ms, box-shadow 200ms, transform 200ms',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: 'rgba(248,244,235,0.85)' }}>Draw</span>
-                      </button>
-                    ) : (
-                      <div style={{
+                  {cardRevealed && current ? (
+                    <button
+                      type="button"
+                      onClick={handleCurrentCardClick}
+                      style={{
                         position: 'absolute', inset: 0, borderRadius: 20,
-                        border: '1.5px dashed rgba(255,255,255,0.45)',
+                        background: '#F8F4EB',
+                        color: '#130426',
+                        border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.10)',
+                        boxShadow: currentCardIsActive
+                          ? '0 0 18px rgba(219,88,53,0.22), 0 2px 6px rgba(0,0,0,0.05)'
+                          : '0 2px 6px rgba(0,0,0,0.05)',
+                        transform: currentCardIsActive ? 'translateY(-2px)' : 'none',
+                        cursor: moveMode.type !== 'none' ? 'pointer' : 'default',
+                        opacity: moveMode.type !== 'none' ? 0.5 : 1,
+                        transition: 'opacity 200ms, box-shadow 200ms, border-color 200ms, transform 200ms',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 14,
+                      }}
+                    >
+                      <span style={{
+                        maxWidth: 92, textAlign: 'center', lineHeight: 1.25,
+                        fontFamily: hv, fontWeight: 500, fontSize: getFixedCardFontSize(current, 92), color: '#130426',
+                      }}>
+                        {current.replace(/\//g, '/​')}
+                      </span>
+                    </button>
+                  ) : !isDone ? (
+                    <button
+                      type="button"
+                      onClick={() => setCardRevealed(true)}
+                      style={{
+                        position: 'absolute', inset: 0, borderRadius: 20,
+                        border: '2px solid #DB5835',
                         background: 'rgba(255,255,255,0.08)',
-                      }} />
-                    )}
+                        boxShadow: '0 0 18px rgba(219,88,53,0.28)',
+                        transform: 'translateY(-2px)',
+                        cursor: 'pointer',
+                        transition: 'opacity 200ms, box-shadow 200ms, transform 200ms',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: 'rgba(248,244,235,0.85)' }}>Draw</span>
+                    </button>
+                  ) : (
+                    <div style={{
+                      position: 'absolute', inset: 0, borderRadius: 20,
+                      border: '1.5px dashed rgba(255,255,255,0.45)',
+                      background: 'rgba(255,255,255,0.08)',
+                    }} />
+                  )}
                 </div>
 
               </div>
@@ -743,18 +751,11 @@ function FearsRankingContent() {
                   ))}
                   {isDone && (
                     <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>
-                      All fears have been placed.
+                      All values have been placed.
                     </p>
                   )}
                 </div>
                 <AutosaveNotice theme="dark" style={{ marginBottom: 20 }}>Your work saves automatically to Your materials.</AutosaveNotice>
-
-                {/* Move-mode instruction */}
-                {liveInstruction && (
-                  <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.75)', margin: '-8px 0 16px' }}>
-                    {liveInstruction}
-                  </p>
-                )}
 
                 {/* Error */}
                 {errorMessage && (
@@ -808,7 +809,7 @@ function FearsRankingContent() {
           {/* 3-column sorting grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 20, alignItems: 'start' }}>
             <ColumnSection
-              title="Most pressing"
+              title="Essential"
               bucket="essential"
               values={assignments.essential}
               slotCount={ESSENTIAL_SLOTS}
@@ -823,7 +824,7 @@ function FearsRankingContent() {
               centeredPartialRows
             />
             <ColumnSection
-              title="Somewhat pressing"
+              title="Important"
               bucket="important"
               values={assignments.important}
               slotCount={importantSlots}
@@ -836,7 +837,7 @@ function FearsRankingContent() {
               emptySlotBorder="1.5px dashed rgba(255,255,255,0.54)"
             />
             <ColumnSection
-              title="Less pressing"
+              title="Less Important"
               bucket="less_central"
               values={assignments.less_central}
               slotCount={lessCentralSlots}
@@ -856,7 +857,7 @@ function FearsRankingContent() {
               Once you've placed a few cards, you might start to notice patterns.
             </p>
             <p className="text-[18px] font-semibold leading-snug tracking-[-0.01em] text-[#1A1A1A]" style={{ marginBottom: 12 }}>
-              What patterns, reactions, or connections to past experiences do you notice as you look at your ranking?
+              What stands out to you about these choices?
             </p>
             <textarea
               value={reflection}
@@ -897,10 +898,10 @@ function FearsRankingContent() {
           {/* Navigation links */}
           <div style={{ marginTop: 16 }}>
             <Link
-              href="/app/reflect/values-ranking"
+              href="/app/activities/fears-ranking"
               style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
             >
-              Go to Values Ranking
+              Go to Fears Ranking
             </Link>
           </div>
 
@@ -944,7 +945,7 @@ function FearsRankingContent() {
                   </span>
                 </div>
                 <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
-                  {Math.max(FEARS.length - index - 1, 0)} cards left
+                  {Math.max(VALUES.length - index - 1, 0)} cards left
                 </p>
               </>
             ) : (
@@ -965,7 +966,7 @@ function FearsRankingContent() {
                   Draw card
                 </button>
                 <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
-                  {Math.max(FEARS.length - index, 0)} cards left
+                  {Math.max(VALUES.length - index, 0)} cards left
                 </p>
               </>
             )}
@@ -989,9 +990,9 @@ function FearsRankingContent() {
           {expandedBucket === null && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 22 }}>
               {([
-                { key: 'essential' as Bucket, label: 'Most pressing', bg: '#F29836', count: `${assignments.essential.length}/${ESSENTIAL_SLOTS}` },
-                { key: 'important' as Bucket, label: 'Somewhat pressing', bg: '#BBABF4', count: `${assignments.important.length}` },
-                { key: 'less_central' as Bucket, label: 'Less pressing', bg: '#F8F4EB', count: `${assignments.less_central.length}` },
+                { key: 'essential' as Bucket, label: 'Essential', bg: '#F29836', count: `${assignments.essential.length}/${ESSENTIAL_SLOTS}` },
+                { key: 'important' as Bucket, label: 'Important', bg: '#BBABF4', count: `${assignments.important.length}` },
+                { key: 'less_central' as Bucket, label: 'Less important', bg: '#F8F4EB', count: `${assignments.less_central.length}` },
               ]).map((b) => {
                 const placeable = cardRevealed && !!current
                 return (
@@ -1070,9 +1071,9 @@ function FearsRankingContent() {
           {/* Expanded bucket review */}
           {expandedBucket !== null && (() => {
             const labelFor: Record<Bucket, string> = {
-              essential: 'Most pressing',
-              important: 'Somewhat pressing',
-              less_central: 'Less pressing',
+              essential: 'Essential',
+              important: 'Important',
+              less_central: 'Less important',
             }
             const bgFor: Record<Bucket, string> = {
               essential: '#F29836',
@@ -1180,7 +1181,7 @@ function FearsRankingContent() {
                 Once you've placed a few cards, you might start to notice patterns.
               </p>
               <p className="text-[18px] font-semibold leading-snug tracking-[-0.01em] text-[#1A1A1A]" style={{ marginBottom: 12 }}>
-                What patterns, reactions, or connections to past experiences do you notice as you look at your ranking?
+                What stands out to you about these choices?
               </p>
               <textarea
                 value={reflection}
@@ -1189,7 +1190,7 @@ function FearsRankingContent() {
                   if (reflectionDebounceRef.current) {
                     clearTimeout(reflectionDebounceRef.current)
                     reflectionDebounceRef.current = null
-                    autoSaveReflection(reflection)
+                    if (reflection.trim()) autoSaveReflection(reflection)
                   }
                 }}
                 placeholder="Share your thoughts…"
@@ -1222,10 +1223,10 @@ function FearsRankingContent() {
           {/* Mobile nav link */}
           <div style={{ marginTop: 20 }}>
             <Link
-              href="/app/reflect/values-ranking"
+              href="/app/activities/fears-ranking"
               style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
             >
-              Go to Values Ranking
+              Go to Fears Ranking
             </Link>
           </div>
 
@@ -1248,16 +1249,16 @@ function FearsRankingContent() {
             </div>
             <div style={{ fontFamily: hv }}>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
-                You can approach this in different ways. Some people move quickly and follow instinctive reactions, while others prefer to sit with each fear before placing it.
+                The goal isn&apos;t to create a perfect hierarchy, but to notice what feels easy, difficult, surprising, or emotionally charged.
               </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 8 }}>
-                If something feels difficult to place, try asking:
+                Expect to get stuck: only five cards fit in the essential category, so as you draw you&apos;ll have to keep moving values that you&apos;ve already placed. When this happens, try asking:
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0' }}>
                 {[
-                  'Which concern feels hardest to imagine living with?',
-                  'Which fear feels most persistent or emotionally present?',
-                  'What might this fear be pointing to underneath?',
+                  'Which would matter most in a difficult or uncertain situation?',
+                  'Which would feel hardest to lose?',
+                  'Which most shapes how I want to live or be cared for?',
                 ].map((item, i, arr) => (
                   <li key={i} style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: i < arr.length - 1 ? 8 : 0, display: 'flex', gap: 8 }}>
                     <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.35)' }}>—</span>
@@ -1265,11 +1266,8 @@ function FearsRankingContent() {
                   </li>
                 ))}
               </ul>
-              <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)', marginBottom: 12 }}>
-                You can revisit this activity over time. Your responses may shift as your experiences, relationships, or circumstances change.
-              </p>
               <p style={{ fontSize: 14, lineHeight: 1.5, color: 'rgba(19,4,38,0.72)' }}>
-                This activity can also be useful to do with others. Comparing rankings may help surface differences in priorities, assumptions, or unspoken concerns.
+                This activity can also be useful to do with a partner, family member, or friend. Comparing rankings can help surface differences in priorities, assumptions, or communication styles.
               </p>
             </div>
           </div>
@@ -1443,6 +1441,8 @@ function ColumnSection({
 
   const COLS = 3
   const cardGrid = centeredPartialRows ? (
+    // 6-column grid: each item spans 2 tracks, giving identical cell widths to a 3-col grid.
+    // Partial last row is centered by offsetting start columns by 1 track.
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 10, alignItems: 'start' }}>
       {slots.map((_, i) => {
         const row = Math.floor(i / COLS)
@@ -1493,10 +1493,10 @@ function ColumnSection({
   )
 }
 
-export default function FearsRankingPage() {
+export default function ValuesRankingPage() {
   return (
     <Suspense>
-      <FearsRankingContent />
+      <ValuesRankingContent />
     </Suspense>
   )
 }

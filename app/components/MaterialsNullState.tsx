@@ -24,12 +24,12 @@ export default function MaterialsNullState() {
       }}
     >
       No materials yet. Try working through some{' '}
-      <Link href="/app/reflect" className="hover:opacity-70 transition-opacity" style={linkStyle}>
-        reflect activities
+      <Link href="/app/activities" className="hover:opacity-70 transition-opacity" style={linkStyle}>
+        activities
       </Link>{' '}
       and{' '}
-      <Link href="/app/learn" className="hover:opacity-70 transition-opacity" style={linkStyle}>
-        learn sections
+      <Link href="/app/area" className="hover:opacity-70 transition-opacity" style={linkStyle}>
+        planning areas
       </Link>{' '}
       — as you write notes and complete activities, relevant materials will appear here.
     </p>

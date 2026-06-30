@@ -24,7 +24,7 @@ export default async function LegacyContactOnboardingPage() {
     .eq('contact_type', 'primary')
     .maybeSingle()
 
-  if (existing) redirect('/app/plan')
+  if (existing) redirect('/app')
 
   return <LegacyContactForm />
 }

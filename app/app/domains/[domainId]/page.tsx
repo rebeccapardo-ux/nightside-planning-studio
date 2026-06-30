@@ -1,13 +1,24 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { areaByDomainCode } from '@/lib/areas'
 
-import { use } from 'react'
-import AreaPlanSection from '@/app/components/area/AreaPlanSection'
-
-// Legacy /app/domains/[domainId] route — kept working during the area-pages
-// migration (parallel structure) by rendering the shared <AreaPlanSection> in its
-// standalone 'domain' variant. Slated for removal in Phase 4 once the new
-// /app/area/[slug] pages are validated; until then, content review still works here.
-export default function DomainDetailPage({ params }: { params: Promise<{ domainId: string }> }) {
-  const { domainId } = use(params)
-  return <AreaPlanSection domainId={domainId} variant="domain" />
+// Phase 3 redirect: legacy /app/domains/[domainId] → /app/area/[slug]. The segment is a
+// per-user container UUID, so resolve it to its stable domain_code, map that to the area
+// slug, and redirect. (This redirect needs a DB lookup, so it can't live in the edge proxy.)
+// Falls back to the Plan by area landing if the container can't be resolved.
+export default async function DomainRedirect({ params }: { params: Promise<{ domainId: string }> }) {
+  const { domainId } = await params
+  let slug: string | undefined
+  try {
+    const supabase = await createSupabaseServerClient()
+    const { data } = await supabase
+      .from('containers')
+      .select('domain_code')
+      .eq('id', domainId)
+      .maybeSingle()
+    slug = areaByDomainCode(data?.domain_code)?.slug
+  } catch {
+    // fall through to the landing
+  }
+  redirect(slug ? `/app/area/${slug}` : '/app/area')
 }

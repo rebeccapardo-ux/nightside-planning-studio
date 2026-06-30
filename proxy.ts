@@ -17,10 +17,59 @@ const UNGUARDED_APP_PREFIXES = [
   '/app/account',
 ]
 
+// Old Learn-area slug → new area slug (mirrors lib/areas.ts AREAS learnId ↔ slug). Hardcoded
+// here rather than importing AREAS so the edge proxy bundle stays minimal.
+const LEARN_TO_AREA: Record<string, string> = {
+  healthcare: 'healthcare-wishes',
+  deathcare: 'deathcare',
+  wills: 'wills-and-estates',
+  legacy: 'legacy',
+  'personal-admin': 'personal-admin',
+  ritual: 'ritual-and-ceremony',
+}
+
+// Phase 3 route migration — permanent (308) redirects from deprecated URLs to the new
+// area-centric structure. The /app/domains/[uuid] redirect needs a DB lookup, so it lives
+// in an async page stub, not here.
+function resolveLegacyRedirect(pathname: string): string | null {
+  // Activities landing + sub-pages: /app/reflect → /app/activities
+  if (pathname === '/app/reflect' || pathname.startsWith('/app/reflect/')) {
+    return pathname.replace('/app/reflect', '/app/activities')
+  }
+  // Deathcare Trivia moved into Activities
+  if (pathname === '/app/learn/trivia' || pathname.startsWith('/app/learn/trivia/')) {
+    return pathname.replace('/app/learn/trivia', '/app/activities/trivia')
+  }
+  // Learn area pages → the corresponding area page (Learn content now lives in the Overview band)
+  if (pathname.startsWith('/app/learn/')) {
+    const slug = LEARN_TO_AREA[pathname.split('/')[3] ?? '']
+    return slug ? `/app/area/${slug}` : '/app'
+  }
+  if (pathname === '/app/learn') return '/app'
+  // Your materials + its export moved out of /app/plan
+  if (pathname === '/app/plan/materials' || pathname.startsWith('/app/plan/materials/')) {
+    return pathname.replace('/app/plan/materials', '/app/materials')
+  }
+  if (pathname === '/app/plan/export' || pathname.startsWith('/app/plan/export/')) {
+    return pathname.replace('/app/plan/export', '/app/materials/export')
+  }
+  // The rest of the old Plan section (landing, areas, progress) → home
+  if (pathname === '/app/plan' || pathname.startsWith('/app/plan/')) return '/app'
+  return null
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
 
-  let response = NextResponse.next({ request })
+  // ── Phase 3 legacy-URL redirects (before auth — the new URL re-runs the auth check) ──
+  const redirectTarget = resolveLegacyRedirect(pathname)
+  if (redirectTarget) {
+    const url = request.nextUrl.clone()
+    url.pathname = redirectTarget
+    return NextResponse.redirect(url, 308)
+  }
+
+  const response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

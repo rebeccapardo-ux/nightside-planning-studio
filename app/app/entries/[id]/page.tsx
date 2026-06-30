@@ -160,8 +160,10 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   const isDocument = !!entry.document_type
 
   // No explicit returnTo → the entry was reached from the materials library.
-  const backHref = returnTo ?? '/app/plan/materials'
-  const backLabel = returnTo?.startsWith('/app/domains/') ? '← Back to area' : '← Back to Your materials'
+  const backHref = returnTo ?? '/app/materials'
+  // Area context → "Back to area" (new /app/area/<slug>, or legacy /app/domains/<uuid>
+  // during the redirect window); otherwise back to Your materials.
+  const backLabel = (returnTo?.startsWith('/app/area/') || returnTo?.startsWith('/app/domains/')) ? '← Back to area' : '← Back to Your materials'
 
   // Date line
   let dateLine = formattedDate ?? ''
@@ -1068,9 +1070,9 @@ function getContinueHref(entry: EntryRow): string | null {
   if (entry.document_type === DOCUMENT_TYPE.FINANCIAL_INFORMATION) return DOCUMENT_TYPE_META.financial_information.href
   if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) return DOCUMENT_TYPE_META.devices_and_accounts.href
   if (entry.document_type === DOCUMENT_TYPE.KEEPSAKE_INVENTORY) return DOCUMENT_TYPE_META.keepsake_inventory.href
-  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/reflect/values-ranking?entry=${entry.id}`
-  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/reflect/fears-ranking?entry=${entry.id}`
-  if (entry.activity === ACTIVITY.LEGACY_MAP) return '/app/reflect/legacy-map'
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return `/app/activities/values-ranking?entry=${entry.id}`
+  if (entry.activity === ACTIVITY.FEARS_RANKING) return `/app/activities/fears-ranking?entry=${entry.id}`
+  if (entry.activity === ACTIVITY.LEGACY_MAP) return '/app/activities/legacy-map'
   return null
 }
 

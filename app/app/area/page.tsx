@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { AREAS } from '@/lib/areas'
 import { LEARN_AREAS } from '@/lib/learn-areas'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
@@ -18,7 +20,13 @@ function areaDescription(learnId: string): string {
 // Plan by area landing — orientation entry point for the six area pages. Header treatment
 // matches the Activities landing + Your materials (SectionTitleReveal on cream + navy nav);
 // the six area cards mirror the Activities landing's card style, unified in Dusk.
-export default function PlanByAreaPage() {
+export default async function PlanByAreaPage() {
+  // Primary entry point — seed canonical domain containers (idempotent) so the area pages
+  // this links to resolve.
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) await ensureCanonicalDomains(supabase, user.id)
+
   return (
     <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
       <style>{`

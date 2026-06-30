@@ -184,7 +184,7 @@ export default async function LegacyLearnPage() {
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {[
-                    { href: '/app/reflect/legacy-map', label: 'Legacy Map', type: 'activity' },
+                    { href: '/app/activities/legacy-map', label: 'Legacy Map', type: 'activity' },
                     { href: DOCUMENT_TYPE_META.advance_directive_supplement.href, label: DOCUMENT_TYPE_META.advance_directive_supplement.label, type: 'document' },
                     { href: DOCUMENT_TYPE_META.keepsake_inventory.href, label: DOCUMENT_TYPE_META.keepsake_inventory.label, type: 'document' },
                   ].map(({ href, label, type }) => (
