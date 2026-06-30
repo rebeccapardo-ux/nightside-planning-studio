@@ -355,8 +355,8 @@ function SummaryPage({ planProps }: { planProps: PlanPDFProps }) {
       {/* Summary header */}
       <Text style={{ fontFamily: 'Helvetica', fontSize: 20, color: '#130426', marginBottom: 18 }}>Summary</Text>
 
-      {/* Key Details */}
-      <Text style={SP.sectionLabel}>Key Details</Text>
+      {/* Key details */}
+      <Text style={SP.sectionLabel}>Key details</Text>
       <View style={SP.sectionRule} />
       {planProps.keyDetails.map((row, i) => (
         <View key={i}>

@@ -243,9 +243,9 @@ export default async function ExportPage({ params }: ExportPageProps) {
 // exercise; non-sensitive documents → continue working in the document; sensitive
 // documents still pass through the snapshot, so their preview goes "Back" to it.
 function getBackLink(entry: EntryRow, id: string): { href: string; label: string } {
-  if (entry.activity === ACTIVITY.VALUES_RANKING) return { href: `/app/reflect/values-ranking?entry=${id}`, label: 'Revisit exercise' }
-  if (entry.activity === ACTIVITY.FEARS_RANKING)  return { href: `/app/reflect/fears-ranking?entry=${id}`,  label: 'Revisit exercise' }
-  if (entry.activity === ACTIVITY.LEGACY_MAP)     return { href: '/app/reflect/legacy-map', label: 'Revisit exercise' }
+  if (entry.activity === ACTIVITY.VALUES_RANKING) return { href: `/app/activities/values-ranking?entry=${id}`, label: 'Revisit exercise' }
+  if (entry.activity === ACTIVITY.FEARS_RANKING)  return { href: `/app/activities/fears-ranking?entry=${id}`,  label: 'Revisit exercise' }
+  if (entry.activity === ACTIVITY.LEGACY_MAP)     return { href: '/app/activities/legacy-map', label: 'Revisit exercise' }
   if (entry.document_type && !documentTypeHasSensitiveFields(entry.document_type)) {
     const meta = documentTypeMeta(entry.document_type)
     if (meta) return { href: meta.href, label: 'Continue working in document' }

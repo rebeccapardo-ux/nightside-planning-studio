@@ -28,7 +28,7 @@ export default function AutosaveNotice({ theme = 'light', children, style }: Pro
         ...style,
       }}
     >
-      {children ?? 'Notes save automatically to Your Plan.'}
+      {children ?? 'Notes save automatically to Your materials.'}
     </p>
   )
 }

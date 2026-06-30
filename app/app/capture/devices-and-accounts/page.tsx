@@ -462,7 +462,7 @@ export default function DevicesAndAccountsPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
 
         <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Devices & Accounts' }]} />
+          <Breadcrumbs theme="light" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Devices & Accounts' }]} />
         </div>
 
         <div style={{ marginBottom: 48 }}>
@@ -480,10 +480,10 @@ export default function DevicesAndAccountsPage() {
             {' '}rather than here. This document focuses on access; that one focuses on the financial picture.
           </p>
           <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to Your Plan. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
+            Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to Your materials. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
             <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
           </p>
-          <AutosaveNotice>Information you add will save automatically to Your Plan.</AutosaveNotice>
+          <AutosaveNotice>Information you add will save automatically to Your materials.</AutosaveNotice>
           {saveStatusText && (
             <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
@@ -538,7 +538,7 @@ export default function DevicesAndAccountsPage() {
           >
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.7)', lineHeight: 1.55, margin: '0 0 16px 0' }}>
               Some platforms allow you to set what happens to your account after your death (e.g. memorialization, deletion, legacy contacts).{' '}
-              <a href="/app/learn/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
+              <a href="/app/area/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
                 Learn how to set up digital legacy and account preferences →
               </a>
             </p>
@@ -620,7 +620,7 @@ export default function DevicesAndAccountsPage() {
           >
             <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(26,26,26,0.7)', lineHeight: 1.55, margin: '0 0 16px 0' }}>
               Digital assets can include things like cryptocurrency, domain names, online businesses, or files stored in cloud services.{' '}
-              <a href="/app/learn/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
+              <a href="/app/area/personal-admin" style={{ color: '#2C3777', textDecoration: 'underline' }}>
                 Learn how to set up digital legacy and account preferences →
               </a>
             </p>
@@ -769,7 +769,7 @@ function EntryCard({ title, isOpen, onToggle, onDelete, isEmpty, entryRef, isSav
                   <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.65)" strokeWidth="1.3" />
                   <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.65)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your Plan</span>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your materials</span>
               </div>
             )}
           </div>

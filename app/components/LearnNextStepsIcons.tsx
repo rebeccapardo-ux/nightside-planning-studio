@@ -1,6 +1,6 @@
 // Type markers for the Learn "Relevant Activities and Documents" rows — an activity
 // glyph vs a document glyph so the two item types read apart now that both use the
-// same bordered-row styling. (Same shapes as the Your Materials item icons.)
+// same bordered-row styling. (Same shapes as the Your materials item icons.)
 
 export function ActivityIcon({ size = 18, color = '#130426' }: { size?: number; color?: string }) {
   return (

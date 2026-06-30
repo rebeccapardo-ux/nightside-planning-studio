@@ -1470,7 +1470,7 @@ export default function AccountPage() {
                   <p style={{ fontFamily: hv, fontSize: 14, color: '#130426', margin: '0 0 12px', lineHeight: 1.55 }}>
                     We recommend downloading a copy of your complete plan before deleting your account.
                   </p>
-                  <a href="/app/plan/export" target="_blank" rel="noopener noreferrer"
+                  <a href="/app/materials/export" target="_blank" rel="noopener noreferrer"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#130426', color: '#F8F4EB', borderRadius: 22, padding: '9px 18px', fontFamily: hv, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
                     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
                       <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#f8f4eb" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />

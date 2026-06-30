@@ -5,6 +5,7 @@ import { DOCUMENT_TYPE_META, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState, getCheckboxes } from '@/lib/domain-state'
+import { areaByDomainCode } from '@/lib/areas'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apf = "'Apfel Grotezk', sans-serif"
@@ -26,7 +27,7 @@ type DocRow = {
   supplementaryLink?: { label?: string; text: string; href: string }
 }
 
-export default function PlanOverview({ domains }: { domains: { id: string; title: string; domain_code?: string | null }[] }) {
+export default function PlanOverview({ domains, title = 'Key details' }: { domains: { id: string; title: string; domain_code?: string | null }[]; title?: string }) {
   const [syncHasWill, setSyncHasWill]   = useState(false)
   const [syncHasCDM, setSyncHasCDM]     = useState(false)
   const [syncHasEOL, setSyncHasEOL]     = useState(false)
@@ -134,9 +135,12 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
 
   if (!loaded) return null
 
-  const healthHref     = healthcareDomain ? `/app/domains/${healthcareDomain.id}` : '#'
-  const willsHref      = willsDomain      ? `/app/domains/${willsDomain.id}`      : '#'
-  const deathHref      = deathcareDomain  ? `/app/domains/${deathcareDomain.id}`  : '#'
+  // Area-page destinations — resolved from each domain's stable domain_code via the
+  // canonical area config.
+  const areaHref = (code: string) => { const a = areaByDomainCode(code); return a ? `/app/area/${a.slug}` : '#' }
+  const healthHref     = healthcareDomain ? areaHref('healthcare')     : '#'
+  const willsHref      = willsDomain      ? areaHref('wills_estates')  : '#'
+  const deathHref      = deathcareDomain  ? areaHref('deathcare')      : '#'
   const adminHref           = DOCUMENT_TYPE_META.personal_admin_info.href
   const contactsHref        = DOCUMENT_TYPE_META.important_contacts.href
   const yourWishesHref      = DOCUMENT_TYPE_META.advance_directive_supplement.href
@@ -200,16 +204,16 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
       <div
         key={row.label}
         style={{
-          padding: '10px 0',
           borderBottom: isLast ? 'none' : '1px solid rgba(19,4,38,0.06)',
-          display: 'flex', alignItems: 'center', gap: 10,
+          display: 'flex', alignItems: 'center', gap: 10, minHeight: 44,
         }}
       >
         <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: row.done ? '#2C3777' : 'rgba(19,4,38,0.2)' }} />
         {/* Label + status are a left-hugging pair (no flex:1 — the status must not
-            be flung to the far right of a wide column; the empty space sits after). */}
+            be flung to the far right of a wide column; the empty space sits after).
+            The link fills the 44px row height (project tap-target standard). */}
         <Link href={row.href} className="po-row-label"
-          style={{ fontFamily: hv, fontSize: 13 }}
+          style={{ fontFamily: hv, fontSize: 13, display: 'inline-flex', alignItems: 'center', minHeight: 44 }}
         >
           {row.label}
         </Link>
@@ -343,7 +347,7 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
           style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <h2 style={{ fontFamily: apf, fontSize: 20, fontWeight: 400, color: '#130426', margin: 0, flex: 1, textAlign: 'left' }}>
-            Key details
+            {title}
           </h2>
           <span className="kd-chevron" style={{ transition: 'opacity 150ms', display: 'inline-flex' }}>
             <Chevron open={!collapsed} />
@@ -360,6 +364,12 @@ export default function PlanOverview({ domains }: { domains: { id: string; title
         {/* Expanded → full details */}
         {!collapsed && (
           <>
+            {/* Framing: these rows are a status snapshot of facts/contacts the user is tracking,
+                NOT documents the platform supplies (e.g. "Legal will" tracks whether one exists +
+                where it's kept — Nightside doesn't provide a will). */}
+            <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0', lineHeight: 1.45 }}>
+              A snapshot of the key facts and contacts you&rsquo;re tracking — not documents Nightside provides. Each row links to where you record or update it.
+            </p>
             <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 18px' }} />
             {/* Two parallel reference columns — Wishes | Contacts. Wishes rows are
                 short (label + status) so its column is narrow; Contacts is wider to

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createNote, updateNote } from '@/lib/notes'
+import { createNote, updateNote, addNoteToContainer } from '@/lib/notes'
 import { holdSavingIndicator } from '@/lib/ui'
 import VoiceNoteButton from './VoiceNoteButton'
 import AutosaveNotice from './AutosaveNotice'
@@ -12,10 +12,14 @@ export default function NotepadModal({
   variant = 'floating',
   buttonStyle = 'lavender',
   size = 'default',
+  containerId = null,
 }: {
   variant?: 'floating' | 'panel'
   buttonStyle?: 'lavender' | 'cream' | 'orange' | 'midnight' | 'navy' | 'sunrise'
   size?: 'default' | 'sm'
+  // When set (the Notepad is open on an area page), notes composed here link to that
+  // area's container so they surface in its Your-Thoughts panel. Null elsewhere.
+  containerId?: string | null
 }) {
   const [composerText, setComposerText] = useState('')
   const [saving, setSaving] = useState(false)
@@ -65,6 +69,19 @@ export default function NotepadModal({
   }, [composerText])
 
   // Persist the latest content: create the session's note on the first save, then
+  // When a note here is linked to an area container, area pages render their own Your
+  // Thoughts stream from local state — they can't see our save. Fire a window event so
+  // the matching AreaPlanSection re-fetches and shows the note immediately (no refresh).
+  function notifyContainerNote() {
+    if (!containerId) return
+    try { window.dispatchEvent(new CustomEvent('nightside:container-note-added', { detail: { containerId } })) } catch { /* ignore */ }
+  }
+  async function linkAndNotify(noteId: string) {
+    if (!containerId) return
+    await addNoteToContainer(noteId, containerId)
+    notifyContainerNote()
+  }
+
   // update that same row on every later save (one session = one note).
   async function persist() {
     const content = contentRef.current.trim()
@@ -75,9 +92,16 @@ export default function NotepadModal({
       let ok = false
       if (!sessionNoteIdRef.current) {
         const note = await createNote(content)
-        if (note) { sessionNoteIdRef.current = note.id; ok = true }
+        if (note) {
+          sessionNoteIdRef.current = note.id; ok = true
+          // Link to the area container ONCE, on first creation (linkAndNotify also fires
+          // the window event). Later saves take the update branch below — no re-link, but
+          // we re-notify so Your Thoughts reflects the growing content as you type.
+          await linkAndNotify(note.id)
+        }
       } else {
         ok = await updateNote(sessionNoteIdRef.current, content)
+        if (ok) notifyContainerNote()
       }
       // Keep "Saving…" visible long enough to register even when the save is fast.
       await holdSavingIndicator(startedAt)
@@ -108,6 +132,7 @@ export default function NotepadModal({
     if (!trimmed || saving) return
     setSaving(true)
     const saved = await createNote(trimmed)
+    if (saved) await linkAndNotify(saved.id)
     setComposerText('')
     setSaving(false)
     if (saved) router.refresh()
@@ -205,7 +230,7 @@ export default function NotepadModal({
                 <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.75)" strokeWidth="1.3" />
                 <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.75)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Saved to Your Plan</span>
+              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Saved to Your materials</span>
             </>
           )}
         </div>
@@ -215,9 +240,11 @@ export default function NotepadModal({
           <VoiceNoteButton
             saveMode={{ kind: 'freeform' }}
             theme="dark"
-            onSaved={() => {
+            onSaved={async (note: Note) => {
               // finalNote (incl. transcript, or 'failed' status) is already
               // persisted by the time onSaved fires, so the refetch reflects it.
+              // Link to the area container first (when composed from an area page).
+              if (note?.id) await linkAndNotify(note.id)
               router.refresh()
               setTimeout(() => setIsOpen(false), 3000)
             }}
@@ -280,7 +307,7 @@ export default function NotepadModal({
             <VoiceNoteButton
               saveMode={{ kind: 'freeform' }}
               theme="dark"
-              onSaved={(_note: Note) => {}}
+              onSaved={(note: Note) => { if (note?.id) void linkAndNotify(note.id) }}
             />
           </div>
         </div>

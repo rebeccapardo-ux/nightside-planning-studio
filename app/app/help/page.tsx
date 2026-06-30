@@ -16,7 +16,7 @@ const PRIVACY_ANSWER = (
     <p style={{ margin: '0 0 0' }}>Everything you enter — your contacts, document locations, wishes, reflections, account inventories, and personal details — is stored in our encrypted database. Only you can access it through your account. We don&apos;t sell, share, or use this information for anything beyond providing you with the planning platform.</p>
 
     <p style={subHead}>What you add only at export.</p>
-    <p style={{ margin: '0 0 0' }}>Some fields are designed to be added at the moment of export rather than saved to Your Plan. These include identification and health numbers (in Personal Admin), account numbers (in Financial Information), and passwords, PINs, and access details (in Devices &amp; Accounts). You add them at the moment of export so they&apos;re included in your final document but never saved to our servers.</p>
+    <p style={{ margin: '0 0 0' }}>Some fields are designed to be added at the moment of export rather than saved to Your materials. These include identification and health numbers (in Personal Admin), account numbers (in Financial Information), and passwords, PINs, and access details (in Devices &amp; Accounts). You add them at the moment of export so they&apos;re included in your final document but never saved to our servers.</p>
 
     <p style={subHead}>A note on broader sensitivity.</p>
     <p style={{ margin: '0 0 0' }}>Even the information that is stored — names, birthdates, addresses, family details, contact information — is sensitive. Together, these pieces can be used to verify identity in financial, governmental, and online contexts. Once you export your plan, the PDF contains all of this in one document. We recommend storing exported copies somewhere secure, and being thoughtful about who you share them with.</p>
@@ -75,7 +75,7 @@ const CATEGORIES: { title: string; items: FaqItem[] }[] = [
       {
         key: 'voice',
         q: 'What happens to my voice notes?',
-        a: 'Voice notes are automatically transcribed and saved to Your Plan. They appear in Your Materials alongside your written notes and documents.',
+        a: 'Voice notes are automatically transcribed and saved to Your materials, where they appear alongside your written notes and documents.',
       },
       {
         key: 'legal',

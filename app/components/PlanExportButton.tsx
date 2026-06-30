@@ -2,14 +2,14 @@ import Link from 'next/link'
 
 // "Preview & Export" entry point — a plain Link to the self-sufficient export
 // page (which owns the summary/full PDF generation). Rendered in the header of
-// both the Areas of Planning and Your Materials pages. Absolutely positioned to
+// both the Areas of Planning and Your materials pages. Absolutely positioned to
 // sit a fixed distance from the floating notepad; `mobile-sticky-export` /
 // `plan-export-bar` carry their responsive behaviour from global CSS.
 export default function PlanExportButton() {
   return (
     <div className="plan-export-bar" style={{ position: 'absolute', top: 20, right: 148 }}>
       <Link
-        href="/app/plan/export"
+        href="/app/materials/export"
         className="plan-export-btn mobile-sticky-export"
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
