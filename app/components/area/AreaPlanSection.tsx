@@ -180,6 +180,22 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
     load()
   }, [domainId])
 
+  // The global Notepad modal lives outside this component, so when a note composed there
+  // is linked to THIS area's container it can't update our local state directly. It fires
+  // a window event after linking; re-fetch this domain's notes so the note appears in Your
+  // Thoughts immediately (same instant-render as the in-place composer), no refresh needed.
+  useEffect(() => {
+    function onContainerNoteAdded(e: Event) {
+      const detail = (e as CustomEvent<{ containerId?: string }>).detail
+      if (detail?.containerId !== domainId) return
+      Promise.all([fetchNotesByDomainId(domainId), fetchNotes()])
+        .then(([linked, all]) => { setNotes(linked); setAllUserNotes(all) })
+        .catch(() => {})
+    }
+    window.addEventListener('nightside:container-note-added', onContainerNoteAdded)
+    return () => window.removeEventListener('nightside:container-note-added', onContainerNoteAdded)
+  }, [domainId])
+
   // Auto-resize scratchpad
   useEffect(() => {
     if (composerRef.current) {

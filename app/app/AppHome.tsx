@@ -62,12 +62,13 @@ export default function AppHomePage() {
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
         .home4 { max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px; }
-        .home4-primary { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        /* Activities + Plan by area are full-weight (2fr); Your materials is a secondary
+           surface → half as wide (1fr) beside them rather than full-width underneath. */
+        .home4-primary { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 20px; align-items: stretch; }
         .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; min-height: 340px; }
         .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; }
         .home4-sub { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease; }
         .home4-sub:hover { background: rgba(255,255,255,0.85); }
-        .home4-materials { display: flex; flex-direction: column; min-height: 180px; text-decoration: none; }
         @media (max-width: 900px) {
           .home4-primary { grid-template-columns: 1fr; }
           .home4-subgrid { grid-template-columns: 1fr; }
@@ -108,21 +109,22 @@ export default function AppHomePage() {
             </div>
           </section>
 
-        </div>
-
-        {/* Secondary row — Your materials (Sunset), whole card clickable */}
-        <Link href="/app/plan/materials" className="home4-card home4-materials" style={{ background: '#DB5835', color: '#F8F4EB' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: '#F8F4EB', margin: '0 0 6px' }}>Your materials</h2>
-              <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: 'rgba(248,244,235,0.92)', maxWidth: 360, margin: 0 }}>
-                This is where all your stuff lives: notes, activity outputs, and documents to fill out.
-              </p>
+          {/* Your materials (Sunset) — secondary surface, half-width beside the two
+              primary cards. Whole card clickable. */}
+          <Link href="/app/plan/materials" className="home4-card" style={{ background: '#DB5835', color: '#F8F4EB', textDecoration: 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: '#F8F4EB', margin: '0 0 6px' }}>Your materials</h2>
+                <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: 'rgba(248,244,235,0.92)', margin: 0 }}>
+                  This is where all your stuff lives: notes, activity outputs, and documents to fill out.
+                </p>
+              </div>
+              <MaterialsPuzzle />
             </div>
-            <MaterialsPuzzle />
-          </div>
-          <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#F8F4EB', marginTop: 'auto' }}>Open →</span>
-        </Link>
+            <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#F8F4EB', marginTop: 'auto' }}>Open →</span>
+          </Link>
+
+        </div>
 
       </main>
     </div>
