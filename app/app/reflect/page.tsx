@@ -136,7 +136,7 @@ export default function ExplorePage() {
               color: '#FFFFFF',
               margin: 0,
             }}>
-              <span className="ns-title-underline">Reflect</span>
+              <span className="ns-title-underline">Activities</span>
             </h1>
           </div>
 
@@ -197,6 +197,13 @@ export default function ExplorePage() {
               href="/app/reflect/legacy-map"
               status="available"
               index={3}
+            />
+            <ExploreActivityCard
+              title="Deathcare Trivia"
+              description="A game to test and build your knowledge of deathcare options."
+              href="/app/learn/trivia"
+              status="available"
+              index={4}
             />
           </div>
 
