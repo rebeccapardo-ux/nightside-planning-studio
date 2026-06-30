@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { useUserDomainContainers } from './useUserDomainContainers'
 import { LEARN_AREAS } from '@/lib/learn-areas'
 
 // ---------------------------------------------------------------------------
@@ -231,10 +232,10 @@ export default function GlobalNav() {
   const entry = getNavEntry(pathname)
   const style = NAV_STYLES[entry.theme]
   // null = auth state not yet known (prevents flash between authed/unauthed UI)
-  const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
-  // The user's domain containers — powers the Plan dropdown's "Areas of Planning"
-  // links. Empty until fetched (or if the user has none seeded yet).
-  const [domains, setDomains] = useState<{ id: string; title: string; domain_code: string | null }[]>([])
+  // Auth state + the user's domain containers (powers the Plan dropdown's per-area
+  // links) — shared with FloatingNotepad via useUserDomainContainers so the
+  // domain_code → container lookup isn't duplicated.
+  const { domains, isAuthed } = useUserDomainContainers()
   const [drawerOpen, setDrawerOpen] = useState(false)
   // Which desktop sub-menu is open (by label), or null. Hover/focus driven.
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -250,32 +251,6 @@ export default function GlobalNav() {
     })
   const drawerRef = useRef<HTMLDivElement>(null)
   const hamburgerBtnRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    const supabase = createSupabaseBrowserClient()
-    // Fetch the user's domain containers once we know there's a session — feeds the
-    // Plan dropdown's per-area links. Cheap (6 rows); GlobalNav mounts once per full
-    // load, so this isn't per-navigation.
-    const loadDomains = (userId: string) => {
-      supabase
-        .from('containers')
-        .select('id, title, domain_code')
-        .eq('type', 'domain')
-        .eq('user_id', userId)
-        .then(({ data }) => { if (data) setDomains(data) })
-    }
-    // getSession() is a local read — fast, no network round-trip
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthed(!!session)
-      if (session) loadDomains(session.user.id)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsAuthed(!!session)
-      if (session) loadDomains(session.user.id)
-      else setDomains([])
-    })
-    return () => subscription.unsubscribe()
-  }, [])
 
   // Close drawer + any open desktop sub-menu on route change
   useEffect(() => {

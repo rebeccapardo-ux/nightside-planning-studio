@@ -2,9 +2,15 @@
 
 import { usePathname } from 'next/navigation'
 import NotepadModal from './NotepadModal'
+import { useUserDomainContainers, areaContainerIdForPath } from './useUserDomainContainers'
 
 export default function FloatingNotepad() {
   const pathname = usePathname()
+  // When the Notepad is opened from an area page, notes composed in it auto-link to
+  // that area's container (high-confidence relevance) — same auto-surfacing as the area
+  // page's own Your-Thoughts composer. Null on every other page → notes stay untagged.
+  const { domains } = useUserDomainContainers()
+  const areaContainerId = areaContainerIdForPath(domains, pathname)
 
   // PDF export pages are print views — no interactive controls
   if (pathname.endsWith('/export')) return null
@@ -31,5 +37,5 @@ export default function FloatingNotepad() {
   const isDevicesDoc = pathname === '/app/capture/devices-and-accounts'
   const buttonStyle = isAppHome || isExploreLanding || isLegacyMap || isLegacyLearn || isPersonalAdminLearn || isRitualLearn || isDeathcareLearn || isWillsLearn || isHealthcareLearn || isPersonalAdminDoc || isImportantContactsDoc || isFinancialInfoDoc || isDevicesDoc ? 'lavender' : isScenarioPage || isTriviaPage || isReflectLanding || isValuesRanking || isFearsRanking ? 'orange' : isPlanPage || isAreaPage ? 'sunrise' : 'navy'
 
-  return <NotepadModal buttonStyle={buttonStyle} />
+  return <NotepadModal buttonStyle={buttonStyle} containerId={areaContainerId} />
 }
