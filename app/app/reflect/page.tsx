@@ -21,49 +21,16 @@ type CardConfig = {
   ctaColor: string
 }
 
-const CARD_CONFIGS: CardConfig[] = [
-  {
-    bg: '#BBABF4',
-    border: '2px solid #000000',
-    titleColor: '#130426',
-    bodyColor: 'rgba(19,4,38,0.78)',
-    ctaBg: '#130426',
-    ctaColor: '#FFFFFF',
-  },
-  {
-    bg: '#1B1744',
-    border: '2px solid #000000',
-    titleColor: '#FFFFFF',
-    bodyColor: 'rgba(255,255,255,0.82)',
-    ctaBg: '#F8F4EB',
-    ctaColor: '#130426',
-  },
-  {
-    bg: '#DB5835',
-    border: '2px solid #000000',
-    titleColor: '#FFFFFF',
-    bodyColor: 'rgba(255,255,255,0.82)',
-    ctaBg: '#F8F4EB',
-    ctaColor: '#130426',
-  },
-  {
-    bg: '#F8F4EB',
-    border: '2px solid #000000',
-    titleColor: '#130426',
-    bodyColor: 'rgba(19,4,38,0.78)',
-    ctaBg: '#130426',
-    ctaColor: '#FFFFFF',
-  },
-  // index 4 — Sunrise (Deathcare Trivia)
-  {
-    bg: '#F29836',
-    border: '2px solid #000000',
-    titleColor: '#130426',
-    bodyColor: 'rgba(19,4,38,0.78)',
-    ctaBg: '#130426',
-    ctaColor: '#FFFFFF',
-  },
-]
+// All activity cards share one Sunrise treatment (the landing-pages-are-parallel pass:
+// Activities cards = Sunrise, Plan by area cards = Dusk).
+const SUNRISE_CONFIG: CardConfig = {
+  bg: '#F29836',
+  border: '2px solid #000000',
+  titleColor: '#130426',
+  bodyColor: 'rgba(19,4,38,0.78)',
+  ctaBg: '#130426',
+  ctaColor: '#FFFFFF',
+}
 
 export default function ExplorePage() {
   useEffect(() => {
@@ -170,7 +137,7 @@ export default function ExplorePage() {
               Activities in this section are designed to help you imagine what a good death looks like for you, clarify how your values translate into real choices, and consider what you want to leave behind.
             </p>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(19,4,38,0.78)', marginTop: 0, marginBottom: 20 }}>
-              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved as materials and will be surfaced when you&rsquo;re working in Your materials.</span>
+              Capture notes along the way using the activity noteboxes or the notepad tool — <span style={{ fontWeight: 600 }}>the notes and outputs you create here are saved automatically and will be surfaced when you&rsquo;re working in Your materials.</span>
             </p>
             <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 18, fontWeight: 400, lineHeight: 1.75, color: 'rgba(19,4,38,0.78)', marginTop: 0, marginBottom: 0 }}>
               Start anywhere, and move at your own pace.
@@ -227,10 +194,9 @@ function ExploreActivityCard({
   description,
   href,
   status = 'available',
-  index,
   cta,
 }: ExploreActivityCardProps) {
-  const config = CARD_CONFIGS[index % CARD_CONFIGS.length]
+  const config = SUNRISE_CONFIG
   const isAvailable = status === 'available' && !!href
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)

@@ -82,6 +82,10 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // match only, so sub-pages fall through to default nav.
   { prefix: '/app/reflect', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
 
+  // Plan by area landing: cream page → navy nav. Exact, so the area pages
+  // (/app/area/<slug>, which have their own navy header) fall through to default.
+  { prefix: '/app/area', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
+
   // Values & Fears landing + ranking activities — navy nav on blue workspace
   { prefix: '/app/reflect/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },
   { prefix: '/app/reflect/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
@@ -160,7 +164,9 @@ function buildNavItems(): NavItem[] {
       ],
     },
     {
-      // Non-clickable dropdown trigger; the six areas are the destinations.
+      // Clickable label → the Plan by area landing; the dropdown of six areas is an
+      // additional affordance for direct area entry (same pattern as Activities).
+      href: '/app/area',
       label: 'Plan by area',
       activePrefixes: ['/app/area', '/app/domains', '/app/capture', '/app/plan/areas'],
       rows: AREAS.map((a): NavRow => ({ type: 'item', href: `/app/area/${a.slug}`, label: a.title, activePrefixes: [`/app/area/${a.slug}`] })),

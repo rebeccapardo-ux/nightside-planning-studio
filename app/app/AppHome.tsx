@@ -49,16 +49,32 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
   )
 }
 
+const ACTIVITIES = [
+  { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
+  { label: 'Values & Fears Ranking', href: '/app/reflect/values-and-fears' },
+  { label: 'Scenario Navigator', href: '/app/reflect/scenario-navigator' },
+  { label: 'Legacy Map', href: '/app/reflect/legacy-map' },
+  { label: 'Deathcare Trivia', href: '/app/learn/trivia' },
+]
+
+// "Open →" affordance inside the Activities / Plan by area cards — routes to that
+// section's landing page (orientation), sits between the description and the sub-items.
+function OpenLink({ href }: { href: string }) {
+  return (
+    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-start', marginBottom: 16 }}>Open →</Link>
+  )
+}
+
 export default function AppHomePage() {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
         .home4 { max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px; }
-        /* Activities + Your materials are simple entry cards (1fr each); Plan by area is
-           wider (it holds the six area links). */
-        .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: stretch; }
+        /* Activities + Plan by area are equal-weight cards (description + Open + sub-items);
+           Your materials is a narrower entry card. */
+        .home4-primary { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 20px; align-items: stretch; }
         .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; min-height: 340px; }
-        .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: auto; }
+        .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .home4-sub { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease; }
         .home4-sub:hover { background: rgba(255,255,255,0.85); }
         @media (max-width: 900px) {
@@ -82,21 +98,24 @@ export default function AppHomePage() {
             card clickable); Plan by area is wider and holds the six area links. */}
         <div className="home4-primary">
 
-          {/* Activities (Sunrise) — entry card → the Activities landing */}
-          <EntryCard
-            href="/app/reflect"
-            bg="#F29836"
-            align="start"
-            title="Activities"
-            description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others."
-            puzzle={<ActivitiesPuzzle />}
-          />
+          {/* Activities (Sunrise) — "Open →" to the Activities landing, then the five
+              activity shortcuts for direct entry */}
+          <section className="home4-card" style={{ background: '#F29836' }}>
+            <CardTop title="Activities" description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others.">
+              <ActivitiesPuzzle />
+            </CardTop>
+            <OpenLink href="/app/reflect" />
+            <div className="home4-subgrid">
+              {ACTIVITIES.map((a) => <SubItem key={a.label} href={a.href} label={a.label} />)}
+            </div>
+          </section>
 
-          {/* Plan by area (Dusk) — wider; the six areas are its links */}
+          {/* Plan by area (Dusk) — "Open →" to the Plan by area landing, then the six areas */}
           <section className="home4-card" style={{ background: '#BBABF4' }}>
             <CardTop title="Plan by area" description="Work through each area of your end-of-life planning. Learn about your options, track tasks, and capture related thinking.">
               <PlanPuzzle />
             </CardTop>
+            <OpenLink href="/app/area" />
             <div className="home4-subgrid">
               {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} />)}
             </div>
