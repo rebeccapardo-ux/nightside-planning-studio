@@ -107,7 +107,7 @@ export default function AppHomePage() {
             href="/app/plan/materials"
             bg="#DB5835"
             onDark
-            align="end"
+            align="start"
             title="Your materials"
             description="This is where all your stuff lives: notes, activity outputs, and documents to fill out."
             puzzle={<MaterialsPuzzle />}
