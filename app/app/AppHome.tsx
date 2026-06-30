@@ -16,9 +16,9 @@ const p3Props = { fill: '#F8F4EB', stroke: '#130426', strokeWidth: '1.5' }
 
 // The three real puzzle graphics, in their progression: separated (Activities) →
 // relating (Plan by area) → interlocked + export (Your materials).
-function ActivitiesPuzzle() {
+function ActivitiesPuzzle({ size = 98 }: { size?: number }) {
   return (
-    <svg width="98" height="91" viewBox="0 0 140 130" style={{ flexShrink: 0, overflow: 'visible' }} aria-hidden="true">
+    <svg width={size} height={Math.round(size * 91 / 98)} viewBox="0 0 140 130" style={{ flexShrink: 0, overflow: 'visible' }} aria-hidden="true">
       <g transform="translate(52,42)"><path d={P1} {...p1Props} /></g>
       <g transform="translate(98,42)"><path d={P2} {...p2Props} /></g>
       <g transform="translate(75,98)"><path d={P3} {...p3Props} /></g>
@@ -34,9 +34,9 @@ function PlanPuzzle() {
     </svg>
   )
 }
-function MaterialsPuzzle() {
+function MaterialsPuzzle({ size = 98 }: { size?: number }) {
   return (
-    <svg width="98" height="91" viewBox="0 0 140 130" style={{ flexShrink: 0, overflow: 'visible' }} aria-hidden="true">
+    <svg width={size} height={Math.round(size * 91 / 98)} viewBox="0 0 140 130" style={{ flexShrink: 0, overflow: 'visible' }} aria-hidden="true">
       <g transform="translate(41,51)"><path d={P1} {...p1Props} /></g>
       <g transform="translate(69,55)"><path d={P2} {...p2Props} /></g>
       <g transform="translate(50,87)"><path d={P3} {...p3Props} /></g>
@@ -83,12 +83,13 @@ export default function AppHomePage() {
         <div className="home4-primary">
 
           {/* Activities (Sunrise) — entry card → the Activities landing */}
-          <Link href="/app/reflect" className="home4-card" style={{ background: '#F29836', textDecoration: 'none' }}>
-            <CardTop title="Activities" description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others.">
-              <ActivitiesPuzzle />
-            </CardTop>
-            <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', marginTop: 'auto' }}>Open →</span>
-          </Link>
+          <EntryCard
+            href="/app/reflect"
+            bg="#F29836"
+            title="Activities"
+            description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others."
+            puzzle={<ActivitiesPuzzle size={64} />}
+          />
 
           {/* Plan by area (Dusk) — wider; the six areas are its links */}
           <section className="home4-card" style={{ background: '#BBABF4' }}>
@@ -101,12 +102,14 @@ export default function AppHomePage() {
           </section>
 
           {/* Your materials (Sunset) — entry card → Your materials */}
-          <Link href="/app/plan/materials" className="home4-card" style={{ background: '#DB5835', textDecoration: 'none' }}>
-            <CardTop title="Your materials" description="This is where all your stuff lives: notes, activity outputs, and documents to fill out." onDark>
-              <MaterialsPuzzle />
-            </CardTop>
-            <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#F8F4EB', marginTop: 'auto' }}>Open →</span>
-          </Link>
+          <EntryCard
+            href="/app/plan/materials"
+            bg="#DB5835"
+            onDark
+            title="Your materials"
+            description="This is where all your stuff lives: notes, activity outputs, and documents to fill out."
+            puzzle={<MaterialsPuzzle size={64} />}
+          />
 
         </div>
 
@@ -124,6 +127,25 @@ function CardTop({ title, description, onDark = false, children }: { title: stri
       </div>
       {children}
     </div>
+  )
+}
+
+// Activities + Your materials entry cards: title on its own full-width line (one line),
+// then the puzzle floated right AFTER it so it sits at the description level (effectively
+// moved down + right) and the description wraps around it / runs full-width. "Open →"
+// pinned bottom-right.
+function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; title: string; description: string; puzzle: React.ReactNode }) {
+  const titleColor = onDark ? '#F8F4EB' : '#130426'
+  const descColor = onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)'
+  return (
+    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none' }}>
+      <div style={{ overflow: 'hidden' }}>
+        <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
+        <div style={{ float: 'right', marginLeft: 16, marginBottom: 8 }}>{puzzle}</div>
+        <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: descColor, margin: 0 }}>{description}</p>
+      </div>
+      <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: titleColor, marginTop: 'auto', alignSelf: 'flex-end' }}>Open →</span>
+    </Link>
   )
 }
 
