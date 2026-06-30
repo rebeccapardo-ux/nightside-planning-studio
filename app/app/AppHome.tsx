@@ -49,16 +49,8 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
   )
 }
 
-const ACTIVITIES = [
-  { label: 'Reflection Prompts', href: '/app/reflect/reflection-prompts' },
-  { label: 'Values & Fears Ranking', href: '/app/reflect/values-and-fears' },
-  { label: 'Scenario Navigator', href: '/app/reflect/scenario-navigator' },
-  { label: 'Legacy Map', href: '/app/reflect/legacy-map' },
-  { label: 'Deathcare Trivia', href: '/app/learn/trivia' },
-]
-
-// "Open →" affordance inside the Activities / Plan by area cards — routes to that
-// section's landing page (orientation), sits between the description and the sub-items.
+// "Open →" affordance inside the Plan by area card — routes to its landing page
+// (orientation), sits between the description and the area sub-items.
 function OpenLink({ href }: { href: string }) {
   return (
     <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-start', marginBottom: 16 }}>Open →</Link>
@@ -70,9 +62,9 @@ export default function AppHomePage() {
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
         .home4 { max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px; }
-        /* Activities + Plan by area are equal-weight cards (description + Open + sub-items);
-           Your materials is a narrower entry card. */
-        .home4-primary { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 20px; align-items: stretch; }
+        /* Activities + Your materials are entry cards (1fr each); Plan by area is wider
+           (it holds the six area links + Open). */
+        .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: stretch; }
         .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; min-height: 340px; }
         .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .home4-sub { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease; }
@@ -98,17 +90,15 @@ export default function AppHomePage() {
             card clickable); Plan by area is wider and holds the six area links. */}
         <div className="home4-primary">
 
-          {/* Activities (Sunrise) — "Open →" to the Activities landing, then the five
-              activity shortcuts for direct entry */}
-          <section className="home4-card" style={{ background: '#F29836' }}>
-            <CardTop title="Activities" description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others.">
-              <ActivitiesPuzzle />
-            </CardTop>
-            <OpenLink href="/app/reflect" />
-            <div className="home4-subgrid">
-              {ACTIVITIES.map((a) => <SubItem key={a.label} href={a.href} label={a.label} />)}
-            </div>
-          </section>
+          {/* Activities (Sunrise) — entry card → the Activities landing */}
+          <EntryCard
+            href="/app/reflect"
+            bg="#F29836"
+            align="start"
+            title="Activities"
+            description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others."
+            puzzle={<ActivitiesPuzzle />}
+          />
 
           {/* Plan by area (Dusk) — "Open →" to the Plan by area landing, then the six areas */}
           <section className="home4-card" style={{ background: '#BBABF4' }}>
@@ -163,7 +153,7 @@ function EntryCard({ href, bg, onDark = false, align, title, description, puzzle
     <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', minHeight: 0, alignSelf: align }}>
       <div style={{ overflow: 'hidden' }}>
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
-        <div style={{ float: 'right', marginLeft: 16, marginBottom: 8 }}>{puzzle}</div>
+        <div style={{ float: 'right', marginLeft: 8, marginRight: -10, marginBottom: 8 }}>{puzzle}</div>
         <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: descColor, margin: 0 }}>{description}</p>
       </div>
       <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: titleColor, marginTop: 24, alignSelf: 'flex-end' }}>Open →</span>
