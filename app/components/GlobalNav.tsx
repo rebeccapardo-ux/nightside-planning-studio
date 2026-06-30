@@ -70,8 +70,8 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
 
   // Your materials (+ its export) — navy nav (cream/dark page bg)
   { prefix: '/app/materials', theme: 'dark',  navBg: 'bg-[#2C3777]' },
-  // Legacy /app/plan + /app/domains (redirected in Phase 3) — navy nav for the brief window
-  { prefix: '/app/plan',      theme: 'dark',  navBg: 'bg-[#2C3777]' },
+  // /app/domains/[uuid] — DB-lookup redirect stub (uuid bookmark → area page); navy
+  // nav covers the brief server-redirect window.
   { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
 
   // Entries / snapshot pages — same navy as materials for continuity
@@ -170,7 +170,7 @@ function buildNavItems(): NavItem[] {
       // additional affordance for direct area entry (same pattern as Activities).
       href: '/app/area',
       label: 'Plan by area',
-      activePrefixes: ['/app/area', '/app/domains', '/app/capture', '/app/plan/areas'],
+      activePrefixes: ['/app/area', '/app/domains', '/app/capture'],
       rows: AREAS.map((a): NavRow => ({ type: 'item', href: `/app/area/${a.slug}`, label: a.title, activePrefixes: [`/app/area/${a.slug}`] })),
     },
     {

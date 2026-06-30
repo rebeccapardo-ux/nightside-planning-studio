@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPE, type DocumentType } from '@/lib/content-metadata'
 import {
   addNoteToContainer,
@@ -26,7 +25,6 @@ import {
 import {
   getDomainStructureByCode,
   getDomainPromptIds,
-  getDomainBottomLinks,
   type DomainStructure,
   type ReadinessItem as ReadinessItemDef,
 } from '@/lib/domain-structure'
@@ -46,7 +44,6 @@ import MakeTaskModal, { type TaskDestination } from './MakeTaskModal'
 import SharedNoteCard from '@/app/components/notes/NoteCard'
 import VoiceNoteCard from '@/app/components/notes/VoiceNoteCard'
 import VoiceNoteButton from '@/app/components/VoiceNoteButton'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AlertIcon from '@/app/components/AlertIcon'
 
 // ---------------------------------------------------------------------------
@@ -105,16 +102,11 @@ function readWarningDismissed(key: string): boolean {
 // ---------------------------------------------------------------------------
 
 // The per-area Plan workspace (Planning Status panel + Your-thoughts notes stream),
-// extracted from the old /app/domains/[domainId] page so it can be embedded in the
-// new /app/area/[slug] pages. `variant` controls the page chrome:
-//   'domain' — the legacy standalone page (navy header, page bg, bottom links).
-//   'area'   — embedded in an area page's "Plan" section (workspace only; the area
-//              page supplies the header/intro/Activities and the section container).
+// embedded in the /app/area/[slug] pages. The area page supplies the header/intro/
+// Activities and the section container; this component renders the workspace only.
 // domainId is the user's container UUID (the area page resolves slug → domain_code →
 // container and passes it). Surfacing/tasks/notes logic is unchanged.
-export default function AreaPlanSection({ domainId, variant = 'domain' }: { domainId: string; variant?: 'domain' | 'area' }) {
-  const isDomainVariant = variant === 'domain'
-
+export default function AreaPlanSection({ domainId }: { domainId: string }) {
   // Scroll to top on mount — prevents router cache from restoring a previous position.
   useEffect(() => { window.scrollTo(0, 0) }, [])
 
@@ -241,7 +233,6 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
 
   const domainStructure = getDomainStructureByCode(domain?.domain_code)
   const isWills = domain?.domain_code === 'wills_estates'
-  const bottomLinks = getDomainBottomLinks(domain?.domain_code)
 
   // ── Per-domain note stream: (container-linked ∪ auto-surfaced prompt) − hidden ──
   const promptIds = getDomainPromptIds(domain?.domain_code)
@@ -325,32 +316,16 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
   }
 
   return (
-    <div className={isDomainVariant ? 'min-h-screen' : ''} style={isDomainVariant ? { background: '#EDE7FF' } : undefined}>
+    <div>
       <style>{`
         .domain-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 24px; align-items: start; }
         @media (max-width: 900px) { .domain-layout { grid-template-columns: 1fr; } }
         @keyframes noteAppear { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
       `}</style>
 
-      {/* ── Header — dark gradient (legacy 'domain' variant only; area pages render their own header) ── */}
-      {isDomainVariant && (
-      <div style={{ background: 'radial-gradient(circle at 20% 20%, #1a0535 0%, #130426 70%)' }}>
-        {/* pt-16 (64px) on mobile clears the floating Notepad button (fixed top-24,
-            right-4) so the title isn't truncated behind it — matching the Reflect/Learn
-            sub-page banner convention; desktop keeps its compact 16px (no overlap there). */}
-        <div className="max-w-6xl mx-auto pt-16 md:pt-4" style={{ paddingLeft: 40, paddingRight: 40, paddingBottom: 8 }}>
-          <Breadcrumbs theme="navy" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Areas of Planning', href: '/app/plan/areas' }, { label: domain?.title ?? '…' }]} />
-        </div>
-        <div className="max-w-6xl mx-auto" style={{ padding: '4px 40px 56px' }}>
-          <h1 className="ns-title-activity text-white">{domain?.title ?? '…'}</h1>
-        </div>
-      </div>
-      )}
-
       {/* ── Main content: lavender planning panel + cream Your Thoughts panel.
-          The 'domain' variant wraps it in the page container; the 'area' variant
-          renders it bare (the area page supplies the section container). ── */}
-      <div className={isDomainVariant ? 'max-w-6xl mx-auto px-6 py-12' : ''}>
+          Rendered bare — the area page supplies the header/intro and the section container. ── */}
+      <div>
         <div className="domain-layout">
 
           {/* Left column — the lavender Planning Status panel (relevant documents are
@@ -445,27 +420,6 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
           </div>
         </div>
 
-        {/* ── Reflection and Learning — bottom links (legacy 'domain' variant only;
-            area pages integrate Reflect + Learn as their own sections). ── */}
-        {isDomainVariant && bottomLinks.length > 0 && (
-          <div style={{ marginTop: 56 }}>
-            <p style={{ fontSize: 22, fontWeight: 700, color: '#DB5835', margin: '0 0 4px 0' }}>Reflection and Learning</p>
-            <p style={{ fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.70)', margin: '0 0 20px 0' }}>Topics to think through and read about for this area</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {bottomLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="flex items-center justify-between rounded-lg transition-opacity hover:opacity-75"
-                  style={{ background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.10)', padding: '16px 20px', textDecoration: 'none' }}
-                >
-                  <span style={{ fontSize: 16, fontWeight: 500, color: '#130426' }}>{link.label}</span>
-                  <span style={{ fontSize: 13, color: 'rgba(19,4,38,0.45)' }}>→</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Add from your notes modal ── */}

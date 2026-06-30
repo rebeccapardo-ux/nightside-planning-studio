@@ -1,5 +1,5 @@
 // Healthcare Learn content for the area-page "See more" band — the existing
-// /app/learn/healthcare copy (Why this matters · Choosing your substitute
+// the original Learn page copy (Why this matters · Choosing your substitute
 // decision-maker), reflowed from the Learn page's 2-column layout into the band's
 // single 760px reading column, rendered static (no scroll-reveal). Static JSX, so it
 // passes cleanly as children from the server area page into the client AreaHeader.

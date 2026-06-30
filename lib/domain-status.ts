@@ -3,15 +3,14 @@ import type { DomainState } from '@/lib/domain-state'
 
 // Domain planning-status helpers — the single source of truth for a domain's
 // qualitative status text (`qualitativeLabel`) AND its progress count
-// (`computeDomainProgress`). Every status surface — the domain page status bar,
-// DomainStateCard (Plan cards), DomainNullStateBanner, and buildDomainStatuses
-// (release/export PDF) — routes its checked/total through `computeDomainProgress`
-// so the count can't drift across surfaces (the same anti-drift lesson that
-// consolidated `qualitativeLabel`). Pass 2 wired `qualitativeLabel` into the
-// domain page status label, DomainStateCard (Plan cards), and buildDomainStatuses
-// (release/export PDF), replacing the three drifted copies it supersedes:
-//   - count-based qualitativePhrase in app/app/domains/[domainId]/page.tsx
-//   - %-based qualitativeLabel in app/components/DomainStateCard.tsx
+// (`computeDomainProgress`). Every status surface — the area page status bar
+// (PlanningStatusSection) and buildDomainStatuses (release/export PDF) — routes
+// its checked/total through `computeDomainProgress` so the count can't drift
+// across surfaces (the same anti-drift lesson that consolidated `qualitativeLabel`).
+// `qualitativeLabel` is likewise the single label source for the area page status
+// label and buildDomainStatuses, replacing the drifted copies it superseded:
+//   - count-based qualitativePhrase in the old /app/domains/[domainId] page
+//   - %-based qualitativeLabel in the old DomainStateCard
 //   - %-based qualitativeLabel in lib/pdf/buildPlanData.ts
 // (The analytics-only computePlanningStatus in lib/analytics.ts is a separate
 // concern — different vocabulary, different purpose — and is NOT replaced.)

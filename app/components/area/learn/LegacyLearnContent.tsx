@@ -1,6 +1,6 @@
 import { para, heading, hv } from './shared'
 
-// Legacy Overview band content — reflowed verbatim from /app/learn/legacy. The page's
+// Legacy Overview band content — reflowed verbatim from the original Learn page. The page's
 // second lead paragraph opens the band (the first lead paragraph is the area header
 // intro), followed by "Why this matters" (incl. the "Did You Know?" callout) and "What
 // legacy work can look like". Legacy has no province-resources panel. Reflow only.

@@ -12,7 +12,7 @@
 
 **Two separate tag systems — don't conflate.** Materials also carry `primaryTag` / `secondaryTags` of type `InternalTag` (e.g. `values`, `fears`, `care_preferences`). That is a **legacy/dead** classification and does **not** drive fw_s surfacing. This audit concerns only `supplementaryDocumentRelevance` fw_s keys.
 
-**Sources.** Prompt tags + full text: `lib/content-metadata.ts` `REFLECT_PROMPT_META` (prompt_1–prompt_43) and `app/app/reflect/prompts/page.tsx` `PROMPTS`. Activity tags: `lib/content-metadata.ts` `ACTIVITY_META`. Section labels: `app/app/capture/funeral-wishes/page.tsx` `SECTIONS`.
+**Sources.** Prompt tags + full text: `lib/content-metadata.ts` `REFLECT_PROMPT_META` (prompt_1–prompt_43) and `app/app/activities/prompts/page.tsx` `PROMPTS`. Activity tags: `lib/content-metadata.ts` `ACTIVITY_META`. Section labels: `app/app/capture/funeral-wishes/page.tsx` `SECTIONS`.
 
 **fw_s6 ("A note to the people carrying this out") is intentionally non-surfacing** — it has no question id and carries no tags. Excluded from this audit by design.
 

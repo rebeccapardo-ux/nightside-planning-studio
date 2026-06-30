@@ -2,7 +2,7 @@ import type React from 'react'
 
 // Shared styles + building blocks for the per-area Overview band content components
 // (HealthcareLearnContent, DeathcareLearnContent, …). Each component reflows its
-// existing /app/learn/[area] copy into the band's single 760px reading column.
+// original Learn page copy into the band's single 760px reading column.
 export const apfel = "'Apfel Grotezk', sans-serif"
 export const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 

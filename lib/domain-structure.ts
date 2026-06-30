@@ -20,7 +20,6 @@ export type OrientationItem = {
   helperText?: string
   relatedActivities?: string[]
   relatedDocumentTypes?: string[]
-  learnHref?: string
   allowedReflectPromptIds?: string[]
 }
 
@@ -43,7 +42,7 @@ export type DomainStructure = {
 
 // One planning-status segment = one readiness checkbox. Post-redesign, segments
 // are per-checkbox (not per-row), and orientation rows are excluded entirely.
-// Used by the domain page status bar and the Plan-page DomainStateCard mini-bar.
+// Used by the area page status bar and the buildDomainStatuses PDF derivation.
 export type CheckboxSlot = { rowKey: string; index: number }
 
 export type DomainDef = {
@@ -51,9 +50,6 @@ export type DomainDef = {
   code: Domain
   // Canonical display name — used by the PDF builder when no DB container exists.
   displayName: string
-  // Bottom "Reflection and Learning" links (activities + learn page), in order.
-  // Rendered as a flat list at the bottom of the domain page.
-  bottomLinks: { label: string; href: string }[]
   structure: DomainStructure
 }
 
@@ -61,13 +57,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'healthcare',
     displayName: 'Healthcare Wishes',
-    bottomLinks: [
-      { label: 'Scenario Navigator', href: '/app/activities/scenario-navigator' },
-      { label: 'Values Ranking', href: '/app/activities/values-ranking' },
-      { label: 'Fears Ranking', href: '/app/activities/fears-ranking' },
-      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
-      { label: 'Learn about Healthcare wishes', href: '/app/learn/healthcare' },
-    ],
     structure: {
       orientation: [
         {
@@ -75,7 +64,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           title: 'My values and priorities for care at end of life',
           explanation: '',
           relatedActivities: [ACTIVITY.VALUES_RANKING, ACTIVITY.FEARS_RANKING],
-          learnHref: '/app/learn/healthcare',
           allowedReflectPromptIds: [
             'prompt_2', 'prompt_1', 'prompt_5', 'prompt_20', 'prompt_19',
             'prompt_25', 'prompt_26', 'prompt_22', 'prompt_30',
@@ -85,13 +73,11 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'decision_making_framework',
           title: 'Understand how substitute decision-making for care works in my province',
           explanation: '',
-          learnHref: '/app/learn/healthcare',
         },
         {
           key: 'who_would_speak',
           title: 'Consider who I would want to make decisions for me if I were not able to',
           explanation: '',
-          learnHref: '/app/learn/healthcare',
           allowedReflectPromptIds: [
             'prompt_6',
           ],
@@ -132,17 +118,12 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'deathcare',
     displayName: 'Deathcare',
-    bottomLinks: [
-      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
-      { label: 'Learn about Deathcare', href: '/app/learn/deathcare' },
-    ],
     structure: {
       orientation: [
         {
           key: 'final_resting_place_wishes',
           title: 'Reflect on my wishes for my body\'s final resting place',
           explanation: '',
-          learnHref: '/app/learn/deathcare',
           allowedReflectPromptIds: [
             'prompt_9', 'prompt_41',
           ],
@@ -151,7 +132,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'legal_options_province',
           title: 'Understand the legal options in my province',
           explanation: '',
-          learnHref: '/app/learn/deathcare',
         },
       ],
       readiness: [
@@ -172,42 +152,34 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'wills_estates',
     displayName: 'Wills & Estates',
-    bottomLinks: [
-      { label: 'Learn about Wills & Estates', href: '/app/learn/wills' },
-    ],
     structure: {
       orientation: [
         {
           key: 'legal_will_requirements',
           title: 'Understand the requirements for a legal will in my province',
           explanation: '',
-          learnHref: '/app/learn/wills',
         },
         {
           key: 'executor_choice',
           title: 'Consider who I want to name as executor',
           explanation: '',
           relatedDocumentTypes: [DOCUMENT_TYPE.IMPORTANT_CONTACTS],
-          learnHref: '/app/learn/wills',
         },
         {
           key: 'asset_wishes',
           title: 'Reflect on wishes for my assets',
           explanation: '',
           relatedDocumentTypes: [DOCUMENT_TYPE.FINANCIAL_INFORMATION],
-          learnHref: '/app/learn/wills',
         },
         {
           key: 'care_children_pets',
           title: 'Care of children or pets',
           explanation: 'Reflecting on wishes for children or pets, if relevant.',
-          learnHref: '/app/learn/wills',
         },
         {
           key: 'additional_estate_planning',
           title: 'Consider whether additional estate planning may apply to my situation',
           explanation: '',
-          learnHref: '/app/learn/wills',
         },
       ],
       readiness: [
@@ -235,17 +207,12 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'ritual',
     displayName: 'Ritual & Ceremony',
-    bottomLinks: [
-      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
-      { label: 'Learn about Ritual & Ceremony', href: '/app/learn/ritual' },
-    ],
     structure: {
       orientation: [
         {
           key: 'meaningful_rituals',
           title: 'Reflect on rituals or ceremonies that are meaningful to me',
           explanation: '',
-          learnHref: '/app/learn/ritual',
           allowedReflectPromptIds: [
             'prompt_40', 'prompt_7',
           ],
@@ -254,7 +221,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'mark_or_remember',
           title: 'Consider how I want my death to be marked or remembered',
           explanation: '',
-          learnHref: '/app/learn/ritual',
         },
       ],
       readiness: [
@@ -274,11 +240,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'legacy',
     displayName: 'Legacy',
-    bottomLinks: [
-      { label: 'Legacy Map', href: '/app/activities/legacy-map' },
-      { label: 'Reflection Prompts', href: '/app/activities/reflection-prompts' },
-      { label: 'Learn about Legacy', href: '/app/learn/legacy' },
-    ],
     structure: {
       orientation: [
         {
@@ -286,7 +247,6 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           title: 'Reflect on what I am leaving behind',
           explanation: '',
           relatedActivities: [ACTIVITY.LEGACY_MAP],
-          learnHref: '/app/learn/legacy',
           allowedReflectPromptIds: [
             'prompt_10', 'prompt_12', 'prompt_36', 'prompt_38',
             'prompt_39', 'prompt_42', 'prompt_43',
@@ -296,13 +256,11 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           key: 'how_remembered',
           title: 'Consider how I want to be remembered',
           explanation: '',
-          learnHref: '/app/learn/legacy',
         },
         {
           key: 'relationships_impact',
           title: 'Reflect on meaningful relationships and personal impact',
           explanation: '',
-          learnHref: '/app/learn/legacy',
         },
       ],
       readiness: [
@@ -326,16 +284,12 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
   {
     code: 'personal_admin',
     displayName: 'Personal Admin',
-    bottomLinks: [
-      { label: 'Learn about Personal Admin', href: '/app/learn/personal-admin' },
-    ],
     structure: {
       orientation: [
         {
           key: 'understand_personal_admin',
           title: 'Understand personal admin involved in death planning',
           explanation: '',
-          learnHref: '/app/learn/personal-admin',
         },
       ],
       readiness: [
@@ -406,12 +360,6 @@ function slotsOf(structure: DomainStructure | null): CheckboxSlot[] {
   return structure.readiness.flatMap((r) =>
     r.checkboxes.map((_, index): CheckboxSlot => ({ rowKey: r.key, index })),
   )
-}
-
-// Bottom "Reflection and Learning" links for a domain (activities + learn page).
-export function getDomainBottomLinks(code: string | null | undefined): { label: string; href: string }[] {
-  if (!code) return []
-  return DOMAIN_STRUCTURES.find(def => def.code === code)?.bottomLinks ?? []
 }
 
 // Deduped union of every orientation row's allowedReflectPromptIds for a domain.

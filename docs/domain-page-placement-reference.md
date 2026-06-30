@@ -1,6 +1,13 @@
 # Domain Page — Placement Reference
 
-**Canonical source of truth** for what auto-surfaces on each domain page, per row — across
+> **Surface note (post-restructure).** The "domain page" is now the **Plan section of the area
+> page** (`/app/area/[slug]` → `app/components/area/AreaPlanSection.tsx`). The standalone
+> `/app/domains/[domainId]` page was deleted; only a uuid→slug redirect stub remains. The
+> surfacing logic moved verbatim into `AreaPlanSection` — the file-path citations below that
+> still say `app/app/domains/[domainId]/page.tsx` refer to that moved code (now in
+> `AreaPlanSection`); line numbers are historical. The placement **policy is unchanged.**
+
+**Canonical source of truth** for what auto-surfaces on each domain (area) page, per row — across
 the **Reflection + Learning** (orientation) and **Practical Readiness** (readiness) sections.
 
 - **Status:** Reviewed and confirmed by the maintainer (2026-06-22), including the Legacy
@@ -130,7 +137,7 @@ is the single most likely future-regression vector.
 > behind"; slug kept as a stable FK). The other two orientation rows (`how_remembered`,
 > `relationships_impact`) **still exist** — they simply carry no auto-surfacing notes (the same
 > no-notes-orientation-row pattern as Healthcare `decision_making_framework`). Prompts
-> 24/31/37/27/28/32 were dropped from domain surfacing (Plan grid only); 10/12/36/43 were added
+> 24/31/37/27/28/32 were dropped from domain surfacing (Your Materials only); 10/12/36/43 were added
 > to `life_story_shaped`.
 
 ### Reflection + Learning (orientation)
@@ -190,7 +197,7 @@ is the single most likely future-regression vector.
 
 Distinct prompts that auto-surface on a domain page (across all rows): prompt_1, 2, 5, 6, 7, 9,
 10, 12, 19, 20, 22, 25, 26, 30, 36, 38, 39, 40, 41, 42, 43 (**21**). Every other prompt appears
-only on the Plan grid.
+only on Your Materials (/app/materials).
 
 ---
 
@@ -207,11 +214,11 @@ parity:
 - **Only `origin_type='prompt'` notes auto-surface.** `resolveRowNotes`
   (`app/app/domains/[domainId]/page.tsx:756`–761) hard-requires `n.origin_type === 'prompt'`
   and `n.prompt_id ∈ allowedReflectPromptIds`. **Reflection notes (`origin_type='reflection'`)
-  and freeform notes NEVER auto-surface on domain pages** — they live only on the Plan grid
+  and freeform notes NEVER auto-surface on domain pages** — they live only on Your Materials (/app/materials)
   (and, where tagged, the wishes panels).
 - **Orphan prompt notes go nowhere here.** A prompt note whose `prompt_id` is in **no** row's
   `allowedReflectPromptIds` (e.g. prompts 24/31/37/27/28/32 after the Legacy consolidation)
-  does not appear on any domain page — only the Plan grid. There is no catch-all bucket.
+  does not appear on any domain page — only Your Materials (/app/materials). There is no catch-all bucket.
 - **Wills & Estates and Personal Admin intentionally have zero note-surfacing rows.** Wills
   surfaces only documents (via materials); Personal Admin surfaces only static links. This is
   by design, not missing data.

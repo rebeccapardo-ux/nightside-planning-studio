@@ -1,6 +1,6 @@
 import { para, heading, ResourcesPanel, TermList } from './shared'
 
-// Wills & Estates Overview band content — reflowed verbatim from /app/learn/wills
+// Wills & Estates Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body, the estate-plan list, and the resources panel)
 // into the band's single reading column. Don't regenerate; reflow only.
 export default function WillsLearnContent() {

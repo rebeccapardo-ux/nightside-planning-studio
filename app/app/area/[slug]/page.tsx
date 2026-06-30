@@ -17,7 +17,7 @@ import RitualLearnContent from '@/app/components/area/learn/RitualLearnContent'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-// Per-area Overview band content — each reflowed from its existing /app/learn/[area] page.
+// Per-area Overview band content — each reflowed from its original Learn page.
 const LEARN_CONTENT: Record<AreaSlug, React.ComponentType> = {
   'healthcare-wishes': HealthcareLearnContent,
   'deathcare': DeathcareLearnContent,
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 // New per-area page (/app/area/[slug]) — Relevant Activities + Plan in one place,
 // organised by topic. Resolves the URL slug → domain_code → the user's container, then
 // renders the shared <AreaPlanSection> for the Plan workspace. All six areas have their
-// own Overview band content (reflowed from /app/learn/[area]).
+// own Overview band content (reflowed from the original Learn page).
 export default async function AreaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const area = areaBySlug(slug)
@@ -131,7 +131,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.
             </p>
-            <AreaPlanSection domainId={container.id} variant="area" />
+            <AreaPlanSection domainId={container.id} />
           </CollapsibleSection>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { para, heading, ResourcesPanel, TermList } from './shared'
 
-// Ritual & Ceremony Overview band content — reflowed verbatim from /app/learn/ritual
+// Ritual & Ceremony Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body, "Planning for marginalized communities" note,
 // and the equity resources panel) into the band's single reading column. Reflow only.
 export default function RitualLearnContent() {

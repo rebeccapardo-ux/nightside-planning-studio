@@ -1,6 +1,6 @@
 import { para, heading, ResourcesPanel } from './shared'
 
-// Deathcare Overview band content — reflowed verbatim from /app/learn/deathcare
+// Deathcare Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body + province-resources panel) into the band's
 // single reading column. Don't regenerate; reflow only.
 export default function DeathcareLearnContent() {
