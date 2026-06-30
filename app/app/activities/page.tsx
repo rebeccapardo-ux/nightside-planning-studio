@@ -155,7 +155,7 @@ export default function ExplorePage() {
             />
             <ExploreActivityCard
               title="Values & Fears Ranking"
-              description="Prioritize what matters most, using a guided card sort activity."
+              description="Sort what matters most — and what you most want to avoid — into a clear order of priority."
               href="/app/activities/values-and-fears"
               status="available"
               index={1}

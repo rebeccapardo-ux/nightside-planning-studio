@@ -127,12 +127,15 @@ export default function YourMaterialsPanel({
     fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#1A1A1A',
     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
   }
+  // 44px min tap target (project standard — matches .home4-sub, the nav controls, AppFooter).
   const navyPill: React.CSSProperties = {
     fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#F8F4EB', background: '#2C3777',
-    borderRadius: 999, padding: '9px 18px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap',
+    borderRadius: 999, padding: '0 18px', minHeight: 44, boxSizing: 'border-box',
+    textDecoration: 'none', display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
   }
   const exportLink: React.CSSProperties = {
-    fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap',
+    fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none',
+    whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', minHeight: 44,
   }
   const emptyText: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.7)', margin: 0 }
 
@@ -211,7 +214,7 @@ export default function YourMaterialsPanel({
           className="ym-tile-header"
           onClick={() => toggleSection(id)}
           aria-expanded={isExpanded}
-          style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+          style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, textAlign: 'left' }}
         >
           <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
           <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>

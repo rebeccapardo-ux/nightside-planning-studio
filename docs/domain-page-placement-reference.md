@@ -26,12 +26,13 @@ A domain row can auto-surface **two unrelated kinds of content**, by **two separ
 plus a third, content-independent navigation affordance:
 
 1. **Notes** — `allowedReflectPromptIds` on the row → matches `notes.prompt_id` where
-   `origin_type='prompt'`. Drives the per-row "X notes →" panel (`resolveRowNotes`,
-   `app/app/domains/[domainId]/page.tsx:752`). Only **reflect-prompt** notes.
+   `origin_type='prompt'`. Drives the Your-thoughts note stream (`AreaPlanSection`). Only
+   **reflect-prompt** notes. *(Note auto-surfacing is per-DOMAIN, not per-row — a prompt note
+   belongs to a domain if its `prompt_id` ∈ the union of that domain's rows' allowed ids.)*
 2. **Materials** — `relatedActivities` / `relatedDocumentTypes` on the row → matches the
-   user's `entries` by `activity` / `document_type`. Drives the `ItemMaterials` link list
-   (`itemEntries` `:886`, `ItemMaterials` `:1424`). Shows the user's actual activity outputs /
-   documents, only when one exists.
+   user's `entries` by `activity` / `document_type`. Drives the per-row `ItemMaterials` link
+   list (`itemEntries` / `ItemMaterials` in `AreaPlanSection`). Shows the user's actual activity
+   outputs / documents, only when one exists.
 3. **Static links** — `staticLinks` on a row → a fixed link to a capture page, shown
    **regardless of whether the user has content**. Not "materials" — just navigation.
 
@@ -40,8 +41,9 @@ code. **Do not assume `allowedReflectPromptIds` is the only surfacing lever** �
 is the single most likely future-regression vector.
 
 > **On titles & prompt text:** `content-metadata.ts` stores only the full prompt text (the
-> `label`). The row `key` is a stable internal slug (used as `topic_id` in `domain_topic_notes`
-> / `hidden_row_notes` and for orientation status); the row `title` is display copy and can
+> `label`). The row `key` is a stable internal slug (historically `topic_id` in the
+> now-dropped `domain_topic_notes` / `hidden_row_notes` tables; per-domain note suppression
+> now lives in `domain_hidden_notes`); the row `title` is display copy and can
 > change freely. `[O]` = orientation row (can auto-surface notes); `[R]` = readiness row
 > (never auto-surfaces notes, by design).
 
@@ -103,10 +105,13 @@ is the single most likely future-regression vector.
 - **[O] Consider whether additional estate planning may apply to my situation** (`additional_estate_planning`) — :185 — no notes, no materials.
 
 ### Practical Readiness (readiness)
-- **[R] Legal will** (`legal_will_in_place`) — :193 — no notes.
-- **[R] Other estate planning needs (if applicable)** (`other_estate_planning`) — :199 — no notes.
-- **[R] Professional support (if needed)** (`professional_support`) — :205 — no notes.
-- **[R] What should happen to my belongings** (`meaningful_objects`) — :211 — no notes; **static link** → Keepsakes Inventory (`:214`).
+- **[R] Legal will** (`legal_will_in_place`) — no notes.
+- **[R] Other estate planning needs (if applicable)** (`other_estate_planning`) — no notes.
+- **[R] Professional support (if needed)** (`professional_support`) — no notes.
+
+> The former **belongings** readiness row (`meaningful_objects`, static-linked to Keepsakes
+> Inventory) was **removed** from Wills & Estates — Keepsakes Inventory now lives on the
+> **Legacy** `sharing_what_matters` row (see Legacy below).
 
 > **Wills & Estates has zero note-surfacing rows** — by design. It surfaces only *documents*
 > (Important Contacts, Financial Information) via materials.
@@ -190,9 +195,9 @@ is the single most likely future-regression vector.
 |---|---|---|---|---|---|
 | Healthcare | 3 | 2 | 1 (Values, Fears) | 2 | 1 |
 | Deathcare | 2 | 1 | 0 | 1 | 1 |
-| Wills & Estates | 5 | 0 | 2 (Contacts, Financial docs) | 4 | 1 |
+| Wills & Estates | 5 | 0 | 2 (Contacts, Financial docs) | 3 | 0 |
 | Ritual & Ceremony | 2 | 1 | 0 | 1 | 1 |
-| Legacy | 3 | 1 | 1 (Legacy Map) | 1 | 0 |
+| Legacy | 3 | 1 | 1 (Legacy Map) | 1 | 1 (Keepsakes) |
 | Personal Admin | 1 | 0 | 0 | 5 | 4 |
 
 Distinct prompts that auto-surface on a domain page (across all rows): prompt_1, 2, 5, 6, 7, 9,
@@ -224,14 +229,16 @@ parity:
   by design, not missing data.
 - **Contacts & Financial documents surface under Wills & Estates, not Personal Admin** — also
   intentional (see the Personal Admin note above).
-- **Manual attachment is separate from all auto-surfacing.** Any note can be manually pinned to
-  any row (`domain_topic_notes`, read in `resolveRowNotes:766`–770) or removed from a row
-  (`hidden_row_notes`, `:763`–766). Manual pins/suppressions do not depend on tags and are not
-  covered by this reference — this doc is about **auto**-surfacing only.
+- **Manual attachment is separate from all auto-surfacing, and is per-DOMAIN (not per-row).**
+  A note can be manually added to a domain (`container_notes`) or removed from its Your-thoughts
+  stream — "Remove" suppresses an auto-surfaced note via `domain_hidden_notes` and/or un-links a
+  container note. Manual attach/suppress do not depend on tags and are not covered by this
+  reference — this doc is about **auto**-surfacing only. (The old per-row `domain_topic_notes` /
+  `hidden_row_notes` pin/suppress tables were dropped.)
 - **No `domainRelevance` / tiering code runs here.** `lib/content-surfacing.ts` is not imported
-  by the domain page; `domainRelevance` / `getNotedomainTier` / `tieredNotesByDomain` /
-  `isFragmentEligible` are unused on domain pages (they are wishes-panel / dead-code concerns).
-  `FragmentField` and the `EntryCard variant="output"` "materials canvas" are dead/disabled.
+  by the area page (`AreaPlanSection`); `domainRelevance` / `getNotedomainTier` /
+  `tieredNotesByDomain` / `isFragmentEligible` are unused for domain surfacing (they are
+  wishes-panel / dead-code concerns).
 
 ---
 

@@ -331,7 +331,11 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
           {/* Left column — the lavender Planning Status panel (relevant documents are
               surfaced inline within it, per readiness row, not as a top callout). */}
           <div>
-          <div className="rounded-xl" style={{ background: '#BBABF4', padding: 28 }}>
+          {/* Softer lavender than the #BBABF4 brand fill so the panel reads gently against
+              cream (the Your-thoughts panel beside it + the cream Overview band above on
+              activity-less areas like Personal Admin), while staying clearly distinct from the
+              #ECE7F7 Plan-section background. */}
+          <div className="rounded-xl" style={{ background: '#D0C5F2', padding: 28 }}>
             {isWills && (
               <p style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', lineHeight: 1.6, margin: '0 0 24px 0' }}>
                 The content in this area is for planning and reflection. For binding legal documents, including your will and any documents designating substitute decision-makers, consult a lawyer in your province.
@@ -380,7 +384,7 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
             {addCandidates.length > 0 && (
               <button
                 onClick={() => setAddModalOpen(true)}
-                style={{ fontSize: 14, fontWeight: 600, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 3 }}
+                style={{ fontSize: 14, fontWeight: 600, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'underline', textUnderlineOffset: 3 }}
               >
                 + Add from your notes
               </button>

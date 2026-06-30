@@ -44,7 +44,7 @@ const VALUES_RANKING: AreaActivity = { label: 'Values Ranking', href: '/app/acti
 const FEARS_RANKING:  AreaActivity = { label: 'Fears Ranking',  href: '/app/activities/fears-ranking',  blurb: 'Name and rank what you most want to avoid.', kind: 'output', activity: 'fears_ranking' }
 const LEGACY_MAP:     AreaActivity = { label: 'Legacy Map',     href: '/app/activities/legacy-map',     blurb: 'Map the people, stories, and things you want to pass on.', kind: 'output', activity: 'legacy_map' }
 const SCENARIO_NAV:   AreaActivity = { label: 'Scenario Navigator', href: '/app/activities/scenario-navigator', blurb: 'Think through how your values might apply across different medical situations.', kind: 'navigate' }
-const REFLECTION:     AreaActivity = { label: 'Reflection Prompts', href: '/app/activities', blurb: 'Open-ended prompts to help you explore your thinking. Browse all prompts or focus on specific themes.', kind: 'navigate' }
+const REFLECTION:     AreaActivity = { label: 'Reflection Prompts', href: '/app/activities', blurb: 'Open-ended prompts to explore your thinking — browse them all or focus on a theme.', kind: 'navigate' }
 const TRIVIA:         AreaActivity = { label: 'Deathcare Trivia', href: '/app/activities/trivia', blurb: 'A game to test and build your knowledge of deathcare options.', kind: 'navigate' }
 
 export const AREAS: AreaConfig[] = [

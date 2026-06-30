@@ -102,15 +102,16 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
                     <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#130426', margin: 0 }}>{act.label}</p>
                     <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '6px 0 0', flex: 1 }}>{act.blurb}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 18 }}>
+                      {/* All CTAs use a 44px min tap target (project standard). */}
                       {act.kind === 'navigate' ? (
-                        <Link href={act.href} style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>Go to activity →</Link>
+                        <Link href={act.href} style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>Go to activity →</Link>
                       ) : (
                         <>
-                          <Link href={act.href} style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#F8F4EB', background: '#130426', borderRadius: 999, padding: '8px 16px', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                          <Link href={act.href} style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, color: '#F8F4EB', background: '#130426', borderRadius: 999, padding: '0 18px', minHeight: 44, boxSizing: 'border-box', display: 'inline-flex', alignItems: 'center', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                             {entryId ? 'Continue' : 'Start'}
                           </Link>
                           {entryId && (
-                            <Link href={`/app/entries/${entryId}/export`} style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap' }}>Export</Link>
+                            <Link href={`/app/entries/${entryId}/export`} style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#2C3777', textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>Export</Link>
                           )}
                         </>
                       )}

@@ -53,7 +53,7 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
 // (orientation), sits between the description and the area sub-items.
 function OpenLink({ href }: { href: string }) {
   return (
-    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-start', marginBottom: 16 }}>Open →</Link>
+    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 8 }}>Open →</Link>
   )
 }
 
@@ -94,7 +94,6 @@ export default function AppHomePage() {
           <EntryCard
             href="/app/activities"
             bg="#F29836"
-            align="start"
             title="Activities"
             description="Conversation starters, scenarios, and reflection prompts to clarify what matters most. Use alone or with others."
             puzzle={<ActivitiesPuzzle />}
@@ -116,7 +115,6 @@ export default function AppHomePage() {
             href="/app/materials"
             bg="#DB5835"
             onDark
-            align="start"
             title="Your materials"
             description="This is where all your stuff lives: notes, activity outputs, and documents to fill out."
             puzzle={<MaterialsPuzzle />}
@@ -136,21 +134,24 @@ function CardTop({ title, description, onDark = false, children }: { title: stri
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: onDark ? '#F8F4EB' : '#130426', margin: '0 0 6px' }}>{title}</h2>
         <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.55, color: onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)', maxWidth: 320, margin: 0 }}>{description}</p>
       </div>
-      {children}
+      {/* Drop the puzzle ~one title-line down so it sits at description level, matching the
+          float-right puzzles on the Activities / Your materials entry cards. */}
+      <div style={{ flexShrink: 0, marginTop: 34 }}>{children}</div>
     </div>
   )
 }
 
 // Activities + Your materials entry cards: title on its own full-width line, the puzzle
 // floated right after it (text wraps around / runs full-width), "Open →" bottom-right.
-// These are content-height (NOT stretched to the tall Plan by area card); `align` staggers
-// them — Activities top-aligned, Your materials bottom-aligned — so the leftover space is
-// intentional whitespace around the cards rather than blank space inside them.
-function EntryCard({ href, bg, onDark = false, align, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; align: 'start' | 'end'; title: string; description: string; puzzle: React.ReactNode }) {
+// They **stretch to the grid row height** (align-self: stretch) so both side cards share a
+// single height and their bottoms align with the Plan by area card. Content sits at the top
+// and any leftover height falls as empty space below "Open →" (most visible on Your
+// materials, which carries the least copy — accepted).
+function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; title: string; description: string; puzzle: React.ReactNode }) {
   const titleColor = onDark ? '#F8F4EB' : '#130426'
   const descColor = onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)'
   return (
-    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', minHeight: 0, alignSelf: align }}>
+    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', alignSelf: 'stretch' }}>
       <div style={{ overflow: 'hidden' }}>
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
         <div style={{ float: 'right', marginLeft: 8, marginRight: -10, marginBottom: 8 }}>{puzzle}</div>

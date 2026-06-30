@@ -204,16 +204,16 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
       <div
         key={row.label}
         style={{
-          padding: '10px 0',
           borderBottom: isLast ? 'none' : '1px solid rgba(19,4,38,0.06)',
-          display: 'flex', alignItems: 'center', gap: 10,
+          display: 'flex', alignItems: 'center', gap: 10, minHeight: 44,
         }}
       >
         <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: row.done ? '#2C3777' : 'rgba(19,4,38,0.2)' }} />
         {/* Label + status are a left-hugging pair (no flex:1 — the status must not
-            be flung to the far right of a wide column; the empty space sits after). */}
+            be flung to the far right of a wide column; the empty space sits after).
+            The link fills the 44px row height (project tap-target standard). */}
         <Link href={row.href} className="po-row-label"
-          style={{ fontFamily: hv, fontSize: 13 }}
+          style={{ fontFamily: hv, fontSize: 13, display: 'inline-flex', alignItems: 'center', minHeight: 44 }}
         >
           {row.label}
         </Link>
@@ -364,6 +364,12 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
         {/* Expanded → full details */}
         {!collapsed && (
           <>
+            {/* Framing: these rows are a status snapshot of facts/contacts the user is tracking,
+                NOT documents the platform supplies (e.g. "Legal will" tracks whether one exists +
+                where it's kept — Nightside doesn't provide a will). */}
+            <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0', lineHeight: 1.45 }}>
+              A snapshot of the key facts and contacts you&rsquo;re tracking — not documents Nightside provides. Each row links to where you record or update it.
+            </p>
             <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 18px' }} />
             {/* Two parallel reference columns — Wishes | Contacts. Wishes rows are
                 short (label + status) so its column is narrow; Contacts is wider to
