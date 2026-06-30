@@ -180,7 +180,7 @@ function EntryCard({
                   <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.65)" strokeWidth="1.3" />
                   <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.65)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your Materials</span>
+                <span style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, color: 'rgba(19,4,38,0.65)' }}>Saved to Your materials</span>
               </div>
             )}
           </div>
@@ -478,7 +478,7 @@ export default function KeepsakeDocumentPage() {
         <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: 'rgba(19,4,38,0.85)', marginBottom: 8, marginTop: 0 }}>
           Add anything you&rsquo;d want someone to know about the things that matter to you.
         </p>
-        <AutosaveNotice style={{ marginBottom: 16 }}>Keepsakes you add will save automatically to Your Materials.</AutosaveNotice>
+        <AutosaveNotice style={{ marginBottom: 16 }}>Keepsakes you add will save automatically to Your materials.</AutosaveNotice>
 
         {/* Dynamic entries — only render those with content or the active pending entry */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

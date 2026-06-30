@@ -249,7 +249,7 @@ export default function AreaPlanSection({ domainId, variant = 'domain' }: { doma
   // auto-surfaced notes are suppressed (hideDomainNote), container-linked notes are
   // un-linked (removeNoteFromContainer); a note that is both gets both. The DB write
   // happens immediately; the parent state update is deferred to onRemoved so NoteCard
-  // can show its "Removed, still saved in Your Materials." confirmation first.
+  // can show its "Removed, still saved in Your materials." confirmation first.
   async function handleRemoveWrite(noteId: string) {
     if (autoNoteIds.has(noteId)) await hideDomainNote(noteId, domainId)
     if (containerNoteIds.has(noteId)) await removeNoteFromContainer(noteId, domainId)
@@ -1109,7 +1109,7 @@ function NoteCard({
     return (
       <div style={{ opacity: removePhase === 'hide' ? 0 : 1, maxHeight: removePhase === 'hide' ? '0px' : '500px', overflow: 'hidden', transition: 'opacity 0.4s ease, max-height 0.4s ease' }}>
         <div style={{ background: '#F8F4EB', border: '1px solid rgba(0,0,0,0.15)', borderRadius: 12, padding: 12, display: 'flex', alignItems: 'center' }}>
-          <p style={{ fontSize: 14, color: '#1A1A1A', margin: 0, lineHeight: 1.5 }}>Removed, still saved in Your Materials.</p>
+          <p style={{ fontSize: 14, color: '#1A1A1A', margin: 0, lineHeight: 1.5 }}>Removed, still saved in Your materials.</p>
         </div>
       </div>
     )

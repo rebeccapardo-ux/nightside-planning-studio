@@ -49,7 +49,7 @@ const STEPS: Step[] = [
   },
   {
     title: 'Your Thoughts',
-    body: "Capture thoughts in the notes section below. They'll save to Your Materials and stay attached to this section.",
+    body: "Capture thoughts in the notes section below. They'll save to Your materials and stay attached to this section.",
     anchor: 'your-thoughts',
   },
 ]
@@ -165,7 +165,7 @@ function getArrow(stepIdx: number, vw: number, vh: number, modal: ModalPlacement
   // depending on which side of the modal we're on).
   //
   // Step 3 is a straight downward arrow, verbatim from Plan tour's
-  // "Your Materials" step for below-the-fold content.
+  // "Your materials" step for below-the-fold content.
 
   if (stepIdx === 0) {
     // Planning Status — modal lower-right, PS above and to the left.

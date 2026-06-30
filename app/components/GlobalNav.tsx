@@ -145,7 +145,7 @@ const PLAN_DOMAIN_ORDER = ['healthcare', 'deathcare', 'wills_estates', 'legacy',
 // Reflect + Learn carry dropdown shortcuts; the label still navigates to the landing
 // page (the dropdown is an *additional* affordance). Learn's "Areas" items
 // reuse LEARN_AREAS (single source of truth) and link to the LEARN page for each area.
-// Plan mirrors that shape: a "Your Materials" singleton, then a "Areas of Planning"
+// Plan mirrors that shape: a "Your materials" singleton, then a "Areas of Planning"
 // group of direct links to each domain page (built per-user from `domainRows`).
 function buildNavItems(domainRows: NavRow[]): NavItem[] {
   return [
@@ -177,8 +177,8 @@ function buildNavItems(domainRows: NavRow[]): NavItem[] {
       // pages, and the capture documents reached from them.
       activePrefixes: ['/app/plan', '/app/domains', '/app/capture'],
       rows: [
-        { type: 'item', href: '/app/plan/materials', label: 'Your Materials', activePrefixes: ['/app/plan/materials'] },
-        // Your Materials and Areas of Planning are genuine peer destinations, so —
+        { type: 'item', href: '/app/plan/materials', label: 'Your materials', activePrefixes: ['/app/plan/materials'] },
+        // Your materials and Areas of Planning are genuine peer destinations, so —
         // UNLIKE Learn's non-clickable "Areas of Planning" header — Areas of Planning
         // is a plain LINK under a bare rule. The domain pages are its indented children
         // (parent-child via indentation, not sub-header styling). They appear once the
@@ -323,7 +323,7 @@ export default function GlobalNav() {
 
     // Render rows in order: items become sub-links (deeper if `indent`); a labelled
     // divider is a group caption (Learn's "Areas"); a label-less divider
-    // is a bare rule between peer links (Plan's Your Materials | Areas of Planning).
+    // is a bare rule between peer links (Plan's Your materials | Areas of Planning).
     let body: React.ReactNode = null
     if (item.rows) {
       body = item.rows.map((row, i) => {

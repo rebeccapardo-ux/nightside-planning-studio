@@ -379,7 +379,7 @@ function ReflectPromptsInner() {
                     <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.85)" strokeWidth="1.3" />
                     <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.85)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Saved to Your Materials</span>
+                  <span style={{ fontFamily: fontHelvetica, fontSize: '12px', color: 'rgba(255,255,255,0.85)' }}>Saved to Your materials</span>
                 </>
               )}
               {(saveStatus === 'pending' || saveStatus === 'saving') && (

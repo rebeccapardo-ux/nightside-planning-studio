@@ -372,7 +372,7 @@ function CardView({
                           <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.78)" strokeWidth="1.3" />
                           <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.78)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <span>Saved to Your Materials</span>
+                        <span>Saved to Your materials</span>
                       </>
                     )}
                   </div>

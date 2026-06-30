@@ -8,7 +8,7 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import PlanExportButton from '@/app/components/PlanExportButton'
 
 export const metadata: Metadata = {
-  title: 'Your Materials',
+  title: 'Your materials',
 }
 
 type EntryRow = {
@@ -35,7 +35,7 @@ const KNOWN_ACTIVITIES = [
   { activity: ACTIVITY.LEGACY_MAP,     label: 'Legacy Map',     href: '/app/reflect/legacy-map'      },
 ]
 
-// Your Materials — the reference-library half of the Plan section: the user's
+// Your materials — the reference-library half of the Plan section: the user's
 // saved documents, activity outputs, and notes (YourMaterialsPanel), plus the
 // same Key details panel as Progress. Materials renders unchanged from the old
 // page; this is a structural lift, not a redesign.
@@ -120,10 +120,10 @@ export default async function YourMaterialsPage() {
         <PlanExportButton />
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 0' }}>
           <div style={{ marginBottom: 20 }}>
-            <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Your Materials' }]} />
+            <Breadcrumbs theme="light" items={[{ label: 'Plan', href: '/app/plan' }, { label: 'Your materials' }]} />
           </div>
           <h1 style={{ fontSize: 42, fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em', color: '#130426', margin: 0, fontFamily: inter }}>
-            Your Materials
+            Your materials
           </h1>
           <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 620, margin: '18px 0 0', lineHeight: 1.6 }}>
             This is where everything that makes up your plan lives: documents to fill out, your activity outputs, and notes you&rsquo;ve captured. Review, continue working, or export from this page.
@@ -132,7 +132,7 @@ export default async function YourMaterialsPage() {
       </div>
 
       {/* ── Main content: Key Details panel (cross-domain status overview) on top, then
-          the materials sections. Your Materials is a recurring working surface, so the
+          the materials sections. Your materials is a recurring working surface, so the
           status overview lives here. ── */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ marginBottom: 40 }}>

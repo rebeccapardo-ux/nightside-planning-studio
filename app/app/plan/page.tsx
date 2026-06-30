@@ -10,7 +10,7 @@ const apfel = "'Apfel Grotezk', sans-serif"
 const inter = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 // /app/plan — the Plan section landing: a lightweight chooser between the two
-// surfaces (Areas of Planning · Your Materials). The section root, so it gets the
+// surfaces (Areas of Planning · Your materials). The section root, so it gets the
 // landing title treatment (SectionTitleReveal's orange reveal-underline) and no
 // breadcrumb. Deliberately a chooser, not a content destination — no key details,
 // null-state banner, or export here.
@@ -31,18 +31,18 @@ export default function PlanLandingPage() {
           Your plan is made up of two spaces: one to hold all of your stuff, and one to work through each area of your planning. You can export your full plan as a PDF from either.
         </p>
 
-        {/* Your Materials first — the natural order of engagement: Materials is where
+        {/* Your materials first — the natural order of engagement: Materials is where
             the work happens (filling documents, doing activities), Areas of Planning is
             the view of that work. Order matches the Plan sub-nav. */}
         <div className="plan-chooser-grid" style={{ marginTop: 44, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-          {/* Your Materials */}
+          {/* Your materials */}
           <Link
             href="/app/plan/materials"
             className="plan-chooser-card"
             style={{ display: 'flex', flexDirection: 'column', background: '#F29836', borderRadius: 24, padding: 40, textDecoration: 'none', color: '#130426' }}
           >
             <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, lineHeight: 1.1, margin: 0 }}>
-              Your Materials
+              Your materials
             </h2>
             <p style={{ fontFamily: inter, fontSize: 17, lineHeight: 1.6, color: 'rgba(19,4,38,0.78)', margin: '16px 0 28px', maxWidth: 380 }}>
               All your notes and activity outputs, as well as documents to fill out.
