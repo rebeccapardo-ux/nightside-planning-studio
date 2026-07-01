@@ -107,8 +107,10 @@ function readWarningDismissed(key: string): boolean {
 // domainId is the user's container UUID (the area page resolves slug → domain_code →
 // container and passes it). Surfacing/tasks/notes logic is unchanged.
 export default function AreaPlanSection({ domainId }: { domainId: string }) {
-  // Scroll to top on mount — prevents router cache from restoring a previous position.
-  useEffect(() => { window.scrollTo(0, 0) }, [])
+  // NOTE: do NOT scroll-to-top on mount here. This component mounts when the collapsible
+  // "Plan" section is expanded (not just on page load), so a mount-time window.scrollTo(0,0)
+  // yanks the user to the top of the page every time they open Plan. Page-load scroll
+  // position is Next.js's job (server-component navigation already resets it).
 
   const [notes, setNotes] = useState<Note[]>([])          // container-linked notes for this domain
   const [allUserNotes, setAllUserNotes] = useState<Note[]>([])
