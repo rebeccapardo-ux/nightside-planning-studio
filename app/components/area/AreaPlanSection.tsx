@@ -1076,8 +1076,8 @@ function NoteCard({
     </button>
   )
   const makeTaskBtn = (
-    <button onClick={handleMakeTaskClick} style={actionBtnStyle} className="hover:opacity-75 transition-opacity">
-      Convert
+    <button onClick={handleMakeTaskClick} style={{ ...actionBtnStyle, whiteSpace: 'nowrap' }} className="hover:opacity-75 transition-opacity">
+      Convert to task
     </button>
   )
 
