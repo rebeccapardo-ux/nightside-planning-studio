@@ -379,7 +379,7 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
               </div>
             ) : (
               <p style={{ marginTop: 20, marginBottom: 16, fontSize: 14, color: 'rgba(0,0,0,0.5)', lineHeight: 1.5 }}>
-                Nothing here yet. Capture a thought below, or add one from your notes.
+                Nothing here yet. Capture a thought below, or add one from Your materials.
               </p>
             )}
 
