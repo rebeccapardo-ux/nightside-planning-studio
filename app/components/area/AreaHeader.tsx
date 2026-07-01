@@ -11,8 +11,9 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 // matches the page's other section headers (Relevant Activities / Plan), with a chevron
 // toggle beside it. Light-lavender, full-bleed (SIBLING of the navy block). Collapsed →
 // header only; expanded → header + the content (≤760px reading width). Default state:
-// EXPANDED on first visit to this area, then remembers the user's choice (shared model
-// with the other sections — see useSectionCollapse).
+// COLLAPSED on first visit to this area (so the page isn't overwhelming on first landing),
+// then remembers the user's choice (shared model with the other sections — see
+// useSectionCollapse).
 export default function AreaHeader({
   slug, title, intro, children, bandBg = '#ECE7F7',
 }: { slug: string; title: string; intro: string; children: React.ReactNode; bandBg?: string }) {

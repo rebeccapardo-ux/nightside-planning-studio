@@ -5,9 +5,10 @@ import { useSectionCollapse } from './useSectionCollapse'
 const apfel = "'Apfel Grotezk', sans-serif"
 
 // Section-level collapse for the area page's "Relevant Activities" and "Plan" sections.
-// Default EXPANDED on a user's first visit to the area, then remembers their choice per
-// section (shared model with the Overview band — see useSectionCollapse). The header
-// (title + chevron) stays visible when collapsed; the body unmounts.
+// Default COLLAPSED on a user's first visit to the area (so the page isn't overwhelming on
+// first landing), then remembers their choice per section (shared model with the Overview
+// band — see useSectionCollapse). The header (title + chevron) stays visible when
+// collapsed; the body unmounts.
 export default function CollapsibleSection({ title, storageKey, children }: { title: string; storageKey: string; children: React.ReactNode }) {
   const [open, toggle] = useSectionCollapse(storageKey)
   return (
