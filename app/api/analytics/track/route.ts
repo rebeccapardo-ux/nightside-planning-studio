@@ -18,6 +18,15 @@ const ALLOWED_EVENTS = new Set([
   'note_converted_to_task',
 ])
 
+// Client events that should also carry a server-computed `planning_status` snapshot
+// (the `planning_status` column, not `event_metadata`). `planning_status` is DB-derived
+// (`computePlanningStatus` counts entries + notes), so it must be resolved server-side here —
+// the client can't pass it. Same treatment as the server-side sign_in /
+// legacy_contact_designated / payment_completed call-sites (`includePlanningStatus: true`).
+const PLANNING_STATUS_EVENTS = new Set([
+  'export_generated',
+])
+
 export async function POST(req: NextRequest) {
   let body: { eventName: string; metadata?: Record<string, unknown> }
   try {
@@ -101,6 +110,6 @@ export async function POST(req: NextRequest) {
       .eq('user_id', userId)
   }
 
-  await logEvent({ userId, eventName, metadata })
+  await logEvent({ userId, eventName, metadata, includePlanningStatus: PLANNING_STATUS_EVENTS.has(eventName) })
   return NextResponse.json({ ok: true })
 }
