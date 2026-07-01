@@ -925,6 +925,16 @@ function ReadinessCard({
 // ItemMaterials renders the user's activity OUTPUTS for a row (relatedActivities).
 // Relevant documents are rendered separately (RelevantDocLinks) so they can always
 // appear and carry a status; this only receives activity entries.
+//
+// DORMANT BY DESIGN — this path currently never renders. Activities intentionally do NOT
+// surface in the Plan section: they live in the "Relevant activities" section above Plan
+// (driven by lib/areas.ts `area.activities`, with Start/Continue/Export). Documents on
+// readiness rows surface via `staticLinks` (→ RelevantDocLinks) — the chosen mechanism.
+// No readiness row in DOMAIN_STRUCTURES sets `relatedActivities`/`relatedDocumentTypes`
+// (they're on orientation rows, which aren't rendered), so `itemEntries` returns nothing
+// here. The plumbing is kept as a supported-but-unused future lever (e.g. an entry-gated
+// document); if you ever add `relatedActivities` to a readiness row, activity outputs
+// would start appearing in Plan — which is not the intended design. Don't remove.
 function ItemMaterials({ matched }: { matched: EntryRef[] }) {
   if (matched.length === 0) return null
   return (
