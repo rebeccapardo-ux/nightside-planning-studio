@@ -19,25 +19,33 @@ the **Reflection + Learning** (orientation) and **Practical Readiness** (readine
 - **Line refs** are `lib/domain-structure.ts` for rows and `lib/content-metadata.ts` for
   prompt text, as of 2026-06-22.
 
-## Two independent auto-surfacing systems (read this first)
+## What surfaces on an area page, and how (read this first)
 
-A domain row can auto-surface **two unrelated kinds of content**, by **two separate fields** —
-plus a third, content-independent navigation affordance:
+Two **live** auto-surfacing systems, plus a supported-but-currently-unused third field:
 
-1. **Notes** — `allowedReflectPromptIds` on the row → matches `notes.prompt_id` where
-   `origin_type='prompt'`. Drives the Your-thoughts note stream (`AreaPlanSection`). Only
-   **reflect-prompt** notes. *(Note auto-surfacing is per-DOMAIN, not per-row — a prompt note
-   belongs to a domain if its `prompt_id` ∈ the union of that domain's rows' allowed ids.)*
-2. **Materials** — `relatedActivities` / `relatedDocumentTypes` on the row → matches the
-   user's `entries` by `activity` / `document_type`. Drives the per-row `ItemMaterials` link
-   list (`itemEntries` / `ItemMaterials` in `AreaPlanSection`). Shows the user's actual activity
-   outputs / documents, only when one exists.
-3. **Static links** — `staticLinks` on a row → a fixed link to a capture page, shown
-   **regardless of whether the user has content**. Not "materials" — just navigation.
+1. **Notes** — `allowedReflectPromptIds` on a row → matches `notes.prompt_id` where
+   `origin_type='prompt'`. Drives the **Your-thoughts** note stream (`AreaPlanSection`). Only
+   **reflect-prompt** notes. *(Per-DOMAIN, not per-row — a prompt note belongs to a domain if
+   its `prompt_id` ∈ the union of that domain's rows' allowed ids.)*
+2. **Documents** — **`staticLinks`** on a **readiness** row whose href resolves to a document
+   (`DOCUMENT_TYPE_META`). Rendered **inline on that readiness row** as a "Relevant document"
+   pill with a **Not started / In progress** status badge (`RelevantDocLinks` in
+   `AreaPlanSection`; status = whether an entry of that doc type exists). This is the **chosen,
+   working** document mechanism — always-visible documents with status. staticLinks whose href
+   is *not* a document (external resources) render as a plain link panel instead.
+3. **`relatedActivities` / `relatedDocumentTypes` — SUPPORTED BY THE RENDER BUT NOT CURRENTLY
+   USED.** The render *can* match `entries` by `activity`/`document_type` (`itemEntries` →
+   `ItemMaterials` for activity outputs; a `staticLinks ∪ relatedDocumentTypes` union for
+   documents), but in the current `DOMAIN_STRUCTURES` these fields exist **only on orientation
+   rows** (not rendered) and on **no readiness row**, so **they surface nothing today.** They're
+   deliberate available levers (e.g. a `relatedDocumentTypes` doc that appears only *after* the
+   user starts it, vs an always-visible staticLink doc). **The "[O] Materials:" annotations below
+   record these mappings for reference — they are not live surfacing.** Activities surface in the
+   separate **"Relevant activities"** section (above Plan, from `lib/areas.ts` `area.activities`),
+   NOT here.
 
-These are orthogonal: a row may have any combination. The two auto-surface systems share no
-code. **Do not assume `allowedReflectPromptIds` is the only surfacing lever** — that omission
-is the single most likely future-regression vector.
+**Do not assume `allowedReflectPromptIds` is the only surfacing lever** — documents surface via
+`staticLinks` (system 2).
 
 > **On titles & prompt text:** `content-metadata.ts` stores only the full prompt text (the
 > `label`). The row `key` is a stable internal slug (historically `topic_id` in the
@@ -180,11 +188,12 @@ is the single most likely future-regression vector.
 - **[R] Devices and accounts** (`devices_and_accounts`) — :333 — **static link** → Devices & Accounts (`:337`).
 - **[R] Social media and digital assets** (`social_media_digital_assets`) — :340 — no link/notes.
 
-> **Personal Admin has zero note-surfacing rows** — by design. Its documents are reached via
-> **static links** (always shown), not the materials system. Note the asymmetry: the Important
-> Contacts and Financial Information *entries* auto-surface as **materials under Wills &
-> Estates** rows (`executor_choice` / `asset_wishes`), while Personal Admin shows fixed links.
-> Both are intentional.
+> **Personal Admin has zero note-surfacing rows** — by design. Its documents surface via
+> **`staticLinks`** on its readiness rows (system 2 — always shown, with status). **This is
+> where Important Contacts and Financial Information actually surface.** Wills & Estates carries
+> `relatedDocumentTypes` mappings for the same two docs on its `executor_choice` / `asset_wishes`
+> **orientation** rows, but those are the **supported-but-unused** lever (orientation rows aren't
+> rendered), so they do **not** currently surface on the Wills page. All intentional.
 
 ---
 
@@ -203,6 +212,12 @@ Distinct prompts that auto-surface on a domain page (across all rows): prompt_1,
 10, 12, 19, 20, 22, 25, 26, 30, 36, 38, 39, 40, 41, 42, 43 (**21**). Every other prompt appears
 only on Your Materials (/app/materials).
 
+> **On the "Materials rows" vs "Static links" columns.** "Materials rows" counts orientation
+> rows carrying `relatedActivities`/`relatedDocumentTypes` mappings — the **supported-but-unused**
+> lever; those do **not** currently surface (see the systems section). **Live document surfacing
+> is the "Static links" column** (readiness-row `staticLinks` → inline "Relevant document" pill +
+> status).
+
 ---
 
 ## Default behavior (governs what actually surfaces)
@@ -212,9 +227,11 @@ parity:
 
 - **No tier system, no fall-through.** There is no "Recommended / Also relevant" tiering and
   **no default tier-3 fall-through**. An item is deemed relevant to a row or it isn't —
-  surfacing is binary, driven solely by an explicit `allowedReflectPromptIds` /
-  `relatedActivities` / `relatedDocumentTypes` entry on that row. This is intentional and is
-  the opposite of the wishes panels (where untagged activity outputs fall through to tier-3).
+  surfacing is binary, driven by an explicit `allowedReflectPromptIds` entry (notes) or a
+  document `staticLink` (documents) on that row. This is intentional and is the opposite of the
+  wishes panels (where untagged activity outputs fall through to tier-3). (`relatedActivities` /
+  `relatedDocumentTypes` would also drive surfacing if used, but are currently unused — see the
+  systems section.)
 - **Only `origin_type='prompt'` notes auto-surface.** `resolveRowNotes`
   (`app/app/domains/[domainId]/page.tsx:756`–761) hard-requires `n.origin_type === 'prompt'`
   and `n.prompt_id ∈ allowedReflectPromptIds`. **Reflection notes (`origin_type='reflection'`)
@@ -223,11 +240,14 @@ parity:
 - **Orphan prompt notes go nowhere here.** A prompt note whose `prompt_id` is in **no** row's
   `allowedReflectPromptIds` (e.g. prompts 24/31/37/27/28/32 after the Legacy consolidation)
   does not appear on any domain page — only Your Materials (/app/materials). There is no catch-all bucket.
-- **Wills & Estates and Personal Admin intentionally have zero note-surfacing rows.** Wills
-  surfaces only documents (via materials); Personal Admin surfaces only static links. This is
-  by design, not missing data.
-- **Contacts & Financial documents surface under Wills & Estates, not Personal Admin** — also
-  intentional (see the Personal Admin note above).
+- **Wills & Estates and Personal Admin intentionally have zero note-surfacing rows.** Personal
+  Admin surfaces its documents via `staticLinks` on its readiness rows; **Wills & Estates'
+  readiness rows carry no `staticLinks`, so its Plan section currently surfaces no inline
+  documents** (its Contacts/Financial `relatedDocumentTypes` mappings sit on orientation rows —
+  the unused lever). By design, not missing data.
+- **Contacts & Financial documents surface under Personal Admin** (via readiness-row
+  `staticLinks`). Wills & Estates records the same two docs as `relatedDocumentTypes`
+  orientation-row mappings but does **not** currently surface them (the unused lever).
 - **Manual attachment is separate from all auto-surfacing, and is per-DOMAIN (not per-row).**
   A note can be manually added to a domain (`container_notes`) or removed from its Your-thoughts
   stream — "Remove" suppresses an auto-surfaced note via `domain_hidden_notes` and/or un-links a
