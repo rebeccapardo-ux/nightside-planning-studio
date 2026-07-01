@@ -163,13 +163,6 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
       setAllUserNotes(allNotes)
       setHiddenNoteIds(new Set(hiddenIds))
       setLoading(false)
-
-      const foundDomain = containers.find((c) => c.id === domainId)
-      fetch('/api/analytics/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventName: 'document_opened', metadata: { domain_id: domainId, domain_code: foundDomain?.domain_code ?? null, domain_title: foundDomain?.title ?? null } }),
-      }).catch(() => {})
     }
     load()
   }, [domainId])

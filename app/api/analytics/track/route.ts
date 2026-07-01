@@ -8,7 +8,6 @@ const ALLOWED_EVENTS = new Set([
   'payment_started',
   'platform_entered',
   'account_settings_updated',
-  'document_opened',
   'document_field_saved',
   'activity_opened',
   'activity_engaged',
