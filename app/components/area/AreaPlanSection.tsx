@@ -388,7 +388,7 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
                 onClick={() => setAddModalOpen(true)}
                 style={{ fontSize: 14, fontWeight: 600, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'underline', textUnderlineOffset: 3 }}
               >
-                + Add from your notes
+                + Add from Your materials
               </button>
             )}
 
