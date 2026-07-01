@@ -6,6 +6,24 @@ Pre-launch end-of-life planning app. Next.js 16 (App Router) · React 19 · Type
 
 ---
 
+## Keeping this file current (read this first)
+
+This file is the durable source of truth **across sessions** — load-bearing architecture, the data model, conventions, analytics schema, terminology decisions, deferred/rejected decisions. It is **NOT** a changelog, a UI-copy reference, or a styling guide. The bar for inclusion is the bar the rest of this file already meets: **non-obvious and load-bearing — something that would bite the next session if it weren't written down.** If a detail wouldn't bite, leave it out.
+
+Two failure modes to prevent:
+- **Drift** — you changed something documented here and didn't update the section.
+- **Gap** — you established a new load-bearing pattern and didn't write it down.
+
+So:
+- **When your work changes something documented here, update that section in the same commit as the change** — not "later." High-frequency triggers: analytics events/properties (`ALLOWED_EVENTS`), the data model / junctions, routing & redirects, naming/terminology decisions, and any behavior a section explicitly describes.
+- **When you establish a new load-bearing pattern, add it** — at the bar above.
+- **Prefer co-located triggers.** Several sections carry their own bolded "**Keep this current**" line right where the drift happens — the `ALLOWED_EVENTS` roster, the Notes lists, the redirect map, plus the placement-reference-doc and `SECTION_FIELDS` rules. Those fire where the work happens and are the primary guardrail; this section is the backstop. When you touch a high-drift section that lacks one, add one. (Rule of thumb for *where* a trigger belongs: on an **enumerated list that mirrors code** — a hand-maintained copy of something in a `.ts` file is what drifts silently; prose reasoning drifts slowly and doesn't need one.)
+- **For substantive work** (architecture / data / analytics / conventions), state the disposition in your work report: what you updated, or "reviewed — nothing here affected." Skip this for trivial changes; don't manufacture a note.
+
+This rhythm **reduces** drift; it doesn't eliminate it — periodic full audits are still worth doing.
+
+---
+
 ## Controlled vocabularies — single sources of truth
 
 Three controlled vocabularies, each defined once. Reference these constants; do not hardcode the string literals.
@@ -27,6 +45,8 @@ Three controlled vocabularies, each defined once. Reference these constants; do 
 - Reflection prompts → `createPromptNote` (`origin_type='prompt'`; carries `prompt_id`/`prompt_context` + an `entry_notes` link). Prompt notes are the **one exception** that store their source on the note — the prompt is essential context for reading the note.
 - Deathcare trivia · scenario-navigator outcome · area page "Your thoughts" capture → `createNote` (`origin_type='freeform'`)
 - **Activity reflections** (values-ranking, fears-ranking, legacy-map) → `createReflectionNote` (`origin_type='reflection'`) + an `entry_notes` link to the activity entry.
+
+**Keep these lists current:** the writer list above, the three `origin_type` values, and the container-linking paths below (surfaces that call `addNoteToContainer`) all mirror `lib/notes.ts`. If you add an `origin_type`, a note-creation surface/writer, or a new container-linking path, update this section in the **same commit** (a new `origin_type` also needs the CHECK-constraint migration — see next).
 
 **`origin_type` is CHECK-constrained, NOT free-text.** The dashboard-created `notes` table carries `notes_origin_type_check`; it permitted only `'freeform'`/`'prompt'` until `20260618_notes_origin_type_allow_reflection.sql` added `'reflection'`. **Adding any new `origin_type` value requires a migration to widen the constraint first** — otherwise inserts fail at the DB with a `23514` check_violation even though the app code looks correct (this is exactly what broke the first reflection-as-notes deploy). Idempotent pattern: `DROP CONSTRAINT IF EXISTS … ; ADD CONSTRAINT … CHECK (origin_type IN (…))`.
 
@@ -148,11 +168,15 @@ The app moved from a **mode-based** nav (Reflect / Learn / Plan) to an **area-ce
 - any other `/app/plan[/*]` (landing, areas, progress) → `/app`
 - **`/app/domains/[uuid]`** needs a DB lookup (uuid → `domain_code` → slug), so it's an **async page stub** (`app/app/domains/[domainId]/page.tsx`), NOT in proxy — `containers.domain_code` → `areaByDomainCode()` → `redirect('/app/area/<slug>')`, falling back to `/app/area`.
 
+**Keep this current:** the canonical-homes list and this redirect map mirror `proxy.ts` → `resolveLegacyRedirect()` (+ the `/app/domains/[uuid]` page stub). When you add, move, or redirect an app route, update both here in the **same commit**.
+
 **Analytics (`lib/analytics.ts` → `analytics_events`).** Stable-slug dimension is **`domain_code`** (cross-user analyzable), not the per-user `domain_id` UUID. **Area pages fire OUTCOME events only** — deliberately **no** page-view and **no** section-expansion telemetry (area-page visits and Overview/Activities/Plan expands are ambient behavior; we measure what users *do*, not what they open). The three area-page events all carry `domain_code`: `document_field_saved` (checkbox + user_task), `user_task_added`, and `note_converted_to_task` (as `destination_domain_code`). Fired from `AreaPlanSection` on real actions (checkbox toggle, task add, note conversion).
 
 **Two events were removed (do not re-add without a specific diagnostic question):** `learn_page_viewed` (in the restructure — the Learn pages are gone) and **`document_opened`**. `document_opened` fired from `AreaPlanSection`'s load effect; once sections default to collapsed, `AreaPlanSection` mounts on **Plan-section expand** rather than page load, so the event became a de-facto section-expansion signal — and with area-page-views and section-expansions both intentionally untracked, it had no coherent role. **Do not add** `area_page_viewed` / `overview_expanded` / `plan_section_expanded` etc.
 
 **`ALLOWED_EVENTS` (the gate for client `POST /api/analytics/track`) — current roster (12):** `signup_submitted`, `payment_started`, `platform_entered`, `account_settings_updated`, `document_field_saved`, `activity_opened`, `activity_engaged`, `activity_contributed`, `export_generated`, `sign_in`, `user_task_added`, `note_converted_to_task`. A client event not in this Set 400s (fire-and-forget, so non-functional — the event is silently dropped). Append a new value here **and** at its fire site; **never rename** an existing one (persisted analytics dimension). Server-side `logEvent` calls are NOT gated by this Set.
+
+**Keep this current:** this roster (the count + the list) and the per-event property descriptions above are a **hand-maintained mirror** of `ALLOWED_EVENTS` (`app/api/analytics/track/route.ts`) and the fire sites. When you add/remove an event or change its properties, update both here in the **same commit** — and never rename an existing event (persisted dimension).
 
 **Where the old logic lives now.** The Plan section's two read surfaces were consolidated onto **`/app/materials`** (Your Materials): it renders `PlanExportButton`, the `SectionTitleReveal "Your materials"` header, **`PlanOverview` (Key details)**, and **`YourMaterialsPanel`** (documents / activities / notes). `AreaPlanSection` is the **single source of truth** for the per-area Plan workspace (Planning Status panel + Your-thoughts stream) — it lost its old `variant` prop (the standalone `'domain'` page chrome) and now renders workspace-only, embedded by `/app/area/[slug]`. **Removed — do not resurrect:** the `/app/plan` landing/progress/areas routes, the six `/app/learn` pages + their `*Animations`, `/app/learn/trivia`'s old location, the standalone `/app/domains/[domainId]` page wrapper + its `layout.tsx`/`loading.tsx`, and the components `DomainStateCard`, `DomainNullStateBanner`, `DomainPlanningButton`, `DomainTour`, `ContinuePlanningPanel`, `LearnLoading`, `lib/tour-scroll.ts`, plus the dead `DomainDef.bottomLinks` / `OrientationItem.learnHref` fields and `getDomainBottomLinks()`.
 
