@@ -16,7 +16,7 @@ import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_MET
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import { type Note, fetchReflectionsByEntryIds } from '@/lib/notes'
 
-const RESOURCE_HUB_URL = 'https://thenightside.net/province-specific'
+const PROVINCE_RESOURCES_URL = 'https://thenightside.net/province-specific'
 
 
 type FormState = {
@@ -451,7 +451,7 @@ function AdvanceDirectivePage() {
             </p>
             <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', marginBottom: 20, fontFamily: hv }}>
               It is <strong>not a legal directive</strong>, but can be used alongside one to provide important context. Looking for official legal forms?{' '}
-              <a href={RESOURCE_HUB_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
+              <a href={PROVINCE_RESOURCES_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
                 View province-specific resources →
               </a>
             </p>
