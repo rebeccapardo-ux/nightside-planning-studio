@@ -480,8 +480,11 @@ function AdvanceDirectivePage() {
                       border: isExpanded ? '2px solid #130426' : '1px solid rgba(19,4,38,0.22)',
                       overflow: 'hidden',
                       background: '#FFFFFF',
+                      // Active/expanded box gets the landing-card drop shadow (Activities /
+                      // Plan-by-area cards use the same 6px hard offset). Collapsed = no shadow.
+                      boxShadow: isExpanded ? '6px 6px 0 rgba(0,0,0,0.75)' : 'none',
                       scrollMarginTop: SECTION_SCROLL_MARGIN_TOP,
-                      transition: 'border 150ms ease',
+                      transition: 'border 150ms ease, box-shadow 150ms ease',
                     }}
                   >
                     <div style={{ display: 'flex' }}>
@@ -512,7 +515,7 @@ function AdvanceDirectivePage() {
                         </button>
                         {isExpanded && (
                           <div style={{ padding: '0 16px 20px', background: '#FFFFFF' }}>
-                            <div style={{ background: '#F8F4EB', borderRadius: 12, padding: 20 }}>
+                            <div style={{ background: 'transparent', padding: 0 }}>
                               {(() => {
                                 const count = recommendedCountByQuestion.get(q.qKey) ?? 0
                                 if (count === 0) return null
@@ -562,7 +565,7 @@ function AdvanceDirectivePage() {
                                   padding: '16px 20px',
                                   fontSize: 16,
                                   lineHeight: 1.6,
-                                  border: 'none',
+                                  border: '1px solid #130426',
                                   resize: 'vertical',
                                   fontFamily: hv,
                                   display: 'block',
@@ -1093,8 +1096,8 @@ function MaterialsPanel({
         </button>
       </div>
 
-      {/* Inner panel: Light #F8F4EB */}
-      <div style={{ background: '#F8F4EB', borderRadius: 10, padding: 14 }}>
+      {/* Item cards sit directly on the outer Sunrise panel (no inner cream backing). */}
+      <div>
         {innerContent}
       </div>
 
@@ -1108,9 +1111,9 @@ function MaterialsPanel({
 // ---------------------------------------------------------------------------
 
 const CARD_BASE: Record<1 | 2 | 3, React.CSSProperties> = {
-  1: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' },
-  2: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' },
-  3: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' },
+  1: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px', border: '1px solid #130426' },
+  2: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px', border: '1px solid #130426' },
+  3: { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px', border: '1px solid #130426' },
 }
 const TITLE_STYLE: React.CSSProperties = {
   fontSize: 14,

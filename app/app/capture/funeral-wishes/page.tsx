@@ -620,8 +620,11 @@ function FuneralWishesPage() {
                     border: isExpanded ? '2px solid #130426' : '1px solid rgba(19,4,38,0.22)',
                     overflow: 'hidden',
                     background: '#FFFFFF',
+                    // Active/expanded box gets the landing-card drop shadow (Activities /
+                    // Plan-by-area cards use the same 6px hard offset). Collapsed = no shadow.
+                    boxShadow: isExpanded ? '6px 6px 0 rgba(0,0,0,0.75)' : 'none',
                     scrollMarginTop: SECTION_SCROLL_MARGIN_TOP,
-                    transition: 'border 150ms ease',
+                    transition: 'border 150ms ease, box-shadow 150ms ease',
                   }}
                 >
                   <div style={{ display: 'flex' }}>
@@ -659,7 +662,7 @@ function FuneralWishesPage() {
                       </button>
                       {isExpanded && (
                         <div style={{ padding: '0 16px 20px', background: '#FFFFFF' }}>
-                        <div style={{ background: '#F8F4EB', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 28 }}>
+                        <div style={{ background: 'transparent', padding: 0, display: 'flex', flexDirection: 'column', gap: 28 }}>
 
                           {(() => {
                             if (!section.qKey) return null
@@ -1060,7 +1063,7 @@ function TF({
         placeholder={placeholder}
         rows={rows}
         className="w-full bg-white text-[#130426] placeholder:text-[#130426]/65 px-4 py-3 rounded-lg focus:outline-none resize-y"
-        style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14 }}
+        style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, border: '1px solid #130426' }}
       />
     </div>
   )
@@ -1406,7 +1409,8 @@ function FWMaterialsPanel({
         </button>
       </div>
 
-      <div style={{ background: '#F8F4EB', borderRadius: 10, padding: 14 }}>
+      {/* Item cards sit directly on the outer Sunrise panel (no inner cream backing). */}
+      <div>
         {innerContent}
       </div>
 
@@ -1419,7 +1423,7 @@ function FWMaterialsPanel({
 // Panel card constants
 // ---------------------------------------------------------------------------
 
-const CARD_STYLE: React.CSSProperties = { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px' }
+const CARD_STYLE: React.CSSProperties = { background: '#FFFFFF', borderRadius: 10, padding: '10px 12px', border: '1px solid #130426' }
 const TITLE_STYLE: React.CSSProperties = { fontSize: 14, lineHeight: '20px', fontWeight: 500, color: '#130426' }
 const PRIMARY_ACTION_STYLE: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: '#130426', background: 'rgba(19,4,38,0.07)', padding: '3px 9px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.15)', cursor: 'pointer' }
 const INSERTED_LABEL_STYLE: React.CSSProperties = { fontSize: 12, lineHeight: '17px', fontWeight: 500, color: 'rgba(19,4,38,0.45)' }
