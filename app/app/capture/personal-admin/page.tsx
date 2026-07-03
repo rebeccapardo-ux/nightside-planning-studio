@@ -880,6 +880,10 @@ function AccordionSection({
         border: open ? '2px solid #2C3777' : '1px solid #2C3777',
         overflow: 'hidden',
         background: '#FFFFFF',
+        // Active/open box gets the landing-card drop shadow (same 6px hard offset
+        // as the Activities / Plan-by-area cards and the wishes docs).
+        boxShadow: open ? '6px 6px 0 rgba(0,0,0,0.75)' : 'none',
+        transition: 'box-shadow 150ms ease',
         scrollMarginTop: SECTION_SCROLL_MARGIN_TOP,
       }}
     >

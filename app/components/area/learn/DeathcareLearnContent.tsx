@@ -14,7 +14,7 @@ export default function DeathcareLearnContent() {
       <p style={para}>Without clear documentation, your preferences may not be carried out as intended. Your wishes should be documented in your will to ensure they are legally recognized.</p>
       <p style={{ ...para, marginBottom: 0 }}>Understanding what&rsquo;s possible and documenting your choices clearly helps ensure your preferences will be respected.</p>
 
-      <ResourcesPanel title="Explore province-specific resources" href="https://thenightside.net/resources">
+      <ResourcesPanel title="Explore province-specific resources" href="https://thenightside.net/province-specific">
         Legal requirements and available options vary by province. Review guidance, templates, and legal information for your province to help you document and finalize your plans.
       </ResourcesPanel>
     </div>

@@ -16,7 +16,7 @@ import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_MET
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import { type Note, fetchReflectionsByEntryIds } from '@/lib/notes'
 
-const RESOURCE_HUB_URL = 'https://thenightside.net/resources'
+const RESOURCE_HUB_URL = 'https://thenightside.net/province-specific'
 
 
 type FormState = {

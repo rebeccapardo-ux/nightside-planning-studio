@@ -675,7 +675,7 @@ function AccordionSection({ idx, open, onToggle, title, description, sectionRef,
   return (
     <div
       ref={sectionRef}
-      style={{ borderRadius: 16, border: open ? '2px solid #2C3777' : '1px solid #2C3777', overflow: 'hidden', background: '#FFFFFF', scrollMarginTop: SECTION_SCROLL_MARGIN_TOP }}
+      style={{ borderRadius: 16, border: open ? '2px solid #2C3777' : '1px solid #2C3777', overflow: 'hidden', background: '#FFFFFF', boxShadow: open ? '6px 6px 0 rgba(0,0,0,0.75)' : 'none', transition: 'box-shadow 150ms ease', scrollMarginTop: SECTION_SCROLL_MARGIN_TOP }}
     >
       <div style={{ display: 'flex' }}>
         {open && <div style={{ width: 6, background: '#BBABF4', flexShrink: 0 }} />}

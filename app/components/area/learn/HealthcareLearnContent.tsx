@@ -44,7 +44,7 @@ export default function HealthcareLearnContent() {
         <h3 style={{ fontFamily: apfel, fontSize: 19, fontWeight: 600, color: '#130426', margin: '0 0 10px' }}>Explore province-specific resources</h3>
         <p style={{ ...para, fontSize: 16, marginBottom: 20 }}>It&rsquo;s important to know that legal requirements vary by province. In the Resource Hub, you&rsquo;ll find province-specific templates for things like designating a substitute decision-maker or completing an Advance Directive.</p>
         <a
-          href="https://thenightside.net/resources"
+          href="https://thenightside.net/province-specific"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block hover:opacity-90 transition-opacity"
