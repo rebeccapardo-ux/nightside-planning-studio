@@ -27,15 +27,43 @@ export default function TriviaPage() {
     }).catch(() => {})
   }, [])
 
+  // Deck ↔ card is view state (not a route change), so mirror it into browser
+  // history: opening a card pushes an entry, and Back/Forward restore the view via
+  // popstate. The pushed entry carries the card id so Forward re-opens the right card.
+  useEffect(() => {
+    function onPopState(e: PopStateEvent) {
+      const id = (e.state as { triviaCardId?: number } | null)?.triviaCardId
+      const card = typeof id === 'number' ? TRIVIA_CARDS.find((c) => c.id === id) : undefined
+      setView(card ? { kind: 'card', card } : { kind: 'deck' })
+      window.scrollTo(0, 0)
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   function selectCard(card: TriviaCard) {
     setSeenIds((prev) => new Set([...prev, card.id]))
+    // Push a history entry on deck → card so browser Back returns to the deck grid
+    // (instead of leaving the trivia page). Card → card (Next) replaces in place, so
+    // the stack stays one entry deep and Back from any card still lands on the deck.
+    if (typeof window !== 'undefined') {
+      const nextState = { ...window.history.state, triviaCardId: card.id }
+      if (view.kind === 'deck') window.history.pushState(nextState, '')
+      else window.history.replaceState(nextState, '')
+    }
     setView({ kind: 'card', card })
     window.scrollTo(0, 0)
   }
 
   function backToDeck() {
-    setView({ kind: 'deck' })
-    window.scrollTo(0, 0)
+    // Step back through history when there's a pushed card entry (keeps history
+    // clean; popstate restores the deck); otherwise fall back to a direct change.
+    if (typeof window !== 'undefined' && (window.history.state as { triviaCardId?: number } | null)?.triviaCardId != null) {
+      window.history.back()
+    } else {
+      setView({ kind: 'deck' })
+      window.scrollTo(0, 0)
+    }
   }
 
   function nextCard() {
