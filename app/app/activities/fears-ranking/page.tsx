@@ -599,7 +599,7 @@ function FearsRankingContent() {
         </div>
 
         {/* Right: export + saved status */}
-        <div className="activity-banner-aside" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -44, flexShrink: 0 }}>
+        <div className="activity-banner-aside" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, marginTop: -4, flexShrink: 0 }}>
           {savedEntryId && (
             <button
               type="button"
