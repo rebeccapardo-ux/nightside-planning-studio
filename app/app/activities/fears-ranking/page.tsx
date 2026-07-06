@@ -558,7 +558,7 @@ function FearsRankingContent() {
   if (loadingSavedEntry) {
     return (
       <div className="min-h-screen" style={{ background: '#2C3777' }}>
-        <div style={{ background: '#130426', minHeight: 180 }} />
+        <div style={{ background: '#2C3777', minHeight: 180 }} />
       </div>
     )
   }
@@ -567,7 +567,7 @@ function FearsRankingContent() {
     <div className="min-h-screen" style={{ background: '#2C3777' }}>
 
       {/* Dark editorial banner */}
-      <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row" style={{ background: '#2C3777', paddingTop: 64, paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>
@@ -581,7 +581,7 @@ function FearsRankingContent() {
               ]}
             />
           </div>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 16 }}>
+          <h1 className="ns-title-activity text-white">
             Fears Ranking
           </h1>
           <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>

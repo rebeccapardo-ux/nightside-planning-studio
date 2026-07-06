@@ -186,7 +186,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
     <div className="min-h-screen bg-[#2f3f8f] text-white">
 
       {/* Midnight banner — full width */}
-      <div className="px-5 md:pl-24 md:pr-8" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60 }}>
+      <div className="px-5 md:pl-24 md:pr-8" style={{ background: '#2C3777', paddingTop: 64, paddingBottom: 60 }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"
@@ -196,7 +196,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
             ]}
           />
         </div>
-        <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
+        <h1 className="ns-title-activity text-white">
           Scenario Navigator
         </h1>
         <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>

@@ -145,7 +145,7 @@ export default function ReflectPage() {
       `}</style>
 
       {/* Midnight banner — full width */}
-      <div className="px-5 md:pl-24 md:pr-8" style={{ background: '#130426', paddingTop: 64, paddingBottom: 60 }}>
+      <div className="px-5 md:pl-24 md:pr-8" style={{ background: '#2C3777', paddingTop: 64, paddingBottom: 60 }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"
@@ -155,7 +155,7 @@ export default function ReflectPage() {
             ]}
           />
         </div>
-        <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#ffffff', marginBottom: 0 }}>
+        <h1 className="ns-title-activity text-white">
           Reflection Prompts
         </h1>
         <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>

@@ -21,7 +21,7 @@ export default function AreaHeader({
 
   return (
     <>
-      <div style={{ background: 'radial-gradient(circle at 20% 20%, #1a0535 0%, #130426 70%)' }}>
+      <div style={{ background: '#2C3777' }}>
         <div className="max-w-6xl mx-auto pt-16 md:pt-6" style={{ paddingLeft: 40, paddingRight: 40 }}>
           <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.7)', margin: 0 }}>
             <Link href="/app" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Plan by area</Link>
@@ -30,7 +30,7 @@ export default function AreaHeader({
         </div>
         <div className="max-w-6xl mx-auto" style={{ padding: '12px 40px 40px' }}>
           <h1 className="ns-title-activity text-white">{title}</h1>
-          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 640, margin: '16px 0 0' }}>{intro}</p>
+          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '16px 0 0' }}>{intro}</p>
         </div>
       </div>
 

@@ -84,21 +84,24 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // match only, so sub-pages fall through to default nav.
   { prefix: '/app/activities', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
 
-  // Plan by area landing: cream page → navy nav. Exact, so the area pages
-  // (/app/area/<slug>, which have their own navy header) fall through to default.
+  // Plan by area landing: cream page → navy nav. Exact match (landing only).
   { prefix: '/app/area', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
+  // Area pages (/app/area/<slug>): Night (#2C3777) banner → Midnight (#130426) nav.
+  // Longer prefix than the landing rule, so it wins for sub-routes; the trailing
+  // slash keeps it from matching the bare landing.
+  { prefix: '/app/area/', theme: 'dark', navBg: 'bg-[#130426]' },
 
   // Values & Fears landing + ranking activities — navy nav on blue workspace
   { prefix: '/app/activities/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/activities/values-ranking',   theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/activities/fears-ranking',    theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/values-ranking',   theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/fears-ranking',    theme: 'dark', navBg: 'bg-[#130426]' },
 
   // Activity screens with dark/midnight banners — use cream nav for contrast
-  { prefix: '/app/activities/reflection-prompts', theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/activities/prompts',            theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/activities/scenario-navigator', theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/activities/legacy-map',         theme: 'light', navBg: 'bg-[#f8f4eb]' },
-  { prefix: '/app/activities/trivia',               theme: 'light', navBg: 'bg-[#f8f4eb]' },
+  { prefix: '/app/activities/reflection-prompts', theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/prompts',            theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/scenario-navigator', theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/legacy-map',         theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/trivia',               theme: 'dark', navBg: 'bg-[#130426]' },
 
   // Account management + legal pages — navy nav (page bg is cream, nav must differ)
   { prefix: '/app/account', theme: 'dark', navBg: 'bg-[#2C3777]' },
