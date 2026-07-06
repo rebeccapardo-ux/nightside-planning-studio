@@ -37,19 +37,19 @@ const CARD_STYLES = [
 
 const ALS_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'ventilator': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'palliative-care': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'non-invasive-support': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
 }
 
@@ -65,14 +65,14 @@ const ALS_CONSEQUENCE_PREVIEWS: Record<string, string> = {
 
 const CPR_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'full-resuscitation': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'limited-interventions': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
 }
 
@@ -323,7 +323,7 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
         <div className="grid gap-4 sn-stack" style={{ gridTemplateColumns: `repeat(${scenario.choices.length}, minmax(0, 1fr))` }}>
           {scenario.choices.map((choice) => (
             <button key={choice.id} type="button" onClick={() => onSelectChoice(choice.id)}
-              className="flex flex-col rounded-2xl bg-[#BBABF4] px-7 py-6 text-left transition hover:opacity-90"
+              className="flex flex-col rounded-2xl bg-[#BBABF4] px-7 py-6 text-left transition-shadow hover:shadow-[0_10px_28px_rgba(19,4,38,0.22)]"
             >
               <span className="block text-[#130426] font-semibold leading-relaxed flex-1 mb-4">{choice.label}</span>
               <span className="mt-auto inline-block rounded-full bg-[#130426] text-[#f8f4eb] text-sm font-semibold px-4 py-1.5">Choose →</span>
@@ -341,19 +341,19 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
 
 const PANCREATIC_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'aggressive-treatment': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'comfort-care': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'clinical-trial': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
 }
 
@@ -432,11 +432,12 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: isHov && !isPre ? cs.hoverBorder : cs.border || 'none',
+                  border: 'none',
                   boxSizing: 'border-box',
-                  transform: isHov && !isPre ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: isHov && !isPre ? '0 8px 24px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.02)',
-                  transition: 'transform 140ms ease, box-shadow 140ms ease, border 140ms ease',
+                  // No outline (rest or hover) and no lift — hover is *only* a soft drop
+                  // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
+                  boxShadow: isHov && !isPre ? '0 10px 28px rgba(19,4,38,0.22)' : 'none',
+                  transition: 'box-shadow 160ms ease',
                 }}
               >
                 <div>
@@ -683,19 +684,19 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
 const COGNITIVE_DECLINE_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'aggressive-treatment': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'comfort-care': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
   'long-term-care': {
-    bg: 'transparent', border: '1.5px solid #130426',
+    bg: '#BBABF4', border: 'none',
     titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#BBABF4', ctaColor: '#130426', hoverBorder: '2px solid #130426',
+    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
   },
 }
 
@@ -774,11 +775,12 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: isHov && !isPre ? cs.hoverBorder : cs.border || 'none',
+                  border: 'none',
                   boxSizing: 'border-box',
-                  transform: isHov && !isPre ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: isHov && !isPre ? '0 8px 24px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.02)',
-                  transition: 'transform 140ms ease, box-shadow 140ms ease, border 140ms ease',
+                  // No outline (rest or hover) and no lift — hover is *only* a soft drop
+                  // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
+                  boxShadow: isHov && !isPre ? '0 10px 28px rgba(19,4,38,0.22)' : 'none',
+                  transition: 'box-shadow 160ms ease',
                 }}
               >
                 <div>
@@ -1094,11 +1096,12 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: isHov && !isPre ? cs.hoverBorder : cs.border || 'none',
+                  border: 'none',
                   boxSizing: 'border-box',
-                  transform: isHov && !isPre ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: isHov && !isPre ? '0 8px 24px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.02)',
-                  transition: 'transform 140ms ease, box-shadow 140ms ease, border 140ms ease',
+                  // No outline (rest or hover) and no lift — hover is *only* a soft drop
+                  // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
+                  boxShadow: isHov && !isPre ? '0 10px 28px rgba(19,4,38,0.22)' : 'none',
+                  transition: 'box-shadow 160ms ease',
                 }}
               >
                 <div>
@@ -1415,11 +1418,12 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: isHov && !isPre ? cs.hoverBorder : cs.border || 'none',
+                  border: 'none',
                   boxSizing: 'border-box',
-                  transform: isHov && !isPre ? 'translateY(-2px)' : 'translateY(0)',
-                  boxShadow: isHov && !isPre ? '0 8px 24px rgba(0,0,0,0.08)' : '0 1px 2px rgba(0,0,0,0.02)',
-                  transition: 'transform 140ms ease, box-shadow 140ms ease, border 140ms ease',
+                  // No outline (rest or hover) and no lift — hover is *only* a soft drop
+                  // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
+                  boxShadow: isHov && !isPre ? '0 10px 28px rgba(19,4,38,0.22)' : 'none',
+                  transition: 'box-shadow 160ms ease',
                 }}
               >
                 <div>
