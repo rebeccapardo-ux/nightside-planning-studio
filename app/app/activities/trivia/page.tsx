@@ -9,6 +9,8 @@ import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+// Matches the Reflection Prompts grid-card text (HelveticaNeue-Medium @ 500).
+const fontHelveticaMedium = "'HelveticaNeue-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 type View =
   | { kind: 'deck' }
@@ -209,8 +211,8 @@ function DeckView({
                   onClick={() => onSelect(card)}
                   style={{
                     aspectRatio: '3/4',
-                    background: 'linear-gradient(145deg, #354a9e 0%, #1e2b6b 100%)',
-                    border: '1px solid rgba(255,255,255,0.18)',
+                    background: '#F8F4EB',
+                    border: '1px solid rgba(26,26,26,0.12)',
                     boxShadow: seen ? 'none' : '0 8px 20px rgba(19,4,38,0.18), inset 0 1px 0 rgba(255,255,255,0.07)',
                   }}
                   className={`h-full w-full rounded-2xl px-5 py-6 text-left transition-all duration-150 flex flex-col justify-center
@@ -220,7 +222,7 @@ function DeckView({
                     }
                   `}
                 >
-                  <p className="text-[#F8F4EB] text-sm sm:text-xl font-bold leading-tight sm:leading-snug">
+                  <p style={{ fontFamily: fontHelveticaMedium, fontSize: '18px', lineHeight: 1.45, fontWeight: 500, color: '#1A1A1A', margin: 0 }}>
                     {card.question}
                   </p>
                 </button>
