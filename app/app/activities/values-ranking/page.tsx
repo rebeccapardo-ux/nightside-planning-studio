@@ -576,7 +576,7 @@ function ValuesRankingContent() {
     <div className="min-h-screen" style={{ background: '#2C3777' }}>
 
       {/* Dark editorial banner */}
-      <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row" style={{ background: '#2C3777', paddingTop: 64, paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>

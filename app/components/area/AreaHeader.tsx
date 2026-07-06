@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { useSectionCollapse } from './useSectionCollapse'
 
 const apfel = "'Apfel Grotezk', sans-serif"
@@ -23,10 +23,13 @@ export default function AreaHeader({
     <>
       <div style={{ background: '#2C3777' }}>
         <div className="max-w-6xl mx-auto pt-16 md:pt-6" style={{ paddingLeft: 40, paddingRight: 40 }}>
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.7)', margin: 0 }}>
-            <Link href="/app" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none' }}>Plan by area</Link>
-            {' / '}{title}
-          </p>
+          <Breadcrumbs
+            theme="navy"
+            items={[
+              { label: 'Plan by area', href: '/app' },
+              { label: title },
+            ]}
+          />
         </div>
         <div className="max-w-6xl mx-auto" style={{ padding: '12px 40px 40px' }}>
           <h1 className="ns-title-activity text-white">{title}</h1>

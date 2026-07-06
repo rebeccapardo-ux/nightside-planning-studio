@@ -145,7 +145,7 @@ export default function ReflectPage() {
       `}</style>
 
       {/* Midnight banner — full width */}
-      <div className="px-5 md:pl-24 md:pr-8" style={{ background: '#2C3777', paddingTop: 64, paddingBottom: 60 }}>
+      <div className="px-5 md:pl-24 md:pr-8 pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60 }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"
