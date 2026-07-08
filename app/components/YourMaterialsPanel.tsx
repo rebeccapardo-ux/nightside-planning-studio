@@ -118,7 +118,7 @@ export default function YourMaterialsPanel({
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14, marginTop: 0,
   }
   const itemCard: React.CSSProperties = {
-    position: 'relative', width: '100%', background: '#F8F4EB',
+    position: 'relative', width: '100%', background: '#F2D3C7',
     border: '1px solid #130426', borderRadius: 18, padding: '18px 20px',
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
     gap: 16, transition: 'background 150ms ease', boxSizing: 'border-box',
