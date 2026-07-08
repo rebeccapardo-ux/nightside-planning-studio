@@ -405,8 +405,8 @@ export default function GlobalNav() {
     return `text-[15.7px] transition-colors ${style.link} ${active ? 'font-semibold underline underline-offset-[6px] decoration-2' : 'font-medium'}`
   }
 
-  // Hover-panel + dropdown surface palette. On hover/focus the parent label gets a
-  // colored panel; the dropdown flows out of its bottom edge as one continuous shape.
+  // Dropdown surface palette. On hover/focus the label's dropdown opens as a panel
+  // below it (the label itself just brightens — no block highlight).
   // The color contrasts the nav background, and the text follows the panel's surface
   // (the same color the nav already uses on that background) — the platform-wide
   // "text color follows the surface" rule. Dark navs (#200840, #2C3777) → cream panel;
@@ -487,12 +487,12 @@ export default function GlobalNav() {
                         onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpenMenu(null) }}
                         onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null) }}
                       >
-                        {/* The label IS the hover panel: full nav-height, square corners,
-                            themed background on hover/focus, text recoloured to the panel's
-                            surface (the active underline rides currentColor, so it flips too
-                            and stays visible). A label with an href navigates to its landing;
-                            "Plan by area" has no href — its label is a button that only opens
-                            the dropdown (hover, or click/Enter for keyboard). */}
+                        {/* The label softly brightens on hover/focus (transition-colors +
+                            style.link, matching "Sign out") — no block highlight. Hover/focus
+                            still opens the dropdown (panelOn), which renders as its own panel
+                            below. A label with an href navigates to its landing; "Plan by
+                            area" has no href — its label is a button that only opens the
+                            dropdown (hover, or click/Enter for keyboard). */}
                         {item.href ? (
                           <Link
                             href={item.href}
@@ -504,8 +504,6 @@ export default function GlobalNav() {
                               alignItems: 'center',
                               height: '100%',
                               padding: '0 12px',
-                              background: panelOn ? panel.bg : 'transparent',
-                              ...(panelOn ? { color: panel.text, textDecorationColor: panel.text } : {}),
                             }}
                           >
                             {item.label}
@@ -525,8 +523,7 @@ export default function GlobalNav() {
                               border: 'none',
                               cursor: 'pointer',
                               fontFamily: 'inherit',
-                              background: panelOn ? panel.bg : 'transparent',
-                              ...(panelOn ? { color: panel.text, textDecorationColor: panel.text } : {}),
+                              background: 'transparent',
                             }}
                           >
                             {item.label}
