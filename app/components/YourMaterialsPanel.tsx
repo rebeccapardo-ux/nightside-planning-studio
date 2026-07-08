@@ -51,7 +51,7 @@ function Chevron({ open }: { open: boolean }) {
   return (
     <svg width={24} height={24} viewBox="0 0 20 20" fill="none"
       style={{ flexShrink: 0, transition: 'transform 200ms ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-      <path d="M5 7.5l5 5 5-5" stroke="#F8F4EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 7.5l5 5 5-5" stroke="#DB5835" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -201,42 +201,36 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Cream body + sunset outline, capped by a full-opacity sunset header bar. Title +
-  // chevron are cream (#F8F4EB) to match the light-on-sunset "Your materials" homepage
-  // card. The bar holds ONLY the large (22px/600) title + the chevron icon, so cream
-  // clears the 3:1 AA threshold for large text / UI icons (3.5:1) even though light-on-
-  // sunset wouldn't pass for small text. The header row is the toggle; the description
-  // (what) shows in BOTH states; the count summary (how much) when collapsed; the lists
-  // when expanded. A shared collapsed min-height + align-items:stretch keep all four equal.
+  // Single cream card + sunset outline. Sunset identity comes from the TITLE + chevron,
+  // NOT a filled header bar — a saturated bar over a lighter body reads as an already-
+  // expanded accordion. Keeping the card one color also keeps the small body text dark on
+  // cream (AA), while the sunset title is large (22px/600) so it clears the 3:1 large-text
+  // threshold on cream (3.5:1). The title row is the toggle; the description (what) shows
+  // in BOTH states; the count summary (how much) when collapsed; the lists when expanded.
+  // A shared collapsed min-height + align-items:stretch keep all four tiles equal at rest.
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#F8F4EB', border: '1.5px solid #DB5835', borderRadius: 16, minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
-        {/* Sunset header bar — the toggle. Top corners rounded to the tile's inner radius
-            (16 − 1.5px border) instead of clipping via overflow:hidden, which would cut off
-            the notes-intro tooltip that opens below its anchor inside the expanded body. */}
+      <div key={id} className="ym-tile" style={{ background: '#F8F4EB', border: '1.5px solid #DB5835', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
         <button
           type="button"
           className="ym-tile-header"
           onClick={() => toggleSection(id)}
           aria-expanded={isExpanded}
-          style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 12, background: '#DB5835', border: 'none', cursor: 'pointer', padding: '16px 24px', minHeight: 44, textAlign: 'left', borderRadius: '14.5px 14.5px 0 0' }}
+          style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, textAlign: 'left' }}
         >
-          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#F8F4EB', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
-          <span className="ym-chevron"><Chevron open={isExpanded} /></span>
+          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#DB5835', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
+          <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>
         </button>
-        {/* Cream body */}
-        <div className="ym-tile-body" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '20px 28px 26px' }}>
-          {description}
-          {/* Count summary — pushed to the body's bottom edge (margin-top:auto) so the
-              counters share a baseline across tiles regardless of description length, and
-              set apart from the prose above by a divider + smaller, muted, label-weight
-              text so it reads as at-a-glance status, not more body copy. */}
-          {!isExpanded && (
-            <p style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, color: 'rgba(19,4,38,0.5)', margin: 0, marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(19,4,38,0.14)', lineHeight: 1.4 }}>{summary}</p>
-          )}
-          {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
-        </div>
+        {description}
+        {/* Count summary — pushed to the tile's bottom edge (margin-top:auto) so the
+            counters share a baseline across tiles regardless of description length, and
+            set apart from the prose above by a divider + smaller, muted, label-weight
+            text so it reads as at-a-glance status, not more body copy. */}
+        {!isExpanded && (
+          <p style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, color: 'rgba(19,4,38,0.5)', margin: 0, marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(19,4,38,0.14)', lineHeight: 1.4 }}>{summary}</p>
+        )}
+        {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
       </div>
     )
   }
@@ -253,8 +247,7 @@ export default function YourMaterialsPanel({
         .ym-tile-header:hover .ym-chevron { opacity: 0.65; }
         @media (max-width: 767px) {
           .ym-grid { grid-template-columns: 1fr !important; }
-          .ym-tile-header { padding: 14px 20px !important; }
-          .ym-tile-body { padding: 18px 20px 22px !important; }
+          .ym-tile { padding: 22px 20px !important; }
           .plan-pill-doc,
           .plan-pill-out {
             max-width: 100% !important;
