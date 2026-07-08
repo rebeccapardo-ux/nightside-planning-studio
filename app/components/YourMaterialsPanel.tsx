@@ -51,7 +51,7 @@ function Chevron({ open }: { open: boolean }) {
   return (
     <svg width={24} height={24} viewBox="0 0 20 20" fill="none"
       style={{ flexShrink: 0, transition: 'transform 200ms ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-      <path d="M5 7.5l5 5 5-5" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 7.5l5 5 5-5" stroke="#F8F4EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -201,11 +201,13 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Cream body + sunset outline, capped by a full-opacity sunset header bar (title +
-  // chevron, dark text/chevron — matches the sunset Export button and clears AA). The
-  // header row is the toggle; the description (what) shows in BOTH states; the count
-  // summary (how much) shows when collapsed; the lists when expanded. A shared collapsed
-  // min-height + the grid's align-items:stretch keep all four tiles the same size at rest.
+  // Cream body + sunset outline, capped by a full-opacity sunset header bar. Title +
+  // chevron are cream (#F8F4EB) to match the light-on-sunset "Your materials" homepage
+  // card. The bar holds ONLY the large (22px/600) title + the chevron icon, so cream
+  // clears the 3:1 AA threshold for large text / UI icons (3.5:1) even though light-on-
+  // sunset wouldn't pass for small text. The header row is the toggle; the description
+  // (what) shows in BOTH states; the count summary (how much) when collapsed; the lists
+  // when expanded. A shared collapsed min-height + align-items:stretch keep all four equal.
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
@@ -220,7 +222,7 @@ export default function YourMaterialsPanel({
           aria-expanded={isExpanded}
           style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 12, background: '#DB5835', border: 'none', cursor: 'pointer', padding: '16px 24px', minHeight: 44, textAlign: 'left', borderRadius: '14.5px 14.5px 0 0' }}
         >
-          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
+          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#F8F4EB', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
           <span className="ym-chevron"><Chevron open={isExpanded} /></span>
         </button>
         {/* Cream body */}
