@@ -836,14 +836,14 @@ export default function LegacyMapPage() {
   // sequence is visually seamless.
   if (!isLoaded) {
     return (
-      <div className="min-h-screen" style={{ background: '#2f3f8f' }}>
+      <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
         <div style={{ background: '#2C3777', minHeight: 180 }} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#2f3f8f' }}>
+    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
       {/* ── Page header ──────────────────────────────────────────────────────── */}
       <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
@@ -930,7 +930,7 @@ export default function LegacyMapPage() {
           style={{
             backgroundColor: COLORS.light,
             color: COLORS.midnight,
-            borderColor: "rgba(44,55,119,0.12)",
+            borderColor: "rgba(44,55,119,0.35)",
             marginTop: 20,
           }}
         >
@@ -1349,7 +1349,7 @@ export default function LegacyMapPage() {
             style={{
               backgroundColor: COLORS.light,
               color: COLORS.midnight,
-              borderColor: "rgba(44,55,119,0.12)",
+              borderColor: "rgba(44,55,119,0.35)",
               marginTop: 24,
               opacity: reflectionVisible ? 1 : 0,
               transform: reflectionVisible ? "none" : "translateY(24px)",
@@ -1477,7 +1477,7 @@ export default function LegacyMapPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(19,4,38,0.55)] px-4 py-8">
           <div
             className="w-full max-w-xl rounded-[28px] border p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] md:p-8"
-            style={{ backgroundColor: COLORS.light, borderColor: "rgba(44,55,119,0.12)", color: COLORS.midnight }}
+            style={{ backgroundColor: COLORS.light, borderColor: "rgba(44,55,119,0.35)", color: COLORS.midnight }}
           >
             <h2 className="text-2xl font-medium tracking-[-0.02em]">
               {draftMoment.id ? "Edit moment" : "Add moment"}

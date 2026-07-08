@@ -183,7 +183,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
   const [tipsOpen, setTipsOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#2f3f8f] text-white">
+    <div className="min-h-screen bg-[#F8F4EB] text-[#130426]">
 
       {/* Midnight banner — full width */}
       <div className="px-5 md:pl-24 md:pr-8 pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60 }}>
@@ -262,6 +262,9 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
             return (
               <button key={scenario.id} type="button" onClick={() => onSelectScenario(scenario.id)}
                 className={`rounded-2xl px-8 py-8 text-left transition hover:opacity-90 ${style.bg}`}
+                // Cream card blends into the cream page — give it a thin outline; the other
+                // (colored) cards read fine on cream and stay borderless.
+                style={style.bg === 'bg-[#f8f4eb]' ? { border: '1px solid rgba(19,4,38,0.18)' } : undefined}
               >
                 <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{scenario.title}</h2>
                 <p className={`leading-relaxed text-base mb-6 ${style.text}`}>{scenario.tileOverview}</p>
