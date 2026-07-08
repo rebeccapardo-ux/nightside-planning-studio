@@ -369,7 +369,7 @@ function ValuesRankingContent() {
   }
 
   const liveInstruction = useMemo(() => {
-    if (isDone) return 'All values have been placed.'
+    if (isDone) return 'All cards have been placed.'
     if (!cardRevealed && moveMode.type === 'none') return ''
     if (moveMode.type === 'moving_existing') return 'Place this card in a new slot.'
     if (moveMode.type === 'making_room_for_incoming') {
@@ -751,7 +751,7 @@ function ValuesRankingContent() {
                   ))}
                   {isDone && (
                     <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(19,4,38,0.6)', margin: '4px 0 0' }}>
-                      All values have been placed.
+                      All cards have been placed.
                     </p>
                   )}
                 </div>

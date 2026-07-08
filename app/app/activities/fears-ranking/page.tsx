@@ -743,7 +743,7 @@ function FearsRankingContent() {
                   ))}
                   {isDone && (
                     <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(19,4,38,0.6)', margin: '4px 0 0' }}>
-                      All fears have been placed.
+                      All cards have been placed.
                     </p>
                   )}
                 </div>
