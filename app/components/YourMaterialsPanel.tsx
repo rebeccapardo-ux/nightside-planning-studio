@@ -201,33 +201,40 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Muted-sunset fill + sunset outline. The title row is the toggle; the description
-  // (what) shows in BOTH states; the count summary (how much) shows when collapsed; the
-  // lists when expanded. A shared collapsed min-height + the grid's align-items:stretch
-  // keep all four tiles the same size at rest (short tiles fill to match the tallest).
+  // Cream body + sunset outline, capped by a full-opacity sunset header bar (title +
+  // chevron, dark text/chevron — matches the sunset Export button and clears AA). The
+  // header row is the toggle; the description (what) shows in BOTH states; the count
+  // summary (how much) shows when collapsed; the lists when expanded. A shared collapsed
+  // min-height + the grid's align-items:stretch keep all four tiles the same size at rest.
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#F2D3C7', border: '1.5px solid #DB5835', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
+      <div key={id} className="ym-tile" style={{ background: '#F8F4EB', border: '1.5px solid #DB5835', borderRadius: 16, minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
+        {/* Sunset header bar — the toggle. Top corners rounded to the tile's inner radius
+            (16 − 1.5px border) instead of clipping via overflow:hidden, which would cut off
+            the notes-intro tooltip that opens below its anchor inside the expanded body. */}
         <button
           type="button"
           className="ym-tile-header"
           onClick={() => toggleSection(id)}
           aria-expanded={isExpanded}
-          style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, textAlign: 'left' }}
+          style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 12, background: '#DB5835', border: 'none', cursor: 'pointer', padding: '16px 24px', minHeight: 44, textAlign: 'left', borderRadius: '14.5px 14.5px 0 0' }}
         >
           <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
-          <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>
+          <span className="ym-chevron"><Chevron open={isExpanded} /></span>
         </button>
-        {description}
-        {/* Count summary — pushed to the tile's bottom edge (margin-top:auto) so the
-            counters share a baseline across tiles regardless of description length, and
-            set apart from the prose above by a divider + smaller, muted, label-weight
-            text so it reads as at-a-glance status, not more body copy. */}
-        {!isExpanded && (
-          <p style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, color: 'rgba(19,4,38,0.5)', margin: 0, marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(19,4,38,0.14)', lineHeight: 1.4 }}>{summary}</p>
-        )}
-        {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
+        {/* Cream body */}
+        <div className="ym-tile-body" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '20px 28px 26px' }}>
+          {description}
+          {/* Count summary — pushed to the body's bottom edge (margin-top:auto) so the
+              counters share a baseline across tiles regardless of description length, and
+              set apart from the prose above by a divider + smaller, muted, label-weight
+              text so it reads as at-a-glance status, not more body copy. */}
+          {!isExpanded && (
+            <p style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, color: 'rgba(19,4,38,0.5)', margin: 0, marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(19,4,38,0.14)', lineHeight: 1.4 }}>{summary}</p>
+          )}
+          {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
+        </div>
       </div>
     )
   }
@@ -244,7 +251,8 @@ export default function YourMaterialsPanel({
         .ym-tile-header:hover .ym-chevron { opacity: 0.65; }
         @media (max-width: 767px) {
           .ym-grid { grid-template-columns: 1fr !important; }
-          .ym-tile { padding: 22px 20px !important; }
+          .ym-tile-header { padding: 14px 20px !important; }
+          .ym-tile-body { padding: 18px 20px 22px !important; }
           .plan-pill-doc,
           .plan-pill-out {
             max-width: 100% !important;
