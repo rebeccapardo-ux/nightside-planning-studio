@@ -201,11 +201,11 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Single cream card + sunset outline. Sunset identity comes from the TITLE + chevron,
-  // NOT a filled header bar — a saturated bar over a lighter body reads as an already-
-  // expanded accordion. Keeping the card one color also keeps the small body text dark on
-  // cream (AA), while the sunset title is large (22px/600) so it clears the 3:1 large-text
-  // threshold on cream (3.5:1). The title row is the toggle; the description (what) shows
+  // Single cream card + sunset outline. Title is midnight (#130426) for a strong, readable
+  // heading; the sunset identity carries in the outline + chevron. NOT a filled header bar —
+  // a saturated bar over a lighter body reads as an already-expanded accordion. One-color
+  // card keeps all text dark on cream (AA throughout). The title row is the toggle; the
+  // description (what) shows
   // in BOTH states; the count summary (how much) when collapsed; the lists when expanded.
   // A shared collapsed min-height + align-items:stretch keep all four tiles equal at rest.
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
@@ -219,7 +219,7 @@ export default function YourMaterialsPanel({
           aria-expanded={isExpanded}
           style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, textAlign: 'left' }}
         >
-          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#DB5835', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
+          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
           <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>
         </button>
         {description}
