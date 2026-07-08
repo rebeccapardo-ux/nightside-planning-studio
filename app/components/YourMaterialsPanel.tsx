@@ -207,7 +207,8 @@ export default function YourMaterialsPanel({
   // card keeps all text dark on cream (AA throughout). The title row is the toggle; the
   // description (what) shows
   // in BOTH states; the count summary (how much) when collapsed; the lists when expanded.
-  // A shared collapsed min-height + align-items:stretch keep all four tiles equal at rest.
+  // A shared collapsed min-height (+ the grid's align-items:start) keeps all four tiles
+  // equal at rest, while an expanded tile leaves its row-mate collapsed (space opens below).
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
@@ -273,10 +274,11 @@ export default function YourMaterialsPanel({
         }
       `}</style>
 
-      {/* 2×2 grid of collapsible tiles (no outer wrapper). align-items:stretch + a shared
-          collapsed min-height keep all four the same size at rest. Expanding a tile
-          stretches its row-mate to match; the opposite row keeps its height. 1 col mobile. */}
-      <div className="ym-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'stretch' }}>
+      {/* 2×2 grid of collapsible tiles (no outer wrapper). The shared collapsed min-height
+          (248) already makes all four equal at rest, so align-items:start (NOT stretch) —
+          expanding a tile leaves its collapsed row-mate at its normal size with space
+          opening below it, rather than stretching the row-mate to match. 1 col mobile. */}
+      <div className="ym-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
 
         {/* Wishes documents */}
         {tile(
