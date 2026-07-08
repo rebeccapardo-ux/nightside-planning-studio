@@ -566,14 +566,14 @@ function ValuesRankingContent() {
 
   if (loadingSavedEntry) {
     return (
-      <div className="min-h-screen" style={{ background: '#2C3777' }}>
+      <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
         <div style={{ background: '#2C3777', minHeight: 180 }} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#2C3777' }}>
+    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
       {/* Dark editorial banner */}
       <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
@@ -641,7 +641,7 @@ function ValuesRankingContent() {
       </div>
 
       {/* Blue activity workspace — desktop only */}
-      <div className="hidden md:block" style={{ background: '#2C3777' }}>
+      <div className="hidden md:block" style={{ background: '#F8F4EB' }}>
         <div className="px-5 md:px-8" style={{ maxWidth: 1400, margin: '0 auto', paddingTop: 28, paddingBottom: 48 }}>
 
           {/* Deck / card module — centered, compact */}
@@ -673,7 +673,7 @@ function ValuesRankingContent() {
                   )}
                 </div>
                 {/* Count — below deck */}
-                <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)', margin: 0, textAlign: 'center' }}>
+                <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.65)', margin: 0, textAlign: 'center' }}>
                   {Math.max(remainingCount, 0)} cards left
                 </p>
                 </div>
@@ -688,7 +688,7 @@ function ValuesRankingContent() {
                         position: 'absolute', inset: 0, borderRadius: 20,
                         background: '#F8F4EB',
                         color: '#130426',
-                        border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.10)',
+                        border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.22)',
                         boxShadow: currentCardIsActive
                           ? '0 0 18px rgba(219,88,53,0.22), 0 2px 6px rgba(0,0,0,0.05)'
                           : '0 2px 6px rgba(0,0,0,0.05)',
@@ -713,7 +713,7 @@ function ValuesRankingContent() {
                       style={{
                         position: 'absolute', inset: 0, borderRadius: 20,
                         border: '2px solid #DB5835',
-                        background: 'rgba(255,255,255,0.08)',
+                        background: 'rgba(19,4,38,0.05)',
                         boxShadow: '0 0 18px rgba(219,88,53,0.28)',
                         transform: 'translateY(-2px)',
                         cursor: 'pointer',
@@ -721,13 +721,13 @@ function ValuesRankingContent() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: 'rgba(248,244,235,0.85)' }}>Draw</span>
+                      <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#130426' }}>Draw</span>
                     </button>
                   ) : (
                     <div style={{
                       position: 'absolute', inset: 0, borderRadius: 20,
-                      border: '1.5px dashed rgba(255,255,255,0.45)',
-                      background: 'rgba(255,255,255,0.08)',
+                      border: '1.5px dashed rgba(19,4,38,0.28)',
+                      background: 'rgba(19,4,38,0.05)',
                     }} />
                   )}
                 </div>
@@ -745,21 +745,21 @@ function ValuesRankingContent() {
                     'Click any placed card to move it',
                   ].map((line) => (
                     <div key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <span style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.45)', lineHeight: 1.45, flexShrink: 0 }}>•</span>
-                      <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.45, color: 'rgba(255,255,255,0.82)' }}>{line}</span>
+                      <span style={{ fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.45)', lineHeight: 1.45, flexShrink: 0 }}>•</span>
+                      <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.45, color: 'rgba(19,4,38,0.82)' }}>{line}</span>
                     </div>
                   ))}
                   {isDone && (
-                    <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>
+                    <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(19,4,38,0.6)', margin: '4px 0 0' }}>
                       All values have been placed.
                     </p>
                   )}
                 </div>
-                <AutosaveNotice theme="dark" style={{ marginBottom: 20 }}>Your work saves automatically to Your materials.</AutosaveNotice>
+                <AutosaveNotice theme="light" style={{ marginBottom: 20 }}>Your work saves automatically to Your materials.</AutosaveNotice>
 
                 {/* Error */}
                 {errorMessage && (
-                  <p style={{ fontFamily: hv, fontSize: 13, color: '#ffd2a6', margin: '-12px 0 16px' }}>
+                  <p style={{ fontFamily: hv, fontSize: 13, color: '#C0392B', margin: '-12px 0 16px' }}>
                     {errorMessage}
                   </p>
                 )}
@@ -767,22 +767,22 @@ function ValuesRankingContent() {
                 {/* Reset */}
                 {resetConfirm ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>
                       This will clear your saved ranking.
                     </p>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button
                         onClick={handleReset}
-                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(19,4,38,0.05)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                       >
                         Confirm reset
                       </button>
                       <button
                         onClick={() => setResetConfirm(false)}
-                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.18)', background: 'transparent', color: 'rgba(19,4,38,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(19,4,38,0.05)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                       >
                         Cancel
@@ -794,8 +794,8 @@ function ValuesRankingContent() {
                     type="button"
                     disabled={sortedCount === 0}
                     onClick={() => setResetConfirm(true)}
-                    style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 13, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, transition: 'opacity 200ms' }}
-                    onMouseEnter={(e) => { if (sortedCount > 0) e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 13, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, transition: 'opacity 200ms' }}
+                    onMouseEnter={(e) => { if (sortedCount > 0) e.currentTarget.style.background = 'rgba(19,4,38,0.05)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                   >
                     Reset all cards
@@ -899,7 +899,7 @@ function ValuesRankingContent() {
           <div style={{ marginTop: 16 }}>
             <Link
               href="/app/activities/fears-ranking"
-              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.78)', textDecoration: 'underline' }}
             >
               Go to Fears Ranking
             </Link>
@@ -909,25 +909,25 @@ function ValuesRankingContent() {
       </div>
 
       {/* Mobile-only workspace */}
-      <div className="md:hidden" style={{ background: '#2C3777', paddingTop: 24, paddingBottom: 40 }}>
+      <div className="md:hidden" style={{ background: '#F8F4EB', paddingTop: 24, paddingBottom: 40 }}>
         <div className="px-5">
 
           {/* Disclosure copy */}
-          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
+          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
             To see all your placements side-by-side, open this activity on a larger screen.
           </p>
-          <AutosaveNotice theme="dark" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your materials.</AutosaveNotice>
+          <AutosaveNotice theme="light" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your materials.</AutosaveNotice>
 
           {/* Drawn card area */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 22 }}>
             {isDone ? (
               <div style={{
                 width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
-                border: '1.5px solid rgba(255,255,255,0.25)',
-                background: 'rgba(255,255,255,0.08)',
+                border: '1.5px solid rgba(19,4,38,0.2)',
+                background: 'rgba(19,4,38,0.05)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18,
               }}>
-                <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 500, color: '#ffffff', textAlign: 'center' }}>
+                <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 500, color: '#130426', textAlign: 'center' }}>
                   All cards placed
                 </span>
               </div>
@@ -944,7 +944,7 @@ function ValuesRankingContent() {
                     {current.replace(/\//g, '/​')}
                   </span>
                 </div>
-                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
                   {Math.max(VALUES.length - index - 1, 0)} cards left
                 </p>
               </>
@@ -956,16 +956,16 @@ function ValuesRankingContent() {
                   style={{
                     width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
                     border: '2px solid #F29836',
-                    background: 'rgba(255,255,255,0.08)',
+                    background: 'rgba(19,4,38,0.05)',
                     boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#ffffff',
+                    fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#130426',
                   }}
                 >
                   Draw card
                 </button>
-                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
                   {Math.max(VALUES.length - index, 0)} cards left
                 </p>
               </>
@@ -974,14 +974,14 @@ function ValuesRankingContent() {
 
           {/* State copy — bridge between drawn card and buckets */}
           {cardRevealed && current && !isDone && expandedBucket === null && (
-            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', color: 'rgba(255,255,255,0.72)', textAlign: 'center', margin: '0 0 18px 0' }}>
+            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', textAlign: 'center', margin: '0 0 18px 0' }}>
               Where does this belong?
             </p>
           )}
 
           {/* Error */}
           {errorMessage && (
-            <p style={{ fontFamily: hv, fontSize: 13, color: '#ffd2a6', margin: '0 0 14px', textAlign: 'center' }}>
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#C0392B', margin: '0 0 14px', textAlign: 'center' }}>
               {errorMessage}
             </p>
           )}
@@ -1001,6 +1001,7 @@ function ValuesRankingContent() {
                     style={{
                       flex: '1 1 30%', minWidth: 95,
                       background: b.bg,
+                      border: b.bg === '#F8F4EB' ? '1px solid rgba(19,4,38,0.15)' : 'none',
                       borderRadius: 14,
                       overflow: 'hidden',
                       display: 'flex', flexDirection: 'column',
@@ -1145,19 +1146,19 @@ function ValuesRankingContent() {
           {/* Reset button (mobile) */}
           {resetConfirm ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>
                 This will clear your saved ranking.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   onClick={handleReset}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
                 >
                   Confirm reset
                 </button>
                 <button
                   onClick={() => setResetConfirm(false)}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.18)', background: 'transparent', color: 'rgba(19,4,38,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
@@ -1168,7 +1169,7 @@ function ValuesRankingContent() {
               type="button"
               disabled={sortedCount === 0}
               onClick={() => setResetConfirm(true)}
-              style={{ width: '100%', padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, marginBottom: 22 }}
+              style={{ width: '100%', padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, marginBottom: 22 }}
             >
               Reset all cards
             </button>
@@ -1224,7 +1225,7 @@ function ValuesRankingContent() {
           <div style={{ marginTop: 20 }}>
             <Link
               href="/app/activities/fears-ranking"
-              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.78)', textDecoration: 'underline' }}
             >
               Go to Fears Ranking
             </Link>
@@ -1474,7 +1475,7 @@ function ColumnSection({
   )
 
   return (
-    <section style={{ background: sectionBg, borderRadius: 18, padding: '28px 10px 32px' }}>
+    <section style={{ background: sectionBg, border: sectionBg === '#F8F4EB' ? '1.5px solid rgba(19,4,38,0.18)' : 'none', borderRadius: 18, padding: '28px 10px 32px' }}>
 
       {/* Column header */}
       <div style={{ marginBottom: 18, display: 'flex', alignItems: 'baseline', gap: 10 }}>
