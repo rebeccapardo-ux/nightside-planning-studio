@@ -118,7 +118,7 @@ export default function YourMaterialsPanel({
     textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 14, marginTop: 0,
   }
   const itemCard: React.CSSProperties = {
-    position: 'relative', width: '100%', background: '#F2D3C7',
+    position: 'relative', width: '100%', background: '#F8F4EB',
     border: '1px solid #130426', borderRadius: 18, padding: '18px 20px',
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
     gap: 16, transition: 'background 150ms ease', boxSizing: 'border-box',
@@ -241,8 +241,8 @@ export default function YourMaterialsPanel({
   return (
     <div>
       <style>{`
-        .plan-pill-doc:hover  { background: #f7f6fc !important; }
-        .plan-pill-out:hover  { background: #f7f6fc !important; }
+        .plan-pill-doc:hover  { background: #EFE9DC !important; }
+        .plan-pill-out:hover  { background: #EFE9DC !important; }
         .plan-primary-btn:hover { background: #1f2a5e !important; }
         .plan-export-link:hover { text-decoration: underline !important; }
         .ym-tile-header:hover .ym-chevron { opacity: 0.65; }
