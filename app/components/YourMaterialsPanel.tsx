@@ -201,14 +201,14 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Light-lavender fill + darker-lavender outline (the platform's lavender card
-  // pattern). The title row is the toggle; the description (what) shows in BOTH
-  // states; the count summary (how much) shows when collapsed; the lists when
-  // expanded. A min-height keeps collapsed tiles substantial, not anemic.
+  // Muted-sunset fill + sunset outline. The title row is the toggle; the description
+  // (what) shows in BOTH states; the count summary (how much) shows when collapsed; the
+  // lists when expanded. A shared collapsed min-height + the grid's align-items:stretch
+  // keep all four tiles the same size at rest (short tiles fill to match the tallest).
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#F8F4EB', border: '1.5px solid #DB5835', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 190, alignSelf: 'start', display: 'flex', flexDirection: 'column' }}>
+      <div key={id} className="ym-tile" style={{ background: '#F2D3C7', border: '1.5px solid #DB5835', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
         <button
           type="button"
           className="ym-tile-header"
@@ -270,10 +270,10 @@ export default function YourMaterialsPanel({
         }
       `}</style>
 
-      {/* 2×2 grid of independent collapsible tiles (no outer wrapper). align-items:start
-          keeps a collapsed tile compact while its row-mate expands — the opposite row
-          pushes down. 1 column on mobile. */}
-      <div className="ym-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
+      {/* 2×2 grid of collapsible tiles (no outer wrapper). align-items:stretch + a shared
+          collapsed min-height keep all four the same size at rest. Expanding a tile
+          stretches its row-mate to match; the opposite row keeps its height. 1 col mobile. */}
+      <div className="ym-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'stretch' }}>
 
         {/* Wishes documents */}
         {tile(
