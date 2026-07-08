@@ -336,7 +336,7 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
       `}</style>
 
       <div style={{
-        background: '#FFFFFF', border: '1.5px solid #F29836', borderRadius: 20, padding: '20px 22px',
+        background: '#FFFFFF', border: '1.5px solid #DB5835', borderRadius: 20, padding: '20px 22px',
         boxSizing: 'border-box',
       }}>
 

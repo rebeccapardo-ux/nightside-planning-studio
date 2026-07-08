@@ -37,7 +37,7 @@ export default async function PlanByAreaPage() {
       `}</style>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 80px' }}>
-        <SectionTitleReveal title="Plan by area" color="#130426" />
+        <SectionTitleReveal title="Plan by area" color="#130426" underlineColor="#BBABF4" />
 
         <div style={{ maxWidth: 720, marginTop: 20 }}>
           <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.7, color: 'rgba(19,4,38,0.85)', margin: '0 0 18px' }}>

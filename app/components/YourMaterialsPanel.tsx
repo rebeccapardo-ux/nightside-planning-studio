@@ -208,7 +208,7 @@ export default function YourMaterialsPanel({
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#DBD2F6', border: '1.5px solid #BBABF4', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 190, alignSelf: 'start', display: 'flex', flexDirection: 'column' }}>
+      <div key={id} className="ym-tile" style={{ background: '#F8F4EB', border: '1.5px solid #DB5835', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 190, alignSelf: 'start', display: 'flex', flexDirection: 'column' }}>
         <button
           type="button"
           className="ym-tile-header"

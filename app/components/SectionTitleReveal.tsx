@@ -7,11 +7,13 @@ export default function SectionTitleReveal({
   title,
   color,
   size = 64,
+  underlineColor,
 }: {
   children?: React.ReactNode
   title: string
   color: string
   size?: number
+  underlineColor?: string
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
 
@@ -56,7 +58,7 @@ export default function SectionTitleReveal({
           bottom: -5px;
           width: 100%;
           height: 4px;
-          background: #F29836;
+          background: var(--ns-underline, #F29836);
           border-radius: 999px;
           transform: scaleX(0);
           transform-origin: left;
@@ -67,7 +69,7 @@ export default function SectionTitleReveal({
         }
       `}</style>
 
-      <div ref={wrapRef} className="ns-title-wrap">
+      <div ref={wrapRef} className="ns-title-wrap" style={underlineColor ? ({ '--ns-underline': underlineColor } as React.CSSProperties) : undefined}>
         <h1 className="ns-title-section" style={{ color, fontSize: size, fontWeight: 500, lineHeight: 1.08, margin: 0 }}>
           <span className="ns-title-underline">{title}</span>
         </h1>
