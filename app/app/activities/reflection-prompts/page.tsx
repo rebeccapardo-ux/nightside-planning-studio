@@ -103,7 +103,7 @@ export default function ReflectPage() {
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#BBABF4' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F8F4EB' }}>
       <style>{`
         .ns-title-wrap {
           opacity: 0;
@@ -135,12 +135,12 @@ export default function ReflectPage() {
           transform: scaleX(1);
         }
         .reflect-card {
-          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+          box-shadow: 0 8px 20px rgba(19,4,38,0.18);
           transition: transform 140ms ease, box-shadow 140ms ease;
         }
         .reflect-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+          box-shadow: 0 12px 28px rgba(19,4,38,0.28);
         }
       `}</style>
 

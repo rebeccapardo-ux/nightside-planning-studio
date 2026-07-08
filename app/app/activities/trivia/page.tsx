@@ -76,7 +76,7 @@ export default function TriviaPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #BBABF4 0%, #F8F4EB 100%)' }}>
+    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
       {view.kind === 'card' ? (
         <CardView
           card={view.card}
