@@ -369,7 +369,7 @@ function ValuesRankingContent() {
   }
 
   const liveInstruction = useMemo(() => {
-    if (isDone) return 'All values have been placed.'
+    if (isDone) return 'All cards have been placed.'
     if (!cardRevealed && moveMode.type === 'none') return ''
     if (moveMode.type === 'moving_existing') return 'Place this card in a new slot.'
     if (moveMode.type === 'making_room_for_incoming') {
@@ -566,14 +566,14 @@ function ValuesRankingContent() {
 
   if (loadingSavedEntry) {
     return (
-      <div className="min-h-screen" style={{ background: '#2C3777' }}>
+      <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
         <div style={{ background: '#2C3777', minHeight: 180 }} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#2C3777' }}>
+    <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
       {/* Dark editorial banner */}
       <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
@@ -641,7 +641,7 @@ function ValuesRankingContent() {
       </div>
 
       {/* Blue activity workspace — desktop only */}
-      <div className="hidden md:block" style={{ background: '#2C3777' }}>
+      <div className="hidden md:block" style={{ background: '#F8F4EB' }}>
         <div className="px-5 md:px-8" style={{ maxWidth: 1400, margin: '0 auto', paddingTop: 28, paddingBottom: 48 }}>
 
           {/* Deck / card module — centered, compact */}
@@ -673,7 +673,7 @@ function ValuesRankingContent() {
                   )}
                 </div>
                 {/* Count — below deck */}
-                <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.65)', margin: 0, textAlign: 'center' }}>
+                <p style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.65)', margin: 0, textAlign: 'center' }}>
                   {Math.max(remainingCount, 0)} cards left
                 </p>
                 </div>
@@ -688,7 +688,7 @@ function ValuesRankingContent() {
                         position: 'absolute', inset: 0, borderRadius: 20,
                         background: '#F8F4EB',
                         color: '#130426',
-                        border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.10)',
+                        border: currentCardIsActive ? '2px solid #DB5835' : '1px solid rgba(19,4,38,0.22)',
                         boxShadow: currentCardIsActive
                           ? '0 0 18px rgba(219,88,53,0.22), 0 2px 6px rgba(0,0,0,0.05)'
                           : '0 2px 6px rgba(0,0,0,0.05)',
@@ -713,7 +713,7 @@ function ValuesRankingContent() {
                       style={{
                         position: 'absolute', inset: 0, borderRadius: 20,
                         border: '2px solid #DB5835',
-                        background: 'rgba(255,255,255,0.08)',
+                        background: 'rgba(19,4,38,0.05)',
                         boxShadow: '0 0 18px rgba(219,88,53,0.28)',
                         transform: 'translateY(-2px)',
                         cursor: 'pointer',
@@ -721,13 +721,13 @@ function ValuesRankingContent() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: 'rgba(248,244,235,0.85)' }}>Draw</span>
+                      <span style={{ fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#130426' }}>Draw</span>
                     </button>
                   ) : (
                     <div style={{
                       position: 'absolute', inset: 0, borderRadius: 20,
-                      border: '1.5px dashed rgba(255,255,255,0.45)',
-                      background: 'rgba(255,255,255,0.08)',
+                      border: '1.5px dashed rgba(19,4,38,0.28)',
+                      background: 'rgba(19,4,38,0.05)',
                     }} />
                   )}
                 </div>
@@ -745,21 +745,21 @@ function ValuesRankingContent() {
                     'Click any placed card to move it',
                   ].map((line) => (
                     <div key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      <span style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.45)', lineHeight: 1.45, flexShrink: 0 }}>•</span>
-                      <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.45, color: 'rgba(255,255,255,0.82)' }}>{line}</span>
+                      <span style={{ fontFamily: hv, fontSize: 16, color: 'rgba(19,4,38,0.45)', lineHeight: 1.45, flexShrink: 0 }}>•</span>
+                      <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.45, color: 'rgba(19,4,38,0.82)' }}>{line}</span>
                     </div>
                   ))}
                   {isDone && (
-                    <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>
-                      All values have been placed.
+                    <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.45, color: 'rgba(19,4,38,0.6)', margin: '4px 0 0' }}>
+                      All cards have been placed.
                     </p>
                   )}
                 </div>
-                <AutosaveNotice theme="dark" style={{ marginBottom: 20 }}>Your work saves automatically to Your materials.</AutosaveNotice>
+                <AutosaveNotice theme="light" style={{ marginBottom: 20 }}>Your work saves automatically to Your materials.</AutosaveNotice>
 
                 {/* Error */}
                 {errorMessage && (
-                  <p style={{ fontFamily: hv, fontSize: 13, color: '#ffd2a6', margin: '-12px 0 16px' }}>
+                  <p style={{ fontFamily: hv, fontSize: 13, color: '#C0392B', margin: '-12px 0 16px' }}>
                     {errorMessage}
                   </p>
                 )}
@@ -767,22 +767,22 @@ function ValuesRankingContent() {
                 {/* Reset */}
                 {resetConfirm ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+                    <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>
                       This will clear your saved ranking.
                     </p>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button
                         onClick={handleReset}
-                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(19,4,38,0.05)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                       >
                         Confirm reset
                       </button>
                       <button
                         onClick={() => setResetConfirm(false)}
-                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)' }}
+                        style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 20px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.18)', background: 'transparent', color: 'rgba(19,4,38,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(19,4,38,0.05)' }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                       >
                         Cancel
@@ -794,8 +794,8 @@ function ValuesRankingContent() {
                     type="button"
                     disabled={sortedCount === 0}
                     onClick={() => setResetConfirm(true)}
-                    style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 13, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, transition: 'opacity 200ms' }}
-                    onMouseEnter={(e) => { if (sortedCount > 0) e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 13, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, transition: 'opacity 200ms' }}
+                    onMouseEnter={(e) => { if (sortedCount > 0) e.currentTarget.style.background = 'rgba(19,4,38,0.05)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                   >
                     Reset all cards
@@ -818,7 +818,7 @@ function ValuesRankingContent() {
               cardRevealed={cardRevealed}
               onEmptySlotClick={handleEmptySlotClick}
               onFilledCardClick={handleFilledCardClick}
-              sectionBg="#EE9732"
+              sectionBg="#DB5835"
               emptySlotBg="rgba(255,255,255,0.32)"
               emptySlotBorder="1.5px dashed rgba(255,255,255,0.65)"
               centeredPartialRows
@@ -832,7 +832,7 @@ function ValuesRankingContent() {
               cardRevealed={cardRevealed}
               onEmptySlotClick={handleEmptySlotClick}
               onFilledCardClick={handleFilledCardClick}
-              sectionBg="#BBABF4"
+              sectionBg="#F29836"
               emptySlotBg="rgba(255,255,255,0.20)"
               emptySlotBorder="1.5px dashed rgba(255,255,255,0.54)"
             />
@@ -845,14 +845,14 @@ function ValuesRankingContent() {
               cardRevealed={cardRevealed}
               onEmptySlotClick={handleEmptySlotClick}
               onFilledCardClick={handleFilledCardClick}
-              sectionBg="#F8F4EB"
+              sectionBg="#BBABF4"
               emptySlotBg="rgba(19,4,38,0.09)"
               emptySlotBorder="1.5px dashed rgba(19,4,38,0.22)"
             />
           </div>
 
           {/* Reflection */}
-          <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#130426] md:px-8 md:py-6">
+          <section className="mt-8 rounded-[24px] border border-[#130426] bg-[#f4efe4] px-6 py-5 text-[#130426] md:px-8 md:py-6">
             <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
               Once you've placed a few cards, you might start to notice patterns.
             </p>
@@ -899,7 +899,7 @@ function ValuesRankingContent() {
           <div style={{ marginTop: 16 }}>
             <Link
               href="/app/activities/fears-ranking"
-              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.78)', textDecoration: 'underline' }}
             >
               Go to Fears Ranking
             </Link>
@@ -909,25 +909,25 @@ function ValuesRankingContent() {
       </div>
 
       {/* Mobile-only workspace */}
-      <div className="md:hidden" style={{ background: '#2C3777', paddingTop: 24, paddingBottom: 40 }}>
+      <div className="md:hidden" style={{ background: '#F8F4EB', paddingTop: 24, paddingBottom: 40 }}>
         <div className="px-5">
 
           {/* Disclosure copy */}
-          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
+          <p style={{ fontFamily: hv, fontSize: 13, fontStyle: 'italic', color: 'rgba(19,4,38,0.65)', lineHeight: 1.5, marginBottom: 8 }}>
             To see all your placements side-by-side, open this activity on a larger screen.
           </p>
-          <AutosaveNotice theme="dark" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your materials.</AutosaveNotice>
+          <AutosaveNotice theme="light" style={{ fontSize: 13, marginBottom: 22 }}>Your work saves automatically to Your materials.</AutosaveNotice>
 
           {/* Drawn card area */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 22 }}>
             {isDone ? (
               <div style={{
                 width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
-                border: '1.5px solid rgba(255,255,255,0.25)',
-                background: 'rgba(255,255,255,0.08)',
+                border: '1.5px solid rgba(19,4,38,0.2)',
+                background: 'rgba(19,4,38,0.05)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18,
               }}>
-                <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 500, color: '#ffffff', textAlign: 'center' }}>
+                <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 500, color: '#130426', textAlign: 'center' }}>
                   All cards placed
                 </span>
               </div>
@@ -944,7 +944,7 @@ function ValuesRankingContent() {
                     {current.replace(/\//g, '/​')}
                   </span>
                 </div>
-                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
                   {Math.max(VALUES.length - index - 1, 0)} cards left
                 </p>
               </>
@@ -956,16 +956,16 @@ function ValuesRankingContent() {
                   style={{
                     width: '50%', maxWidth: 180, aspectRatio: '3 / 4', borderRadius: 18,
                     border: '2px solid #F29836',
-                    background: 'rgba(255,255,255,0.08)',
+                    background: 'rgba(19,4,38,0.05)',
                     boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#ffffff',
+                    fontFamily: hv, fontSize: 17, fontWeight: 500, color: '#130426',
                   }}
                 >
                   Draw card
                 </button>
-                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0 }}>
+                <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: 0 }}>
                   {Math.max(VALUES.length - index, 0)} cards left
                 </p>
               </>
@@ -974,14 +974,14 @@ function ValuesRankingContent() {
 
           {/* State copy — bridge between drawn card and buckets */}
           {cardRevealed && current && !isDone && expandedBucket === null && (
-            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', color: 'rgba(255,255,255,0.72)', textAlign: 'center', margin: '0 0 18px 0' }}>
+            <p style={{ fontFamily: hv, fontSize: 14, fontStyle: 'italic', color: 'rgba(19,4,38,0.72)', textAlign: 'center', margin: '0 0 18px 0' }}>
               Where does this belong?
             </p>
           )}
 
           {/* Error */}
           {errorMessage && (
-            <p style={{ fontFamily: hv, fontSize: 13, color: '#ffd2a6', margin: '0 0 14px', textAlign: 'center' }}>
+            <p style={{ fontFamily: hv, fontSize: 13, color: '#C0392B', margin: '0 0 14px', textAlign: 'center' }}>
               {errorMessage}
             </p>
           )}
@@ -990,9 +990,9 @@ function ValuesRankingContent() {
           {expandedBucket === null && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 22 }}>
               {([
-                { key: 'essential' as Bucket, label: 'Essential', bg: '#F29836', count: `${assignments.essential.length}/${ESSENTIAL_SLOTS}` },
-                { key: 'important' as Bucket, label: 'Important', bg: '#BBABF4', count: `${assignments.important.length}` },
-                { key: 'less_central' as Bucket, label: 'Less important', bg: '#F8F4EB', count: `${assignments.less_central.length}` },
+                { key: 'essential' as Bucket, label: 'Essential', bg: '#DB5835', count: `${assignments.essential.length}/${ESSENTIAL_SLOTS}` },
+                { key: 'important' as Bucket, label: 'Important', bg: '#F29836', count: `${assignments.important.length}` },
+                { key: 'less_central' as Bucket, label: 'Less important', bg: '#BBABF4', count: `${assignments.less_central.length}` },
               ]).map((b) => {
                 const placeable = cardRevealed && !!current
                 return (
@@ -1022,7 +1022,7 @@ function ValuesRankingContent() {
                       }}
                       style={{
                         width: '100%',
-                        background: 'none', color: '#130426',
+                        background: 'none', color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426',
                         border: 'none',
                         padding: '14px 10px',
                         display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -1031,12 +1031,12 @@ function ValuesRankingContent() {
                         textAlign: 'left',
                       }}
                     >
-                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426', lineHeight: 1.2 }}>
+                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426', lineHeight: 1.2 }}>
                         {b.label}
                       </span>
                       <span
                         ref={(el) => { countRefs.current[b.key] = el }}
-                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center', marginTop: 10 }}
+                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center', marginTop: 10 }}
                       >
                         {b.count}
                       </span>
@@ -1050,8 +1050,8 @@ function ValuesRankingContent() {
                         minHeight: 48,
                         background: 'none',
                         border: 'none',
-                        borderTop: '1px solid rgba(19,4,38,0.12)',
-                        color: '#130426',
+                        borderTop: b.bg === '#DB5835' ? '1px solid rgba(248,244,235,0.25)' : '1px solid rgba(19,4,38,0.12)',
+                        color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426',
                         fontFamily: hv, fontSize: 13, fontWeight: 500,
                         cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -1076,9 +1076,9 @@ function ValuesRankingContent() {
               less_central: 'Less important',
             }
             const bgFor: Record<Bucket, string> = {
-              essential: '#F29836',
-              important: '#BBABF4',
-              less_central: '#F8F4EB',
+              essential: '#DB5835',
+              important: '#F29836',
+              less_central: '#BBABF4',
             }
             const bucket = expandedBucket
             const items = assignments[bucket]
@@ -1086,14 +1086,14 @@ function ValuesRankingContent() {
             return (
               <div style={{ background: bgFor[bucket], borderRadius: 18, padding: 16, marginBottom: 22 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426' }}>
+                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: bucket === 'essential' ? '#F8F4EB' : '#130426' }}>
                     {labelFor[bucket]} · {items.length}{bucket === 'essential' ? `/${ESSENTIAL_SLOTS}` : ''}
                   </span>
                   <button
                     type="button"
                     onClick={() => { setExpandedBucket(null); setMobileMovePicker(null) }}
                     aria-label="Collapse"
-                    style={{ background: 'none', border: 'none', color: '#130426', cursor: 'pointer', width: 48, height: 48, padding: 0, margin: '-12px -12px -12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ background: 'none', border: 'none', color: bucket === 'essential' ? '#F8F4EB' : '#130426', cursor: 'pointer', width: 48, height: 48, padding: 0, margin: '-12px -12px -12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <svg width="14" height="9" viewBox="0 0 14 9" fill="none" aria-hidden="true">
                       <path d="M1 7.5L7 1.5L13 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -1145,19 +1145,19 @@ function ValuesRankingContent() {
           {/* Reset button (mobile) */}
           {resetConfirm ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
-              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+              <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', margin: 0 }}>
                 This will clear your saved ranking.
               </p>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   onClick={handleReset}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
                 >
                   Confirm reset
                 </button>
                 <button
                   onClick={() => setResetConfirm(false)}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.18)', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.18)', background: 'transparent', color: 'rgba(19,4,38,0.55)', fontFamily: hv, fontSize: 14, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
@@ -1168,7 +1168,7 @@ function ValuesRankingContent() {
               type="button"
               disabled={sortedCount === 0}
               onClick={() => setResetConfirm(true)}
-              style={{ width: '100%', padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.28)', background: 'transparent', color: '#ffffff', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, marginBottom: 22 }}
+              style={{ width: '100%', padding: '12px 16px', borderRadius: 999, border: '1px solid rgba(19,4,38,0.28)', background: 'transparent', color: '#130426', fontFamily: hv, fontWeight: 500, fontSize: 14, cursor: sortedCount === 0 ? 'default' : 'pointer', opacity: sortedCount === 0 ? 0.35 : 1, marginBottom: 22 }}
             >
               Reset all cards
             </button>
@@ -1176,7 +1176,7 @@ function ValuesRankingContent() {
 
           {/* Reflection (mobile) — visible once at least one card is placed */}
           {sortedCount > 0 && (
-            <section className="rounded-[24px] bg-[#f4efe4] px-5 py-5 text-[#130426]">
+            <section className="rounded-[24px] border border-[#130426] bg-[#f4efe4] px-5 py-5 text-[#130426]">
               <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
                 Once you've placed a few cards, you might start to notice patterns.
               </p>
@@ -1224,7 +1224,7 @@ function ValuesRankingContent() {
           <div style={{ marginTop: 20 }}>
             <Link
               href="/app/activities/fears-ranking"
-              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.78)', textDecoration: 'underline' }}
+              style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.78)', textDecoration: 'underline' }}
             >
               Go to Fears Ranking
             </Link>
@@ -1478,11 +1478,11 @@ function ColumnSection({
 
       {/* Column header */}
       <div style={{ marginBottom: 18, display: 'flex', alignItems: 'baseline', gap: 10 }}>
-        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#130426', margin: 0 }}>
+        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: sectionBg === '#DB5835' ? '#F8F4EB' : '#130426', margin: 0 }}>
           {title}
         </h2>
         {maxCards && (
-          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.78)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: sectionBg === '#DB5835' ? 'rgba(248,244,235,0.85)' : 'rgba(19,4,38,0.78)', whiteSpace: 'nowrap' }}>
             Max {maxCards}
           </span>
         )}
