@@ -818,7 +818,7 @@ function ValuesRankingContent() {
               cardRevealed={cardRevealed}
               onEmptySlotClick={handleEmptySlotClick}
               onFilledCardClick={handleFilledCardClick}
-              sectionBg="#EE9732"
+              sectionBg="#DB5835"
               emptySlotBg="rgba(255,255,255,0.32)"
               emptySlotBorder="1.5px dashed rgba(255,255,255,0.65)"
               centeredPartialRows
@@ -832,7 +832,7 @@ function ValuesRankingContent() {
               cardRevealed={cardRevealed}
               onEmptySlotClick={handleEmptySlotClick}
               onFilledCardClick={handleFilledCardClick}
-              sectionBg="#BBABF4"
+              sectionBg="#F29836"
               emptySlotBg="rgba(255,255,255,0.20)"
               emptySlotBorder="1.5px dashed rgba(255,255,255,0.54)"
             />
@@ -845,14 +845,14 @@ function ValuesRankingContent() {
               cardRevealed={cardRevealed}
               onEmptySlotClick={handleEmptySlotClick}
               onFilledCardClick={handleFilledCardClick}
-              sectionBg="#F8F4EB"
+              sectionBg="#BBABF4"
               emptySlotBg="rgba(19,4,38,0.09)"
               emptySlotBorder="1.5px dashed rgba(19,4,38,0.22)"
             />
           </div>
 
           {/* Reflection */}
-          <section className="mt-8 rounded-[24px] bg-[#f4efe4] px-6 py-5 text-[#130426] md:px-8 md:py-6">
+          <section className="mt-8 rounded-[24px] border border-[#130426] bg-[#f4efe4] px-6 py-5 text-[#130426] md:px-8 md:py-6">
             <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
               Once you've placed a few cards, you might start to notice patterns.
             </p>
@@ -990,9 +990,9 @@ function ValuesRankingContent() {
           {expandedBucket === null && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 22 }}>
               {([
-                { key: 'essential' as Bucket, label: 'Essential', bg: '#F29836', count: `${assignments.essential.length}/${ESSENTIAL_SLOTS}` },
-                { key: 'important' as Bucket, label: 'Important', bg: '#BBABF4', count: `${assignments.important.length}` },
-                { key: 'less_central' as Bucket, label: 'Less important', bg: '#F8F4EB', count: `${assignments.less_central.length}` },
+                { key: 'essential' as Bucket, label: 'Essential', bg: '#DB5835', count: `${assignments.essential.length}/${ESSENTIAL_SLOTS}` },
+                { key: 'important' as Bucket, label: 'Important', bg: '#F29836', count: `${assignments.important.length}` },
+                { key: 'less_central' as Bucket, label: 'Less important', bg: '#BBABF4', count: `${assignments.less_central.length}` },
               ]).map((b) => {
                 const placeable = cardRevealed && !!current
                 return (
@@ -1001,7 +1001,6 @@ function ValuesRankingContent() {
                     style={{
                       flex: '1 1 30%', minWidth: 95,
                       background: b.bg,
-                      border: b.bg === '#F8F4EB' ? '1px solid rgba(19,4,38,0.15)' : 'none',
                       borderRadius: 14,
                       overflow: 'hidden',
                       display: 'flex', flexDirection: 'column',
@@ -1023,7 +1022,7 @@ function ValuesRankingContent() {
                       }}
                       style={{
                         width: '100%',
-                        background: 'none', color: '#130426',
+                        background: 'none', color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426',
                         border: 'none',
                         padding: '14px 10px',
                         display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -1032,12 +1031,12 @@ function ValuesRankingContent() {
                         textAlign: 'left',
                       }}
                     >
-                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: '#130426', lineHeight: 1.2 }}>
+                      <span style={{ fontFamily: hv, fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426', lineHeight: 1.2 }}>
                         {b.label}
                       </span>
                       <span
                         ref={(el) => { countRefs.current[b.key] = el }}
-                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center', marginTop: 10 }}
+                        style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426', lineHeight: 1, display: 'inline-block', transformOrigin: 'center', marginTop: 10 }}
                       >
                         {b.count}
                       </span>
@@ -1051,8 +1050,8 @@ function ValuesRankingContent() {
                         minHeight: 48,
                         background: 'none',
                         border: 'none',
-                        borderTop: '1px solid rgba(19,4,38,0.12)',
-                        color: '#130426',
+                        borderTop: b.bg === '#DB5835' ? '1px solid rgba(248,244,235,0.25)' : '1px solid rgba(19,4,38,0.12)',
+                        color: b.bg === '#DB5835' ? '#F8F4EB' : '#130426',
                         fontFamily: hv, fontSize: 13, fontWeight: 500,
                         cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -1077,9 +1076,9 @@ function ValuesRankingContent() {
               less_central: 'Less important',
             }
             const bgFor: Record<Bucket, string> = {
-              essential: '#F29836',
-              important: '#BBABF4',
-              less_central: '#F8F4EB',
+              essential: '#DB5835',
+              important: '#F29836',
+              less_central: '#BBABF4',
             }
             const bucket = expandedBucket
             const items = assignments[bucket]
@@ -1087,14 +1086,14 @@ function ValuesRankingContent() {
             return (
               <div style={{ background: bgFor[bucket], borderRadius: 18, padding: 16, marginBottom: 22 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: '#130426' }}>
+                  <span style={{ fontFamily: hv, fontSize: 16, fontWeight: 600, color: bucket === 'essential' ? '#F8F4EB' : '#130426' }}>
                     {labelFor[bucket]} · {items.length}{bucket === 'essential' ? `/${ESSENTIAL_SLOTS}` : ''}
                   </span>
                   <button
                     type="button"
                     onClick={() => { setExpandedBucket(null); setMobileMovePicker(null) }}
                     aria-label="Collapse"
-                    style={{ background: 'none', border: 'none', color: '#130426', cursor: 'pointer', width: 48, height: 48, padding: 0, margin: '-12px -12px -12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ background: 'none', border: 'none', color: bucket === 'essential' ? '#F8F4EB' : '#130426', cursor: 'pointer', width: 48, height: 48, padding: 0, margin: '-12px -12px -12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <svg width="14" height="9" viewBox="0 0 14 9" fill="none" aria-hidden="true">
                       <path d="M1 7.5L7 1.5L13 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -1177,7 +1176,7 @@ function ValuesRankingContent() {
 
           {/* Reflection (mobile) — visible once at least one card is placed */}
           {sortedCount > 0 && (
-            <section className="rounded-[24px] bg-[#f4efe4] px-5 py-5 text-[#130426]">
+            <section className="rounded-[24px] border border-[#130426] bg-[#f4efe4] px-5 py-5 text-[#130426]">
               <p style={{ fontFamily: hv, fontSize: 14, lineHeight: 1.5, color: 'rgba(0,0,0,0.6)', marginBottom: 8 }}>
                 Once you've placed a few cards, you might start to notice patterns.
               </p>
@@ -1475,15 +1474,15 @@ function ColumnSection({
   )
 
   return (
-    <section style={{ background: sectionBg, border: sectionBg === '#F8F4EB' ? '1.5px solid rgba(19,4,38,0.18)' : 'none', borderRadius: 18, padding: '28px 10px 32px' }}>
+    <section style={{ background: sectionBg, borderRadius: 18, padding: '28px 10px 32px' }}>
 
       {/* Column header */}
       <div style={{ marginBottom: 18, display: 'flex', alignItems: 'baseline', gap: 10 }}>
-        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: '#130426', margin: 0 }}>
+        <h2 style={{ fontFamily: hv, fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2, color: sectionBg === '#DB5835' ? '#F8F4EB' : '#130426', margin: 0 }}>
           {title}
         </h2>
         {maxCards && (
-          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: 'rgba(19,4,38,0.78)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontFamily: hv, fontSize: 13, fontWeight: 500, color: sectionBg === '#DB5835' ? 'rgba(248,244,235,0.85)' : 'rgba(19,4,38,0.78)', whiteSpace: 'nowrap' }}>
             Max {maxCards}
           </span>
         )}
