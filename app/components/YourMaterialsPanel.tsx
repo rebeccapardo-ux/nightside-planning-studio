@@ -51,7 +51,7 @@ function Chevron({ open }: { open: boolean }) {
   return (
     <svg width={24} height={24} viewBox="0 0 20 20" fill="none"
       style={{ flexShrink: 0, transition: 'transform 200ms ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-      <path d="M5 7.5l5 5 5-5" stroke="#DB5835" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 7.5l5 5 5-5" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -201,8 +201,8 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Single cream card + sunset outline. Title is midnight (#130426) for a strong, readable
-  // heading; the sunset identity carries in the outline + chevron. NOT a filled header bar —
+  // Single cream card + sunset outline. Title + chevron are midnight (#130426) for a strong,
+  // readable header row; the sunset identity carries purely in the outline. NOT a filled bar —
   // a saturated bar over a lighter body reads as an already-expanded accordion. One-color
   // card keeps all text dark on cream (AA throughout). The title row is the toggle; the
   // description (what) shows
