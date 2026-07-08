@@ -119,7 +119,7 @@ export default function YourMaterialsPanel({
   }
   const itemCard: React.CSSProperties = {
     position: 'relative', width: '100%', background: '#ffffff',
-    border: '1px solid #DB5835', borderRadius: 18, padding: '18px 20px',
+    border: '1px solid #130426', borderRadius: 18, padding: '18px 20px',
     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
     gap: 16, transition: 'background 150ms ease', boxSizing: 'border-box',
   }
