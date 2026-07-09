@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
 
             <div style={{ textAlign: 'center', marginBottom: '32px' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'inline-block' }} />
+              <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '40px', width: 'auto', display: 'inline-block' }} />
             </div>
 
             {sent ? (

@@ -30,7 +30,7 @@ export default async function RecoverConfirmPage({
         <div style={{ background: '#ffffff', border: '1px solid #e8e4d8', borderRadius: 16, maxWidth: 440, width: '100%', padding: 48, boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: 20, width: 'auto', display: 'inline-block' }} />
+            <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: 40, width: 'auto', display: 'inline-block' }} />
           </div>
           {children}
         </div>

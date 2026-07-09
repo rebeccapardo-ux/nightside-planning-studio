@@ -69,7 +69,7 @@ export default async function RecoveryEmailVerifyPage({
           maxWidth: 440, width: '100%', padding: 48, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', textAlign: 'center',
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: 20, width: 'auto', display: 'inline-block', marginBottom: 32 }} />
+          <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: 40, width: 'auto', display: 'inline-block', marginBottom: 32 }} />
           {/* Mid-sequence cue: step 2 of 2 ("Open link" → "Verify"). On the verified
               outcome it plays the onboarding completion flourish, then fades away. */}
           {view === 'confirm' && <VerifyStepIndicator mode="confirm" />}
