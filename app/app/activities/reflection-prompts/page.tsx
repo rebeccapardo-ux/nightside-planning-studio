@@ -232,7 +232,7 @@ export default function ReflectPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                background: '#F8F4EB',
+                background: '#FFFFFF',
                 border: '1px solid rgba(26,26,26,0.12)',
                 borderRadius: '16px',
                 padding: '32px 28px',
