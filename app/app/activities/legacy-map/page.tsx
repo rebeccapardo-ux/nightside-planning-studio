@@ -922,18 +922,12 @@ export default function LegacyMapPage() {
       </div>
 
       {/* ── Main content ─────────────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
+      {/* Map — full-width (no surrounding panel); small side padding keeps it just
+          shy of the viewport edges. The reflection below keeps its contained column. */}
+      <div className="px-4 md:px-8">
 
         {/* ── Map ──────────────────────────────────────────────────────────── */}
-        <section
-          className="rounded-[28px] border p-4 md:p-6"
-          style={{
-            backgroundColor: COLORS.light,
-            color: COLORS.midnight,
-            borderColor: "rgba(44,55,119,0.35)",
-            marginTop: 20,
-          }}
-        >
+        <div style={{ color: COLORS.midnight, marginTop: 20 }}>
           {/* Add moment button — inside cream panel, centered above canvas */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
             <button
@@ -1340,8 +1334,11 @@ export default function LegacyMapPage() {
               );
             })}
           </div>
-        </section>
+        </div>
+      </div>
 
+      {/* Reflection — kept in its own contained (max-w-1320) column, unchanged */}
+      <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
         {/* ── Reflection (gated at 3 moments) ──────────────────────────────── */}
         {reflectionMounted && (
           <section
