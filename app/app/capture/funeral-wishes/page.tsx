@@ -982,7 +982,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
       onClick={onClick}
       disabled={disabled}
       className="hover:opacity-90 transition-opacity mobile-sticky-export"
-      style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600, background: '#DB5835', color: '#130426', border: 'none', cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}
     >
       <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
         <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />

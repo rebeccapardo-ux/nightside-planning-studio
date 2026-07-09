@@ -685,7 +685,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         fontSize: 14,
         fontWeight: 600,
-        background: '#DB5835',
+        background: '#F29836',
         color: '#130426',
         border: 'none',
         cursor: disabled ? 'default' : 'pointer',

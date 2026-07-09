@@ -15,7 +15,7 @@ export default function PlanExportButton() {
           display: 'flex', alignItems: 'center', gap: 6,
           borderRadius: 999, padding: '10px 20px',
           fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600,
-          background: '#DB5835', color: '#130426',
+          background: '#F29836', color: '#130426',
           textDecoration: 'none', border: 'none', whiteSpace: 'nowrap',
         }}
       >
