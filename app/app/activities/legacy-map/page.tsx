@@ -927,8 +927,18 @@ export default function LegacyMapPage() {
       <div className="px-4 md:px-8">
 
         {/* ── Map ──────────────────────────────────────────────────────────── */}
-        <div style={{ color: COLORS.midnight, marginTop: 20 }}>
-          {/* Add moment button — inside cream panel, centered above canvas */}
+        {/* The lilac panel now wraps the Add-moment button + autosave text + canvas,
+            so those controls clearly belong to the timeline. The gradient/border live
+            here; the canvas below is transparent so the timeline itself doesn't move. */}
+        <div style={{
+          color: COLORS.midnight,
+          marginTop: 40,
+          background: "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)",
+          border: "1px solid rgba(44,55,119,0.12)",
+          borderRadius: 28,
+          padding: '18px 14px 20px',
+        }}>
+          {/* Add moment button — centered above canvas, inside the lilac panel */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
             <button
               type="button"
@@ -954,8 +964,8 @@ export default function LegacyMapPage() {
               // outside the curve area without getting clipped by the
               // overflow-hidden canvas edge.
               ...(orientation === "vertical" ? { paddingLeft: 40, paddingRight: 40 } : null),
-              background: "linear-gradient(180deg, rgba(187,171,244,0.14) 0%, rgba(248,244,235,1) 100%)",
-              border: "1px solid rgba(44,55,119,0.10)",
+              // Transparent — the surrounding lilac panel supplies the gradient/border now.
+              background: "transparent",
               cursor: draggingId ? "grabbing" : "default",
               touchAction: draggingId ? "none" : "auto",
             }}
