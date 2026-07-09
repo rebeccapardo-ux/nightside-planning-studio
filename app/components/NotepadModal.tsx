@@ -185,22 +185,22 @@ export default function NotepadModal({
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4"
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
     >
-      <div className="w-full max-w-xl rounded-2xl border border-white/10 p-6 shadow-2xl" style={{ background: '#2d3a6b' }}>
+      <div className="w-full max-w-xl rounded-2xl border border-[#130426]/15 p-6 shadow-2xl" style={{ background: '#F8F4EB' }}>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold text-[#f8f4eb]">Notepad</h2>
+          <h2 className="text-2xl font-semibold text-[#130426]">Notepad</h2>
           <button
             onClick={handleClose}
             className="transition-colors text-xl leading-none hover:opacity-100"
-            style={{ color: 'rgba(255,255,255,0.7)' }}
+            style={{ color: 'rgba(19,4,38,0.6)' }}
           >
             ×
           </button>
         </div>
 
         {/* Helper text */}
-        <AutosaveNotice theme="dark" style={{ marginBottom: 16, fontStyle: 'normal', fontSize: 15, fontWeight: 500, color: 'rgba(248,244,235,0.92)' }} />
+        <AutosaveNotice theme="light" style={{ marginBottom: 16, fontStyle: 'normal', fontSize: 15, fontWeight: 500, color: 'rgba(19,4,38,0.72)' }} />
 
         {/* Composer */}
         <textarea
@@ -222,15 +222,15 @@ export default function NotepadModal({
         {/* Save status */}
         <div style={{ margin: '6px 0 16px', minHeight: 18, display: 'flex', alignItems: 'center', gap: 6 }}>
           {saving && (
-            <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Saving…</span>
+            <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)' }}>Saving…</span>
           )}
           {confirmVisible && !saving && (
             <>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.75)" strokeWidth="1.3" />
-                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(255,255,255,0.75)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="7" cy="7" r="6" stroke="rgba(19,4,38,0.6)" strokeWidth="1.3" />
+                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="rgba(19,4,38,0.6)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>Saved to Your materials</span>
+              <span style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)' }}>Saved to Your materials</span>
             </>
           )}
         </div>
@@ -239,7 +239,7 @@ export default function NotepadModal({
         <div className="mb-4">
           <VoiceNoteButton
             saveMode={{ kind: 'freeform' }}
-            theme="dark"
+            theme="light"
             onSaved={async (note: Note) => {
               // finalNote (incl. transcript, or 'failed' status) is already
               // persisted by the time onSaved fires, so the refetch reflects it.
