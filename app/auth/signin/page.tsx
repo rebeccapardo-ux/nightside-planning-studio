@@ -84,7 +84,7 @@ function SignInForm() {
         <img
           src="/The-Nightside-Wordmark-Black.svg"
           alt="The Nightside"
-          style={{ height: '20px', width: 'auto', display: 'inline-block' }}
+          style={{ height: '40px', width: 'auto', display: 'inline-block' }}
         />
       </div>
 

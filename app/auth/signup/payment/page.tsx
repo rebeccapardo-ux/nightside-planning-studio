@@ -54,7 +54,7 @@ export default async function PaymentPage() {
           boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'block', margin: '0 auto 32px' }} />
+          <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '40px', width: 'auto', display: 'block', margin: '0 auto 32px' }} />
 
           {!emailConfirmed ? (
             <div style={{ textAlign: 'center' }}>

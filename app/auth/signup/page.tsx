@@ -244,7 +244,7 @@ export default function SignUpPage() {
               <div style={{ textAlign: 'center' }}>
                 <div style={{ marginBottom: '32px' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'inline-block' }} />
+                  <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '40px', width: 'auto', display: 'inline-block' }} />
                 </div>
                 <h1 style={{ fontFamily: apfel, fontSize: '24px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px 0' }}>
                   Check your email
@@ -264,7 +264,7 @@ export default function SignUpPage() {
                 {/* Wordmark */}
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'inline-block' }} />
+                  <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '40px', width: 'auto', display: 'inline-block' }} />
                 </div>
 
                 {/* Heading */}

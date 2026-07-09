@@ -38,7 +38,7 @@ export default function SignupCancelPage() {
             textAlign: 'center',
           }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'inline-block', marginBottom: '32px' }} />
+            <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '40px', width: 'auto', display: 'inline-block', marginBottom: '32px' }} />
 
             <h1 style={{ fontFamily: apfel, fontSize: '24px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 16px 0' }}>
               Payment cancelled

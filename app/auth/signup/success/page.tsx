@@ -76,7 +76,7 @@ export default async function SignupSuccessPage({
           textAlign: 'center',
         }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '20px', width: 'auto', display: 'inline-block', marginBottom: '32px' }} />
+          <img src="/The-Nightside-Wordmark-Black.svg" alt="The Nightside" style={{ height: '40px', width: 'auto', display: 'inline-block', marginBottom: '32px' }} />
 
           {paid ? (
             <>
