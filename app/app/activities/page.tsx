@@ -9,7 +9,6 @@ type ExploreActivityCardProps = {
   href?: string
   status?: 'available' | 'coming_soon'
   index: number
-  cta?: string
 }
 
 type CardConfig = {
@@ -151,7 +150,6 @@ export default function ExplorePage() {
               href="/app/activities/reflection-prompts"
               status="available"
               index={0}
-              cta="Open →"
             />
             <ExploreActivityCard
               title="Values & Fears Ranking"
@@ -194,7 +192,6 @@ function ExploreActivityCard({
   description,
   href,
   status = 'available',
-  cta,
 }: ExploreActivityCardProps) {
   const config = SUNRISE_CONFIG
   const isAvailable = status === 'available' && !!href
@@ -202,7 +199,7 @@ function ExploreActivityCard({
   const [pressed, setPressed] = useState(false)
 
   const cardStyle: React.CSSProperties = {
-    minHeight: 280,
+    minHeight: 220,
     padding: 32,
     borderRadius: 20,
     display: 'flex',
@@ -252,7 +249,7 @@ function ExploreActivityCard({
           border: 'none',
           textDecoration: 'none',
         }}>
-          {isAvailable ? (cta ?? 'Begin →') : 'Coming soon'}
+          {isAvailable ? 'Open →' : 'Coming soon'}
         </span>
       </div>
     </div>
