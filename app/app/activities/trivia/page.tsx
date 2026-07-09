@@ -211,7 +211,7 @@ function DeckView({
                   onClick={() => onSelect(card)}
                   style={{
                     aspectRatio: '3/4',
-                    background: '#F8F4EB',
+                    background: '#FFFFFF',
                     border: '1px solid rgba(26,26,26,0.12)',
                     boxShadow: seen ? 'none' : '0 8px 20px rgba(19,4,38,0.18), inset 0 1px 0 rgba(255,255,255,0.07)',
                   }}
@@ -307,7 +307,7 @@ function CardView({
       <div className="flex flex-col items-center">
         <div
           style={{ perspective: '1200px' }}
-          className="w-full max-w-[360px]"
+          className="w-full max-w-[360px] rounded-2xl shadow-[0_8px_20px_rgba(19,4,38,0.18)]"
         >
           <div
             style={{
@@ -319,8 +319,8 @@ function CardView({
           >
             {/* Front — question */}
             <div
-              style={{ backfaceVisibility: 'hidden', gridArea: '1/1', minHeight: '480px' }}
-              className="rounded-2xl bg-[#f8f4eb] px-8 py-10 flex flex-col justify-between"
+              style={{ backfaceVisibility: 'hidden', gridArea: '1/1', minHeight: '480px', border: '1px solid rgba(26,26,26,0.12)' }}
+              className="rounded-2xl bg-white px-8 py-10 flex flex-col justify-between"
             >
               <div className="flex-1 flex items-center">
                 <p className="text-[#130426] text-xl font-semibold leading-snug whitespace-pre-line">
