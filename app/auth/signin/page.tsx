@@ -195,7 +195,7 @@ export default function SignInPage() {
         .auth-btn {
           width: 100%;
           padding: 14px;
-          background: #2d3a6b;
+          background: #2C3777;
           color: #ffffff;
           border: none;
           border-radius: 100px;
