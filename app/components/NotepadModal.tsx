@@ -364,7 +364,7 @@ export default function NotepadModal({
                 : buttonStyle === 'orange'
                 ? 'bg-[#DB5835] text-[#130426] hover:bg-[#C04828]'
                 : buttonStyle === 'midnight'
-                ? 'bg-[#130426] text-[#f8f4eb] hover:bg-[#200840]'
+                ? 'bg-[#130426] text-[#FFFFFF] hover:bg-[#200840]'
                 : buttonStyle === 'navy'
                 ? 'bg-[#2C3777] text-[#f8f4eb] hover:bg-[#3d4e8f]'
                 : buttonStyle === 'sunrise'
