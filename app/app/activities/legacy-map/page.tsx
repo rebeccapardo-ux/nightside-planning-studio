@@ -949,7 +949,7 @@ export default function LegacyMapPage() {
             ref={pathContainerRef}
             className="relative w-full select-none rounded-[20px] overflow-hidden"
             style={{
-              height: orientation === "vertical" ? 620 : 360,
+              height: orientation === "vertical" ? 700 : 460,
               // Horizontal padding on mobile gives labels room to extend
               // outside the curve area without getting clipped by the
               // overflow-hidden canvas edge.
