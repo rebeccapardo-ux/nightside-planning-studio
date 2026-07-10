@@ -61,7 +61,7 @@ export default async function PlanByAreaPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                   <h2 style={{ fontFamily: hv, fontSize: 24, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: 0 }}>{area.title}</h2>
                   {/* Area identity icon — top-right, mirrors ActivityIcon on the Activities cards. */}
-                  <AreaIcon slug={area.slug} size={33} color="#130426" />
+                  <AreaIcon slug={area.slug} size={31} color="#130426" />
                 </div>
                 <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: 'rgba(19,4,38,0.78)', margin: '12px 0 0' }}>{areaDescription(area.learnId)}</p>
               </div>
