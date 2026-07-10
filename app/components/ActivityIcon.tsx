@@ -1,10 +1,10 @@
-import React from 'react'
+import { Scale, MessageCircle, Split, Route, Lightbulb, type LucideIcon } from 'lucide-react'
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Per-activity IDENTITY icons (item-level). One source of geometry for every
-// surface that shows a single NAMED activity: the Activities landing cards, the
-// area-page "Relevant Activities" cards, the "Activity outputs" list in Your
-// materials, and the wishes-doc "Relevant materials" panels.
+// Per-activity IDENTITY icons (item-level), now drawn from Lucide. One source of
+// geometry for every surface that shows a single NAMED activity: the Activities
+// landing cards, the area-page "Relevant Activities" cards, the "Activity outputs"
+// list in Your materials, and the wishes-doc "Relevant materials" panels.
 //
 // This is a SUB-LEVEL set. It does NOT touch the category-level activity-outputs /
 // document / note glyphs — those stay wherever a material *type* is labelled
@@ -15,14 +15,19 @@ import React from 'react'
 // `entry.activity` / `act.activity` directly — plus `deathcare_trivia`, which
 // produces no entries but appears as an entry point.
 //
-// Geometry: 24×24 viewBox, single-weight 2px outline (round caps/joins) EXCEPT the
-// noted fills. vector-effect="non-scaling-stroke" keeps the stroke a constant 2px
-// at every render size. `color` sets stroke AND the fills; default currentColor,
-// but every surface passes it explicitly.
+// The component API is unchanged (size / color / decorative / className); only the
+// internals swapped from hand-built SVGs to Lucide. Lucide's default strokeWidth=2
+// is the single weight we want; `color` drives stroke (default currentColor, but
+// every surface passes it explicitly — Midnight #130426 on landing, Night #2C3777
+// on area/materials/wishes).
 //
-// Small-tier rule (threshold, not blanket): below 20px, the Legacy Map plotted
-// points drop from r=1.7 to r=1.5 so they don't crowd the connecting line at 16px.
-// (Trivia produces no output, so it never renders below 24px.)
+// Slug → Lucide mapping (primary; some are judgment calls under review):
+//   reflection_prompts → MessageCircle   (alternates: MessageCircleQuestion, Quote)
+//   values_ranking     → Scale
+//   fears_ranking      → Scale            (same glyph as values, by design)
+//   scenario_navigator → Split            (alternate: Route)
+//   legacy_map         → Route            (alternates: Milestone, MapPinned)
+//   deathcare_trivia   → Lightbulb        (alternate: HelpCircle / CircleHelp)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ActivityIconSlug =
@@ -33,10 +38,14 @@ export type ActivityIconSlug =
   | 'deathcare_trivia'
   | 'legacy_map'
 
-const KNOWN: readonly string[] = [
-  'reflection_prompts', 'values_ranking', 'fears_ranking',
-  'scenario_navigator', 'deathcare_trivia', 'legacy_map',
-]
+const ICONS: Record<ActivityIconSlug, LucideIcon> = {
+  reflection_prompts: MessageCircle,
+  values_ranking: Scale,
+  fears_ranking: Scale,
+  scenario_navigator: Split,
+  legacy_map: Route,
+  deathcare_trivia: Lightbulb,
+}
 
 const TITLES: Record<ActivityIconSlug, string> = {
   reflection_prompts: 'Reflection Prompts',
@@ -51,112 +60,29 @@ export default function ActivityIcon({
   slug,
   size = 24,
   color = 'currentColor',
+  // A text label almost always sits next to these icons, so decorative
+  // (aria-hidden) is the default. Pass decorative={false} to expose the label.
   decorative = true,
   className,
 }: {
   slug: string
   size?: number
   color?: string
-  // A text label almost always sits next to these icons, so decorative (aria-hidden)
-  // is the default. Pass decorative={false} to expose the <title> to AT.
   decorative?: boolean
   className?: string
 }) {
-  if (!KNOWN.includes(slug)) return null
-  const s = slug as ActivityIconSlug
-  const small = size < 20
-
-  // Shared stroke attributes for outlined elements.
-  const st = {
-    fill: 'none',
-    stroke: color,
-    strokeWidth: 2,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-    vectorEffect: 'non-scaling-stroke' as const,
-  }
-  const fillProps = { fill: color, stroke: 'none' }
-
-  let body: React.ReactNode = null
-
-  if (s === 'reflection_prompts') {
-    // Thought cloud with two trailing bubbles below-left.
-    body = (
-      <>
-        <path {...st} d="M7.5 13 C5 13 4 10 6.5 9.2 C6 6 10 5 11 7.5 C12.5 4.5 17 5.5 16.5 9 C19.5 9 19.5 13 17 13 Z" />
-        <circle {...st} cx="6" cy="15.8" r="1.4" />
-        <circle {...st} cx="3.8" cy="18.2" r="0.9" />
-      </>
-    )
-  } else if (s === 'values_ranking' || s === 'fears_ranking') {
-    // Balance scale — Values and Fears deliberately share this glyph.
-    body = (
-      <>
-        <circle {...st} cx="12" cy="4" r="1.25" />
-        <path {...st} d="M12 5.25V18" />
-        <path {...st} d="M8.5 18h7" />
-        <path {...st} d="M5 7.4h14" />
-        {/* left pan */}
-        <path {...st} d="M5 7.4 2.7 11M5 7.4 7.3 11" />
-        <path {...st} d="M2.7 11a2.65 1.35 0 0 0 4.6 0" />
-        {/* right pan */}
-        <path {...st} d="M19 7.4 16.7 11M19 7.4 21.3 11" />
-        <path {...st} d="M16.7 11a2.65 1.35 0 0 0 4.6 0" />
-      </>
-    )
-  } else if (s === 'scenario_navigator') {
-    // Three-way branching arrows.
-    body = (
-      <>
-        <path {...st} d="M12 21 L12 12.5" />
-        <path {...st} d="M12 12.5 L12 3.5" />
-        <path {...st} d="M9.5 5.8 L12 3.5 L14.5 5.8" />
-        <path {...st} d="M12 12.5 C 10 11 7.5 11 4.5 11" />
-        <path {...st} d="M6.8 8.8 L4.5 11 L6.8 13.2" />
-        <path {...st} d="M12 12.5 C 14 11 16.5 11 19.5 11" />
-        <path {...st} d="M17.2 8.8 L19.5 11 L17.2 13.2" />
-      </>
-    )
-  } else if (s === 'deathcare_trivia') {
-    // Question-mark lightbulb — bulb + base stroked, "?" dot filled.
-    body = (
-      <>
-        <circle {...st} cx="12" cy="9" r="6" />
-        <path {...st} d="M9.6 14.4 L10 16.2" />
-        <path {...st} d="M14.4 14.4 L14 16.2" />
-        <path {...st} d="M9.6 16.4 L14.4 16.4" />
-        <path {...st} d="M10 18 L14 18" />
-        <path {...st} d="M10.8 19.6 L13.2 19.6" />
-        <path {...st} d="M9.9 6.8 C9.9 4.6 14.1 4.6 14.1 7 C14.1 8.8 12 8.6 12 10.4" />
-        <circle {...fillProps} cx="12" cy="12.3" r="0.75" />
-      </>
-    )
-  } else if (s === 'legacy_map') {
-    // Plotted points connected by a thinner (1.5) line so the points stay dominant.
-    // Points drop from r=1.7 to r=1.5 below 20px so they don't crowd. Filled, no stroke.
-    const r = small ? 1.5 : 1.7
-    body = (
-      <>
-        <path {...st} strokeWidth={1.5} d="M5 15 L10 8 L16 13 L20 6" />
-        <circle {...fillProps} cx="5" cy="15" r={r} />
-        <circle {...fillProps} cx="10" cy="8" r={r} />
-        <circle {...fillProps} cx="16" cy="13" r={r} />
-        <circle {...fillProps} cx="20" cy="6" r={r} />
-      </>
-    )
-  }
-
+  const Icon = (ICONS as Record<string, LucideIcon | undefined>)[slug]
+  if (!Icon) return null
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
+    <Icon
+      size={size}
+      color={color}
+      strokeWidth={2}
       className={className}
       style={{ flexShrink: 0, display: 'block' }}
-      {...(decorative ? { 'aria-hidden': true } : { role: 'img' })}
-    >
-      {!decorative && <title>{TITLES[s]}</title>}
-      {body}
-    </svg>
+      {...(decorative
+        ? { 'aria-hidden': true }
+        : { role: 'img', 'aria-label': TITLES[slug as ActivityIconSlug] })}
+    />
   )
 }
