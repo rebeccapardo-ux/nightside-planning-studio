@@ -56,7 +56,7 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
 // above the full-card overlay link so it stays independently clickable + focusable.
 function OpenLink({ href }: { href: string }) {
   return (
-    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-end', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 8, position: 'relative', zIndex: 1 }}>Open →</Link>
+    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-end', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 8, marginBottom: 8, position: 'relative', zIndex: 1 }}>Open →</Link>
   )
 }
 

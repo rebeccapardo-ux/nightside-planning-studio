@@ -319,8 +319,9 @@ function ReflectPromptsInner() {
       <div style={{ maxWidth: '448px', margin: '20px auto 96px', padding: '0 24px' }}>
         <div style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.14)' }}>
 
-          {/* Card top — cream, prompt text */}
-          <div style={{ background: '#F8F4EB', padding: '36px 28px 32px' }}>
+          {/* Card top — cream, prompt text (the cream/navy break separates it from the
+              note panel below) */}
+          <div style={{ background: '#F8F4EB', padding: '36px 28px 44px' }}>
             <p style={{
               fontFamily: fontHelveticaMedium,
               fontSize: '20px',
@@ -333,8 +334,8 @@ function ReflectPromptsInner() {
             </p>
           </div>
 
-          {/* Card bottom — navy, note UI */}
-          <div style={{ background: '#2C3777', padding: '28px' }}>
+          {/* Card bottom — navy, note UI (light controls for contrast) */}
+          <div style={{ background: '#2C3777', padding: '38px 28px 28px' }}>
 
             <AutosaveNotice theme="dark" style={{ marginBottom: 12 }} />
 
@@ -372,7 +373,7 @@ function ReflectPromptsInner() {
             />
 
             {/* Save status */}
-            <div style={{ minHeight: '18px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ minHeight: '18px', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
               {saveStatus === 'saved' && (
                 <>
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -391,7 +392,7 @@ function ReflectPromptsInner() {
             </div>
 
             {/* Voice note */}
-            <div style={{ marginTop: '10px' }}>
+            <div style={{ marginTop: '4px' }}>
               {voiceSaveMode ? (
                 <VoiceNoteButton
                   saveMode={voiceSaveMode}
@@ -449,7 +450,7 @@ function ReflectPromptsInner() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '28px' }}>
               <button
                 onClick={goToNext}
-                style={{ background: '#F29836', color: '#130426', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
+                style={{ background: '#F8F4EB', color: '#130426', padding: '11px 22px', borderRadius: '999px', fontFamily: fontHelveticaMedium, fontSize: '14px', lineHeight: '20px', fontWeight: 500, border: 'none', cursor: 'pointer' }}
               >
                 Next card →
               </button>
