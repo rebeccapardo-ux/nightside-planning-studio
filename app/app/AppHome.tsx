@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
 import { AREAS } from '@/lib/areas'
+import AreaIcon from '@/app/components/AreaIcon'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -117,7 +118,7 @@ export default function AppHomePage() {
             </CardTop>
             <OpenLink href="/app/area" />
             <div className="home4-subgrid" style={{ position: 'relative', zIndex: 1 }}>
-              {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} />)}
+              {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} slug={area.slug} />)}
             </div>
           </section>
 
@@ -173,10 +174,16 @@ function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { h
   )
 }
 
-function SubItem({ href, label }: { href: string; label: string }) {
+function SubItem({ href, label, slug }: { href: string; label: string; slug: string }) {
   return (
     <Link href={href} className="home4-sub">
-      <span>{label}</span>
+      {/* Area icon left of the label. align-items:center centers the 18px icon to the
+          whole label block, so on the two wrapping tiles ("Healthcare Wishes",
+          "Ritual & Ceremony") it sits at the tile's vertical center, not the first line. */}
+      <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+        <AreaIcon slug={slug} size={18} color="#130426" />
+        <span>{label}</span>
+      </span>
       <span aria-hidden="true" style={{ fontSize: 14, opacity: 0.6, flexShrink: 0 }}>→</span>
     </Link>
   )

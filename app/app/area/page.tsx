@@ -6,8 +6,6 @@ import { AREAS } from '@/lib/areas'
 import { LEARN_AREAS } from '@/lib/learn-areas'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
 import AreaIcon from '@/app/components/AreaIcon'
-// TEMP: side-by-side options for the Ritual & Ceremony card, for review only.
-import { HeartHandshake, UsersRound } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Plan by area',
@@ -63,16 +61,7 @@ export default async function PlanByAreaPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                   <h2 style={{ fontFamily: hv, fontSize: 24, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: 0 }}>{area.title}</h2>
                   {/* Area identity icon — top-right, mirrors ActivityIcon on the Activities cards. */}
-                  {area.slug === 'ritual-and-ceremony' ? (
-                    // TEMP: render both candidates side-by-side (HeartHandshake left, UsersRound right)
-                    // for on-card comparison. Collapse to the chosen one in AreaIcon after review.
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <HeartHandshake size={36} color="#130426" strokeWidth={2} aria-hidden="true" />
-                      <UsersRound size={36} color="#130426" strokeWidth={2} aria-hidden="true" />
-                    </div>
-                  ) : (
-                    <AreaIcon slug={area.slug} size={36} color="#130426" />
-                  )}
+                  <AreaIcon slug={area.slug} size={36} color="#130426" />
                 </div>
                 <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: 'rgba(19,4,38,0.78)', margin: '12px 0 0' }}>{areaDescription(area.learnId)}</p>
               </div>
