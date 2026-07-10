@@ -1,4 +1,4 @@
-import { Scale, MessageCircle, Split, Route, Lightbulb, type LucideIcon } from 'lucide-react'
+import { Scale, MessageCircleMore, Split, Route, Lightbulb, type LucideIcon } from 'lucide-react'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Per-activity IDENTITY icons (item-level), now drawn from Lucide. One source of
@@ -22,7 +22,7 @@ import { Scale, MessageCircle, Split, Route, Lightbulb, type LucideIcon } from '
 // on area/materials/wishes).
 //
 // Slug → Lucide mapping (primary; some are judgment calls under review):
-//   reflection_prompts → MessageCircle   (alternates: MessageCircleQuestion, Quote)
+//   reflection_prompts → MessageCircleMore  (the "more/thought" dots read less like a plain speech bubble)
 //   values_ranking     → Scale
 //   fears_ranking      → Scale            (same glyph as values, by design)
 //   scenario_navigator → Split            (alternate: Route)
@@ -39,7 +39,7 @@ export type ActivityIconSlug =
   | 'legacy_map'
 
 const ICONS: Record<ActivityIconSlug, LucideIcon> = {
-  reflection_prompts: MessageCircle,
+  reflection_prompts: MessageCircleMore,
   values_ranking: Scale,
   fears_ranking: Scale,
   scenario_navigator: Split,
