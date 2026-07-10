@@ -239,7 +239,7 @@ function ExploreActivityCard({
             {title}
           </h2>
           {/* Item-level activity identity icon — top-right, optically on the title. */}
-          <ActivityIcon slug={iconSlug} size={34} color="#130426" />
+          <ActivityIcon slug={iconSlug} size={33} color="#130426" />
         </div>
         <p style={{ fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: config.bodyColor, marginTop: 12, marginBottom: 0 }}>
           {description}
