@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { DOCUMENT_TYPE_META, DOCUMENT_TYPES, entryExportHref } from '@/lib/content-metadata'
 import Link from 'next/link'
 import PlanNotesGridComp from '@/app/components/PlanNotesGrid'
+import ActivityIcon from '@/app/components/ActivityIcon'
 import type { Container } from '@/lib/notes'
 
 const hv  = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -163,7 +164,7 @@ export default function YourMaterialsPanel({
       <div key={act.activity} className="plan-pill-out" style={itemCard}>
         <Link href={act.href} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} aria-hidden="true" tabIndex={-1} />
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <ActivityOutputIcon size={22} />
+          <ActivityIcon slug={act.activity} size={22} color="#2C3777" />
           <span style={cardTitle}>{act.label}</span>
         </div>
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 18 }}>
