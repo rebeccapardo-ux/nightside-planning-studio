@@ -1,4 +1,4 @@
-import { HeartPlus, Sunset, Music, TreeDeciduous, Scroll, Folder, type LucideIcon } from 'lucide-react'
+import { HeartPlus, Moon, Music, TreePine, Scroll, Folder, type LucideIcon } from 'lucide-react'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Per-AREA identity icons, drawn from Lucide. A separate family from ActivityIcon
@@ -11,9 +11,9 @@ import { HeartPlus, Sunset, Music, TreeDeciduous, Scroll, Folder, type LucideIco
 //
 // Slug → Lucide mapping:
 //   healthcare-wishes   → HeartPlus
-//   deathcare           → Sunset
-//   ritual-and-ceremony → Music
-//   legacy              → TreeDeciduous
+//   deathcare           → Moon
+//   ritual-and-ceremony → Music (under review: HeartHandshake vs UsersRound)
+//   legacy              → TreePine
 //   wills-and-estates   → Scroll
 //   personal-admin      → Folder
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,9 +28,9 @@ export type AreaIconSlug =
 
 const ICONS: Record<AreaIconSlug, LucideIcon> = {
   'healthcare-wishes': HeartPlus,
-  'deathcare': Sunset,
+  'deathcare': Moon,
   'ritual-and-ceremony': Music,
-  'legacy': TreeDeciduous,
+  'legacy': TreePine,
   'wills-and-estates': Scroll,
   'personal-admin': Folder,
 }
