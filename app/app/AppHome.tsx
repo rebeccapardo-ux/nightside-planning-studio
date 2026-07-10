@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
 import { AREAS } from '@/lib/areas'
+import AreaIcon from '@/app/components/AreaIcon'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -71,10 +72,14 @@ export default function AppHomePage() {
         .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: start; }
         .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; border: 2px solid #000000; box-shadow: 6px 6px 0 rgba(0,0,0,0.75); transition: transform 140ms ease, box-shadow 140ms ease; }
         .home4-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 rgba(0,0,0,0.88); }
+        /* A hovered sub-tile is its OWN target (into a specific area) — it must not also lift
+           the Plan-by-area card (whose hover routes to the landing page). :has() outweighs
+           :hover on specificity, so it cancels the card lift while any tile is hovered. */
+        .home4-card:has(.home4-sub:hover) { transform: none; box-shadow: 6px 6px 0 rgba(0,0,0,0.75); }
         /* grid-auto-rows: 1fr → all six area cards share one (tallest) row height. */
         .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; grid-auto-rows: 1fr; }
-        .home4-sub { background: rgba(255,255,255,0.5); border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease; }
-        .home4-sub:hover { background: rgba(255,255,255,0.85); }
+        .home4-sub { background: rgba(255,255,255,0.5); border: 1px solid transparent; border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease; }
+        .home4-sub:hover { background: #FFFFFF; border-color: rgba(19,4,38,0.16); box-shadow: 0 3px 10px rgba(19,4,38,0.22); transform: translateY(-1px); }
         @media (max-width: 900px) {
           .home4-primary { grid-template-columns: 1fr; }
           .home4-subgrid { grid-template-columns: 1fr; }
@@ -117,7 +122,7 @@ export default function AppHomePage() {
             </CardTop>
             <OpenLink href="/app/area" />
             <div className="home4-subgrid" style={{ position: 'relative', zIndex: 1 }}>
-              {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} />)}
+              {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} slug={area.slug} />)}
             </div>
           </section>
 
@@ -173,11 +178,17 @@ function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { h
   )
 }
 
-function SubItem({ href, label }: { href: string; label: string }) {
+function SubItem({ href, label, slug }: { href: string; label: string; slug: string }) {
   return (
     <Link href={href} className="home4-sub">
-      <span>{label}</span>
-      <span aria-hidden="true" style={{ fontSize: 14, opacity: 0.6, flexShrink: 0 }}>→</span>
+      {/* Fixed-width icon gutter → every label starts at the same x, one line or two. The
+          tile (.home4-sub) is align-items:center and equal-height (grid-auto-rows:1fr), so
+          the 18px icon sits at the tile's vertical center — not the first line — keeping the
+          two wrapping tiles ("Healthcare Wishes", "Ritual & Ceremony") from looking lopsided. */}
+      <span style={{ width: 18, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <AreaIcon slug={slug} size={18} color="#130426" />
+      </span>
+      <span style={{ minWidth: 0 }}>{label}</span>
     </Link>
   )
 }

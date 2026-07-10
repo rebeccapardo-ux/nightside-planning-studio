@@ -5,6 +5,7 @@ import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { AREAS } from '@/lib/areas'
 import { LEARN_AREAS } from '@/lib/learn-areas'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
+import AreaIcon from '@/app/components/AreaIcon'
 
 export const metadata: Metadata = {
   title: 'Plan by area',
@@ -57,7 +58,11 @@ export default async function PlanByAreaPage() {
               style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 220, padding: 32, borderRadius: 20, background: '#BBABF4', textDecoration: 'none' }}
             >
               <div>
-                <h2 style={{ fontFamily: hv, fontSize: 24, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: 0 }}>{area.title}</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                  <h2 style={{ fontFamily: hv, fontSize: 24, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: 0 }}>{area.title}</h2>
+                  {/* Area identity icon — top-right, mirrors ActivityIcon on the Activities cards. */}
+                  <AreaIcon slug={area.slug} size={36} color="#130426" />
+                </div>
                 <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: 'rgba(19,4,38,0.78)', margin: '12px 0 0' }}>{areaDescription(area.learnId)}</p>
               </div>
               <span style={{ marginTop: 24, height: 48, paddingLeft: 24, paddingRight: 24, borderRadius: 999, fontSize: 14, fontWeight: 500, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#130426', color: '#FFFFFF', alignSelf: 'flex-start', fontFamily: hv }}>Open →</span>
