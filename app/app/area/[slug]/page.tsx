@@ -7,6 +7,7 @@ import { areaBySlug } from '@/lib/areas'
 import AreaPlanSection from '@/app/components/area/AreaPlanSection'
 import AreaHeader from '@/app/components/area/AreaHeader'
 import CollapsibleSection from '@/app/components/area/CollapsibleSection'
+import ActivityIcon from '@/app/components/ActivityIcon'
 import type { AreaSlug } from '@/lib/areas'
 import HealthcareLearnContent from '@/app/components/area/learn/HealthcareLearnContent'
 import DeathcareLearnContent from '@/app/components/area/learn/DeathcareLearnContent'
@@ -99,7 +100,10 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
                 const entryId = act.kind === 'output' && act.activity ? entryByActivity.get(act.activity) : undefined
                 return (
                   <div key={act.label} style={{ background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.1)', borderRadius: 14, padding: '20px 22px', display: 'flex', flexDirection: 'column' }}>
-                    <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#130426', margin: 0 }}>{act.label}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <ActivityIcon slug={act.icon} size={24} color="#2C3777" />
+                      <p style={{ fontFamily: hv, fontSize: 16, fontWeight: 700, color: '#130426', margin: 0 }}>{act.label}</p>
+                    </div>
                     <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '6px 0 0', flex: 1 }}>{act.blurb}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 18 }}>
                       {/* All CTAs use a 44px min tap target (project standard). */}

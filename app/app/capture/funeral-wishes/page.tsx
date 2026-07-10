@@ -15,6 +15,7 @@ import { getNoteSupDocTier, getWorkingOutputBehavior, isInsertedIntoResponse, ha
 import { ACTIVITY_META_BY_ID, ACTIVITY, STRUCTURED_ACTIVITIES, DOCUMENT_TYPE_META, DOCUMENT_TYPES, DOCUMENT_TYPE } from '@/lib/content-metadata'
 import type { SupplementaryDocQuestion } from '@/lib/content-metadata'
 import { type Note, fetchReflectionsByEntryIds } from '@/lib/notes'
+import ActivityIcon from '@/app/components/ActivityIcon'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -1608,7 +1609,7 @@ function FWValuesCard({ entry, responseText, readOnly, onInsert }: { entry: Pane
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? 0 : 8, color: '#130426' }}>
-        <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
+        <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityIcon slug={entry.activity ?? ''} size={16} color="#130426" /></div>
         <p style={TITLE_STYLE}>Values Ranking</p>
       </div>
       {!readOnly && (
@@ -1658,7 +1659,7 @@ function FWFearsCard({ entry, responseText, readOnly, onInsert }: { entry: Panel
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: readOnly ? 0 : 8, color: '#130426' }}>
-        <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
+        <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityIcon slug={entry.activity ?? ''} size={16} color="#130426" /></div>
         <p style={TITLE_STYLE}>Fears Ranking</p>
       </div>
       {!readOnly && (
@@ -1701,7 +1702,7 @@ function FWLegacyMapCard({ entry, responseText, readOnly, onInsert }: { entry: P
   return (
     <div style={CARD_STYLE}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4, color: '#130426' }}>
-        <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityOutputIcon /></div>
+        <div style={{ flexShrink: 0, marginTop: 2 }}><ActivityIcon slug={entry.activity ?? ''} size={16} color="#130426" /></div>
         <p style={TITLE_STYLE}>Legacy Map Reflections</p>
       </div>
       <p style={{ fontSize: 12, lineHeight: '18px', color: 'rgba(19,4,38,0.65)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: readOnly ? 0 : 10 } as React.CSSProperties}>

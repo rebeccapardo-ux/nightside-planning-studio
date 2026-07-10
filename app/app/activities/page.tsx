@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import ActivityIcon from '@/app/components/ActivityIcon'
 
 type ExploreActivityCardProps = {
   title: string
@@ -9,6 +10,7 @@ type ExploreActivityCardProps = {
   href?: string
   status?: 'available' | 'coming_soon'
   index: number
+  iconSlug: string // item-level activity identity icon (see ActivityIcon)
 }
 
 type CardConfig = {
@@ -150,6 +152,7 @@ export default function ExplorePage() {
               href="/app/activities/reflection-prompts"
               status="available"
               index={0}
+              iconSlug="reflection_prompts"
             />
             <ExploreActivityCard
               title="Values & Fears Ranking"
@@ -157,6 +160,7 @@ export default function ExplorePage() {
               href="/app/activities/values-and-fears"
               status="available"
               index={1}
+              iconSlug="values_ranking"
             />
             <ExploreActivityCard
               title="Scenario Navigator"
@@ -164,6 +168,7 @@ export default function ExplorePage() {
               href="/app/activities/scenario-navigator"
               status="available"
               index={2}
+              iconSlug="scenario_navigator"
             />
             <ExploreActivityCard
               title="Legacy Map"
@@ -171,6 +176,7 @@ export default function ExplorePage() {
               href="/app/activities/legacy-map"
               status="available"
               index={3}
+              iconSlug="legacy_map"
             />
             <ExploreActivityCard
               title="Deathcare Trivia"
@@ -178,6 +184,7 @@ export default function ExplorePage() {
               href="/app/activities/trivia"
               status="available"
               index={4}
+              iconSlug="deathcare_trivia"
             />
           </div>
 
@@ -192,6 +199,7 @@ function ExploreActivityCard({
   description,
   href,
   status = 'available',
+  iconSlug,
 }: ExploreActivityCardProps) {
   const config = SUNRISE_CONFIG
   const isAvailable = status === 'available' && !!href
@@ -226,9 +234,13 @@ function ExploreActivityCard({
       onMouseUp={() => setPressed(false)}
     >
       <div>
-        <h2 style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.25, color: config.titleColor, margin: 0 }}>
-          {title}
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.25, color: config.titleColor, margin: 0 }}>
+            {title}
+          </h2>
+          {/* Item-level activity identity icon — top-right, optically on the title. */}
+          <ActivityIcon slug={iconSlug} size={36} color="#130426" />
+        </div>
         <p style={{ fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: config.bodyColor, marginTop: 12, marginBottom: 0 }}>
           {description}
         </p>

@@ -24,6 +24,9 @@ export type AreaActivity = {
   blurb: string
   kind: 'output' | 'navigate'
   activity?: string // entries.activity slug, for 'output' cards (to find the user's entry)
+  // Item-level identity-icon slug (see ActivityIcon). Set on ALL cards because
+  // 'navigate' cards (Scenario/Reflection/Trivia) carry no `activity` reference.
+  icon: string
 }
 
 export type AreaConfig = {
@@ -40,12 +43,12 @@ export type AreaConfig = {
   documents: DocumentType[] | null
 }
 
-const VALUES_RANKING: AreaActivity = { label: 'Values Ranking', href: '/app/activities/values-ranking', blurb: 'Identify what matters most at the end of life.', kind: 'output', activity: 'values_ranking' }
-const FEARS_RANKING:  AreaActivity = { label: 'Fears Ranking',  href: '/app/activities/fears-ranking',  blurb: 'Clarify your worries, so they can be communicated and addressed.', kind: 'output', activity: 'fears_ranking' }
-const LEGACY_MAP:     AreaActivity = { label: 'Legacy Map',     href: '/app/activities/legacy-map',     blurb: 'Create a timeline of your life and the moments that shaped you.', kind: 'output', activity: 'legacy_map' }
-const SCENARIO_NAV:   AreaActivity = { label: 'Scenario Navigator', href: '/app/activities/scenario-navigator', blurb: 'Consider realistic situations, choices, and implications.', kind: 'navigate' }
-const REFLECTION:     AreaActivity = { label: 'Reflection Prompts', href: '/app/activities', blurb: 'Explore your priorities in life and death with open-ended prompts.', kind: 'navigate' }
-const TRIVIA:         AreaActivity = { label: 'Deathcare Trivia', href: '/app/activities/trivia', blurb: 'Test and build your knowledge about options for dying, death, and what happens to your body.', kind: 'navigate' }
+const VALUES_RANKING: AreaActivity = { label: 'Values Ranking', href: '/app/activities/values-ranking', blurb: 'Identify what matters most at the end of life.', kind: 'output', activity: 'values_ranking', icon: 'values_ranking' }
+const FEARS_RANKING:  AreaActivity = { label: 'Fears Ranking',  href: '/app/activities/fears-ranking',  blurb: 'Clarify your worries, so they can be communicated and addressed.', kind: 'output', activity: 'fears_ranking', icon: 'fears_ranking' }
+const LEGACY_MAP:     AreaActivity = { label: 'Legacy Map',     href: '/app/activities/legacy-map',     blurb: 'Create a timeline of your life and the moments that shaped you.', kind: 'output', activity: 'legacy_map', icon: 'legacy_map' }
+const SCENARIO_NAV:   AreaActivity = { label: 'Scenario Navigator', href: '/app/activities/scenario-navigator', blurb: 'Consider realistic situations, choices, and implications.', kind: 'navigate', icon: 'scenario_navigator' }
+const REFLECTION:     AreaActivity = { label: 'Reflection Prompts', href: '/app/activities', blurb: 'Explore your priorities in life and death with open-ended prompts.', kind: 'navigate', icon: 'reflection_prompts' }
+const TRIVIA:         AreaActivity = { label: 'Deathcare Trivia', href: '/app/activities/trivia', blurb: 'Test and build your knowledge about options for dying, death, and what happens to your body.', kind: 'navigate', icon: 'deathcare_trivia' }
 
 export const AREAS: AreaConfig[] = [
   {
