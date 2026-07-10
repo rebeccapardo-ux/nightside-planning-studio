@@ -20,10 +20,9 @@ import React from 'react'
 // at every render size. `color` sets stroke AND the fills; default currentColor,
 // but every surface passes it explicitly.
 //
-// Small-tier rule (threshold, not blanket): below 20px, the Legacy Map
-// constellation drops to a wider-spaced 4-star variant so it holds up next to
-// 16px peers. (The scale is the other dense glyph — reviewed at 16px; a simplified
-// variant can be added here if it muddies. Trivia never renders below 24px.)
+// Small-tier rule (threshold, not blanket): below 20px, the Legacy Map plotted
+// points drop from r=1.7 to r=1.5 so they don't crowd the connecting line at 16px.
+// (Trivia produces no output, so it never renders below 24px.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ActivityIconSlug =
@@ -46,16 +45,6 @@ const TITLES: Record<ActivityIconSlug, string> = {
   scenario_navigator: 'Scenario Navigator',
   deathcare_trivia: 'Deathcare Trivia',
   legacy_map: 'Legacy Map',
-}
-
-// 4-point sparkle (filled) centred at (cx,cy), arm length a. Concave sides via a
-// quadratic control point at the centre.
-function sparkle(cx: number, cy: number, a: number): string {
-  return (
-    `M${cx} ${cy - a}Q${cx} ${cy} ${cx + a} ${cy}` +
-    `Q${cx} ${cy} ${cx} ${cy + a}Q${cx} ${cy} ${cx - a} ${cy}` +
-    `Q${cx} ${cy} ${cx} ${cy - a}Z`
-  )
 }
 
 export default function ActivityIcon({
@@ -91,8 +80,14 @@ export default function ActivityIcon({
   let body: React.ReactNode = null
 
   if (s === 'reflection_prompts') {
-    // Cloud — closed single outline, no trailing bubbles.
-    body = <path {...st} d="M7 17h9.4a3.4 3.4 0 1 0-.42-6.77 4.5 4.5 0 0 0-8.52-1.4A3.5 3.5 0 0 0 7 17Z" />
+    // Thought cloud with two trailing bubbles below-left.
+    body = (
+      <>
+        <path {...st} d="M7.5 13 C5 13 4 10 6.5 9.2 C6 6 10 5 11 7.5 C12.5 4.5 17 5.5 16.5 9 C19.5 9 19.5 13 17 13 Z" />
+        <circle {...st} cx="6" cy="15.8" r="1.4" />
+        <circle {...st} cx="3.8" cy="18.2" r="0.9" />
+      </>
+    )
   } else if (s === 'values_ranking' || s === 'fears_ranking') {
     // Balance scale — Values and Fears deliberately share this glyph.
     body = (
@@ -113,51 +108,42 @@ export default function ActivityIcon({
     // Three-way branching arrows.
     body = (
       <>
-        <path {...st} d="M12 20V4" />
-        <path {...st} d="M9.4 6.6 12 4 14.6 6.6" />
-        <path {...st} d="M12 11.4C10.1 8.9 8 8 5.5 7.6" />
-        <path {...st} d="M5.15 10.25 5.4 7.5 8.15 7.9" />
-        <path {...st} d="M12 11.4C13.9 8.9 16 8 18.5 7.6" />
-        <path {...st} d="M18.85 10.25 18.6 7.5 15.85 7.9" />
+        <path {...st} d="M12 21 L12 12.5" />
+        <path {...st} d="M12 12.5 L12 3.5" />
+        <path {...st} d="M9.5 5.8 L12 3.5 L14.5 5.8" />
+        <path {...st} d="M12 12.5 C 10 11 7.5 11 4.5 11" />
+        <path {...st} d="M6.8 8.8 L4.5 11 L6.8 13.2" />
+        <path {...st} d="M12 12.5 C 14 11 16.5 11 19.5 11" />
+        <path {...st} d="M17.2 8.8 L19.5 11 L17.2 13.2" />
       </>
     )
   } else if (s === 'deathcare_trivia') {
     // Question-mark lightbulb — bulb + base stroked, "?" dot filled.
     body = (
       <>
-        <path {...st} d="M12 3.5a5 5 0 0 0-3 9c.62.47 1 1.15 1 1.93v.57h4v-.57c0-.78.38-1.46 1-1.93a5 5 0 0 0-3-9Z" />
-        <path {...st} d="M10 17h4" />
-        <path {...st} d="M10.7 19h2.6" />
-        <path {...st} d="M10.4 9a1.8 1.8 0 0 1 3.4.7c0 1.2-1.7 1.4-1.7 2.55" />
-        <circle {...fillProps} cx="12" cy="14.4" r="0.9" />
+        <circle {...st} cx="12" cy="9" r="6" />
+        <path {...st} d="M9.6 14.4 L10 16.2" />
+        <path {...st} d="M14.4 14.4 L14 16.2" />
+        <path {...st} d="M9.6 16.4 L14.4 16.4" />
+        <path {...st} d="M10 18 L14 18" />
+        <path {...st} d="M10.8 19.6 L13.2 19.6" />
+        <path {...st} d="M9.9 6.8 C9.9 4.6 14.1 4.6 14.1 7 C14.1 8.8 12 8.6 12 10.4" />
+        <circle {...fillProps} cx="12" cy="12.3" r="0.75" />
       </>
     )
   } else if (s === 'legacy_map') {
-    // Constellation — connecting lines stroked, stars = filled 4-point sparkles.
-    if (small) {
-      // 4-star, wider spacing — legible at 16px.
-      body = (
-        <>
-          <path {...st} d="M4 15 10 8 16 15 21 8.5" />
-          <path {...fillProps} d={sparkle(4, 15, 1.9)} />
-          <path {...fillProps} d={sparkle(10, 8, 1.9)} />
-          <path {...fillProps} d={sparkle(16, 15, 1.9)} />
-          <path {...fillProps} d={sparkle(21, 8.5, 1.9)} />
-        </>
-      )
-    } else {
-      // Full 5-star, irregular path.
-      body = (
-        <>
-          <path {...st} d="M4 15.5 8.5 8 13 16 17.5 8.5 21 12" />
-          <path {...fillProps} d={sparkle(4, 15.5, 1.5)} />
-          <path {...fillProps} d={sparkle(8.5, 8, 1.5)} />
-          <path {...fillProps} d={sparkle(13, 16, 1.5)} />
-          <path {...fillProps} d={sparkle(17.5, 8.5, 1.5)} />
-          <path {...fillProps} d={sparkle(21, 12, 1.5)} />
-        </>
-      )
-    }
+    // Plotted points connected by a thinner (1.5) line so the points stay dominant.
+    // Points drop from r=1.7 to r=1.5 below 20px so they don't crowd. Filled, no stroke.
+    const r = small ? 1.5 : 1.7
+    body = (
+      <>
+        <path {...st} strokeWidth={1.5} d="M5 15 L10 8 L16 13 L20 6" />
+        <circle {...fillProps} cx="5" cy="15" r={r} />
+        <circle {...fillProps} cx="10" cy="8" r={r} />
+        <circle {...fillProps} cx="16" cy="13" r={r} />
+        <circle {...fillProps} cx="20" cy="6" r={r} />
+      </>
+    )
   }
 
   return (
