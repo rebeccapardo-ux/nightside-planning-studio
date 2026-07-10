@@ -141,7 +141,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           explanation: '',
           checkboxes: [
             'I have documented what I want to happen with my body after my death',
-            'I have shared these wishes with people in my life',
+            'The people who would carry out my wishes know about them and can find them',
             "If applicable, I have registered with my province's organ and tissue donation registry",
           ],
           staticLinks: [{ href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.shortLabel ?? DOCUMENT_TYPE_META.funeral_wishes.label }],
@@ -229,8 +229,7 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           title: 'Ritual and ceremony preferences',
           explanation: '',
           checkboxes: [
-            'I have shared my preferences for ritual and ceremony with people in my life',
-            'My preferences are documented somewhere accessible (if I choose to)',
+            'I have shared my preferences for ritual and ceremony with the people in my life (or chosen not to)',
           ],
           staticLinks: [{ href: DOCUMENT_TYPE_META.funeral_wishes.href, label: DOCUMENT_TYPE_META.funeral_wishes.shortLabel ?? DOCUMENT_TYPE_META.funeral_wishes.label }],
         },
@@ -273,9 +272,9 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           // which is Legacy work, not legal estate work.
           staticLinks: [{ href: DOCUMENT_TYPE_META.keepsake_inventory.href, label: DOCUMENT_TYPE_META.keepsake_inventory.label }],
           checkboxes: [
-            'I have created or captured something I want to leave behind (if I choose to)',
-            'I have documented my obituary wishes or what I want said about my life',
-            'I have noted causes or organizations I want remembered or supported',
+            'I have created or captured something I want to leave behind (or chosen not to)',
+            'I have documented my obituary wishes or what I want said about my life (or chosen not to)',
+            'I have noted causes or organizations I want remembered or supported (or chosen not to)',
           ],
         },
       ],
