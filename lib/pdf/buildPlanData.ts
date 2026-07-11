@@ -628,7 +628,7 @@ export function buildDomainStatuses(
     return {
       title: dbDomain?.title ?? def.displayName,
       domainCode: def.code,
-      label: qualitativeLabel(checked, total),
+      label: qualitativeLabel(checked, total, def.code),
       topicsStarted: checked,
       totalTopics: total,
       readinessGroups,

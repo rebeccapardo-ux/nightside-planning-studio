@@ -628,7 +628,7 @@ function PlanningStatusSection({
         <div style={{ width: `${Math.round(pct * 100)}%`, height: '100%', background: '#D85A30', transition: 'width 200ms ease' }} />
       </div>
       <div style={{ textAlign: 'center', marginTop: 12, marginBottom: 28 }}>
-        <p style={{ fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 4px 0' }}>{qualitativeLabel(checked, total)}</p>
+        <p style={{ fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 4px 0' }}>{qualitativeLabel(checked, total, domainCode)}</p>
         <p style={{ fontSize: 13, color: 'rgba(19,4,38,0.70)', margin: 0 }}>{checked} of {total} complete</p>
         {saveError && (
           <p style={{ fontSize: 13, color: '#8B0000', margin: '12px 0 0 0' }}>

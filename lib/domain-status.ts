@@ -15,16 +15,24 @@ import type { DomainState } from '@/lib/domain-state'
 // (The analytics-only computePlanningStatus in lib/analytics.ts is a separate
 // concern — different vocabulary, different purpose — and is NOT replaced.)
 //
+// Domains whose 100% label reads 'Explored' instead of 'Complete'. Legacy and
+// Ritual & Ceremony are reflective areas, not concrete task lists, so "Complete"
+// (as if finished) is the wrong register — see the per-domain final-label note.
+// Keyed by stable `domain_code` (append-only; never rename — persisted slug).
+const EXPLORED_FINAL_LABEL_DOMAINS = new Set(['legacy', 'ritual'])
+
 // Model (Pass 2): `checked` / `total` are CHECKBOXES, not rows — each readiness
 // checkbox is one planning-status segment. Thresholds (Option β):
 //   0% checked             -> 'Not yet started'
 //   >0% to <50% checked    -> 'Just beginning'   (first checkbox triggers this)
 //   50% to <100% checked   -> 'Well underway'
-//   100% checked           -> 'Complete'         (only at exactly 100%)
-export function qualitativeLabel(checked: number, total: number): string {
+//   100% checked           -> 'Complete', or 'Explored' for the reflective
+//                             domains above (only at exactly 100%)
+// `code` is the domain's stable `domain_code`; it only affects the 100% label.
+export function qualitativeLabel(checked: number, total: number, code?: string | null): string {
   if (total === 0 || checked === 0) return 'Not yet started'
   const pct = checked / total
-  if (pct >= 1)   return 'Complete'
+  if (pct >= 1)   return code && EXPLORED_FINAL_LABEL_DOMAINS.has(code) ? 'Explored' : 'Complete'
   if (pct >= 0.5) return 'Well underway'
   return 'Just beginning'
 }
