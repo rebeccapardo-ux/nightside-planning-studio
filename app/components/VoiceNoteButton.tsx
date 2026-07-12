@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
-import { createVoiceNote, createVoicePromptNote, updateNoteAudioUrl, deleteNote, resetVoiceNote } from '@/lib/notes'
+import { createVoiceNote, createVoicePromptNote, updateNoteAudioUrl, deleteNote } from '@/lib/notes'
 import { uploadAudioBlob } from '@/lib/voice-notes'
 import VoiceNoteRecorder from './VoiceNoteRecorder'
 import ErrorMessagePill from './ErrorMessagePill'
@@ -54,7 +54,6 @@ export default function VoiceNoteButton({
   // saved-state distinguish "recording didn't save" from "transcription didn't run".
   const [audioUploadFailed, setAudioUploadFailed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const prevNoteRef = useRef<Note | null>(null)
 
   const isDark = theme === 'dark'
 
@@ -73,13 +72,12 @@ export default function VoiceNoteButton({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // 1. Create note record — or reuse existing on re-record
+      // 1. Create a fresh note record for EVERY recording. Each voice note is its
+      //    own entry in Your Materials — consecutive recordings never replace one
+      //    another (Delete removes a specific note). Previously we reused the prior
+      //    note on re-record, which silently overwrote it.
       let note: Note
-      const existing = prevNoteRef.current
-      if (existing) {
-        await resetVoiceNote(existing.id, durationSeconds)
-        note = { ...existing, audio_url: null, duration_seconds: durationSeconds, content: '', transcript: null, transcription_status: 'pending' }
-      } else if (saveMode.kind === 'prompt') {
+      if (saveMode.kind === 'prompt') {
         const created = await createVoicePromptNote({
           audioUrl: '',
           durationSeconds,
@@ -125,7 +123,6 @@ export default function VoiceNoteButton({
         finalNote = { ...note, transcription_status: 'failed' }
       }
 
-      prevNoteRef.current = finalNote
       setSavedNote(finalNote)
       setPhase('saved')
       onSaved(finalNote)
@@ -138,7 +135,6 @@ export default function VoiceNoteButton({
 
   async function handleDelete() {
     if (savedNote) await deleteNote(savedNote.id)
-    prevNoteRef.current = null
     setSavedNote(null)
     setAudioUploadFailed(false)
     setPhase('idle')
