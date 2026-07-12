@@ -8,7 +8,7 @@ export const MAX_RECORDING_SECONDS = 180 // 3 minutes
 
 type RecorderPhase = 'recording' | 'review'
 
-export type SaveStatus = 'saving' | 'transcribing' | 'saved' | 'audio_failed' | 'transcribe_failed'
+export type SaveStatus = 'saving' | 'transcribing' | 'saved' | 'transcribe_failed'
 
 type Props = {
   onSave: (blob: Blob, durationSeconds: number) => void
@@ -241,8 +241,6 @@ export default function VoiceNoteRecorder({ onSave, onCancel, saveStatus, onDele
             </svg>
             <span style={{ fontSize: 13, fontWeight: 500, color: c.status }}>Saved to Your materials</span>
           </div>
-        ) : saveStatus === 'audio_failed' ? (
-          <ErrorMessagePill>We couldn&apos;t save your recording. You can delete and re-record.</ErrorMessagePill>
         ) : saveStatus === 'transcribe_failed' ? (
           <ErrorMessagePill>Note saved — we couldn&apos;t transcribe it.</ErrorMessagePill>
         ) : (

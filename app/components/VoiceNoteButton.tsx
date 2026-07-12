@@ -50,9 +50,6 @@ export default function VoiceNoteButton({
   const [phase, setPhase] = useState<Phase>(autoStart ? 'recording' : 'idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [savedNote, setSavedNote] = useState<Note | null>(null)
-  // Whether the audio blob failed to upload to storage (storagePath === null). Lets the
-  // saved-state distinguish "recording didn't save" from "transcription didn't run".
-  const [audioUploadFailed, setAudioUploadFailed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
   const isDark = theme === 'dark'
@@ -65,7 +62,6 @@ export default function VoiceNoteButton({
 
   async function handleRecorderSave(blob: Blob, durationSeconds: number) {
     setPhase('uploading')
-    setAudioUploadFailed(false)
 
     try {
       const supabase = createSupabaseBrowserClient()
@@ -93,17 +89,23 @@ export default function VoiceNoteButton({
         note = created
       }
 
-      // 2. Upload audio
+      // 2. Upload audio. A null return from uploadAudioBlob is a DEFINITE storage
+      //    failure (it swallows storage errors and returns null; it never throws).
+      //    On that signal, roll the just-created note back so no orphaned, audio-less
+      //    note persists — then surface an error so the user can record again. We
+      //    return BEFORE transcription, so /api/transcribe is never called for this
+      //    row (no transcript-only orphan) and onSaved never fires for a deleted note.
+      //    deleteNote logs and returns false on failure instead of throwing — worst
+      //    case the row lingers (the pre-rollback behavior), which never crashes the UI.
       const storagePath = await uploadAudioBlob(blob, user.id, note.id)
-      if (storagePath) {
-        await updateNoteAudioUrl(note.id, storagePath)
-        note = { ...note, audio_url: storagePath }
-      } else {
-        // The recording itself didn't get stored. Note still exists (transcription
-        // uses the in-memory blob, not storage), but the audio is gone — flag it so
-        // the saved-state shows the "couldn't save your recording" error, not success.
-        setAudioUploadFailed(true)
+      if (!storagePath) {
+        await deleteNote(note.id)
+        setErrorMsg("We couldn't save your recording. Please try again.")
+        setPhase('error')
+        return
       }
+      await updateNoteAudioUrl(note.id, storagePath)
+      note = { ...note, audio_url: storagePath }
 
       // 3. Transcribe
       setPhase('transcribing')
@@ -136,7 +138,6 @@ export default function VoiceNoteButton({
   async function handleDelete() {
     if (savedNote) await deleteNote(savedNote.id)
     setSavedNote(null)
-    setAudioUploadFailed(false)
     setPhase('idle')
     onDelete?.()
   }
@@ -145,12 +146,11 @@ export default function VoiceNoteButton({
     if (phase === 'uploading') return 'saving'
     if (phase === 'transcribing') return 'transcribing'
     if (phase === 'saved') {
-      // Priority: a recording that didn't save is the headline failure — it wins even
-      // if transcription also failed (transcription is moot without saved audio). Then
-      // transcription-failed, then full success. Check === 'failed' (not !== 'complete')
-      // so this only ever fires on a terminal failure — never a transient 'pending'
-      // (which corresponds to phase 'transcribing' anyway, not 'saved').
-      if (audioUploadFailed) return 'audio_failed'
+      // Audio upload always succeeded by the time we reach 'saved' (a failed upload
+      // rolls the note back and routes to the 'error' phase instead). So the only
+      // saved-state distinction is transcription: failed vs complete. Check === 'failed'
+      // (not !== 'complete') so it only fires on a terminal failure, never a transient
+      // 'pending' (which corresponds to phase 'transcribing' anyway).
       if (savedNote?.transcription_status === 'failed') return 'transcribe_failed'
       return 'saved'
     }
