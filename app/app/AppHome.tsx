@@ -1,11 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
 import { AREAS } from '@/lib/areas'
 import AreaIcon from '@/app/components/AreaIcon'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+// Collapse preference for the "More than paperwork" section. Absent → expanded
+// (the first-visit default); 'true'/'false' = the user's explicit choice, remembered.
+const MORE_PAPERWORK_COLLAPSED_KEY = 'nightside.morePaperworkCollapsed'
 
 // Puzzle-piece geometry, reused from the previous landing cards (origin = piece center).
 const P1 = 'M -23,-26 H 15 V -4 H 23 V 4 H 15 V 26 H -4 V 18 H -12 V 26 H -23 Z'
@@ -60,8 +65,32 @@ function OpenLink({ href }: { href: string }) {
   )
 }
 
+// Disclosure chevron for the "More than paperwork" header. Base points down
+// (collapsed); rotates 180° to point up when expanded.
+function IntroChevron({ open }: { open: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+      style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 200ms ease' }}>
+      <path d="M4 6l4 4 4-4" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function AppHomePage() {
   const introP: React.CSSProperties = { fontFamily: hv, fontSize: 16, lineHeight: 1.65, fontWeight: 400, color: 'rgba(19,4,38,0.82)', margin: '0 0 16px' }
+
+  // Collapse state for "More than paperwork". Read once, SSR-safe; defaults to
+  // expanded (collapsed=false) until the user explicitly collapses it.
+  const [mtpCollapsed, setMtpCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    try { return window.localStorage.getItem(MORE_PAPERWORK_COLLAPSED_KEY) === 'true' } catch { return false }
+  })
+  function toggleMtp() {
+    const next = !mtpCollapsed
+    setMtpCollapsed(next)
+    try { window.localStorage.setItem(MORE_PAPERWORK_COLLAPSED_KEY, String(next)) } catch { /* ignore */ }
+  }
+
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
@@ -87,6 +116,7 @@ export default function AppHomePage() {
         .home-intro-band { margin-bottom: 44px; }
         .home-intro-cols { column-count: 2; column-gap: 40px; }
         .home-intro-cols p { break-inside: avoid; }
+        .mtp-header:hover .mtp-chevron { opacity: 0.65; }
         @media (max-width: 900px) {
           .home4-primary { grid-template-columns: 1fr; }
           .home4-subgrid { grid-template-columns: 1fr; }
@@ -111,21 +141,35 @@ export default function AppHomePage() {
         {/* "More than paperwork" — editorial band (returning content from the old homepage),
             two-column so it stays short enough for the panels below to peek above the fold. */}
         <section className="home-intro-band">
-          <h2 style={{ fontFamily: hv, fontSize: 29, fontWeight: 400, letterSpacing: '-0.4px', lineHeight: 1.15, color: '#130426', margin: 0 }}>
-            More than paperwork
-          </h2>
-          <div style={{ width: 48, height: 4, borderRadius: 999, background: '#DB5835', margin: '14px 0 24px' }} aria-hidden="true" />
-          <div className="home-intro-cols">
-            <p style={introP}>
-              End-of-life planning is often treated as just filling out forms, checking boxes, and getting it over with as fast as possible. This platform takes the opposite approach, inviting you to slow down and engage in a deeper process of reflection.
-            </p>
-            <p style={introP}>
-              It&rsquo;s designed to help you explore your values, clarify your priorities, document your plans with intention, and create opportunities for meaningful conversations with loved ones.
-            </p>
-            <p style={introP}>
-              By leaning into curiosity and addressing the emotional as well as the practical, this process can provide clarity and comfort, both for you and the people in your life.
-            </p>
-          </div>
+          <button
+            className="mtp-header"
+            onClick={toggleMtp}
+            aria-expanded={!mtpCollapsed}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+          >
+            <h2 style={{ fontFamily: hv, fontSize: 29, fontWeight: 400, letterSpacing: '-0.4px', lineHeight: 1.15, color: '#130426', margin: 0 }}>
+              More than paperwork
+            </h2>
+            <span className="mtp-chevron" style={{ display: 'inline-flex', transition: 'opacity 150ms' }}>
+              <IntroChevron open={!mtpCollapsed} />
+            </span>
+          </button>
+          {!mtpCollapsed && (
+            <>
+              <div style={{ width: 48, height: 4, borderRadius: 999, background: '#DB5835', margin: '14px 0 24px' }} aria-hidden="true" />
+              <div className="home-intro-cols">
+                <p style={introP}>
+                  End-of-life planning is often treated as just filling out forms, checking boxes, and getting it over with as fast as possible. This platform takes the opposite approach, inviting you to slow down and engage in a deeper process of reflection.
+                </p>
+                <p style={introP}>
+                  It&rsquo;s designed to help you explore your values, clarify your priorities, document your plans with intention, and create opportunities for meaningful conversations with loved ones.
+                </p>
+                <p style={introP}>
+                  By leaning into curiosity and addressing the emotional as well as the practical, this process can provide clarity and comfort, both for you and the people in your life.
+                </p>
+              </div>
+            </>
+          )}
         </section>
 
         {/* One row: Activities + Your materials are entry cards (title + Open link, whole
