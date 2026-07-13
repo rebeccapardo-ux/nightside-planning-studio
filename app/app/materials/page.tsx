@@ -111,7 +111,7 @@ export default async function YourMaterialsPage() {
         .plan-primary-btn:hover { background: rgba(19,4,38,0.06) !important; }
         .plan-export-link:hover { text-decoration: underline !important; }
         .plan-pill-out:hover { background: #f5f5f5 !important; }
-        .plan-export-btn:hover { background: #C04828 !important; }
+        .plan-export-btn:hover { background: #e08a25 !important; }
       `}</style>
 
       {/* ── Page header: big reveal-underline title (matches the Activities landing) on

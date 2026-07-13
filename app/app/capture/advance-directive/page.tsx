@@ -676,7 +676,9 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
     <button
       onClick={onClick}
       disabled={disabled}
-      className="hover:opacity-90 transition-opacity mobile-sticky-export"
+      className="transition-opacity mobile-sticky-export"
+      onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
       style={{
         display: 'flex',
         alignItems: 'center',

@@ -389,7 +389,9 @@ function ImportantContactsPage() {
             type="button"
             onClick={handlePreviewExport}
             disabled={saveStatus === 'saving'}
-            className="hover:opacity-90 transition-opacity mobile-sticky-export"
+            className="transition-opacity mobile-sticky-export"
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
             style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
           >
             <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
