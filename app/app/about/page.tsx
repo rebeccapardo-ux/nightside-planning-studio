@@ -88,7 +88,7 @@ export default function AboutPage() {
         <h3 style={h3Style}>How to use it</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <p style={bodyP}>
-            Planning for death is an inherently relational activity. Death and the care around it are community events, and the people closest to you are usually the ones who will make decisions on your behalf when you can&apos;t. Depending on where you live, that substitute decision-maker may carry as much legal weight than any document you leave behind. This means that planning isn&apos;t really finished when your documents are filed. It&apos;s finished when the people who will interpret them understand enough about you to make decisions on your behalf with confidence.
+            Planning for death is an inherently relational activity. Death and the care around it are community events, and the people closest to you are usually the ones who will make decisions on your behalf when you can&apos;t. Depending on where you live, that substitute decision-maker may carry as much legal weight as any document you leave behind. This means that planning isn&apos;t really finished when your documents are filed. It&apos;s finished when the people who will interpret them understand enough about you to make decisions on your behalf with confidence.
           </p>
           <p style={bodyP}>
             Any activity can be done solo or shared. You might work through the Reflection Prompts on your own, or use them to spark a conversation at the dinner table. You might use the Scenario Navigator as part of a larger conversation with someone you love. There&apos;s no correct order and no set pace.
