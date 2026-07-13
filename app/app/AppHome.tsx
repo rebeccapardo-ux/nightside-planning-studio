@@ -56,7 +56,7 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
 // above the full-card overlay link so it stays independently clickable + focusable.
 function OpenLink({ href }: { href: string }) {
   return (
-    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-end', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 8, marginBottom: 8, position: 'relative', zIndex: 1 }}>Open →</Link>
+    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-end', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 21, marginBottom: 8, position: 'relative', zIndex: 1 }}>Open →</Link>
   )
 }
 
@@ -137,7 +137,7 @@ export default function AppHomePage() {
             bg="#DB5835"
             onDark
             title="Your materials"
-            description="This is where all your stuff lives: notes, activity outputs, and documents to fill out."
+            description="This is where all your stuff lives: notes, activity outputs, and documents."
             puzzle={<MaterialsPuzzle />}
           />
 
@@ -168,17 +168,22 @@ function CardTop({ title, description, onDark = false, children }: { title: stri
 // than the taller Plan by area card, with no forced blank space. Because both carry a
 // title + a short description + Open, their heights (and the "Open →" positions) land at
 // roughly the same place naturally.
+// Shared min-height so the two entry cards (Activities, Your materials) are equal
+// height regardless of copy length. Your materials carries the longer description,
+// so this ≈ its natural height and Activities grows to match; the "Open →" pins to
+// the card bottom (margin-top:auto) so both baselines align. Tune this one value.
+const ENTRY_CARD_MIN_HEIGHT = 268
 function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; title: string; description: string; puzzle: React.ReactNode }) {
   const titleColor = onDark ? '#F8F4EB' : '#130426'
   const descColor = onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)'
   return (
-    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', alignSelf: 'start' }}>
+    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', alignSelf: 'start', minHeight: ENTRY_CARD_MIN_HEIGHT }}>
       <div style={{ overflow: 'hidden' }}>
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
         <div style={{ float: 'right', marginLeft: 8, marginRight: -10, marginBottom: 8 }}>{puzzle}</div>
         <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: descColor, margin: 0 }}>{description}</p>
       </div>
-      <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: titleColor, marginTop: 24, alignSelf: 'flex-end' }}>Open →</span>
+      <span style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: titleColor, marginTop: 'auto', alignSelf: 'flex-end' }}>Open →</span>
     </Link>
   )
 }
