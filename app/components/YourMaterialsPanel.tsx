@@ -9,7 +9,7 @@ import type { Container } from '@/lib/notes'
 
 const hv  = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-type InProgressDoc  = { type: string; label: string; href: string; entryId: string }
+type InProgressDoc  = { type: string; label: string; href: string; entryId?: string }
 type NotStartedDoc  = { type: string; label: string; href: string }
 type InProgressAct  = { activity: string; label: string; href: string; entryId: string }
 type NotStartedAct  = { activity: string; label: string; href: string }
@@ -151,8 +151,11 @@ export default function YourMaterialsPanel({
         </div>
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 18 }}>
           <Link href={doc.href} className="plan-primary-btn" style={navyPill}>{inProgress ? 'Continue' : 'Start'}</Link>
-          {inProgress && (
-            <Link href={entryExportHref((doc as InProgressDoc).entryId, doc.type)} className="plan-export-link" style={exportLink}>Export</Link>
+          {/* Export needs an entry row. A doc "In progress" only via a mirrored
+              domain_state field (will set on the Wills area page, doc never opened)
+              has no entry yet → no Export until the user opens the doc. */}
+          {inProgress && (doc as InProgressDoc).entryId && (
+            <Link href={entryExportHref((doc as InProgressDoc).entryId!, doc.type)} className="plan-export-link" style={exportLink}>Export</Link>
           )}
         </div>
       </div>

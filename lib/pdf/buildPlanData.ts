@@ -411,6 +411,39 @@ export function hasAnyStringContent(value: unknown): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Document "started" status — one predicate for every surface
+// ---------------------------------------------------------------------------
+
+// Fields a document mirrors into domain_state, resolved to booleans by the caller.
+// Extend with sdmInPlace when SDM migrates.
+export type MirroredDocState = { willInPlace: boolean }
+
+// The set of document_type codes the user has "started": non-empty string content OR a
+// doc-mirrored domain_state field set (the legal will -> Personal Admin). Single shared
+// predicate for Your Materials and the area-page relevant-doc pills so every surface
+// agrees; the full-plan PDF mirrors the same rule inline (buildMaterials). A doc is
+// "started" regardless of which surface set the field — the honest doc-state framing.
+export function startedDocumentTypes(
+  entries: { document_type?: string | null; content?: unknown }[] | null | undefined,
+  mirrored: MirroredDocState,
+): Set<string> {
+  const started = new Set<string>()
+  for (const e of entries ?? []) {
+    if (e.document_type && hasAnyStringContent(e.content)) started.add(e.document_type)
+  }
+  if (mirrored.willInPlace) started.add(DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
+  return started
+}
+
+// willInPlace resolved WITHOUT a domains list. `legal_will_in_place` is defined only on
+// the wills_estates readiness structure, so scanning every container's checkboxes is
+// equivalent to resolving the wills container by domain_code. Use where the domains list
+// isn't at hand (the area page); container-scoped callers use willInPlaceFromState.
+export function willInPlaceAnywhere(domainState: DomainState): boolean {
+  return Object.values(domainState).some((d) => d?.checkboxes?.legal_will_in_place?.[0] === true)
+}
+
+// ---------------------------------------------------------------------------
 // Materials assembler
 // ---------------------------------------------------------------------------
 
@@ -440,8 +473,12 @@ export function buildMaterials(
   if (adEntry && hasAnyStringContent(adEntry.content))             mats.push({ title: 'My Care Wishes', pdfData: buildAdvanceDirectivePDF(adEntry, userName) })
   if (fwEntry && hasAnyStringContent(fwEntry.content))             mats.push({ title: 'Wishes for My Body, Funeral & Ceremony', pdfData: buildFuneralWishesPDF(fwEntry, userName) })
   // Include Personal Admin when it has content OR the legal will is set (a doc-mirrored
-  // domain_state field) — matches Your Materials' "In progress" rule so the surfaces agree.
-  if (adminEntry && (hasAnyStringContent(adminEntry.content) || willInPlace)) mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminEntry, userName, willInPlace) })
+  // domain_state field) — matches Your Materials' "In progress" rule so the surfaces
+  // agree. Render even with no entry row (will set on the Wills area page only, doc never
+  // opened): a synthetic empty entry supplies the (absent) content; the will line comes
+  // from willInPlace. It's a one-line section, but consistency beats avoiding the echo.
+  const adminForPdf: EntryRow = adminEntry ?? { id: '', title: null, content: {}, created_at: null, activity: null, document_type: DOCUMENT_TYPE.PERSONAL_ADMIN_INFO }
+  if ((adminEntry && hasAnyStringContent(adminEntry.content)) || willInPlace) mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminForPdf, userName, willInPlace) })
   if (contactsEntry && hasAnyStringContent(contactsEntry.content)) mats.push({ title: 'Important Contacts', pdfData: buildContactsPDF(contactsEntry, userName) })
   if (finEntry && hasAnyStringContent(finEntry.content))           mats.push({ title: 'Financial Information', pdfData: buildFinancialPDF(finEntry, userName) })
   if (devicesEntry && hasAnyStringContent(devicesEntry.content))   mats.push({ title: 'Devices & Accounts', pdfData: buildDevicesAccountsPDF(devicesEntry, userName) })

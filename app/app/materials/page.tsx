@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
-import { ACTIVITY, DOCUMENT_TYPE, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
 import { loadDomainStateFromDB } from '@/lib/domain-state'
-import { willInPlaceFromState } from '@/lib/pdf/buildPlanData'
+import { willInPlaceFromState, startedDocumentTypes } from '@/lib/pdf/buildPlanData'
 import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
 import PlanOverview from '@/app/components/PlanOverview'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
@@ -11,16 +11,6 @@ import PlanExportButton from '@/app/components/PlanExportButton'
 
 export const metadata: Metadata = {
   title: 'Your materials',
-}
-
-type EntryRow = {
-  id: string
-  title: string | null
-  content: unknown
-  created_at: string | null
-  section: string | null
-  activity: string | null
-  document_type: string | null
 }
 
 // Known document types / activities — always shown, split into in-progress /
@@ -78,25 +68,22 @@ export default async function YourMaterialsPage() {
     return true
   })
 
-  // Legal-will status lives in domain_state, not entries.content. A doc-mirrored
-  // domain_state field counts toward "started" — but ONLY when the doc's own entry
-  // row exists. The row is created solely by a direct doc interaction, so it
-  // distinguishes "will checked in the doc" (→ In progress) from "will checked on
-  // the Wills area page" (creates no row → stays Not started).
+  // Doc "started" status: has string content OR a doc-mirrored domain_state field
+  // (the legal will) is set — honest doc-state framing, surface-independent. The
+  // mirrored field marks the doc started regardless of which surface set it, so a
+  // will checked on the Wills area page (no entry row) still reads In progress here.
+  // A started doc may therefore have NO entry row → entryId is optional (the Export
+  // affordance is hidden until an entry exists; see YourMaterialsPanel).
   const domainState = await loadDomainStateFromDB(supabase, user.id)
-  const willInPlace = willInPlaceFromState(domainState, allDomains)
+  const startedTypes = startedDocumentTypes(entries, { willInPlace: willInPlaceFromState(domainState, allDomains) })
 
   // --- Documents: split into in-progress / not-started ---
-  type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId: string }
+  type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId?: string }
   const inProgressDocs: InProgressDoc[] = []
   const notStartedDocs: typeof KNOWN_DOCUMENTS = []
   for (const doc of KNOWN_DOCUMENTS) {
-    const entry = entries?.find((e) => e.document_type === doc.type)
-    // Fields the doc mirrors into domain_state (currently just the legal will on
-    // Personal Admin) count as content — SDM will join this when it migrates.
-    const mirroredStarted = doc.type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO && willInPlace
-    if (entry && (hasContent(entry) || mirroredStarted)) {
-      inProgressDocs.push({ ...doc, entryId: entry.id })
+    if (startedTypes.has(doc.type)) {
+      inProgressDocs.push({ ...doc, entryId: entries?.find((e) => e.document_type === doc.type)?.id })
     } else {
       notStartedDocs.push(doc)
     }
@@ -160,19 +147,3 @@ export default async function YourMaterialsPage() {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Helpers (lifted from the old Plan page)
-// ---------------------------------------------------------------------------
-
-function hasContent(entry: EntryRow): boolean {
-  return hasAnyStringContent(entry.content)
-}
-
-function hasAnyStringContent(value: unknown): boolean {
-  if (typeof value === 'string') return value.trim().length > 0
-  if (Array.isArray(value)) return value.some(hasAnyStringContent)
-  if (value && typeof value === 'object') {
-    return Object.values(value as Record<string, unknown>).some(hasAnyStringContent)
-  }
-  return false
-}
