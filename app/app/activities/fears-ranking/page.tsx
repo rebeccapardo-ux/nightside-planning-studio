@@ -585,7 +585,7 @@ function FearsRankingContent() {
             Fears Ranking
           </h1>
           <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>
-            Fear around death can often feel vague and shapeless. But underneath it are usually specific things: pain, being alone, confusion, losing the things you love to do, not being able to afford care. Naming which of those weigh on you most is the first step toward addressing them. Once a fear is specific, you can communicate it to the people around you and, where possible, build it into a plan — so you&apos;re met with care and support exactly where you&apos;re most afraid.
+            Fear around death can often feel vague and shapeless. But underneath it are usually specific things: pain, being alone, confusion, losing the things you love to do, not being able to afford care. Naming which of those weigh on you most is the first step toward addressing them. Once a fear is specific, you can communicate it to the people around you and build it into a plan. This helps ensure you&apos;re met with care and support exactly where you&apos;re most afraid.
           </p>
           <button
             type="button"

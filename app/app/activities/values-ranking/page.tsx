@@ -594,7 +594,7 @@ function ValuesRankingContent() {
             Values Ranking
           </h1>
           <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>
-            Many things can feel equally important in theory. Forced ranking helps clarify what matters most by asking you to make comparisons and notice your instinctive reactions.
+            Many things can feel equally important in theory. Forced ranking helps clarify what matters most by asking you to make comparisons and notice your instinctive reactions. As you sort, imagine your final weeks and days — a time when others may be helping make decisions about your care and how you spend that time.
           </p>
           <button
             type="button"
