@@ -29,7 +29,7 @@ import {
   type ReadinessItem as ReadinessItemDef,
 } from '@/lib/domain-structure'
 import { qualitativeLabel, computeDomainProgress } from '@/lib/domain-status'
-import { startedDocumentTypes, willInPlaceAnywhere } from '@/lib/pdf/buildPlanData'
+import { startedDocumentTypes, willInPlaceAnywhere, sdmInPlaceAnywhere, type MirroredDocState } from '@/lib/pdf/buildPlanData'
 import {
   fetchUserTasks,
   toggleUserTask,
@@ -470,11 +470,11 @@ function PlanningStatusSection({
   const [domainStateLoaded, setDomainStateLoaded] = useState(false)
   const [saveError, setSaveError] = useState(false)
   const domainStateRef = useRef<DomainState>({})
-  // Legal will (a doc-mirrored domain_state field) resolved from the full domain_state
-  // — drives the relevant-doc pill status for Personal Admin so this surface agrees with
-  // Your Materials. Resolved once on load; the will isn't toggleable on the pages that
-  // show a Personal Admin pill, so it doesn't need to react live here.
-  const [willInPlace, setWillInPlace] = useState(false)
+  // Doc-mirrored domain_state fields (legal will, SDM) resolved from the full domain_state
+  // — drive the relevant-doc pill status for Personal Admin so this surface agrees with
+  // Your Materials. Resolved once on load; neither field is toggleable on the pages that
+  // show a Personal Admin pill, so they don't need to react live here.
+  const [mirrored, setMirrored] = useState<MirroredDocState>({ willInPlace: false, sdmInPlace: false })
 
   // User-defined tasks for this domain (user_checkboxes). Owned here alongside the
   // platform checkbox state so the bar and the readiness rows share one source.
@@ -489,7 +489,7 @@ function PlanningStatusSection({
       const { state } = await loadDomainState()
       if (cancelled) return
       domainStateRef.current = state
-      setWillInPlace(willInPlaceAnywhere(state))
+      setMirrored({ willInPlace: willInPlaceAnywhere(state), sdmInPlace: sdmInPlaceAnywhere(state) })
       const cbLoaded: Record<string, boolean[]> = {}
       for (const item of structure.readiness) {
         cbLoaded[item.key] = getCheckboxes(state, domainId, item.key, item.checkboxes.length)
@@ -612,7 +612,7 @@ function PlanningStatusSection({
   // OR a doc-mirrored domain_state field like the legal will), so the surfaces agree.
   // Derived from ALL the user's entries, not just this row's matches, so a staticLink
   // document with no relatedDocumentTypes mapping still reports the right status.
-  const startedDocTypes = startedDocumentTypes(entries, { willInPlace })
+  const startedDocTypes = startedDocumentTypes(entries, mirrored)
 
   // Planning status routes through the shared computeDomainProgress helper.
   // Wrap local `checkboxes` as a DomainState so the helper sees this domain's

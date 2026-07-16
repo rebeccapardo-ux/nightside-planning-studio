@@ -46,6 +46,7 @@ import {
   buildKeyDetails,
   buildDomainStatuses,
   willInPlaceFromState,
+  sdmInPlaceFromState,
   type EntryRow,
   type DomainContainer,
 } from '@/lib/pdf/buildPlanData'
@@ -362,9 +363,12 @@ async function main() {
     }
   }
 
-  // Legal-will status for the Personal Admin doc comes from domain_state (single
+  // Legal-will + SDM status for the Personal Admin doc come from domain_state (single
   // source of truth), not entries.content — same as the in-app export.
-  const materials = buildMaterials(allowedEntries, name, reflectionByEntryId, willInPlaceFromState(domainState, domains))
+  const materials = buildMaterials(allowedEntries, name, reflectionByEntryId, {
+    willInPlace: willInPlaceFromState(domainState, domains),
+    sdmInPlace: sdmInPlaceFromState(domainState, domains),
+  })
   // released_items mirrors exactly what buildMaterials rendered.
   const releasedItems: ReleasedItem[] = materials.map(m => {
     const d = RELEASE_SET.find(x => x.title === m.title)!

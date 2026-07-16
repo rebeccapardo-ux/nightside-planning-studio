@@ -95,7 +95,9 @@ export const DOMAIN_STRUCTURES: DomainDef[] = [
           checkboxes: [
             'I have identified a substitute decision-maker for my care',
             'My substitute decision-maker has agreed to take on this role',
-            'I have legally documented my substitute decision-maker',
+            // Index 2 is bidirectionally synced with the Personal Admin doc's
+            // hasCareDecisionMaker checkbox (same copy). Do not reorder these.
+            'I have formally documented a substitute decision-maker for care',
           ],
         },
         {

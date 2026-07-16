@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { ACTIVITY, isStructuredActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE, documentTypeHasSensitiveFields, documentTypeMeta } from '@/lib/content-metadata'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { loadDomainStateFromDB } from '@/lib/domain-state'
-import { willInPlaceFromState, type DomainContainer } from '@/lib/pdf/buildPlanData'
+import { willInPlaceFromState, sdmInPlaceFromState, type DomainContainer, type MirroredDocState } from '@/lib/pdf/buildPlanData'
 import DownloadPDFButton from './DownloadPDFButton'
 import FinancialExportClient from './FinancialExportClient'
 import PersonalAdminExportClient from './PersonalAdminExportClient'
@@ -238,17 +238,18 @@ export default async function ExportPage({ params }: ExportPageProps) {
     return <FearsRankingExportPage id={id} ranking={ranking} createdDate={createdDate} pdfData={pdfData} userName={userName} back={back} />
   }
 
-  // Legal-will status for the Personal Admin export comes from domain_state (single
+  // Legal-will + SDM status for the Personal Admin export come from domain_state (single
   // source of truth), not entries.content. Read-only fetch (no backfill write).
-  let willInPlace = false
+  let mirrored: MirroredDocState = { willInPlace: false, sdmInPlace: false }
   if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) {
     const domainState = await loadDomainStateFromDB(supabase, user.id)
     const { data: containers } = await supabase
       .from('containers').select('id, title, domain_code').eq('user_id', user.id).eq('type', 'domain')
-    willInPlace = willInPlaceFromState(domainState, (containers ?? []) as DomainContainer[])
+    const domains = (containers ?? []) as DomainContainer[]
+    mirrored = { willInPlace: willInPlaceFromState(domainState, domains), sdmInPlace: sdmInPlaceFromState(domainState, domains) }
   }
 
-  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} willInPlace={willInPlace} />
+  return <DocumentExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} mirrored={mirrored} />
 }
 
 // Where the export preview's "Back" link should lead. Activities → revisit the
@@ -614,7 +615,7 @@ function LegacyMapExportPage({ id, mapContent, createdDate, displayTitle, userNa
 // Document export router
 // ---------------------------------------------------------------------------
 
-function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName, back, willInPlace }: {
+function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, userName, back, mirrored }: {
   id: string
   entry: EntryRow
   createdDate: string | null
@@ -622,7 +623,7 @@ function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, us
   filename: string
   userName?: string
   back: BackLink
-  willInPlace: boolean
+  mirrored: MirroredDocState
 }) {
   if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) {
     return <ImportantContactsExportPage id={id} entry={entry} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} back={back} />
@@ -634,7 +635,7 @@ function DocumentExportPage({ id, entry, createdDate, displayTitle, filename, us
     return <FinancialExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />
   }
   if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) {
-    return <PersonalAdminExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} hasWill={willInPlace} />
+    return <PersonalAdminExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} mirrored={mirrored} />
   }
   if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) {
     return <DevicesAccountsExportClient id={id} content={entry.content} createdDate={createdDate} displayTitle={displayTitle} filename={filename} userName={userName} />

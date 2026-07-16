@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
 import { loadDomainStateFromDB } from '@/lib/domain-state'
-import { willInPlaceFromState, startedDocumentTypes } from '@/lib/pdf/buildPlanData'
+import { willInPlaceFromState, sdmInPlaceFromState, startedDocumentTypes } from '@/lib/pdf/buildPlanData'
 import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
 import PlanOverview from '@/app/components/PlanOverview'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
@@ -69,13 +69,16 @@ export default async function YourMaterialsPage() {
   })
 
   // Doc "started" status: has string content OR a doc-mirrored domain_state field
-  // (the legal will) is set — honest doc-state framing, surface-independent. The
-  // mirrored field marks the doc started regardless of which surface set it, so a
-  // will checked on the Wills area page (no entry row) still reads In progress here.
-  // A started doc may therefore have NO entry row → entryId is optional (the Export
+  // (the legal will or the SDM) is set — honest doc-state framing, surface-independent.
+  // The mirrored field marks the doc started regardless of which surface set it, so a
+  // will/SDM checked on an area page (no entry row) still reads In progress here. A
+  // started doc may therefore have NO entry row → entryId is optional (the Export
   // affordance is hidden until an entry exists; see YourMaterialsPanel).
   const domainState = await loadDomainStateFromDB(supabase, user.id)
-  const startedTypes = startedDocumentTypes(entries, { willInPlace: willInPlaceFromState(domainState, allDomains) })
+  const startedTypes = startedDocumentTypes(entries, {
+    willInPlace: willInPlaceFromState(domainState, allDomains),
+    sdmInPlace: sdmInPlaceFromState(domainState, allDomains),
+  })
 
   // --- Documents: split into in-progress / not-started ---
   type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId?: string }

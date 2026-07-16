@@ -145,15 +145,17 @@ const FAMILY_FIELDS: { key: string; label: string }[] = [
   { key: 'otherFamily',              label: 'Other family, chosen family, or important relationships' },
 ]
 
-// hasWill is passed in (resolved from domain_state.legal_will_in_place — the single
-// source of truth), NOT read from entries.content, which no longer stores it.
-function buildLegalFields(c: Record<string, unknown>, hasWill: boolean): { label: string; value: string }[] {
+// willInPlace / sdmInPlace are passed in (resolved from domain_state — the single source
+// of truth), NOT read from entries.content, which no longer stores hasWill /
+// hasCareDecisionMaker. The care-maker name/phone/email/doc-location fields still live in
+// entries.content (like willLocation) and are read from `c`.
+function buildLegalFields(c: Record<string, unknown>, mirrored: MirroredDocState): { label: string; value: string }[] {
   const fields: { label: string; value: string }[] = []
   const str = (v: unknown) => (typeof v === 'string' && v.trim()) ? v.trim() : null
-  if (hasWill)                        fields.push({ label: 'I have a valid, up-to-date legal will', value: 'Yes' })
+  if (mirrored.willInPlace)           fields.push({ label: 'I have a valid, up-to-date legal will', value: 'Yes' })
   const willLoc = str(c.willLocation)
   if (willLoc)                        fields.push({ label: 'My will is located', value: willLoc })
-  if (c.hasCareDecisionMaker === true) fields.push({ label: 'Formally designated substitute decision-maker/s for care', value: 'Yes' })
+  if (mirrored.sdmInPlace)            fields.push({ label: 'I have formally documented a substitute decision-maker for care', value: 'Yes' })
   const cdmDoc = str(c.careDecisionMakerDocLocation)
   if (cdmDoc)                          fields.push({ label: 'Substitute decision-maker for care document is located', value: cdmDoc })
   const cdm1Name = str(c.careDecisionMaker1Name)
@@ -210,11 +212,11 @@ export function buildFuneralWishesPDF(entry: EntryRow, userName: string): PDFDat
   }
 }
 
-export function buildPersonalAdminPDF(entry: EntryRow, userName: string, hasWill: boolean): PDFData {
+export function buildPersonalAdminPDF(entry: EntryRow, userName: string, mirrored: MirroredDocState): PDFData {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
   const bioFields = BIO_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
   const famFields = FAMILY_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
-  const legalFields = buildLegalFields(c, hasWill)
+  const legalFields = buildLegalFields(c, mirrored)
   const otherDocs = [1, 2, 3, 4, 5].map(n => ({
     name: c[`otherDoc${n}Name`] as string | undefined,
     location: c[`otherDoc${n}Location`] as string | undefined,
@@ -415,14 +417,16 @@ export function hasAnyStringContent(value: unknown): boolean {
 // ---------------------------------------------------------------------------
 
 // Fields a document mirrors into domain_state, resolved to booleans by the caller.
-// Extend with sdmInPlace when SDM migrates.
-export type MirroredDocState = { willInPlace: boolean }
+// willInPlace = wills_estates legal_will_in_place[0]; sdmInPlace = healthcare
+// who_will_decide[2] ("I have formally documented a substitute decision-maker for care").
+// Both map to the Personal Admin doc.
+export type MirroredDocState = { willInPlace: boolean; sdmInPlace: boolean }
 
 // The set of document_type codes the user has "started": non-empty string content OR a
-// doc-mirrored domain_state field set (the legal will -> Personal Admin). Single shared
-// predicate for Your Materials and the area-page relevant-doc pills so every surface
-// agrees; the full-plan PDF mirrors the same rule inline (buildMaterials). A doc is
-// "started" regardless of which surface set the field — the honest doc-state framing.
+// doc-mirrored domain_state field set (the legal will or the SDM -> Personal Admin).
+// Single shared predicate for Your Materials and the area-page relevant-doc pills so
+// every surface agrees; the full-plan PDF mirrors the same rule inline (buildMaterials).
+// A doc is "started" regardless of which surface set the field — honest doc-state framing.
 export function startedDocumentTypes(
   entries: { document_type?: string | null; content?: unknown }[] | null | undefined,
   mirrored: MirroredDocState,
@@ -431,16 +435,20 @@ export function startedDocumentTypes(
   for (const e of entries ?? []) {
     if (e.document_type && hasAnyStringContent(e.content)) started.add(e.document_type)
   }
-  if (mirrored.willInPlace) started.add(DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
+  if (mirrored.willInPlace || mirrored.sdmInPlace) started.add(DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
   return started
 }
 
-// willInPlace resolved WITHOUT a domains list. `legal_will_in_place` is defined only on
-// the wills_estates readiness structure, so scanning every container's checkboxes is
-// equivalent to resolving the wills container by domain_code. Use where the domains list
-// isn't at hand (the area page); container-scoped callers use willInPlaceFromState.
+// Mirrored-field resolvers, WITHOUT a domains list. `legal_will_in_place` and
+// `who_will_decide` are each defined on exactly one readiness structure (wills_estates /
+// healthcare), so scanning every container's checkboxes is equivalent to resolving that
+// container by domain_code. Use where the domains list isn't at hand (the area page);
+// container-scoped callers use willInPlaceFromState / sdmInPlaceFromState.
 export function willInPlaceAnywhere(domainState: DomainState): boolean {
   return Object.values(domainState).some((d) => d?.checkboxes?.legal_will_in_place?.[0] === true)
+}
+export function sdmInPlaceAnywhere(domainState: DomainState): boolean {
+  return Object.values(domainState).some((d) => d?.checkboxes?.who_will_decide?.[2] === true)
 }
 
 // ---------------------------------------------------------------------------
@@ -456,7 +464,7 @@ export function buildMaterials(
   entries: EntryRow[],
   userName: string,
   reflectionByEntryId: Record<string, string> = {},
-  willInPlace = false,
+  mirrored: MirroredDocState = { willInPlace: false, sdmInPlace: false },
 ): PlanMaterial[] {
   const adminEntry    = entries.find(e => e.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
   const contactsEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS)
@@ -472,13 +480,13 @@ export function buildMaterials(
   const mats: PlanMaterial[] = []
   if (adEntry && hasAnyStringContent(adEntry.content))             mats.push({ title: 'My Care Wishes', pdfData: buildAdvanceDirectivePDF(adEntry, userName) })
   if (fwEntry && hasAnyStringContent(fwEntry.content))             mats.push({ title: 'Wishes for My Body, Funeral & Ceremony', pdfData: buildFuneralWishesPDF(fwEntry, userName) })
-  // Include Personal Admin when it has content OR the legal will is set (a doc-mirrored
-  // domain_state field) — matches Your Materials' "In progress" rule so the surfaces
-  // agree. Render even with no entry row (will set on the Wills area page only, doc never
-  // opened): a synthetic empty entry supplies the (absent) content; the will line comes
-  // from willInPlace. It's a one-line section, but consistency beats avoiding the echo.
+  // Include Personal Admin when it has content OR a doc-mirrored domain_state field (the
+  // legal will or the SDM) is set — matches Your Materials' "In progress" rule so the
+  // surfaces agree. Render even with no entry row (field set on the area page only, doc
+  // never opened): a synthetic empty entry supplies the (absent) content; the mirrored
+  // lines come from `mirrored`. One-line section, but consistency beats avoiding the echo.
   const adminForPdf: EntryRow = adminEntry ?? { id: '', title: null, content: {}, created_at: null, activity: null, document_type: DOCUMENT_TYPE.PERSONAL_ADMIN_INFO }
-  if ((adminEntry && hasAnyStringContent(adminEntry.content)) || willInPlace) mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminForPdf, userName, willInPlace) })
+  if ((adminEntry && hasAnyStringContent(adminEntry.content)) || mirrored.willInPlace || mirrored.sdmInPlace) mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminForPdf, userName, mirrored) })
   if (contactsEntry && hasAnyStringContent(contactsEntry.content)) mats.push({ title: 'Important Contacts', pdfData: buildContactsPDF(contactsEntry, userName) })
   if (finEntry && hasAnyStringContent(finEntry.content))           mats.push({ title: 'Financial Information', pdfData: buildFinancialPDF(finEntry, userName) })
   if (devicesEntry && hasAnyStringContent(devicesEntry.content))   mats.push({ title: 'Devices & Accounts', pdfData: buildDevicesAccountsPDF(devicesEntry, userName) })
@@ -507,6 +515,14 @@ export type DomainContainer = { id: string; title: string; domain_code?: string 
 export function willInPlaceFromState(domainState: DomainState, domains: DomainContainer[]): boolean {
   const willsDomain = domains.find(d => d.domain_code === 'wills_estates')
   return willsDomain ? getCheckboxes(domainState, willsDomain.id, 'legal_will_in_place', 1)[0] === true : false
+}
+
+// Single source of truth for "user has formally documented a substitute decision-maker":
+// the healthcare who_will_decide[2] checkbox in domain_state. Mirrors Personal Admin's
+// hasCareDecisionMaker. Shared by the same surfaces as willInPlaceFromState.
+export function sdmInPlaceFromState(domainState: DomainState, domains: DomainContainer[]): boolean {
+  const healthcareDomain = domains.find(d => d.domain_code === 'healthcare')
+  return healthcareDomain ? getCheckboxes(domainState, healthcareDomain.id, 'who_will_decide', 3)[2] === true : false
 }
 
 // Build the plan summary's key-detail rows from DB domain_state + entries.

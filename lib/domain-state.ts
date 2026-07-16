@@ -137,27 +137,19 @@ type SyncFlagsByDomainHint = {
   deathcareHint?:   DomainEntryState
 }
 
-// NOTE: sync_has_will is intentionally NOT read here. Legal-will status lives in
-// domain_state.legal_will_in_place as the single source of truth (written by both
-// the Wills area page and the Personal Admin doc). Keeping the legacy OR-merge from
-// a frozen user_metadata.sync_has_will would resurrect an unchecked will on reload
-// (the merge never loses a `true`). Existing users are reconciled once by
-// scripts/reconcile-legal-will.ts. (care/eol still use sync_* pending their own migration.)
+// NOTE: sync_has_will and sync_has_care_decision_maker are intentionally NOT read here.
+// Legal-will (wills_estates legal_will_in_place[0]) and SDM (healthcare who_will_decide[2])
+// status now live in domain_state as the single source of truth, written by both the area
+// page and the Personal Admin doc. Keeping the legacy OR-merge from a frozen user_metadata
+// flag would resurrect an unchecked box on reload (the merge never loses a `true`). Existing
+// users are reconciled once by scripts/reconcile-mirrored-doc-fields.ts. (eol still uses
+// sync_has_eol_wishes_doc pending its own migration.)
 function readSyncFlags(meta: Record<string, unknown>): SyncFlagsByDomainHint {
   const out: SyncFlagsByDomainHint = {}
 
-  if (typeof meta.sync_has_care_decision_maker === 'boolean'
-   || typeof meta.sync_has_eol_wishes_doc === 'boolean') {
-    const cb: Record<string, boolean[]> = {}
-    if (typeof meta.sync_has_care_decision_maker === 'boolean') {
-      const v = meta.sync_has_care_decision_maker as boolean
-      cb.who_will_decide = [v, false, v]   // idx 1 was never synced
-    }
-    if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
-      const v = meta.sync_has_eol_wishes_doc as boolean
-      cb.wishes_clear_shared = [v, v]
-    }
-    out.healthcareHint = { checkboxes: cb }
+  if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
+    const v = meta.sync_has_eol_wishes_doc as boolean
+    out.healthcareHint = { checkboxes: { wishes_clear_shared: [v, v] } }
   }
 
   if (typeof meta.sync_has_funeral_wishes === 'boolean'

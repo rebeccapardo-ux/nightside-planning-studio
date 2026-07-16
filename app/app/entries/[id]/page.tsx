@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { ACTIVITY, isStructuredActivity, isRankingActivity, DOCUMENT_TYPE_META, DOCUMENT_TYPE, isCaptureDocument } from '@/lib/content-metadata'
 import { notFound } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { loadDomainStateFromDB } from '@/lib/domain-state'
+import { sdmInPlaceFromState, type DomainContainer } from '@/lib/pdf/buildPlanData'
 import FadeIn from '@/app/components/FadeIn'
 import FinancialInformationSnapshot from './FinancialInformationSnapshot'
 import PersonalAdminSnapshot from './PersonalAdminSnapshot'
@@ -158,6 +160,16 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   const displayTitle = getDisplayTitle(entry)
   const formattedDate = formatDate(entry.created_at)
   const isDocument = !!entry.document_type
+
+  // SDM status for the Personal Admin snapshot comes from domain_state (single source of
+  // truth), not entries.content — same as the export. (hasWill isn't shown in the snapshot.)
+  let sdmInPlace = false
+  if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) {
+    const domainState = await loadDomainStateFromDB(supabase, user.id)
+    const { data: containers } = await supabase
+      .from('containers').select('id, title, domain_code').eq('user_id', user.id).eq('type', 'domain')
+    sdmInPlace = sdmInPlaceFromState(domainState, (containers ?? []) as DomainContainer[])
+  }
 
   // No explicit returnTo → the entry was reached from the materials library.
   const backHref = returnTo ?? '/app/materials'
@@ -321,7 +333,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
             ) : ranking ? (
               <RankingSnapshot ranking={ranking} activity={entry.activity ?? ''} id={entry.id} />
             ) : isDocument ? (
-              <DocumentSnapshot entry={entry} />
+              <DocumentSnapshot entry={entry} sdmInPlace={sdmInPlace} />
             ) : (
               <GenericEntryView entry={entry} />
             )}
@@ -624,7 +636,7 @@ function FearsTextSnapshot({ ranking }: { ranking: RankingContent }) {
 type ContactFields = { name: string; phone: string; email: string; address: string }
 type KeepsakeItem = { id: string; object: string; recipient: string; meaning: string }
 
-function DocumentSnapshot({ entry }: { entry: EntryRow }) {
+function DocumentSnapshot({ entry, sdmInPlace }: { entry: EntryRow; sdmInPlace: boolean }) {
   if (entry.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS) {
     return <ImportantContactsSnapshot entry={entry} />
   }
@@ -632,7 +644,7 @@ function DocumentSnapshot({ entry }: { entry: EntryRow }) {
     return <FinancialInformationSnapshot entry={entry} />
   }
   if (entry.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO) {
-    return <PersonalAdminSnapshot entry={entry} />
+    return <PersonalAdminSnapshot entry={entry} sdmInPlace={sdmInPlace} />
   }
   if (entry.document_type === DOCUMENT_TYPE.DEVICES_AND_ACCOUNTS) {
     return <DevicesAndAccountsSnapshot entry={entry} />

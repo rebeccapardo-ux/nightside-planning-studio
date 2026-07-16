@@ -69,7 +69,7 @@ const FAMILY_FIELDS: { key: keyof PersonalAdminContent; label: string }[] = [
 
 const LEGAL_FIELDS: { key: keyof PersonalAdminContent; label: string }[] = [
   { key: 'willLocation',                   label: 'My will is located' },
-  { key: 'hasCareDecisionMaker',           label: 'Formally designated substitute decision-maker/s for care' },
+  { key: 'hasCareDecisionMaker',           label: 'I have formally documented a substitute decision-maker for care' },
   { key: 'careDecisionMakerDocLocation',   label: 'Document location' },
   { key: 'hasEndOfLifeWishesDoc',          label: 'End-of-life care wishes captured in writing' },
   { key: 'endOfLifeWishesDocLocation',     label: 'End-of-life wishes document is located' },
@@ -108,8 +108,12 @@ function FieldDisplay({ label, value }: { label: string; value: string | undefin
 
 export default function PersonalAdminSnapshot({
   entry,
+  sdmInPlace,
 }: {
   entry: { id: string; content: unknown }
+  // SDM ("formally documented") now lives in domain_state, not entries.content —
+  // resolved by the server page and passed in (like the export). hasWill isn't shown here.
+  sdmInPlace: boolean
 }) {
   const router = useRouter()
   const [sin, setSin] = useState('')
@@ -135,9 +139,12 @@ export default function PersonalAdminSnapshot({
   const legalFields = LEGAL_FIELDS
     .map(f => ({
       label: f.label,
-      value: BOOLEAN_LEGAL_KEYS.has(f.key)
-        ? (c[f.key] === true ? 'Yes' : '')
-        : str(c[f.key]),
+      // hasCareDecisionMaker is sourced from domain_state (sdmInPlace), not content.
+      value: f.key === 'hasCareDecisionMaker'
+        ? (sdmInPlace ? 'Yes' : '')
+        : BOOLEAN_LEGAL_KEYS.has(f.key)
+          ? (c[f.key] === true ? 'Yes' : '')
+          : str(c[f.key]),
     }))
     .filter(f => f.value)
   const otherDocs = DOC_NUMS

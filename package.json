@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "release:legacy-contact": "tsx --env-file=.env.local scripts/release-to-legacy-contact.ts",
-    "reconcile:legal-will": "tsx --env-file=.env.local scripts/reconcile-legal-will.ts"
+    "reconcile:mirrored-fields": "tsx --env-file=.env.local scripts/reconcile-mirrored-doc-fields.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",
