@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { PDFData } from '@/lib/pdf/types'
+import type { MirroredDocState } from '@/lib/pdf/buildPlanData'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const apfel = "'Apfel Grotezk', sans-serif"
@@ -34,16 +35,19 @@ const FAMILY_FIELDS: { key: string; label: string }[] = [
   { key: 'otherFamily',              label: 'Other family, chosen family, or important relationships' },
 ]
 
-function buildLegalFields(c: PAContent): { label: string; value: string }[] {
+// willInPlace / sdmInPlace come from domain_state (single source of truth), resolved by
+// the server export page and passed in — NOT from entries.content, which no longer stores
+// hasWill / hasCareDecisionMaker. The care-maker name/phone/etc still live in `c`.
+function buildLegalFields(c: PAContent, mirrored: MirroredDocState): { label: string; value: string }[] {
   const fields: { label: string; value: string }[] = []
   const str = (v: unknown) => (typeof v === 'string' && v.trim()) ? v.trim() : null
 
-  if (c.hasWill === true)       fields.push({ label: 'I have a legal will', value: 'Yes' })
+  if (mirrored.willInPlace)     fields.push({ label: 'I have a valid, up-to-date legal will', value: 'Yes' })
   const willLoc = str(c.willLocation)
   if (willLoc)                  fields.push({ label: 'My will is located', value: willLoc })
 
-  if (c.hasCareDecisionMaker === true)
-    fields.push({ label: 'Formally designated substitute decision-maker/s for care', value: 'Yes' })
+  if (mirrored.sdmInPlace)
+    fields.push({ label: 'I have formally documented a substitute decision-maker for care', value: 'Yes' })
   const cdmDoc = str(c.careDecisionMakerDocLocation)
   if (cdmDoc)                   fields.push({ label: 'Document location', value: cdmDoc })
   const cdm1Name = str(c.careDecisionMaker1Name)
@@ -171,9 +175,9 @@ function SensitiveInput({
 // ---------------------------------------------------------------------------
 
 export default function PersonalAdminExportClient({
-  id, content, createdDate, displayTitle, filename, userName,
+  id, content, createdDate, displayTitle, filename, userName, mirrored,
 }: {
-  id: string; content: unknown; createdDate: string | null; displayTitle: string; filename: string; userName?: string
+  id: string; content: unknown; createdDate: string | null; displayTitle: string; filename: string; userName?: string; mirrored: MirroredDocState
 }) {
   const [sensitive, setSensitive] = useState({ sin: '', healthCard: '' })
   const [sinMasked, setSinMasked] = useState(false)
@@ -196,7 +200,7 @@ export default function PersonalAdminExportClient({
 
   const bioFields   = BIO_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
   const famFields   = FAMILY_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
-  const legalFields = buildLegalFields(c)
+  const legalFields = buildLegalFields(c, mirrored)
   const otherDocs   = DOC_NUMS
     .map(n => ({
       name:         c[`otherDoc${n}Name`] as string | undefined,

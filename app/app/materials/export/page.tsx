@@ -6,7 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState } from '@/lib/domain-state'
 import { fetchUserTasksFromDB } from '@/lib/user-tasks'
 import AlertIcon from '@/app/components/AlertIcon'
-import { buildMaterials, buildKeyDetails, buildDomainStatuses } from '@/lib/pdf/buildPlanData'
+import { buildMaterials, buildKeyDetails, buildDomainStatuses, willInPlaceFromState, sdmInPlaceFromState } from '@/lib/pdf/buildPlanData'
 import { ACTIVITY } from '@/lib/content-metadata'
 import type { PlanKeyDetail, PlanDomainStatus, PlanMaterial, PlanPDFProps } from '@/lib/pdf/PlanPDFDocument'
 
@@ -108,8 +108,12 @@ export default function PlanExportPage() {
         }
       }
 
-      // Build materials list
-      setMaterials(buildMaterials(allEntries, name, reflectionByEntryId))
+      // Build materials list. Legal-will + SDM status for the Personal Admin doc PDF come
+      // from domain_state (single source of truth), not entries.content.
+      setMaterials(buildMaterials(allEntries, name, reflectionByEntryId, {
+        willInPlace: willInPlaceFromState(domainState, allDomains),
+        sdmInPlace: sdmInPlaceFromState(domainState, allDomains),
+      }))
 
       setLoading(false)
     }

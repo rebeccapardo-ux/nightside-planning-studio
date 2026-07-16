@@ -29,7 +29,6 @@ type DocRow = {
 
 export default function PlanOverview({ domains, title = 'Key details' }: { domains: { id: string; title: string; domain_code?: string | null }[]; title?: string }) {
   const [syncHasWill, setSyncHasWill]   = useState(false)
-  const [syncHasCDM, setSyncHasCDM]     = useState(false)
   const [syncHasEOL, setSyncHasEOL]     = useState(false)
   const [careStatus, setCareStatus]     = useState<CareStatus>(null)
   const [willLocation, setWillLocation] = useState<string | null>(null)
@@ -73,8 +72,8 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
         setSyncHasWill(willVals[0] === true)
       }
       if (healthcareDomain) {
-        const cdmVals = getCheckboxes(domainState, healthcareDomain.id, 'who_will_decide', 3)
-        setSyncHasCDM(cdmVals[0] || cdmVals[2])
+        // (who_will_decide drives the SDM name row via entries.content, not a boolean
+        // here — the former syncHasCDM was dead state and was removed.)
         const eolVals = getCheckboxes(domainState, healthcareDomain.id, 'wishes_clear_shared', 2)
         const communicated = eolVals[0] === true
         const documented   = eolVals[1] === true

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { DOCUMENT_TYPE_META } from '@/lib/content-metadata'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { loadDomainState, saveCheckboxes, getCheckboxes, type DomainState } from '@/lib/domain-state'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import AlertIcon from '@/app/components/AlertIcon'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
@@ -111,6 +112,14 @@ function PersonalAdminPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const formRef = useRef<FormState>(EMPTY_FORM)
   const entryIdRef = useRef<string | null>(null)
+  // Legal-will and SDM status live in domain_state (single source of truth, shared with
+  // the Wills / Healthcare area pages), NOT entries.content: the will is wills_estates
+  // legal_will_in_place[0]; the SDM is healthcare who_will_decide[2]. These hold the two
+  // container UUIDs + last-known domain_state so the checkboxes can read/write without a
+  // round-trip. null container → that checkbox falls back to form-only.
+  const willsContainerIdRef = useRef<string | null>(null)
+  const healthcareContainerIdRef = useRef<string | null>(null)
+  const domainStateRef = useRef<DomainState | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [loading, setLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -158,6 +167,28 @@ function PersonalAdminPage() {
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         if (userError || !user) return
 
+        // Legal-will and SDM status are sourced from domain_state (single source of truth,
+        // shared with the Wills / Healthcare area pages). Resolve both containers + state
+        // and hydrate the checkboxes READ-ONLY — this must NOT trigger autosave, or it
+        // would create the entries row and mark the doc "In progress" without the user
+        // ever touching it. (loadDomainState may write back a legacy backfill to
+        // domain_state, but never to entries — so the doc's status is untouched.)
+        const { data: mirroredContainers } = await supabase
+          .from('containers').select('id, domain_code').eq('user_id', user.id).in('domain_code', ['wills_estates', 'healthcare'])
+        const willsId = (mirroredContainers?.find(c => c.domain_code === 'wills_estates')?.id as string | undefined) ?? null
+        const healthcareId = (mirroredContainers?.find(c => c.domain_code === 'healthcare')?.id as string | undefined) ?? null
+        willsContainerIdRef.current = willsId
+        healthcareContainerIdRef.current = healthcareId
+        const { state: domainState } = await loadDomainState(supabase)
+        domainStateRef.current = domainState
+        const hasWillFromDomain = willsId
+          ? getCheckboxes(domainState, willsId, 'legal_will_in_place', 1)[0] === true
+          : false
+        // SDM = healthcare who_will_decide index 2 ("formally documented").
+        const hasCdmFromDomain = healthcareId
+          ? getCheckboxes(domainState, healthcareId, 'who_will_decide', 3)[2] === true
+          : false
+
         const { data: rows, error: loadError } = await supabase
           .from('entries')
           .select('id, content, created_at')
@@ -169,6 +200,7 @@ function PersonalAdminPage() {
         if (loadError) { console.error('LOAD ERROR:', loadError); return }
 
         const existing = rows?.[0]
+        let merged = { ...EMPTY_FORM } as FormState
         if (existing) {
           entryIdRef.current = existing.id
           setSavedEntryId(existing.id)
@@ -176,25 +208,17 @@ function PersonalAdminPage() {
           const savedDate = storedSave ? new Date(storedSave) : existing.created_at ? new Date(existing.created_at) : null
           if (savedDate) setLastSavedAt(savedDate)
 
-          // Start from entries content, then apply any sync flags set by the domain page
-          let merged = { ...EMPTY_FORM, ...existing.content } as FormState
+          // Start from entries content, then apply the eol sync flag set by the domain
+          // page. (Legal will and SDM no longer sync via user_metadata — they're applied
+          // from domain_state below, whether or not an entry exists.)
+          merged = { ...EMPTY_FORM, ...existing.content } as FormState
           const meta = user.user_metadata ?? {}
           let syncedFromMeta = false
-          if (typeof meta.sync_has_will === 'boolean' && meta.sync_has_will !== merged.hasWill) {
-            merged = { ...merged, hasWill: meta.sync_has_will }
-            syncedFromMeta = true
-          }
-          if (typeof meta.sync_has_care_decision_maker === 'boolean' && meta.sync_has_care_decision_maker !== merged.hasCareDecisionMaker) {
-            merged = { ...merged, hasCareDecisionMaker: meta.sync_has_care_decision_maker }
-            syncedFromMeta = true
-          }
           if (typeof meta.sync_has_eol_wishes_doc === 'boolean' && meta.sync_has_eol_wishes_doc !== merged.hasEndOfLifeWishesDoc) {
             merged = { ...merged, hasEndOfLifeWishesDoc: meta.sync_has_eol_wishes_doc }
             syncedFromMeta = true
           }
 
-          formRef.current = merged
-          setForm(merged)
           const count = DOC_NUMS.filter(n =>
             merged[`otherDoc${n}Name` as keyof FormState] ||
             merged[`otherDoc${n}Location` as keyof FormState] ||
@@ -212,12 +236,16 @@ function PersonalAdminPage() {
           }
           supabase.auth.updateUser({
             data: {
-              sync_has_will: merged.hasWill,
-              sync_has_care_decision_maker: merged.hasCareDecisionMaker,
               sync_has_eol_wishes_doc: merged.hasEndOfLifeWishesDoc,
             },
           }).catch(() => {})
         }
+
+        // Legal will + SDM come from domain_state — applied regardless of an entry, so the
+        // checkboxes reflect the Wills / Healthcare area pages even before the doc is started.
+        merged = { ...merged, hasWill: hasWillFromDomain, hasCareDecisionMaker: hasCdmFromDomain }
+        formRef.current = merged
+        setForm(merged)
       } finally {
         setLoading(false)
       }
@@ -256,6 +284,44 @@ function PersonalAdminPage() {
     const newForm = { ...formRef.current, [field]: value } as FormState
     formRef.current = newForm
     setForm(newForm)
+    scheduleAutosave()
+  }
+
+  // The legal-will checkbox is bidirectionally synced with the Wills area page. Its
+  // value lives in domain_state.legal_will_in_place (single source of truth), NOT
+  // entries.content (toSaveable strips hasWill). Toggling it here (a) writes the fact
+  // to domain_state and (b) schedules the doc's normal autosave so the entries row is
+  // created on this *direct* interaction — marking the doc "In progress", consistent
+  // with the principle that engaging with the doc (not the area page) starts it.
+  function updateWillCheckbox(value: boolean) {
+    const newForm = { ...formRef.current, hasWill: value } as FormState
+    formRef.current = newForm
+    setForm(newForm)
+    const willsId = willsContainerIdRef.current
+    if (willsId) {
+      void saveCheckboxes(willsId, 'legal_will_in_place', [value], { currentState: domainStateRef.current ?? undefined })
+        .then((next) => { if (next) domainStateRef.current = next })
+        .catch(() => {})
+    }
+    scheduleAutosave()
+  }
+
+  // The SDM checkbox is bidirectionally synced with the Healthcare area page's
+  // who_will_decide index 2 ("formally documented"). Same model as updateWillCheckbox,
+  // but who_will_decide is a 3-checkbox item, so we merge index 2 into the current array
+  // (preserving indices 0/1 — "identified" / "agreed") rather than overwriting it.
+  function updateSdmCheckbox(value: boolean) {
+    const newForm = { ...formRef.current, hasCareDecisionMaker: value } as FormState
+    formRef.current = newForm
+    setForm(newForm)
+    const healthcareId = healthcareContainerIdRef.current
+    if (healthcareId) {
+      const cur = getCheckboxes(domainStateRef.current ?? {}, healthcareId, 'who_will_decide', 3)
+      cur[2] = value
+      void saveCheckboxes(healthcareId, 'who_will_decide', cur, { currentState: domainStateRef.current ?? undefined })
+        .then((next) => { if (next) domainStateRef.current = next })
+        .catch(() => {})
+    }
     scheduleAutosave()
   }
 
@@ -345,9 +411,12 @@ function PersonalAdminPage() {
     }, 2600)
   }
 
-  function toSaveable(f: FormState): Omit<FormState, 'socialInsuranceNumber' | 'healthCardNumber'> {
+  // hasWill and hasCareDecisionMaker are stripped like the sensitive fields: they live in
+  // domain_state (single source of truth), never in entries.content. The care-maker
+  // name/phone/etc + willLocation stay (doc detail).
+  function toSaveable(f: FormState): Omit<FormState, 'socialInsuranceNumber' | 'healthCardNumber' | 'hasWill' | 'hasCareDecisionMaker'> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { socialInsuranceNumber, healthCardNumber, ...safe } = f
+    const { socialInsuranceNumber, healthCardNumber, hasWill, hasCareDecisionMaker, ...safe } = f
     return safe
   }
 
@@ -374,10 +443,11 @@ function PersonalAdminPage() {
         const { error } = await supabase.from('entries').update({ content: toSaveable(currentForm) }).eq('id', entryIdRef.current)
         if (error) { setSaveStatus('error'); setSavingSectionIdx(null); return }
       }
+      // Legal will + SDM are persisted to domain_state (in updateWillCheckbox /
+      // updateSdmCheckbox), not here — sync_has_will and sync_has_care_decision_maker are
+      // retired. eol still mirrors to user_metadata pending its own migration.
       supabase.auth.updateUser({
         data: {
-          sync_has_will: currentForm.hasWill,
-          sync_has_care_decision_maker: currentForm.hasCareDecisionMaker,
           sync_has_eol_wishes_doc: currentForm.hasEndOfLifeWishesDoc,
         },
       }).catch(() => {})
@@ -598,9 +668,9 @@ function PersonalAdminPage() {
             {/* Legal Will */}
             <div>
               <CheckboxItem
-                label="I have a legal will"
+                label="I have a valid, up-to-date legal will"
                 checked={form.hasWill}
-                onChange={(v) => updateBoolField('hasWill', v)}
+                onChange={(v) => updateWillCheckbox(v)}
               />
               {form.hasWill && (
                 <div style={{ marginTop: 14, paddingLeft: 30 }}>
@@ -612,9 +682,9 @@ function PersonalAdminPage() {
             {/* Care Decision Maker */}
             <div>
               <CheckboxItem
-                label="I have formally designated substitute decision-maker/s for care"
+                label="I have formally documented a substitute decision-maker for care"
                 checked={form.hasCareDecisionMaker}
-                onChange={(v) => updateBoolField('hasCareDecisionMaker', v)}
+                onChange={(v) => updateSdmCheckbox(v)}
               />
               {form.hasCareDecisionMaker && (
                 <div style={{ marginTop: 14, paddingLeft: 30, display: 'flex', flexDirection: 'column', gap: 16 }}>

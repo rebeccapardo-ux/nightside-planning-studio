@@ -133,32 +133,23 @@ function readLegacyLocalState(): DomainState {
 type SyncFlagsByDomainHint = {
   // Each hint key (substring matched against the domain title) maps to a
   // partial DomainEntryState.
-  willsHint?:       DomainEntryState
   healthcareHint?:  DomainEntryState
   deathcareHint?:   DomainEntryState
 }
 
+// NOTE: sync_has_will and sync_has_care_decision_maker are intentionally NOT read here.
+// Legal-will (wills_estates legal_will_in_place[0]) and SDM (healthcare who_will_decide[2])
+// status now live in domain_state as the single source of truth, written by both the area
+// page and the Personal Admin doc. Keeping the legacy OR-merge from a frozen user_metadata
+// flag would resurrect an unchecked box on reload (the merge never loses a `true`). Existing
+// users are reconciled once by scripts/reconcile-mirrored-doc-fields.ts. (eol still uses
+// sync_has_eol_wishes_doc pending its own migration.)
 function readSyncFlags(meta: Record<string, unknown>): SyncFlagsByDomainHint {
   const out: SyncFlagsByDomainHint = {}
 
-  if (typeof meta.sync_has_will === 'boolean') {
-    out.willsHint = {
-      checkboxes: { legal_will_in_place: [meta.sync_has_will as boolean] },
-    }
-  }
-
-  if (typeof meta.sync_has_care_decision_maker === 'boolean'
-   || typeof meta.sync_has_eol_wishes_doc === 'boolean') {
-    const cb: Record<string, boolean[]> = {}
-    if (typeof meta.sync_has_care_decision_maker === 'boolean') {
-      const v = meta.sync_has_care_decision_maker as boolean
-      cb.who_will_decide = [v, false, v]   // idx 1 was never synced
-    }
-    if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
-      const v = meta.sync_has_eol_wishes_doc as boolean
-      cb.wishes_clear_shared = [v, v]
-    }
-    out.healthcareHint = { checkboxes: cb }
+  if (typeof meta.sync_has_eol_wishes_doc === 'boolean') {
+    const v = meta.sync_has_eol_wishes_doc as boolean
+    out.healthcareHint = { checkboxes: { wishes_clear_shared: [v, v] } }
   }
 
   if (typeof meta.sync_has_funeral_wishes === 'boolean'
@@ -180,8 +171,7 @@ async function resolveSyncFlagsToDomainIds(
   hints: SyncFlagsByDomainHint,
 ): Promise<DomainState> {
   const out: DomainState = {}
-  const needed: ('willsHint' | 'healthcareHint' | 'deathcareHint')[] = []
-  if (hints.willsHint)      needed.push('willsHint')
+  const needed: ('healthcareHint' | 'deathcareHint')[] = []
   if (hints.healthcareHint) needed.push('healthcareHint')
   if (hints.deathcareHint)  needed.push('deathcareHint')
   if (needed.length === 0) return out
@@ -193,7 +183,6 @@ async function resolveSyncFlagsToDomainIds(
 
   for (const c of containers ?? []) {
     const code = c.domain_code
-    if (hints.willsHint      && code === 'wills_estates') out[c.id] = mergeEntry(out[c.id], hints.willsHint)
     if (hints.healthcareHint && code === 'healthcare')    out[c.id] = mergeEntry(out[c.id], hints.healthcareHint)
     if (hints.deathcareHint  && code === 'deathcare')     out[c.id] = mergeEntry(out[c.id], hints.deathcareHint)
   }
