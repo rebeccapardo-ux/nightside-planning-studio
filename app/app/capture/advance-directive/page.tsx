@@ -700,7 +700,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
         <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
-      <span className="hidden md:inline">Preview &amp; </span>Export
+      Export
     </button>
   )
 }
@@ -1820,11 +1820,15 @@ function MaterialsBrowser({
   const availableNotes = allNotes.filter((n) => !existingNoteIds.has(n.id))
 
   return (
+    // Backdrop click-to-close; the accessible close path is the Close button inside.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       style={{ background: 'rgba(26,15,46,0.85)' }}
       onClick={onClose}
     >
+      {/* Guard: clicks inside the modal shouldn't trigger the backdrop close (not a control). */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
         className="rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[70vh] flex flex-col"
         style={{ background: '#1A0F2E' }}

@@ -199,7 +199,7 @@ export default function KeepsakeDocumentPage() {
   const [openIdx, setOpenIdx] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
-  const [statusNow, setStatusNow] = useState(Date.now())
+  const [statusNow, setStatusNow] = useState(() => Date.now())
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const docIdRef = useRef<string | null>(null)
   const userIdRef = useRef<string | null>(null)
@@ -404,7 +404,7 @@ export default function KeepsakeDocumentPage() {
               <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
-            <span className="hidden md:inline">Preview &amp; </span>Export
+            Export
           </button>
           {saveStatusText && (
             <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>

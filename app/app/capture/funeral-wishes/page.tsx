@@ -595,9 +595,9 @@ function FuneralWishesPage() {
           {/* Legal note */}
           <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', marginBottom: 20, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
             This is <strong>not a legal document.</strong> Wishes for body disposition should also be included in your legal will. Regulations vary by province;{' '}
-            <a href="/app/area/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
+            <Link href="/app/area/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
               view province-specific resources →
-            </a>
+            </Link>
           </p>
 
           <AutosaveNotice style={{ marginTop: 28 }}>Your answers will save automatically to Your materials.</AutosaveNotice>
@@ -740,7 +740,7 @@ function FuneralWishesPage() {
                                 <TF label="Any other wishes:" value={form.cremationOtherWishes} onChange={v => updateField('cremationOtherWishes', v)} fieldKey="cremationOtherWishes" onCursorChange={handleCursorChange} />
                               </FadeIn>
                               <FadeIn visible={form.dispositionType === 'aquamation'}>
-                                <HelperText italic>Aquamation is available in some provinces. <a href="/app/area/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</a></HelperText>
+                                <HelperText italic>Aquamation is available in some provinces. <Link href="/app/area/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</Link></HelperText>
                                 <RadioGroup label="Direct aquamation (no ceremony before):" value={form.aquamationDirect} onChange={v => updateField('aquamationDirect', v)} options={[{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }, { value: 'no_preference', label: 'No preference' }]} />
                                 <TF label="Who should receive the remains:" value={form.aquamationRemains} onChange={v => updateField('aquamationRemains', v)} fieldKey="aquamationRemains" onCursorChange={handleCursorChange} />
                                 <TF label="Where should the remains go:" value={form.aquamationLocation} onChange={v => updateField('aquamationLocation', v)} fieldKey="aquamationLocation" onCursorChange={handleCursorChange} />
@@ -794,7 +794,7 @@ function FuneralWishesPage() {
                               </FadeIn>
                               <HelperText italic important>
                                 To make your donation wishes legally effective, you need to register with your provincial organ and tissue donation registry. Indicating your wishes here does not constitute registration. This is separate from body disposition — you can donate organs regardless of your other wishes.{' '}
-                                <a href="/app/area/deathcare" style={{ color: '#130426', textDecoration: 'underline' }}>Learn more about organ donation in your province →</a>
+                                <Link href="/app/area/deathcare" style={{ color: '#130426', textDecoration: 'underline' }}>Learn more about organ donation in your province →</Link>
                               </HelperText>
                               <FadeIn visible={['yes_all', 'yes_some', 'not_sure'].includes(form.organDonationWishes)}>
                                 <TF
@@ -812,7 +812,7 @@ function FuneralWishesPage() {
                             <>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 <RadioGroup label="Would you like a home funeral?" value={form.homeFuneralPreference} onChange={v => updateField('homeFuneralPreference', v)} options={[{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }, { value: 'no_preference', label: 'No preference' }]} />
-                                <HelperText italic>Regulations vary by province — <a href="/app/area/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</a>.</HelperText>
+                                <HelperText italic>Regulations vary by province — <Link href="/app/area/deathcare" style={{ color: 'rgba(19,4,38,0.65)', textDecoration: 'underline' }}>learn more</Link>.</HelperText>
                                 <FadeIn visible={form.homeFuneralPreference === 'yes'}>
                                   <TF label="Any specific wishes:" value={form.homeFuneralWishes} onChange={v => updateField('homeFuneralWishes', v)} fieldKey="homeFuneralWishes" onCursorChange={handleCursorChange} />
                                 </FadeIn>
@@ -991,7 +991,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
         <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
-      <span className="hidden md:inline">Preview &amp; </span>Export
+      Export
     </button>
   )
 }
@@ -1774,7 +1774,10 @@ function FWMaterialsBrowser({ existingEntryIds, existingNoteIds, onAdd, onClose 
   const availableNotes = allNotes.filter(n => !existingNoteIds.has(n.id))
 
   return (
+    // Backdrop click-to-close; the accessible close path is the Close button inside.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ background: 'rgba(26,15,46,0.85)' }} onClick={onClose}>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div className="rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[70vh] flex flex-col" style={{ background: '#1A0F2E' }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5 shrink-0">
           <h3 className="text-[16px] font-semibold text-white">Add from My Materials</h3>

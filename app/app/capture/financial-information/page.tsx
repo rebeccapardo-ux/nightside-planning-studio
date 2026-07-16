@@ -791,7 +791,7 @@ function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
 function AccountNumberDisplay() {
   return (
     <div>
-      <label style={{ display: 'block', fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginBottom: 8 }}>Account number</label>
+      <div style={{ display: 'block', fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginBottom: 8 }}>Account number</div>
       <div style={{
         width: '100%',
         background: '#F5F5F5',
@@ -864,7 +864,7 @@ function TaxSectionContent({ taxInfo, onUpdate, onBlur }: {
 
       {/* 1. Who prepares your tax returns */}
       <div>
-        <label style={labelStyle}>Who prepares your tax returns:</label>
+        <div style={labelStyle}>Who prepares your tax returns:</div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {([
             { value: 'self', label: 'I prepare my own' },
@@ -941,7 +941,7 @@ function TaxSectionContent({ taxInfo, onUpdate, onBlur }: {
 
       {/* 4. Notable tax situations */}
       <div>
-        <label style={labelStyle}>Tax situations that apply:</label>
+        <div style={labelStyle}>Tax situations that apply:</div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {TAX_SITUATIONS.map((situation) => (
             <label key={situation} style={checkLabelStyle}>
