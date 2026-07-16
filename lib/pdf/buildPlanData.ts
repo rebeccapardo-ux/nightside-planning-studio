@@ -145,10 +145,12 @@ const FAMILY_FIELDS: { key: string; label: string }[] = [
   { key: 'otherFamily',              label: 'Other family, chosen family, or important relationships' },
 ]
 
-function buildLegalFields(c: Record<string, unknown>): { label: string; value: string }[] {
+// hasWill is passed in (resolved from domain_state.legal_will_in_place — the single
+// source of truth), NOT read from entries.content, which no longer stores it.
+function buildLegalFields(c: Record<string, unknown>, hasWill: boolean): { label: string; value: string }[] {
   const fields: { label: string; value: string }[] = []
   const str = (v: unknown) => (typeof v === 'string' && v.trim()) ? v.trim() : null
-  if (c.hasWill === true)             fields.push({ label: 'I have a legal will', value: 'Yes' })
+  if (hasWill)                        fields.push({ label: 'I have a valid, up-to-date legal will', value: 'Yes' })
   const willLoc = str(c.willLocation)
   if (willLoc)                        fields.push({ label: 'My will is located', value: willLoc })
   if (c.hasCareDecisionMaker === true) fields.push({ label: 'Formally designated substitute decision-maker/s for care', value: 'Yes' })
@@ -208,11 +210,11 @@ export function buildFuneralWishesPDF(entry: EntryRow, userName: string): PDFDat
   }
 }
 
-export function buildPersonalAdminPDF(entry: EntryRow, userName: string): PDFData {
+export function buildPersonalAdminPDF(entry: EntryRow, userName: string, hasWill: boolean): PDFData {
   const c = (entry.content && typeof entry.content === 'object' ? entry.content : {}) as Record<string, unknown>
   const bioFields = BIO_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
   const famFields = FAMILY_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
-  const legalFields = buildLegalFields(c)
+  const legalFields = buildLegalFields(c, hasWill)
   const otherDocs = [1, 2, 3, 4, 5].map(n => ({
     name: c[`otherDoc${n}Name`] as string | undefined,
     location: c[`otherDoc${n}Location`] as string | undefined,
@@ -421,6 +423,7 @@ export function buildMaterials(
   entries: EntryRow[],
   userName: string,
   reflectionByEntryId: Record<string, string> = {},
+  willInPlace = false,
 ): PlanMaterial[] {
   const adminEntry    = entries.find(e => e.document_type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO)
   const contactsEntry = entries.find(e => e.document_type === DOCUMENT_TYPE.IMPORTANT_CONTACTS)
@@ -436,7 +439,7 @@ export function buildMaterials(
   const mats: PlanMaterial[] = []
   if (adEntry && hasAnyStringContent(adEntry.content))             mats.push({ title: 'My Care Wishes', pdfData: buildAdvanceDirectivePDF(adEntry, userName) })
   if (fwEntry && hasAnyStringContent(fwEntry.content))             mats.push({ title: 'Wishes for My Body, Funeral & Ceremony', pdfData: buildFuneralWishesPDF(fwEntry, userName) })
-  if (adminEntry && hasAnyStringContent(adminEntry.content))       mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminEntry, userName) })
+  if (adminEntry && hasAnyStringContent(adminEntry.content))       mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminEntry, userName, willInPlace) })
   if (contactsEntry && hasAnyStringContent(contactsEntry.content)) mats.push({ title: 'Important Contacts', pdfData: buildContactsPDF(contactsEntry, userName) })
   if (finEntry && hasAnyStringContent(finEntry.content))           mats.push({ title: 'Financial Information', pdfData: buildFinancialPDF(finEntry, userName) })
   if (devicesEntry && hasAnyStringContent(devicesEntry.content))   mats.push({ title: 'Devices & Accounts', pdfData: buildDevicesAccountsPDF(devicesEntry, userName) })
@@ -458,6 +461,15 @@ export function buildMaterials(
 
 export type DomainContainer = { id: string; title: string; domain_code?: string | null }
 
+// Single source of truth for "user has a legal will": the Wills area page's
+// `legal_will_in_place` checkbox in domain_state. Shared by buildKeyDetails, the
+// Personal Admin doc PDF (via buildMaterials), and the per-item export page, so
+// every surface agrees. entries.content.hasWill is retired.
+export function willInPlaceFromState(domainState: DomainState, domains: DomainContainer[]): boolean {
+  const willsDomain = domains.find(d => d.domain_code === 'wills_estates')
+  return willsDomain ? getCheckboxes(domainState, willsDomain.id, 'legal_will_in_place', 1)[0] === true : false
+}
+
 // Build the plan summary's key-detail rows from DB domain_state + entries.
 export function buildKeyDetails(
   domainState: DomainState,
@@ -466,11 +478,9 @@ export function buildKeyDetails(
 ): PlanKeyDetail[] {
   // Derive syncHasWill / syncHasEOL / careStatus from the JSONB-backed
   // domain_state (no longer from user_metadata).
-  const willsDomain      = domains.find(d => d.domain_code === 'wills_estates')
   const healthcareDomain = domains.find(d => d.domain_code === 'healthcare')
-  const willVals = willsDomain      ? getCheckboxes(domainState, willsDomain.id,      'legal_will_in_place', 1) : [false]
   const eolVals  = healthcareDomain ? getCheckboxes(domainState, healthcareDomain.id, 'wishes_clear_shared', 2) : [false, false]
-  const syncHasWill = willVals[0] === true
+  const syncHasWill = willInPlaceFromState(domainState, domains)
   const communicated = eolVals[0] === true
   const documented   = eolVals[1] === true
   const syncHasEOL  = communicated || documented

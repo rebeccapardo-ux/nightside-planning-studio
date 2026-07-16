@@ -133,19 +133,18 @@ function readLegacyLocalState(): DomainState {
 type SyncFlagsByDomainHint = {
   // Each hint key (substring matched against the domain title) maps to a
   // partial DomainEntryState.
-  willsHint?:       DomainEntryState
   healthcareHint?:  DomainEntryState
   deathcareHint?:   DomainEntryState
 }
 
+// NOTE: sync_has_will is intentionally NOT read here. Legal-will status lives in
+// domain_state.legal_will_in_place as the single source of truth (written by both
+// the Wills area page and the Personal Admin doc). Keeping the legacy OR-merge from
+// a frozen user_metadata.sync_has_will would resurrect an unchecked will on reload
+// (the merge never loses a `true`). Existing users are reconciled once by
+// scripts/reconcile-legal-will.ts. (care/eol still use sync_* pending their own migration.)
 function readSyncFlags(meta: Record<string, unknown>): SyncFlagsByDomainHint {
   const out: SyncFlagsByDomainHint = {}
-
-  if (typeof meta.sync_has_will === 'boolean') {
-    out.willsHint = {
-      checkboxes: { legal_will_in_place: [meta.sync_has_will as boolean] },
-    }
-  }
 
   if (typeof meta.sync_has_care_decision_maker === 'boolean'
    || typeof meta.sync_has_eol_wishes_doc === 'boolean') {
@@ -180,8 +179,7 @@ async function resolveSyncFlagsToDomainIds(
   hints: SyncFlagsByDomainHint,
 ): Promise<DomainState> {
   const out: DomainState = {}
-  const needed: ('willsHint' | 'healthcareHint' | 'deathcareHint')[] = []
-  if (hints.willsHint)      needed.push('willsHint')
+  const needed: ('healthcareHint' | 'deathcareHint')[] = []
   if (hints.healthcareHint) needed.push('healthcareHint')
   if (hints.deathcareHint)  needed.push('deathcareHint')
   if (needed.length === 0) return out
@@ -193,7 +191,6 @@ async function resolveSyncFlagsToDomainIds(
 
   for (const c of containers ?? []) {
     const code = c.domain_code
-    if (hints.willsHint      && code === 'wills_estates') out[c.id] = mergeEntry(out[c.id], hints.willsHint)
     if (hints.healthcareHint && code === 'healthcare')    out[c.id] = mergeEntry(out[c.id], hints.healthcareHint)
     if (hints.deathcareHint  && code === 'deathcare')     out[c.id] = mergeEntry(out[c.id], hints.deathcareHint)
   }

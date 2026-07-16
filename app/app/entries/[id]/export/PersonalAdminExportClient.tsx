@@ -34,11 +34,13 @@ const FAMILY_FIELDS: { key: string; label: string }[] = [
   { key: 'otherFamily',              label: 'Other family, chosen family, or important relationships' },
 ]
 
-function buildLegalFields(c: PAContent): { label: string; value: string }[] {
+// hasWill comes from domain_state (single source of truth), resolved by the server
+// export page and passed in — NOT from entries.content, which no longer stores it.
+function buildLegalFields(c: PAContent, hasWill: boolean): { label: string; value: string }[] {
   const fields: { label: string; value: string }[] = []
   const str = (v: unknown) => (typeof v === 'string' && v.trim()) ? v.trim() : null
 
-  if (c.hasWill === true)       fields.push({ label: 'I have a legal will', value: 'Yes' })
+  if (hasWill)                  fields.push({ label: 'I have a valid, up-to-date legal will', value: 'Yes' })
   const willLoc = str(c.willLocation)
   if (willLoc)                  fields.push({ label: 'My will is located', value: willLoc })
 
@@ -171,9 +173,9 @@ function SensitiveInput({
 // ---------------------------------------------------------------------------
 
 export default function PersonalAdminExportClient({
-  id, content, createdDate, displayTitle, filename, userName,
+  id, content, createdDate, displayTitle, filename, userName, hasWill,
 }: {
-  id: string; content: unknown; createdDate: string | null; displayTitle: string; filename: string; userName?: string
+  id: string; content: unknown; createdDate: string | null; displayTitle: string; filename: string; userName?: string; hasWill: boolean
 }) {
   const [sensitive, setSensitive] = useState({ sin: '', healthCard: '' })
   const [sinMasked, setSinMasked] = useState(false)
@@ -196,7 +198,7 @@ export default function PersonalAdminExportClient({
 
   const bioFields   = BIO_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
   const famFields   = FAMILY_FIELDS.filter(f => typeof c[f.key] === 'string' && (c[f.key] as string).trim())
-  const legalFields = buildLegalFields(c)
+  const legalFields = buildLegalFields(c, hasWill)
   const otherDocs   = DOC_NUMS
     .map(n => ({
       name:         c[`otherDoc${n}Name`] as string | undefined,
