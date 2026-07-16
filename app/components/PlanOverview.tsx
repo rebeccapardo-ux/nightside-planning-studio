@@ -368,7 +368,7 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
                 NOT documents the platform supplies (e.g. "Legal will" tracks whether one exists +
                 where it's kept — Nightside doesn't provide a will). */}
             <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.65)', margin: '6px 0 0', lineHeight: 1.45 }}>
-              A snapshot of the key facts and contacts you&rsquo;re tracking — not documents Nightside provides. Each row links to where you record or update it.
+              A snapshot of key facts and contacts.
             </p>
             <div style={{ height: 1, background: '#F0EAE0', margin: '12px 0 18px' }} />
             {/* Two parallel reference columns — Wishes | Contacts. Wishes rows are
