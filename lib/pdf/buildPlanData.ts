@@ -439,7 +439,9 @@ export function buildMaterials(
   const mats: PlanMaterial[] = []
   if (adEntry && hasAnyStringContent(adEntry.content))             mats.push({ title: 'My Care Wishes', pdfData: buildAdvanceDirectivePDF(adEntry, userName) })
   if (fwEntry && hasAnyStringContent(fwEntry.content))             mats.push({ title: 'Wishes for My Body, Funeral & Ceremony', pdfData: buildFuneralWishesPDF(fwEntry, userName) })
-  if (adminEntry && hasAnyStringContent(adminEntry.content))       mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminEntry, userName, willInPlace) })
+  // Include Personal Admin when it has content OR the legal will is set (a doc-mirrored
+  // domain_state field) — matches Your Materials' "In progress" rule so the surfaces agree.
+  if (adminEntry && (hasAnyStringContent(adminEntry.content) || willInPlace)) mats.push({ title: 'Personal Admin Information', pdfData: buildPersonalAdminPDF(adminEntry, userName, willInPlace) })
   if (contactsEntry && hasAnyStringContent(contactsEntry.content)) mats.push({ title: 'Important Contacts', pdfData: buildContactsPDF(contactsEntry, userName) })
   if (finEntry && hasAnyStringContent(finEntry.content))           mats.push({ title: 'Financial Information', pdfData: buildFinancialPDF(finEntry, userName) })
   if (devicesEntry && hasAnyStringContent(devicesEntry.content))   mats.push({ title: 'Devices & Accounts', pdfData: buildDevicesAccountsPDF(devicesEntry, userName) })

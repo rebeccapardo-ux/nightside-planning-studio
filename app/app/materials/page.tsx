@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
-import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
+import { ACTIVITY, DOCUMENT_TYPE, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
+import { loadDomainStateFromDB } from '@/lib/domain-state'
+import { willInPlaceFromState } from '@/lib/pdf/buildPlanData'
 import YourMaterialsPanel from '@/app/components/YourMaterialsPanel'
 import PlanOverview from '@/app/components/PlanOverview'
 import SectionTitleReveal from '@/app/components/SectionTitleReveal'
@@ -76,13 +78,24 @@ export default async function YourMaterialsPage() {
     return true
   })
 
+  // Legal-will status lives in domain_state, not entries.content. A doc-mirrored
+  // domain_state field counts toward "started" — but ONLY when the doc's own entry
+  // row exists. The row is created solely by a direct doc interaction, so it
+  // distinguishes "will checked in the doc" (→ In progress) from "will checked on
+  // the Wills area page" (creates no row → stays Not started).
+  const domainState = await loadDomainStateFromDB(supabase, user.id)
+  const willInPlace = willInPlaceFromState(domainState, allDomains)
+
   // --- Documents: split into in-progress / not-started ---
   type InProgressDoc = (typeof KNOWN_DOCUMENTS)[number] & { entryId: string }
   const inProgressDocs: InProgressDoc[] = []
   const notStartedDocs: typeof KNOWN_DOCUMENTS = []
   for (const doc of KNOWN_DOCUMENTS) {
     const entry = entries?.find((e) => e.document_type === doc.type)
-    if (entry && hasContent(entry)) {
+    // Fields the doc mirrors into domain_state (currently just the legal will on
+    // Personal Admin) count as content — SDM will join this when it migrates.
+    const mirroredStarted = doc.type === DOCUMENT_TYPE.PERSONAL_ADMIN_INFO && willInPlace
+    if (entry && (hasContent(entry) || mirroredStarted)) {
       inProgressDocs.push({ ...doc, entryId: entry.id })
     } else {
       notStartedDocs.push(doc)
