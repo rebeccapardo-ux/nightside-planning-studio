@@ -471,7 +471,7 @@ function PersonalAdminPage() {
               <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
-            {saveStatus === 'saving' ? 'Preparing…' : <><span className="hidden md:inline">Finalize &amp; </span>Export</>}
+            {saveStatus === 'saving' ? 'Preparing…' : 'Export'}
           </button>
           {saveStatusText && (
             <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
@@ -997,7 +997,7 @@ function SensitiveFieldDisplay({ label }: { label: string }) {
           cursor: 'default',
         }}
       >
-        To be added when finalizing document
+        To be added when exporting document
       </div>
       <ExportFieldHelper />
     </div>
