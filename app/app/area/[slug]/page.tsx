@@ -132,7 +132,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       {/* ── Plan — color-blocked against the section directly above it (see planBg). ── */}
       <div style={{ background: planBg, borderTop: '1px solid rgba(19,4,38,0.08)' }}>
         <div className="max-w-6xl mx-auto px-10">
-          <CollapsibleSection title="Plan" storageKey={`nightside.areaSection.${area.slug}.plan`}>
+          <CollapsibleSection title="Plan" storageKey={`nightside.areaSection.${area.slug}.plan`} deepLinkParam="plan">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.
             </p>

@@ -8,8 +8,12 @@ import { useState } from 'react'
 // thereafter each section independently remembers the user's last choice. Persistence is
 // localStorage (per-device, survives refreshes and future sessions — a layout preference,
 // not session-scoped), keyed per area + section. SSR-safe lazy init.
-export function useSectionCollapse(storageKey: string, defaultOpen = false): [boolean, () => void] {
+// forceOpen (e.g. a deep-link landing on this section) starts it open regardless of the
+// stored preference and WITHOUT persisting — so a one-off deep link doesn't overwrite the
+// user's saved collapse choice for future normal visits.
+export function useSectionCollapse(storageKey: string, defaultOpen = false, forceOpen = false): [boolean, () => void] {
   const [open, setOpen] = useState<boolean>(() => {
+    if (forceOpen) return true
     if (typeof window === 'undefined') return defaultOpen
     try {
       const v = window.localStorage.getItem(storageKey)

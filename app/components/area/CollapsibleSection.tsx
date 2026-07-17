@@ -1,6 +1,9 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useSectionCollapse } from './useSectionCollapse'
+import { SECTION_SCROLL_MARGIN_TOP } from '@/lib/ui'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 
@@ -9,13 +12,30 @@ const apfel = "'Apfel Grotezk', sans-serif"
 // first landing), then remembers their choice per section (shared model with the Overview
 // band — see useSectionCollapse). The header (title + chevron) stays visible when
 // collapsed; the body unmounts.
-export default function CollapsibleSection({ title, storageKey, children }: { title: string; storageKey: string; children: React.ReactNode }) {
-  const [open, toggle] = useSectionCollapse(storageKey)
+//
+// deepLinkParam: when set and the URL carries `?section=<deepLinkParam>` (e.g. Key Details'
+// "Care preferences" / "Final resting place wishes" links use `?section=plan`), this
+// section opens and scrolls to the top of the viewport on load — so the user lands ON it,
+// not at the page top. The open is transient (not persisted — see useSectionCollapse).
+export default function CollapsibleSection({ title, storageKey, children, deepLinkParam }: { title: string; storageKey: string; children: React.ReactNode; deepLinkParam?: string }) {
+  const searchParams = useSearchParams()
+  const isDeepLinked = !!deepLinkParam && searchParams.get('section') === deepLinkParam
+  const [open, toggle] = useSectionCollapse(storageKey, false, isDeepLinked)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  // Scroll the deep-linked section to the top of the viewport once on mount. setTimeout lets
+  // the (now-open) body render first; scroll-margin-top offsets the sticky GlobalNav.
+  useEffect(() => {
+    if (!isDeepLinked) return
+    const t = setTimeout(() => { sectionRef.current?.scrollIntoView({ block: 'start' }) }, 90)
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     // Vertical padding lives here (not the route wrapper) so it can shrink when
     // collapsed — matching the Overview band's values exactly, so all three section
     // bands are the same height when collapsed.
-    <section style={{ paddingTop: open ? 28 : 24, paddingBottom: open ? 48 : 24 }}>
+    <section ref={sectionRef} style={{ paddingTop: open ? 28 : 24, paddingBottom: open ? 48 : 24, scrollMarginTop: SECTION_SCROLL_MARGIN_TOP }}>
       <style>{`.cs-header:hover .cs-chevron { opacity: 0.65; }`}</style>
       <button
         type="button"

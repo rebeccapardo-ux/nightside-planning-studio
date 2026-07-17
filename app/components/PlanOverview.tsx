@@ -166,7 +166,8 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
       label: 'Care preferences',
       done: syncHasEOL,
       primaryValue: syncHasEOL ? careLabel : null,
-      href: healthHref,
+      // ?section=plan lands the user on the area page's Plan section (not the top).
+      href: healthHref === '#' ? '#' : `${healthHref}?section=plan`,
       notRecordedLabel: 'Not formally recorded',
       supplementaryLink: hasAdvDir ? { label: 'Supplementary document', text: DOCUMENT_TYPE_META.advance_directive_supplement.label, href: yourWishesHref } : undefined,
     },
@@ -177,7 +178,8 @@ export default function PlanOverview({ domains, title = 'Key details' }: { domai
         : restingDocumented ? 'Documented'
         : restingShared   ? 'Shared with people in my life'
         : null,
-      href: deathHref,
+      // ?section=plan lands the user on the area page's Plan section (not the top).
+      href: deathHref === '#' ? '#' : `${deathHref}?section=plan`,
       supplementaryLink: { label: 'Supplementary document', text: DOCUMENT_TYPE_META.funeral_wishes.label, href: funeralWishesHref },
     },
   ]
