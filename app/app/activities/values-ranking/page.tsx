@@ -741,7 +741,7 @@ function ValuesRankingContent() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
                   {[
                     'Draw a card',
-                    'Place it in the column that feels right',
+                    'Click any open slot to place it',
                     'Click any placed card to move it',
                   ].map((line) => (
                     <div key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
