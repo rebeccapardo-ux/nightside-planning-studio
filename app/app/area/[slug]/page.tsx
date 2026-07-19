@@ -68,10 +68,6 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const learnContent = LearnContent ? <LearnContent /> : null
   const hasActivities = !!area.activities && area.activities.length > 0
 
-  // Color-block: no two adjacent sections share a background. Plan is always lavender;
-  // the Overview band is lavender too WHEN a cream Activities section sits between them.
-  // When an area has no Activities section (e.g. Personal Admin), the Overview band flips
-  // to cream so it doesn't sit lavender-on-lavender against Plan.
   // Province-specific resources. Province lives in user_metadata (read via getUser above,
   // so it's fresh — never a decoded token). The Resources section renders only for domains
   // with resource data seeded (Healthcare for now); the other areas stay unchanged.
