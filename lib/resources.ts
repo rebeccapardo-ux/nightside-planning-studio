@@ -392,14 +392,17 @@ export const RESOURCES: Resource[] = [
   { domains: ['deathcare', 'personal_admin'], scope: 'Saskatchewan', section: '', // dual
     label: 'Funeral Benefits', url: 'https://www.saskatchewan.ca/residents/family-and-social-support/financial-help/saskatchewan-income-support-sis' },
 
-  // Ontario (thin — organ donation only, per adjudication; not backfilled)
+  // Ontario (BAO consumer guide added — the ON funeral-regulator equivalent of the boards
+  // above; a distinct BAO page from the consumer-FAQ used for ON financial support in PA)
   { domains: ['deathcare'], scope: 'Ontario', section: '',
     label: 'Organ Donation', url: 'https://beadonor.ca/' },
+  { domains: ['deathcare'], scope: 'Ontario', section: '',
+    label: 'A Guide to Death Care in Ontario (BAO)', url: 'https://thebao.ca/for-consumers/consumer-information-guide/' },
 
   // Quebec (7 mis-filed healthcare/incapacity entries dropped; canadianfunerals see-also dropped)
   { domains: ['deathcare'], scope: 'Quebec', section: '',
     label: 'Organ Donation', url: 'https://www.transplantquebec.ca/en' },
-  { domains: ['deathcare', 'personal_admin'], scope: 'Quebec', section: '', // dual: pre-arranged funeral contracts are a planning + financial-admin task
+  { domains: ['deathcare'], scope: 'Quebec', section: '', // planning activity, not a funeral benefit → deathcare-only (not a PA dual)
     label: 'Pre-Arranged Funerals', url: 'https://educaloi.qc.ca/en/capsules/pre-arranged-funeral-contracts/' },
 
   // Manitoba (ethicaldeathcare.com dropped; Funeral Board of Manitoba added)
