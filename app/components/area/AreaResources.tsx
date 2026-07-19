@@ -5,14 +5,15 @@
 // client CollapsibleSection. NOTE: this is the layout INSIDE the Resources section — the
 // page-level section collapse (Overview/Resources/Activities/Plan) is separate and untouched.
 //
-// Layout: the overwhelm was the VOLUME of visible link text, so Canada-wide is a
-// single-level accordion — a short, scannable menu of section headers, all collapsed by
-// default. One click opens a section's links in place. The equity cluster is ONE click too:
-// opening it reveals all three sub-sections at once (they're headed groupings inside the
-// expanded content, NOT separate toggles — no nested collapse). The "{province} resources"
-// tier stays a plain visible list (short, and it's the user's own content).
-//
-// Collapse is native <details>/<summary> — no 'use client', keyboard-accessible for free.
+// Layout: two independent, TOP-ALIGNED columns on desktop (reflow to stacked on narrow) —
+//   Left  (~62%): "Canada-wide", a single-level accordion of section headers, all collapsed
+//                 by default; one click opens a section's links in place (the equity group
+//                 opens to all three sub-sections at once — headed groupings, not nested
+//                 toggles). This fills tall as sections expand.
+//   Right (~38%): "{province} resources" — the user's own short list, always visible, with
+//                 the signup-province note.
+// Columns are align-items:start — the right column stays put (top-aligned) when the left
+// grows; it is NOT stretched to match, given no full-height border/background.
 //
 // DATA vs PAGE COPY: resources come from lib/resources.ts (data). The section intro
 // paragraphs (SECTION_INTROS) and the lead line are PAGE COPY authored here.
@@ -23,10 +24,12 @@ import { resourcesFor, SECTION_ORDER, type Resource } from '@/lib/resources'
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 24, fontWeight: 700, color: '#130426', margin: '0 0 16px', lineHeight: 1.2 }
+// Tier headers ("Canada-wide" / "{province} resources") are the top of the in-section
+// hierarchy — clearly larger + heavier than the collapsible section headers (apfel 17/600).
+const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 26, fontWeight: 700, color: '#130426', margin: '0 0 18px', lineHeight: 1.15 }
 const summaryTitleStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 17, fontWeight: 600, color: '#130426', lineHeight: 1.3 }
-// Sub-section headings inside the expanded equity group — a label treatment, clearly NOT a
-// clickable section header (which are apfel/title-case), so they read as groupings.
+// Sub-section headings inside the expanded equity group — a small-caps label, clearly NOT a
+// clickable section header, so they read as groupings.
 const subHeadStyle: React.CSSProperties = { fontFamily: hv, fontSize: 12.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(19,4,38,0.75)', margin: '0 0 8px' }
 const introStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13.5, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '0 0 10px', maxWidth: 640 }
 const linkStyle: React.CSSProperties = { fontFamily: hv, fontSize: 15, color: '#2C3777', textDecoration: 'none', lineHeight: 1.5 }
@@ -58,7 +61,7 @@ function Chevron() {
 
 function ResourceLink({ r }: { r: Resource }) {
   return (
-    <li style={{ marginBottom: r.note ? 8 : 5 }}>
+    <li style={{ marginBottom: r.note ? 7 : 4 }}>
       <a href={r.url} target="_blank" rel="noopener noreferrer" className="area-resource-link" style={linkStyle}>
         {r.label}
         <span aria-hidden="true" style={{ opacity: 0.5, fontSize: 12, marginLeft: 4 }}>↗</span>
@@ -92,8 +95,8 @@ function CollapsibleRow({ title, children }: { title: string; children: React.Re
 
 // Build the Canada-wide accordion rows from SECTION_ORDER. A flat section → a row that
 // expands to its links. A group node → a single row that expands to ALL its sub-sections at
-// once (headed groupings, not nested toggles). Sections in data but absent from the order
-// config fall through as trailing rows (nothing dropped).
+// once. Sub-sections get GENEROUS top space (>> the space between links) so each reads as a
+// distinct cluster. Sections in data but absent from the order config fall through last.
 function renderCanadaWide(resources: Resource[], domainCode: string, intros: Record<string, string>) {
   const bySection = new Map<string, Resource[]>()
   for (const r of resources) {
@@ -103,38 +106,35 @@ function renderCanadaWide(resources: Resource[], domainCode: string, intros: Rec
   }
   const rendered = new Set<string>()
   const rows: React.ReactNode[] = []
+  const flat = (name: string) => {
+    const rs = bySection.get(name)
+    if (!rs || rs.length === 0) return
+    rendered.add(name)
+    rows.push(<CollapsibleRow key={name} title={name}>{intros[name] && <p style={introStyle}>{intros[name]}</p>}<ResourceList resources={rs} /></CollapsibleRow>)
+  }
 
   for (const node of SECTION_ORDER[domainCode] ?? []) {
-    if (typeof node === 'string') {
-      const rs = bySection.get(node)
-      if (!rs || rs.length === 0) continue
-      rendered.add(node)
-      rows.push(<CollapsibleRow key={node} title={node}>{intros[node] && <p style={introStyle}>{intros[node]}</p>}<ResourceList resources={rs} /></CollapsibleRow>)
-    } else {
-      const present = node.sections.filter((s) => (bySection.get(s)?.length ?? 0) > 0)
-      if (present.length === 0) continue
-      rows.push(
-        <CollapsibleRow key={node.group} title={node.group}>
-          {present.map((sub, i) => {
-            const rs = bySection.get(sub)!
-            rendered.add(sub)
-            return (
-              <div key={sub} style={{ marginBottom: i < present.length - 1 ? 20 : 0 }}>
-                <p style={subHeadStyle}>{sub}</p>
-                {intros[sub] && <p style={introStyle}>{intros[sub]}</p>}
-                <ResourceList resources={rs} />
-              </div>
-            )
-          })}
-        </CollapsibleRow>,
-      )
-    }
+    if (typeof node === 'string') { flat(node); continue }
+    const present = node.sections.filter((s) => (bySection.get(s)?.length ?? 0) > 0)
+    if (present.length === 0) continue
+    rows.push(
+      <CollapsibleRow key={node.group} title={node.group}>
+        {present.map((sub, i) => {
+          const rs = bySection.get(sub)!
+          rendered.add(sub)
+          return (
+            // Big gap ABOVE each sub-section (after the first) separates the clusters.
+            <div key={sub} style={{ marginTop: i > 0 ? 30 : 0 }}>
+              <p style={subHeadStyle}>{sub}</p>
+              {intros[sub] && <p style={introStyle}>{intros[sub]}</p>}
+              <ResourceList resources={rs} />
+            </div>
+          )
+        })}
+      </CollapsibleRow>,
+    )
   }
-  for (const [name, rs] of bySection) {
-    if (!rendered.has(name) && rs.length > 0) {
-      rows.push(<CollapsibleRow key={name} title={name}>{intros[name] && <p style={introStyle}>{intros[name]}</p>}<ResourceList resources={rs} /></CollapsibleRow>)
-    }
-  }
+  for (const [name] of bySection) if (!rendered.has(name)) flat(name)
   return rows
 }
 
@@ -145,8 +145,29 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
   const intros = SECTION_INTROS[domainCode] ?? {}
   const showProvince = !!province && provincial.length > 0
 
+  const canadaWideBlock = canadaWide.length > 0 && (
+    <section>
+      <h2 style={tierStyle}>Canada-wide</h2>
+      {/* borderTop closes the top of the first row; each row carries a borderBottom. */}
+      <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)' }}>
+        {renderCanadaWide(canadaWide, domainCode, intros)}
+      </div>
+    </section>
+  )
+
+  const provinceBlock = showProvince && (
+    <section>
+      <h2 style={tierStyle}>{province} resources</h2>
+      <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '-8px 0 16px' }}>
+        Based on the province you set at signup. To change it, visit{' '}
+        <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
+      </p>
+      <ResourceList resources={provincial} />
+    </section>
+  )
+
   return (
-    <div style={{ maxWidth: 760 }}>
+    <div>
       <style>{`
         .area-resource-link:hover { text-decoration: underline; }
         .rsec { border-bottom: 1px solid rgba(19,4,38,0.12); }
@@ -155,32 +176,23 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
         .rsum:hover .rsum-title { color: #2C3777; }
         .rchevron { flex-shrink: 0; transition: transform 200ms ease; }
         details[open] > .rsum .rchevron { transform: rotate(180deg); }
+        /* Two independent, top-aligned columns (align-items:start → right column never
+           stretches to match the growing left one). Reflows to a single column on narrow. */
+        .resources-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 44px; align-items: start; }
+        @media (max-width: 860px) { .resources-cols { grid-template-columns: 1fr; gap: 32px; } }
       `}</style>
 
       {LEAD[domainCode] && (
-        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px' }}>{LEAD[domainCode]}</p>
+        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 26px', maxWidth: 760 }}>{LEAD[domainCode]}</p>
       )}
 
-      {canadaWide.length > 0 && (
-        <section style={{ marginBottom: showProvince ? 40 : 0 }}>
-          <h2 style={tierStyle}>Canada-wide</h2>
-          {/* borderTop closes the top of the first row; each row carries a borderBottom. */}
-          <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-            {renderCanadaWide(canadaWide, domainCode, intros)}
-          </div>
-        </section>
-      )}
-
-      {showProvince && (
-        <section>
-          <h2 style={{ ...tierStyle, marginBottom: 6 }}>{province} resources</h2>
-          <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 16px' }}>
-            Based on the province you set at signup. To change it, visit{' '}
-            <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
-          </p>
-          {/* Province content stays visible (short, user's own) — plain list, no collapse. */}
-          <ResourceList resources={provincial} />
-        </section>
+      {showProvince ? (
+        <div className="resources-cols">
+          <div>{canadaWideBlock}</div>
+          <div>{provinceBlock}</div>
+        </div>
+      ) : (
+        <div style={{ maxWidth: 760 }}>{canadaWideBlock}</div>
       )}
     </div>
   )
