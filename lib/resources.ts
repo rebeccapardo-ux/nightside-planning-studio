@@ -437,7 +437,7 @@ export const RESOURCES: Resource[] = [
   { domains: ['deathcare'], scope: 'Prince Edward Island', section: '',
     label: 'Organ Donation', url: 'https://www.princeedwardisland.ca/en/service/register-as-an-organ-andor-tissue-donor' },
   { domains: ['deathcare'], scope: 'Prince Edward Island', section: '',
-    label: 'PEI Funeral Services and Professions Board', url: 'https://www.princeedwardisland.ca/en/information/executive-council-office/prince-edward-island-funeral-services-and-professions-board' },
+    label: 'PEI Funeral Services and Professions Board', url: 'https://www.princeedwardisland.ca/en/information/health-and-wellness/about-the-pei-funeral-services-and-professions-board' },
   { domains: ['deathcare', 'personal_admin'], scope: 'Prince Edward Island', section: '', // dual
     label: 'Social Assistance with Burial Expenses', url: 'https://www.princeedwardisland.ca/en/publication/social-assistance-policy-burial-expenses' },
 
