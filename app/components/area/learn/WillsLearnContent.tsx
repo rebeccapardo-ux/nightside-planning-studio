@@ -1,4 +1,4 @@
-import { para, heading, ResourcesPanel, TermList } from './shared'
+import { para, heading, TermList } from './shared'
 
 // Wills & Estates Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body, the estate-plan list, and the resources panel)
@@ -23,10 +23,6 @@ export default function WillsLearnContent() {
           { term: 'Tax Strategies', detail: 'supporting efficient distribution of your estate' },
         ]}
       />
-
-      <ResourcesPanel title="Explore province-specific resources" href="https://thenightside.net/resources">
-        Provincial rules vary on wills and estates. In the Resource Hub, you&rsquo;ll find province-specific templates and guides for creating a valid will.
-      </ResourcesPanel>
     </div>
   )
 }

@@ -118,49 +118,62 @@ function CollapsibleRow({ title, children }: { title: string; children: React.Re
   )
 }
 
-// Build the Canada-wide accordion rows from SECTION_ORDER. A flat section → a row that
-// expands to its links. A group node → a single row that expands to ALL its sub-sections at
-// once. Sub-sections get GENEROUS top space (>> the space between links) so each reads as a
-// distinct cluster. Sections in data but absent from the order config fall through last.
-function renderCanadaWide(resources: Resource[], domainCode: string, intros: Record<string, string>) {
+// A Canada-wide "unit" is one renderable row of the tier: a flat leaf section, or a group
+// with stacked sub-sections. Built from SECTION_ORDER (order here = reading order); sections
+// present in data but absent from the config fall through last. The UNIT COUNT drives whether
+// the tier collapses (see canadaWideBlock): a single flat section renders flat, not as an
+// accordion of one.
+type CWUnit =
+  | { kind: 'section'; name: string; resources: Resource[] }
+  | { kind: 'group'; name: string; subs: { name: string; resources: Resource[] }[] }
+
+function canadaWideUnits(resources: Resource[], domainCode: string): CWUnit[] {
   const bySection = new Map<string, Resource[]>()
   for (const r of resources) {
     const arr = bySection.get(r.section) ?? []
     arr.push(r)
     bySection.set(r.section, arr)
   }
-  const rendered = new Set<string>()
-  const rows: React.ReactNode[] = []
-  const flat = (name: string) => {
-    const rs = bySection.get(name)
-    if (!rs || rs.length === 0) return
-    rendered.add(name)
-    rows.push(<CollapsibleRow key={name} title={name}>{intros[name] && <p style={introStyle}>{intros[name]}</p>}<ResourceList resources={rs} /></CollapsibleRow>)
-  }
-
+  const seen = new Set<string>()
+  const units: CWUnit[] = []
   for (const node of SECTION_ORDER[domainCode] ?? []) {
-    if (typeof node === 'string') { flat(node); continue }
-    const present = node.sections.filter((s) => (bySection.get(s)?.length ?? 0) > 0)
-    if (present.length === 0) continue
-    rows.push(
-      <CollapsibleRow key={node.group} title={node.group}>
-        {present.map((sub, i) => {
-          const rs = bySection.get(sub)!
-          rendered.add(sub)
-          return (
-            // Big gap ABOVE each sub-section (after the first) separates the clusters.
-            <div key={sub} style={{ marginTop: i > 0 ? 30 : 0 }}>
-              <p style={subHeadStyle}>{sub}</p>
-              {intros[sub] && <p style={introStyle}>{intros[sub]}</p>}
-              <ResourceList resources={rs} />
-            </div>
-          )
-        })}
-      </CollapsibleRow>,
+    if (typeof node === 'string') {
+      const rs = bySection.get(node)
+      if (rs && rs.length) { units.push({ kind: 'section', name: node, resources: rs }); seen.add(node) }
+      continue
+    }
+    const subs = node.sections
+      .map((s) => ({ name: s, resources: bySection.get(s) ?? [] }))
+      .filter((s) => s.resources.length > 0)
+    if (subs.length) { units.push({ kind: 'group', name: node.group, subs }); subs.forEach((s) => seen.add(s.name)) }
+  }
+  for (const [name, rs] of bySection) if (!seen.has(name) && rs.length) units.push({ kind: 'section', name, resources: rs })
+  return units
+}
+
+// One accordion row: a flat section expands to its links; a group expands to ALL its
+// sub-sections at once, each with GENEROUS top space (>> the space between links) so it reads
+// as a distinct cluster.
+function renderUnit(u: CWUnit, intros: Record<string, string>) {
+  if (u.kind === 'section') {
+    return (
+      <CollapsibleRow key={u.name} title={u.name}>
+        {intros[u.name] && <p style={introStyle}>{intros[u.name]}</p>}
+        <ResourceList resources={u.resources} />
+      </CollapsibleRow>
     )
   }
-  for (const [name] of bySection) if (!rendered.has(name)) flat(name)
-  return rows
+  return (
+    <CollapsibleRow key={u.name} title={u.name}>
+      {u.subs.map((sub, i) => (
+        <div key={sub.name} style={{ marginTop: i > 0 ? 30 : 0 }}>
+          <p style={subHeadStyle}>{sub.name}</p>
+          {intros[sub.name] && <p style={introStyle}>{intros[sub.name]}</p>}
+          <ResourceList resources={sub.resources} />
+        </div>
+      ))}
+    </CollapsibleRow>
+  )
 }
 
 export default function AreaResources({ domainCode, province }: { domainCode: string; province?: string }) {
@@ -170,13 +183,27 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
   const intros = SECTION_INTROS[domainCode] ?? {}
   const showProvince = !!province && provincial.length > 0
 
+  const units = canadaWideUnits(canadaWide, domainCode)
+  // Single flat section → render its links directly under the tier header (mirrors the
+  // province column) — no accordion, no section sub-header (a category of one is over-
+  // structure). Two-plus units → the collapsible accordion. Content-driven, so thin future
+  // areas (e.g. Legacy) inherit the flat treatment automatically.
+  const only = units.length === 1 ? units[0] : null
+  const soleSection = only && only.kind === 'section' ? only : null
   const canadaWideBlock = canadaWide.length > 0 && (
     <section>
       <h2 style={tierStyle}>Canada-wide</h2>
-      {/* borderTop closes the top of the first row; each row carries a borderBottom. */}
-      <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-        {renderCanadaWide(canadaWide, domainCode, intros)}
-      </div>
+      {soleSection ? (
+        <>
+          {intros[soleSection.name] && <p style={introStyle}>{intros[soleSection.name]}</p>}
+          <ResourceList resources={soleSection.resources} />
+        </>
+      ) : (
+        // borderTop closes the top of the first row; each row carries a borderBottom.
+        <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)' }}>
+          {units.map((u) => renderUnit(u, intros))}
+        </div>
+      )}
     </section>
   )
 

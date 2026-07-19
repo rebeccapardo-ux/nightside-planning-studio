@@ -1,4 +1,4 @@
-import { para, heading, ResourcesPanel } from './shared'
+import { para, heading } from './shared'
 
 // Deathcare Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body + province-resources panel) into the band's
@@ -13,10 +13,6 @@ export default function DeathcareLearnContent() {
       <p style={para}><strong style={{ fontWeight: 600 }}>Options for body disposition vary across provinces.</strong> For example, green burial and aquamation may not be available everywhere, and provincial laws may regulate burial locations or ashes scattering. Organ and tissue donation must also be registered with provincial registries.</p>
       <p style={para}>Without clear documentation, your preferences may not be carried out as intended. Your wishes should be documented in your will to ensure they are legally recognized.</p>
       <p style={{ ...para, marginBottom: 0 }}>Understanding what&rsquo;s possible and documenting your choices clearly helps ensure your preferences will be respected.</p>
-
-      <ResourcesPanel title="Explore province-specific resources" href="https://thenightside.net/province-specific">
-        Legal requirements and available options vary by province. Review guidance, templates, and legal information for your province to help you document and finalize your plans.
-      </ResourcesPanel>
     </div>
   )
 }
