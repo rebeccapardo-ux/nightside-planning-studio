@@ -57,6 +57,23 @@ const SECTION_INTROS: Record<string, Record<string, string>> = {
 const LEAD: Record<string, string> = {
   healthcare:
     'Guidance, templates, and services for planning your care — Canada-wide, and specific to your province. Legal requirements vary by province. Open a category to see its resources.',
+  wills_estates:
+    'Guidance on wills, estates, powers of attorney, and taxes after death — Canada-wide, and specific to your province. Legal requirements vary by province. Open a category to see its resources.',
+  deathcare:
+    'Guidance on funeral planning, body disposition, organ donation, and financial support after a death — Canada-wide, and specific to your province. Requirements vary by province. Open a category to see its resources.',
+}
+
+// PAGE COPY: a small cross-pointer line under the lead, sending the reader to a RELATED area
+// for adjacent material (NOT resource data, NOT a dual-domain tag — this is the ordinary
+// "also relevant elsewhere" path). Author-adjustable.
+const xlink: React.CSSProperties = { color: '#2C3777', textDecoration: 'underline' }
+const CROSS_POINTER: Record<string, React.ReactNode> = {
+  wills_estates: (
+    <>For memorializing social media, see <Link href="/app/area/legacy" style={xlink}>Legacy</Link>. For account inventories and passwords, see <Link href="/app/area/personal-admin" style={xlink}>Personal Admin</Link>.</>
+  ),
+  deathcare: (
+    <>For religious and cultural deathcare resources, see <Link href="/app/area/ritual-and-ceremony" style={xlink}>Ritual &amp; Ceremony</Link>.</>
+  ),
 }
 
 function Chevron() {
@@ -196,7 +213,11 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
       `}</style>
 
       {LEAD[domainCode] && (
-        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 26px', maxWidth: 760 }}>{LEAD[domainCode]}</p>
+        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: CROSS_POINTER[domainCode] ? '8px 0 10px' : '8px 0 26px', maxWidth: 760 }}>{LEAD[domainCode]}</p>
+      )}
+
+      {CROSS_POINTER[domainCode] && (
+        <p style={{ fontFamily: hv, fontSize: 13.5, fontStyle: 'italic', color: 'rgba(19,4,38,0.6)', lineHeight: 1.55, margin: '0 0 26px', maxWidth: 760 }}>{CROSS_POINTER[domainCode]}</p>
       )}
 
       {showProvince ? (
