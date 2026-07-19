@@ -70,6 +70,33 @@ export const SECTION_ORDER: Record<string, SectionOrderNode[]> = {
   deathcare: [
     'Understanding your rights',
   ],
+  personal_admin: [
+    {
+      group: 'Financial Support',
+      sections: [
+        'Federal Benefits & Survivor Support',
+        'Canada Pension Plan (CPP)',
+        'Old Age Security (OAS) & Survivor Benefits',
+        'Veterans',
+      ],
+    },
+  ],
+  ritual: [
+    {
+      group: 'Religious & Cultural Resources',
+      sections: [
+        'Islamic Burial & End-of-Life Planning',
+        'Jewish End-of-Life & Mourning Traditions',
+        'Sikh Funeral Rites',
+        'Christian & Catholic End-of-Life Planning',
+      ],
+    },
+    'Cross-Cultural Perspectives',
+    'Secular Resources',
+  ],
+  legacy: [
+    'Digital Legacy',
+  ],
 }
 
 export const RESOURCES: Resource[] = [
@@ -468,6 +495,83 @@ export const RESOURCES: Resource[] = [
     label: 'Organ Donation', url: 'https://myhealth.alberta.ca/Pages/OTDRHome.aspx', note: 'Managed by Alberta.' },
   { domains: ['deathcare', 'personal_admin'], scope: 'Nunavut', section: '', // dual
     label: 'Seniors Burial Benefit', url: 'https://www.gov.nu.ca/en/newsroom/income-assistance-seniors-burial-benefit-2022-02-14' },
+
+  // ═══════════════════════════ PERSONAL ADMIN — Canada-wide ═══════════════════════════
+  // The Digital Accounts & Passwords section was intentionally dropped (all commercial; the
+  // digital-identity topic is covered by the Legacy/Wills cross-pointer). Canada-wide is the
+  // fully-authoritative Financial Support group only. The 10 funeral-benefit duals tagged in
+  // the Deathcare block surface in PA's province tier automatically — NOT repeated below.
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Federal Benefits & Survivor Support',
+    label: 'Government Benefits Finder', url: 'https://www.canada.ca/en/services/benefits/finder.html' },
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Federal Benefits & Survivor Support',
+    label: 'Government of Canada: Benefits and programs', url: 'https://www.canada.ca/en/services/life-events/death/benefits-programs.html' },
+
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Canada Pension Plan (CPP)',
+    label: 'Death Benefit', url: 'https://www.canada.ca/en/services/benefits/publicpensions/cpp/cpp-death-benefit.html' },
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Canada Pension Plan (CPP)',
+    label: 'Survivor’s Pension', url: 'https://www.canada.ca/en/services/benefits/publicpensions/cpp/cpp-survivor-pension.html' },
+
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Old Age Security (OAS) & Survivor Benefits',
+    label: 'Old Age Security', url: 'https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/payments.html' },
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Old Age Security (OAS) & Survivor Benefits',
+    label: 'Allowance for the Survivor', url: 'https://www.canada.ca/en/services/benefits/publicpensions/old-age-security/guaranteed-income-supplement/allowance-survivor.html' },
+
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Veterans',
+    label: 'Survivor benefit entitlements: Canadian Armed Forces pensions', url: 'https://www.canada.ca/en/public-services-procurement/services/pay-pension/canadian-armed-forces/plan-information/survivor-benefit-entitlements.html' },
+  { domains: ['personal_admin'], scope: 'canadaWide', section: 'Veterans',
+    label: 'Last Post Fund', url: 'https://www.lastpostfund.ca/', note: 'Assistance with funeral funding for eligible applicants.' },
+
+  // ═══════════════════════════ PERSONAL ADMIN — By province ═══════════════════════════
+  // Only PA-ONLY singles (distinct URLs). The 10 funeral-benefit duals surface here from the
+  // Deathcare block. QC has no PA-only entry (its pre-arranged link is deathcare-only) → PA-QC
+  // shows Canada-wide only; YK shows only its auto-dual.
+  { domains: ['personal_admin'], scope: 'Saskatchewan', section: '',
+    label: 'End of Life Planning Checklist', url: 'https://www.saskhealthauthority.ca/sites/default/files/2024-01/CS-PIER-0134-End-of-Life-Planning-Practical-Guide-Checklist.pdf' },
+  { domains: ['personal_admin'], scope: 'Ontario', section: '',
+    label: 'Bereavement Authority of Ontario — Consumer FAQ', url: 'https://thebao.ca/welcome-to-the-bereavement-authority-of-ontarios-faq-for-consumers/', note: 'No single province-wide funeral benefit; help is via your local Ontario Works office and must be arranged before signing a funeral contract.' },
+  { domains: ['personal_admin'], scope: 'Nova Scotia', section: '',
+    label: 'Income Assistance — Help Paying for a Funeral', url: 'https://novascotia.ca/coms/employment/income_assistance/help-paying-for-funeral.html', note: 'Available when the estate can’t cover costs; apply before paying (prior costs aren’t reimbursed). The program also applies for the federal CPP Death Benefit on your behalf.' },
+
+  // ═══════════════════════════ RITUAL & CEREMONY — Canada-wide only (no province tier) ═══════════════════════════
+  // Religious & Cultural Resources (group intro is page copy in AreaResources). Hindu standalone
+  // link dropped (Dignity Memorial = commercial; no authoritative substitute found — Hindu is
+  // covered via Living My Culture in Cross-Cultural Perspectives; see extend-phase memory note).
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Islamic Burial & End-of-Life Planning',
+    label: 'ISNA Canada: Funerals', url: 'https://www.isnacanada.com/services/funerals/' },
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Islamic Burial & End-of-Life Planning',
+    label: 'Cultural perspectives on aging, death & dying: Muslim communities', url: 'https://www.dyingwithdignity.ca/education-resources/cultural-perspectives-on-aging-death-dying-muslim-communities/' },
+
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Jewish End-of-Life & Mourning Traditions',
+    label: 'Kavod v’Nichum — Jewish Funeral & Burial Resources', url: 'https://kavodvnichum.org/' },
+
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Sikh Funeral Rites',
+    label: 'Sikh Funeral Guidance', url: 'https://www.ontariokhalsadarbar.ca/services/funeral-services/' },
+
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Christian & Catholic End-of-Life Planning',
+    label: 'The Catholic Cemeteries of Canada', url: 'https://www.catholic-cemeteries.ca/' },
+
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Cross-Cultural Perspectives',
+    label: 'Living My Culture', url: 'https://livingmyculture.ca/culture/' },
+
+  // Secular Resources (Be Ceremonial commercial + ResearchGate paper dropped)
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Secular Resources',
+    label: 'Humanist Canada', url: 'https://www.humanistcanada.ca/' },
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Secular Resources',
+    label: 'Rituals to Comfort Families', url: 'https://www.virtualhospice.ca/en_US/Article/Spiritual+Health/Rituals+to+Comfort+Families.aspx' },
+
+  // ═══════════════════════════ LEGACY — Canada-wide only, single flat section ═══════════════════════════
+  // Renders flat (one section) with no tier header (no province tier). RBC "What Are Digital
+  // Assets?" dropped (commercial). Platform-help pages kept (authoritative for their platform).
+  { domains: ['legacy'], scope: 'canadaWide', section: 'Digital Legacy',
+    label: 'Preparing a Digital Legacy', url: 'https://www.dyingwithdignity.ca/education-resources/preparing-a-digital-legacy/' },
+  { domains: ['legacy'], scope: 'canadaWide', section: 'Digital Legacy',
+    label: 'How to Set a Legacy Contact on Facebook', url: 'https://www.facebook.com/help/1070665206293088/' },
+  { domains: ['legacy'], scope: 'canadaWide', section: 'Digital Legacy',
+    label: 'How to Memorialize an Instagram Account', url: 'https://help.instagram.com/231764660354188' },
+  { domains: ['legacy'], scope: 'canadaWide', section: 'Digital Legacy',
+    label: 'Twitter Account Deletion After Death', url: 'https://help.x.com/en/forms/account-access/deactivate-or-close-account/deactivate-account-for-deceased' },
+  { domains: ['legacy'], scope: 'canadaWide', section: 'Digital Legacy',
+    label: 'Google’s Inactive Account Manager', url: 'https://support.google.com/accounts/answer/3036546' },
 ]
 
 // Everything the AreaResources component needs in one call: Canada-wide resources for the
@@ -488,4 +592,11 @@ export function resourcesFor(domain: string, province: string | undefined): {
 // other five areas stay unchanged until their data lands.
 export function hasResources(domain: string): boolean {
   return RESOURCES.some((r) => r.domains.includes(domain as DomainCode) && r.scope === 'canadaWide')
+}
+
+// Whether a domain has ANY province-scoped resource (a domain-level property, independent of
+// the user's own province). Drives tier-header suppression in AreaResources: a domain with no
+// provincial tier renders a single column with no "Canada-wide" header — nothing to contrast.
+export function domainHasProvincial(domain: string): boolean {
+  return RESOURCES.some((r) => r.domains.includes(domain as DomainCode) && r.scope !== 'canadaWide')
 }

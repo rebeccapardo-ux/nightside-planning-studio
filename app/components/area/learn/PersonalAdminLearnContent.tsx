@@ -1,4 +1,4 @@
-import { para, heading, ResourcesPanel, TermList } from './shared'
+import { para, heading, TermList } from './shared'
 
 // Personal Admin Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body, "What personal admin covers" list, and the
@@ -23,10 +23,6 @@ export default function PersonalAdminLearnContent() {
           { term: 'Devices', detail: 'who should have access to your phone, computer, or other devices' },
         ]}
       />
-
-      <ResourcesPanel title="Explore resources on digital legacy and personal admin" href="https://thenightside.net/canada-wide">
-        You&rsquo;ll find guides on digital asset planning, password management, social media legacy, benefits, and more.
-      </ResourcesPanel>
     </div>
   )
 }

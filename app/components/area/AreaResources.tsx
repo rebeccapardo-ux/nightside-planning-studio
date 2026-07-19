@@ -21,7 +21,7 @@
 // paragraphs (SECTION_INTROS) and the lead line are PAGE COPY authored here.
 
 import Link from 'next/link'
-import { resourcesFor, SECTION_ORDER, type Resource } from '@/lib/resources'
+import { resourcesFor, domainHasProvincial, SECTION_ORDER, type Resource } from '@/lib/resources'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -61,6 +61,21 @@ const LEAD: Record<string, string> = {
     'Guidance on wills, estates, powers of attorney, and taxes after death — Canada-wide, and specific to your province. Legal requirements vary by province. Open a category to see its resources.',
   deathcare:
     'Guidance on funeral planning, body disposition, organ donation, and financial support after a death — Canada-wide, and specific to your province. Requirements vary by province. Open a category to see its resources.',
+  personal_admin:
+    'Government benefits and financial support after a death — for survivors and the estate. Canada-wide, and specific to your province. Open a category to see its resources.',
+  ritual:
+    'Guidance on honouring religious, cultural, and secular traditions around death, mourning, and ceremony. Open a category to see its resources.',
+  legacy:
+    'Resources for planning your digital legacy — memorializing accounts and preserving your online presence.',
+}
+
+// PAGE COPY: intro paragraph shown at the top of a collapsible GROUP (before its sub-sections),
+// per domain → group name. Same role as SECTION_INTROS, one level up.
+const GROUP_INTROS: Record<string, Record<string, string>> = {
+  ritual: {
+    'Religious & Cultural Resources':
+      'Different faith traditions have specific customs around death, mourning, and burial. These resources provide guidance on ensuring your spiritual practices are honoured.',
+  },
 }
 
 // PAGE COPY: a small cross-pointer line under the lead, sending the reader to a RELATED area
@@ -73,6 +88,12 @@ const CROSS_POINTER: Record<string, React.ReactNode> = {
   ),
   deathcare: (
     <>For religious and cultural deathcare resources, see <Link href="/app/area/ritual-and-ceremony" style={xlink}>Ritual &amp; Ceremony</Link>.</>
+  ),
+  personal_admin: (
+    <>For memorializing social media and planning your digital identity, see <Link href="/app/area/legacy" style={xlink}>Legacy</Link>. For digital assets as part of your estate, see <Link href="/app/area/wills-and-estates" style={xlink}>Wills &amp; Estates</Link>.</>
+  ),
+  legacy: (
+    <>To create your own legacy — your story, values, and reflections — try the Legacy Map and reflection activities above. For inventorying accounts, passwords, and subscriptions, see <Link href="/app/area/personal-admin" style={xlink}>Personal Admin</Link>; for digital assets in your estate, see <Link href="/app/area/wills-and-estates" style={xlink}>Wills &amp; Estates</Link>.</>
   ),
 }
 
@@ -154,7 +175,7 @@ function canadaWideUnits(resources: Resource[], domainCode: string): CWUnit[] {
 // One accordion row: a flat section expands to its links; a group expands to ALL its
 // sub-sections at once, each with GENEROUS top space (>> the space between links) so it reads
 // as a distinct cluster.
-function renderUnit(u: CWUnit, intros: Record<string, string>) {
+function renderUnit(u: CWUnit, intros: Record<string, string>, groupIntros: Record<string, string>) {
   if (u.kind === 'section') {
     return (
       <CollapsibleRow key={u.name} title={u.name}>
@@ -165,6 +186,7 @@ function renderUnit(u: CWUnit, intros: Record<string, string>) {
   }
   return (
     <CollapsibleRow key={u.name} title={u.name}>
+      {groupIntros[u.name] && <p style={introStyle}>{groupIntros[u.name]}</p>}
       {u.subs.map((sub, i) => (
         <div key={sub.name} style={{ marginTop: i > 0 ? 30 : 0 }}>
           <p style={subHeadStyle}>{sub.name}</p>
@@ -181,7 +203,13 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
   if (canadaWide.length === 0 && provincial.length === 0) return null
 
   const intros = SECTION_INTROS[domainCode] ?? {}
+  const groupIntros = GROUP_INTROS[domainCode] ?? {}
   const showProvince = !!province && provincial.length > 0
+  // Show the "Canada-wide" tier header only when a province tier EXISTS to contrast with (a
+  // domain-level property, independent of the current user's province). No-province areas
+  // (Ritual, Legacy) render a single column with NO tier header — the label distinguishes
+  // nothing. A two-tier area whose user happens to have no province entries still shows it.
+  const hasProvincialTier = domainHasProvincial(domainCode)
 
   const units = canadaWideUnits(canadaWide, domainCode)
   // Single flat section → render its links directly under the tier header (mirrors the
@@ -192,7 +220,7 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
   const soleSection = only && only.kind === 'section' ? only : null
   const canadaWideBlock = canadaWide.length > 0 && (
     <section>
-      <h2 style={tierStyle}>Canada-wide</h2>
+      {hasProvincialTier && <h2 style={tierStyle}>Canada-wide</h2>}
       {soleSection ? (
         <>
           {intros[soleSection.name] && <p style={introStyle}>{intros[soleSection.name]}</p>}
@@ -201,7 +229,7 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
       ) : (
         // borderTop closes the top of the first row; each row carries a borderBottom.
         <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-          {units.map((u) => renderUnit(u, intros))}
+          {units.map((u) => renderUnit(u, intros, groupIntros))}
         </div>
       )}
     </section>
