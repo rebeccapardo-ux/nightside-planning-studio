@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import type { User } from '@supabase/supabase-js'
 import LegacyContactEmailPreview from '@/app/components/LegacyContactEmailPreview'
+import { PROVINCES } from '@/lib/provinces'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,12 +66,6 @@ const OPTIONAL_RELEASE_ITEMS: Array<{ key: keyof ReleasePrefs; label: string; de
 
 const STORAGE_PREFIXES = ['nightside.', 'nightside-legacy-map', 'reflect-', 'checkbox_', 'ready_', 'orient_']
 const SS_PREFIXES      = ['nightside_', 'nightside.']
-
-const CANADIAN_PROVINCES = [
-  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick',
-  'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia',
-  'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon',
-]
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
@@ -1240,7 +1235,7 @@ export default function AccountPage() {
                   style={{ padding: '10px 14px', border: profileErrors.province ? '1.5px solid #8B0000' : '1.5px solid rgba(19,4,38,0.15)', borderRadius: 8, fontFamily: hv, fontSize: 15, color: profileFields.province ? '#130426' : 'rgba(19,4,38,0.35)', background: '#ffffff', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                 >
                   <option value="">Select province or territory</option>
-                  {CANADIAN_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
                 {profileErrors.province && <span style={{ fontFamily: hv, fontSize: 13, color: '#8B0000' }}>{profileErrors.province}</span>}
               </label>
