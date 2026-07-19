@@ -87,7 +87,7 @@ export const SECTION_ORDER: Record<string, SectionOrderNode[]> = {
       sections: [
         'Islamic Burial & End-of-Life Planning',
         'Jewish End-of-Life & Mourning Traditions',
-        'Hindu & Sikh Funeral Rites',
+        'Sikh Funeral Rites',
         'Christian & Catholic End-of-Life Planning',
       ],
     },
@@ -544,7 +544,7 @@ export const RESOURCES: Resource[] = [
   { domains: ['ritual'], scope: 'canadaWide', section: 'Jewish End-of-Life & Mourning Traditions',
     label: 'Kavod v’Nichum — Jewish Funeral & Burial Resources', url: 'https://kavodvnichum.org/' },
 
-  { domains: ['ritual'], scope: 'canadaWide', section: 'Hindu & Sikh Funeral Rites',
+  { domains: ['ritual'], scope: 'canadaWide', section: 'Sikh Funeral Rites',
     label: 'Sikh Funeral Guidance', url: 'https://www.ontariokhalsadarbar.ca/services/funeral-services/' },
 
   { domains: ['ritual'], scope: 'canadaWide', section: 'Christian & Catholic End-of-Life Planning',
