@@ -63,6 +63,13 @@ export const SECTION_ORDER: Record<string, SectionOrderNode[]> = {
       ],
     },
   ],
+  wills_estates: [
+    'General Information',
+    'Financial & Tax Considerations',
+  ],
+  deathcare: [
+    'Understanding your rights',
+  ],
 }
 
 export const RESOURCES: Resource[] = [
@@ -233,6 +240,234 @@ export const RESOURCES: Resource[] = [
   // Nunavut
   { domains: ['healthcare'], scope: 'Nunavut', section: '',
     label: 'Personal Directive Template', url: 'https://dyingwithdignity.ca/wp-content/uploads/2023/03/DWDC_2024ACP_NunavutForm_ENG.pdf' },
+
+  // ═══════════════════════════ WILLS & ESTATES — Canada-wide ═══════════════════════════
+  // NOTE: the 6 POA dual entries (ON ×3, MB ×1, NB ×2) live in the HEALTHCARE block above,
+  // tagged ['healthcare','wills_estates'] — they surface here automatically and are NOT
+  // repeated below (do not re-add them). Commercial sections (Digital Asset Planning, Online
+  // Will Services) were intentionally dropped; digital-asset coverage is a Legacy cross-pointer.
+  { domains: ['wills_estates'], scope: 'canadaWide', section: 'General Information',
+    label: 'Estate law', url: 'https://www.canada.ca/en/services/life-events/death/estates-wills.html' },
+  { domains: ['wills_estates'], scope: 'canadaWide', section: 'General Information',
+    label: 'Having a will and making funeral plans', url: 'https://www.canada.ca/en/employment-social-development/corporate/seniors-forum-federal-provincial-territorial/will-funeral-plan.html' },
+  { domains: ['wills_estates'], scope: 'canadaWide', section: 'General Information',
+    label: 'Powers of Attorney for financial matters and property', url: 'https://www.canada.ca/en/employment-social-development/corporate/seniors-forum-federal-provincial-territorial/power-attorney-financial.html' },
+
+  { domains: ['wills_estates'], scope: 'canadaWide', section: 'Financial & Tax Considerations',
+    label: 'Canada Revenue Agency: Guide to Taxes After Death', url: 'https://www.canada.ca/en/revenue-agency/services/tax/individuals/life-events/doing-taxes-someone-died/prepare-returns.html' },
+  { domains: ['wills_estates'], scope: 'canadaWide', section: 'Financial & Tax Considerations',
+    label: 'Death of an RRSP Annuitant', url: 'https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/rc4177/death-rrsp-annuitant-a-prpp-member.html' },
+  { domains: ['wills_estates'], scope: 'canadaWide', section: 'Financial & Tax Considerations',
+    label: 'Income from a Registered Retirement Income Fund (RRIF)', url: 'https://www.canada.ca/en/revenue-agency/services/tax/individuals/life-events/doing-taxes-someone-died/prepare-returns/report-income/rrif.html' },
+
+  // ═══════════════════════════ WILLS & ESTATES — By province ═══════════════════════════
+  // British Columbia (Willful commercial will link dropped)
+  { domains: ['wills_estates'], scope: 'British Columbia', section: '',
+    label: 'Powers of Attorney', url: 'https://www.trustee.bc.ca/adults/personal-planning-tools#epoa' },
+
+  // Alberta
+  { domains: ['wills_estates'], scope: 'Alberta', section: '',
+    label: 'Writing a Will', url: 'https://www.alberta.ca/wills-in-alberta' },
+  { domains: ['wills_estates'], scope: 'Alberta', section: '',
+    label: 'Enduring Powers of Attorney', url: 'https://www.alberta.ca/enduring-power-of-attorney' },
+  { domains: ['wills_estates'], scope: 'Alberta', section: '',
+    label: "Deceased Persons' Estates", url: 'https://www.alberta.ca/deceased-persons-estates' },
+  { domains: ['wills_estates'], scope: 'Alberta', section: '',
+    label: 'More Legal Resources: Wills, Estates, Funerals', url: 'https://www.cplea.ca/willsandestates/' },
+
+  // Saskatchewan (see-also promoted to its own entry)
+  { domains: ['wills_estates'], scope: 'Saskatchewan', section: '',
+    label: 'Writing a Will', url: 'https://www.saskatchewan.ca/residents/justice-crime-and-the-law/answering-legal-questions/wills/making-a-will' },
+  { domains: ['wills_estates'], scope: 'Saskatchewan', section: '',
+    label: 'Considerations When Planning Your Will', url: 'https://www.saskatchewan.ca/residents/justice-crime-and-the-law/answering-legal-questions/wills/considerations-when-planning-your-will' },
+
+  // Ontario (POA, POA Templates, Advance Directive & POA templates are dual — in Healthcare block)
+  { domains: ['wills_estates'], scope: 'Ontario', section: '',
+    label: 'How to Make a Will', url: 'https://stepstojustice.ca/steps/wills-and-powers-of-attorney/1-decide-how-you-want-make-your-will/' },
+  { domains: ['wills_estates'], scope: 'Ontario', section: '',
+    label: 'Wills and Estate Planning', url: 'https://www.ontario.ca/page/estate-planning-and-wills' },
+
+  // Quebec
+  { domains: ['wills_estates'], scope: 'Quebec', section: '',
+    label: 'Wills', url: 'https://www.quebec.ca/en/justice-and-civil-status/wills-estate/wills/forms-will' },
+  { domains: ['wills_estates'], scope: 'Quebec', section: '',
+    label: 'Requirements for a Legal Will', url: 'https://www.quebec.ca/en/justice-et-etat-civil/testament-succession/testament/formes-reconnues-testament/requirements' },
+  { domains: ['wills_estates'], scope: 'Quebec', section: '',
+    label: 'Estate Planning', url: 'https://educaloi.qc.ca/en/capsules/ten-steps-to-estate-planning/' },
+
+  // Manitoba (Legal guide is dual — in Healthcare block)
+  { domains: ['wills_estates'], scope: 'Manitoba', section: '',
+    label: 'Wills', url: 'https://www.gov.mb.ca/familylaw/relationships/wills.html' },
+  { domains: ['wills_estates'], scope: 'Manitoba', section: '',
+    label: 'Estates', url: 'https://www.gov.mb.ca/familylaw/relationships/estates.html' },
+  { domains: ['wills_estates'], scope: 'Manitoba', section: '',
+    label: 'Powers of Attorney', url: 'https://www.gov.mb.ca/publictrustee/powers_of_attorney.html' },
+
+  // New Brunswick (Enduring POA + Template are dual — in Healthcare block)
+  { domains: ['wills_estates'], scope: 'New Brunswick', section: '',
+    label: 'Writing a Legal Will', url: 'https://www.legal-info-legale.nb.ca/en/making_a_will' },
+  { domains: ['wills_estates'], scope: 'New Brunswick', section: '',
+    label: 'Wills and Estate Planning', url: 'https://socialsupportsnb.ca/en/simple_page/wills-and-estate-planning' },
+  { domains: ['wills_estates'], scope: 'New Brunswick', section: '',
+    label: 'Will Checklist', url: 'https://www.legal-info-legale.nb.ca/en/checklist_for_making_a_will' },
+  { domains: ['wills_estates'], scope: 'New Brunswick', section: '',
+    label: 'How to Make a Will', url: 'https://legalinfonb.ca/legal-info/wills-estates/how-to-make-a-will/' },
+
+  // Nova Scotia (expired JWT POA link replaced with two authoritative sources)
+  { domains: ['wills_estates'], scope: 'Nova Scotia', section: '',
+    label: 'Making a Will', url: 'https://www.legalinfo.org/wills-and-estates-law/seniors-making-a-will' },
+  { domains: ['wills_estates'], scope: 'Nova Scotia', section: '',
+    label: 'Estates', url: 'https://www.legalinfo.org/i-have-a-legal-question/wills-and-estates-law/' },
+  { domains: ['wills_estates'], scope: 'Nova Scotia', section: '',
+    label: 'Powers of Attorney — Adult Capacity and Decision-making', url: 'https://novascotia.ca/just/pto/adult-capacity-decision.asp' },
+  { domains: ['wills_estates'], scope: 'Nova Scotia', section: '',
+    label: 'Make a Power of Attorney (LISNS app)', url: 'https://www.legalinfo.org/poa' },
+
+  // Prince Edward Island
+  { domains: ['wills_estates'], scope: 'Prince Edward Island', section: '',
+    label: 'Wills and Estate Planning', url: 'https://legalinfopei.ca/wills/' },
+  { domains: ['wills_estates'], scope: 'Prince Edward Island', section: '',
+    label: 'Powers of Attorney', url: 'https://legalinfopei.ca/power-of-attorney-kit' },
+
+  // Newfoundland and Labrador (Enduring POA confirmed property-only → single wills_estates)
+  { domains: ['wills_estates'], scope: 'Newfoundland and Labrador', section: '',
+    label: 'Wills', url: 'https://publiclegalinfo.com/legal-info/wills-and-estates/wills/' },
+  { domains: ['wills_estates'], scope: 'Newfoundland and Labrador', section: '',
+    label: 'Estate Administration', url: 'https://publiclegalinfo.com/legal-info/wills-and-estates/dying-without-a-will/' },
+  { domains: ['wills_estates'], scope: 'Newfoundland and Labrador', section: '',
+    label: 'Enduring Powers of Attorney', url: 'https://publiclegalinfo.com/legal-info/wills-and-estates/enduring-powers-of-attorney/' },
+
+  // Yukon (Enduring POA confirmed property-only → single wills_estates; gov URL per adjudication)
+  { domains: ['wills_estates'], scope: 'Yukon', section: '',
+    label: 'Wills and Estates', url: 'https://yukon.ca/en/wills-and-estates' },
+  { domains: ['wills_estates'], scope: 'Yukon', section: '',
+    label: 'Enduring Powers of Attorney', url: 'https://yukon.ca/en/enduring-power-attorney-user-guide' },
+
+  // Northwest Territories
+  { domains: ['wills_estates'], scope: 'Northwest Territories', section: '',
+    label: 'Wills', url: 'https://www.justice.gov.nt.ca/en/files/estate-administration/Questions%20and%20Answers%20about%20Wills.pdf' },
+  { domains: ['wills_estates'], scope: 'Northwest Territories', section: '',
+    label: 'Estate Administration', url: 'https://www.justice.gov.nt.ca/en/estate-administration/' },
+  { domains: ['wills_estates'], scope: 'Northwest Territories', section: '',
+    label: 'Powers of Attorney', url: 'https://www.justice.gov.nt.ca/en/power-of-attorney/' },
+
+  // Nunavut (aging gov PDF kept per adjudication; HTTPS did not load, http retained)
+  { domains: ['wills_estates'], scope: 'Nunavut', section: '',
+    label: 'Wills and Estates', url: 'http://nulas.ca/wp-content/uploads/2015/02/wills_and_estates_edit.pdf' },
+
+  // ═══════════════════════════ DEATHCARE — Canada-wide ═══════════════════════════
+  { domains: ['deathcare'], scope: 'canadaWide', section: 'Understanding your rights',
+    label: 'Canadian Funeral Consumer Rights', url: 'https://ised-isde.canada.ca/site/office-consumer-affairs/en/modern-marketplace/funerals' },
+  { domains: ['deathcare'], scope: 'canadaWide', section: 'Understanding your rights',
+    label: 'Funeral Law in Canada', url: 'https://www.canada.ca/en/services/benefits/after-death.html' },
+  { domains: ['deathcare'], scope: 'canadaWide', section: 'Understanding your rights',
+    label: 'Overview of disposition methods and legality across provinces and territories', url: 'https://ncceh.ca/resources/evidence-reviews/alternative-disposition-services-green-burial-alkaline-hydrolysis-and' },
+
+  // ═══════════════════════════ DEATHCARE — By province ═══════════════════════════
+  // Funeral-cost benefit entries are dual ['deathcare','personal_admin'] — one entry each,
+  // surfacing in both areas (Personal Admin picks them up automatically when it's built).
+  // British Columbia (bcfunerals.com kept — industry body; organ-donation upgraded to https)
+  { domains: ['deathcare'], scope: 'British Columbia', section: '',
+    label: 'Deathcare and Funeral Planning', url: 'https://www.bcfunerals.com/wp-content/uploads/2024/06/BCFA-Guide-On-Death-and-Dying-2024.pdf' },
+  { domains: ['deathcare'], scope: 'British Columbia', section: '',
+    label: 'Organ Donation', url: 'https://www.transplant.bc.ca/' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'British Columbia', section: '', // dual: funeral-cost benefit + admin
+    label: 'Financial Support', url: 'https://www2.gov.bc.ca/gov/content/life-events/death/after-death/get-support#Get-Financial-Support' },
+
+  // Alberta (canadianfunerals see-also dropped; AFSRB regulator added)
+  { domains: ['deathcare'], scope: 'Alberta', section: '',
+    label: 'Organ Donation', url: 'https://myhealth.alberta.ca/pages/otdrhome.aspx' },
+  { domains: ['deathcare'], scope: 'Alberta', section: '',
+    label: 'Funeral Planning', url: 'https://www.albertahealthservices.ca/services/Page3816.aspx' },
+  { domains: ['deathcare'], scope: 'Alberta', section: '',
+    label: 'Alberta Funeral Services Regulatory Board — Consumer Information', url: 'https://www.afsrb.ab.ca/consumer' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Alberta', section: '', // dual
+    label: 'Funeral Benefits', url: 'https://www.alberta.ca/funeral-benefits' },
+
+  // Saskatchewan (plea.org kept — non-profit)
+  { domains: ['deathcare'], scope: 'Saskatchewan', section: '',
+    label: 'Funerals and Deathcare Options', url: 'https://www.plea.org/death-estates/a-death-in-the-family/funerals-cremation-burial' },
+  { domains: ['deathcare'], scope: 'Saskatchewan', section: '',
+    label: 'Organ Donation', url: 'https://www.saskatchewan.ca/residents/health/accessing-health-care-services/organ-and-tissue-donor-registry' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Saskatchewan', section: '', // dual
+    label: 'Funeral Benefits', url: 'https://www.saskatchewan.ca/residents/family-and-social-support/financial-help/saskatchewan-income-support-sis' },
+
+  // Ontario (BAO consumer guide added — the ON funeral-regulator equivalent of the boards
+  // above; a distinct BAO page from the consumer-FAQ used for ON financial support in PA)
+  { domains: ['deathcare'], scope: 'Ontario', section: '',
+    label: 'Organ Donation', url: 'https://beadonor.ca/' },
+  { domains: ['deathcare'], scope: 'Ontario', section: '',
+    label: 'A Guide to Death Care in Ontario (BAO)', url: 'https://thebao.ca/for-consumers/consumer-information-guide/' },
+
+  // Quebec (7 mis-filed healthcare/incapacity entries dropped; canadianfunerals see-also dropped)
+  { domains: ['deathcare'], scope: 'Quebec', section: '',
+    label: 'Organ Donation', url: 'https://www.transplantquebec.ca/en' },
+  { domains: ['deathcare'], scope: 'Quebec', section: '', // planning activity, not a funeral benefit → deathcare-only (not a PA dual)
+    label: 'Pre-Arranged Funerals', url: 'https://educaloi.qc.ca/en/capsules/pre-arranged-funeral-contracts/' },
+
+  // Manitoba (ethicaldeathcare.com dropped; Funeral Board of Manitoba added)
+  { domains: ['deathcare'], scope: 'Manitoba', section: '',
+    label: 'Organ Donation', url: 'https://www.transplantmanitoba.ca/transplant-program' },
+  { domains: ['deathcare'], scope: 'Manitoba', section: '',
+    label: 'Funeral Board of Manitoba', url: 'https://www.gov.mb.ca/funeraldirectorsboard/' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Manitoba', section: '', // dual
+    label: 'Employment and Income Assistance funeral benefits', url: 'https://www.gov.mb.ca/fs/eia_manual/23.html' },
+
+  // New Brunswick (canadianfunerals + eirenecremations dropped; FCNB regulator added)
+  { domains: ['deathcare'], scope: 'New Brunswick', section: '',
+    label: 'Organ Donation', url: 'https://www2.gnb.ca/content/gnb/en/departments/health/Hospital-Services/content/organ_donation.html' },
+  { domains: ['deathcare'], scope: 'New Brunswick', section: '',
+    label: 'Funeral Providers — Financial and Consumer Services Commission', url: 'https://fcnb.ca/en/consumer-protections/funeral-providers' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'New Brunswick', section: '', // dual
+    label: 'Funeral Benefits', url: 'https://www2.gnb.ca/content/gnb/en/services/services_renderer.201319.Funeral_Benefit.html' },
+
+  // Nova Scotia (prose contact reformatted to a titled entry; caregiversns.org / legalinfo.org kept)
+  { domains: ['deathcare'], scope: 'Nova Scotia', section: '',
+    label: 'Organ Donation', url: 'https://www.nshealth.ca/clinics-programs-and-services/legacy-life' },
+  { domains: ['deathcare'], scope: 'Nova Scotia', section: '',
+    label: 'Funerals and Body Disposition', url: 'https://caregiversns.org/resources/peolc/funerals-and-burials/' },
+  { domains: ['deathcare'], scope: 'Nova Scotia', section: '',
+    label: 'Funeral Pre-Planning', url: 'https://www.legalinfo.org/wills-and-estates-law/funeral-plan' },
+  { domains: ['deathcare'], scope: 'Nova Scotia', section: '',
+    label: 'Funeral Expenses: Your Rights', url: 'https://beta.novascotia.ca/funeral-expenses-your-rights' },
+  { domains: ['deathcare'], scope: 'Nova Scotia', section: '',
+    label: 'Support for funeral costs — Community Services contacts', url: 'https://novascotia.ca/coms/department/contact/index.html' },
+
+  // Prince Edward Island (canadianfunerals dropped; Funeral Services & Professions Board added)
+  { domains: ['deathcare'], scope: 'Prince Edward Island', section: '',
+    label: 'Organ Donation', url: 'https://www.princeedwardisland.ca/en/service/register-as-an-organ-andor-tissue-donor' },
+  { domains: ['deathcare'], scope: 'Prince Edward Island', section: '',
+    label: 'PEI Funeral Services and Professions Board', url: 'https://www.princeedwardisland.ca/en/information/health-and-wellness/about-the-pei-funeral-services-and-professions-board' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Prince Edward Island', section: '', // dual
+    label: 'Social Assistance with Burial Expenses', url: 'https://www.princeedwardisland.ca/en/publication/social-assistance-policy-burial-expenses' },
+
+  // Newfoundland and Labrador (canadianfunerals dropped; Embalmers & Funeral Directors Board added)
+  { domains: ['deathcare'], scope: 'Newfoundland and Labrador', section: '',
+    label: 'Organ Donation', url: 'https://www.easternhealth.ca/find-health-care/organ-donation/' },
+  { domains: ['deathcare'], scope: 'Newfoundland and Labrador', section: '',
+    label: 'Embalmers and Funeral Directors Board of Newfoundland and Labrador', url: 'https://www.nlfuneralboard.ca/' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Newfoundland and Labrador', section: '', // dual
+    label: 'Funeral Assistance Program', url: 'https://www.gov.nl.ca/cssd/funeral-benefits/' },
+
+  // Yukon (disposition-overview de-duplicated to Canada-wide; long parentheticals → notes)
+  { domains: ['deathcare'], scope: 'Yukon', section: '',
+    label: 'Organ Donation', url: 'https://yukon.ca/en/health-and-wellness/health-concerns-diseases-and-conditions/donate-your-organs' },
+  { domains: ['deathcare'], scope: 'Yukon', section: '',
+    label: 'Funeral Directors Act', url: 'https://laws.yukon.ca/cms/images/LEGISLATION/PRINCIPAL/2002/2002-0098/2002-0098.pdf', note: 'Regulates funeral practices.' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Yukon', section: '', // dual
+    label: 'Income Assistance Program', url: 'https://www.sac-isc.gc.ca/eng/1513197678048/1533317287697', note: 'Support for funeral costs for eligible individuals ordinarily resident on reserve or Status First Nations in Yukon.' },
+
+  // Northwest Territories (disposition-overview de-duplicated to Canada-wide)
+  { domains: ['deathcare'], scope: 'Northwest Territories', section: '',
+    label: 'Organ Donation', url: 'https://www.hss.gov.nt.ca/en/services/organ-and-tissue-donation/organ-and-tissue-donation-registration-process' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Northwest Territories', section: '', // dual
+    label: 'Financial Support with Funerals and Burial', url: 'https://www.hss.gov.nt.ca/sites/hss/files/resources/md-funeral-burial-cremation-program-guidelines.pdf' },
+
+  // Nunavut (organ donation managed by Alberta, per source)
+  { domains: ['deathcare'], scope: 'Nunavut', section: '',
+    label: 'Organ Donation', url: 'https://myhealth.alberta.ca/Pages/OTDRHome.aspx', note: 'Managed by Alberta.' },
+  { domains: ['deathcare', 'personal_admin'], scope: 'Nunavut', section: '', // dual
+    label: 'Seniors Burial Benefit', url: 'https://www.gov.nu.ca/en/newsroom/income-assistance-seniors-burial-benefit-2022-02-14' },
 ]
 
 // Everything the AreaResources component needs in one call: Canada-wide resources for the
