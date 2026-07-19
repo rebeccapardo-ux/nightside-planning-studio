@@ -5,25 +5,10 @@ import AuthNav from '@/app/components/AuthNav'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import OnboardingStepIndicator from '@/app/components/OnboardingStepIndicator'
 import { TERMS_VERSION, PRIVACY_VERSION } from '@/lib/policy-versions'
+import { PROVINCES } from '@/lib/provinces'
 
 const apfel = "'ApfelGrotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-
-const PROVINCES = [
-  'Alberta',
-  'British Columbia',
-  'Manitoba',
-  'New Brunswick',
-  'Newfoundland and Labrador',
-  'Nova Scotia',
-  'Ontario',
-  'Prince Edward Island',
-  'Quebec',
-  'Saskatchewan',
-  'Northwest Territories',
-  'Nunavut',
-  'Yukon',
-]
 
 function EyeIcon() {
   return (
