@@ -1,4 +1,4 @@
-import { para, heading, ResourcesPanel, TermList } from './shared'
+import { para, heading, TermList } from './shared'
 
 // Ritual & Ceremony Overview band content — reflowed verbatim from the original Learn page
 // ("Why this matters" two-column body, "Planning for marginalized communities" note,
@@ -22,10 +22,6 @@ export default function RitualLearnContent() {
           { term: 'Knowing your rights', detail: 'legal rights around funerals, body care, and ceremonies vary by province; knowing your options helps ensure your wishes are followed.' },
         ]}
       />
-
-      <ResourcesPanel title="Explore resources for equitable and culturally-sensitive planning" href="https://thenightside.net/equitable-deathcare">
-        Without clear plans, wishes related to gender identity, sexuality, cultural practices, or religious traditions may not be honored. It&rsquo;s important to understand your rights and options for funeral practices and body care.
-      </ResourcesPanel>
     </div>
   )
 }
