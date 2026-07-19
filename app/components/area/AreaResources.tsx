@@ -13,7 +13,9 @@
 //   Right (~38%): "{province} resources" — the user's own short list, always visible, with
 //                 the signup-province note.
 // Columns are align-items:start — the right column stays put (top-aligned) when the left
-// grows; it is NOT stretched to match, given no full-height border/background.
+// grows; it is NOT stretched to match. A thin vertical divider sits in the gutter between
+// them (a 1px grid track that DOES stretch to the taller column's height); it is removed
+// when the layout reflows to a single stacked column on narrow.
 //
 // DATA vs PAGE COPY: resources come from lib/resources.ts (data). The section intro
 // paragraphs (SECTION_INTROS) and the lead line are PAGE COPY authored here.
@@ -24,9 +26,13 @@ import { resourcesFor, SECTION_ORDER, type Resource } from '@/lib/resources'
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-// Tier headers ("Canada-wide" / "{province} resources") are the top of the in-section
-// hierarchy — clearly larger + heavier than the collapsible section headers (apfel 17/600).
-const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 26, fontWeight: 700, color: '#130426', margin: '0 0 18px', lineHeight: 1.15 }
+// Tier headers ("Canada-wide" / "{province} resources") are the MIDDLE level — between the
+// "Resources" section header (apfel 30/600 near-black, from CollapsibleSection) and the
+// collapsible section headers (apfel 17/600 near-black). Medium size + a MUTED color (the
+// existing rgba(19,4,38,0.6) secondary-text token) so they read as a structural tier label,
+// distinct from the near-black headers above and below. Title case (never all-caps — that's
+// reserved for the small equity sub-labels, and the dynamic province name varies in length).
+const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 20, fontWeight: 600, color: 'rgba(19,4,38,0.6)', margin: '0 0 16px', lineHeight: 1.2 }
 const summaryTitleStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 17, fontWeight: 600, color: '#130426', lineHeight: 1.3 }
 // Sub-section headings inside the expanded equity group — a small-caps label, clearly NOT a
 // clickable section header, so they read as groupings.
@@ -158,7 +164,7 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
   const provinceBlock = showProvince && (
     <section>
       <h2 style={tierStyle}>{province} resources</h2>
-      <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '-8px 0 16px' }}>
+      <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 16px' }}>
         Based on the province you set at signup. To change it, visit{' '}
         <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
       </p>
@@ -176,10 +182,15 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
         .rsum:hover .rsum-title { color: #2C3777; }
         .rchevron { flex-shrink: 0; transition: transform 200ms ease; }
         details[open] > .rsum .rchevron { transform: rotate(180deg); }
-        /* Two independent, top-aligned columns (align-items:start → right column never
-           stretches to match the growing left one). Reflows to a single column on narrow. */
-        .resources-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 44px; align-items: start; }
-        @media (max-width: 860px) { .resources-cols { grid-template-columns: 1fr; gap: 32px; } }
+        /* Two independent, top-aligned columns (align-items:start → the columns never stretch
+           to match each other) with a thin vertical divider in the gutter. The divider is a
+           1px grid track that DOES stretch (align-self:stretch), so it runs the full height of
+           the taller column — the left one, when its sections are expanded — while the columns
+           stay top-aligned. Same hairline token as the section-row dividers. Reflows to a
+           single stacked column on narrow, where the divider is removed. */
+        .resources-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) 1px minmax(0, 1fr); column-gap: 32px; align-items: start; }
+        .resources-divider { align-self: stretch; background: rgba(19,4,38,0.12); }
+        @media (max-width: 860px) { .resources-cols { grid-template-columns: 1fr; column-gap: 0; row-gap: 32px; } .resources-divider { display: none; } }
       `}</style>
 
       {LEAD[domainCode] && (
@@ -189,6 +200,7 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
       {showProvince ? (
         <div className="resources-cols">
           <div>{canadaWideBlock}</div>
+          <div className="resources-divider" aria-hidden="true" />
           <div>{provinceBlock}</div>
         </div>
       ) : (
