@@ -1,22 +1,21 @@
 // AreaResources — the embedded province-specific resource list for an area page's
 // "Resources" section (replaces the old external Resource Hub link-out). Server component:
-// renders static data + external links, no interactivity, so it passes cleanly as children
-// from the server area page into the client CollapsibleSection.
+// static data + external links, no interactivity, so it passes cleanly as children from the
+// server area page into the client CollapsibleSection. (This file is the layout INSIDE the
+// Resources section — the page-level section collapse is separate and untouched.)
 //
-// Two tiers the user sees: "Canada-wide" and "{their province} resources" — never a grid
-// or cross-province comparison (they only ever see their own province's slice). Canada-wide
-// sections follow the per-domain SECTION_ORDER tree (flat sections + nestable groups, e.g.
-// Healthcare's equity cluster). The province tier is a flat list here (Healthcare); the
-// component also handles sub-sectioned province tiers for future domains.
+// Two tiers, always both visible (not tabs, not gated): "Canada-wide" and "{their province}
+// resources" — the user only ever sees their own province's slice.
 //
-// Visual hierarchy (scannability): TIER header (largest/heaviest) > GROUP header (equity
-// parent — larger than its sections + an indented, bordered container so its children
-// clearly belong to it) > SECTION header (heading font/dark, distinct from the navy links).
-// Whitespace does the chunking: links are tight within a section, sections are spaced apart.
+// Layout (Canada-wide): flat top-level sections tile as a GRID of white panels (3-up on
+// desktop, reflowing to 2/1), TOP-ALIGNED so headers line up and short panels never stretch
+// to match tall neighbours (align-items:start — no equal-height rows). A nestable group
+// (e.g. Healthcare's equity cluster) is pulled OUT of the row into its own FULL-WIDTH panel
+// below, with its sub-sections in a mini-grid inside — removing the tall outlier from the
+// row-alignment problem. The province tier is short (≤5/province), so it's a plain list.
 //
-// DATA vs PAGE COPY: the resources come from lib/resources.ts (data). The section intro
-// paragraphs below (SECTION_INTROS) and the lead line are PAGE COPY authored here — not
-// stored per-resource. Cross-pointer copy (none for Healthcare) also belongs here.
+// DATA vs PAGE COPY: resources come from lib/resources.ts (data). The section intro
+// paragraphs (SECTION_INTROS) and the lead line are PAGE COPY authored here.
 
 import Link from 'next/link'
 import { resourcesFor, SECTION_ORDER, type Resource } from '@/lib/resources'
@@ -26,14 +25,18 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
 // ── Type scale (one deliberate level between each) ──────────────────────────────
 const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 24, fontWeight: 700, color: '#130426', margin: '0 0 20px', lineHeight: 1.2 }
-const groupStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 16px', lineHeight: 1.25 }
-const sectionStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 16, fontWeight: 600, color: '#130426', margin: '0 0 10px', lineHeight: 1.3 }
-const introStyle: React.CSSProperties = { fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 12px', maxWidth: 620 }
+const groupStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 18px', lineHeight: 1.25 }
+const sectionStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 16, fontWeight: 600, color: '#130426', margin: '0 0 12px', lineHeight: 1.3 }
+const introStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13.5, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '0 0 12px' }
 const linkStyle: React.CSSProperties = { fontFamily: hv, fontSize: 15, color: '#2C3777', textDecoration: 'none', lineHeight: 1.5 }
 const noteStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5, margin: '2px 0 0' }
 
-// PAGE COPY: section intro paragraphs, per domain → section name. Only sections that need
-// framing carry one; the rest render with no intro.
+// White panel cards — same treatment as the area-page activity cards (white on the section
+// band), so panels read as bounded units and the boundary separates section from links.
+const panelStyle: React.CSSProperties = { background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.1)', borderRadius: 14, padding: '20px 22px' }
+const groupCardStyle: React.CSSProperties = { background: '#FFFFFF', border: '1px solid rgba(19,4,38,0.1)', borderRadius: 14, padding: '24px 26px', marginBottom: 20 }
+
+// PAGE COPY: section intro paragraphs, per domain → section name.
 const SECTION_INTROS: Record<string, Record<string, string>> = {
   healthcare: {
     '2SLGBTQ+ resources':
@@ -69,12 +72,11 @@ function ResourceList({ resources }: { resources: Resource[] }) {
   )
 }
 
-// A section = its header (skipped when the section name is empty, e.g. a flat tier) + an
-// optional intro paragraph + the tight link list. Generous space below chunks it off from
-// the next section.
-function SectionBlock({ title, intro, resources }: { title: string; intro?: string; resources: Resource[] }) {
+// Section header (skipped for an empty name, e.g. a flat tier) + optional intro + the tight
+// link list. No card/margins here — the panel or grid cell provides those.
+function SectionContent({ title, intro, resources }: { title: string; intro?: string; resources: Resource[] }) {
   return (
-    <div style={{ marginBottom: 30 }}>
+    <div>
       {title && <h4 style={sectionStyle}>{title}</h4>}
       {intro && <p style={introStyle}>{intro}</p>}
       <ResourceList resources={resources} />
@@ -82,9 +84,9 @@ function SectionBlock({ title, intro, resources }: { title: string; intro?: stri
   )
 }
 
-// Render Canada-wide resources grouped by section, in the domain's SECTION_ORDER (flat
-// sections + nestable groups). Sections present in data but absent from the order config
-// fall through at the end, so nothing is silently dropped.
+// Canada-wide: flat top-level sections accumulate into a grid of panels; a group flushes the
+// current row, then renders full-width with its sub-sections in a mini-grid. Sections in the
+// data but absent from the order config fall through as a trailing grid (nothing dropped).
 function renderCanadaWide(resources: Resource[], domainCode: string, intros: Record<string, string>) {
   const bySection = new Map<string, Resource[]>()
   for (const r of resources) {
@@ -94,35 +96,46 @@ function renderCanadaWide(resources: Resource[], domainCode: string, intros: Rec
   }
   const rendered = new Set<string>()
   const blocks: React.ReactNode[] = []
+  let row: React.ReactNode[] = []
 
-  const sectionBlock = (name: string) => {
+  const flushRow = () => {
+    if (row.length === 0) return
+    blocks.push(<div key={`row-${blocks.length}`} className="resource-grid" style={{ marginBottom: 20 }}>{row}</div>)
+    row = []
+  }
+  const contentFor = (name: string) => {
     const rs = bySection.get(name)
     if (!rs || rs.length === 0) return null
     rendered.add(name)
-    return <SectionBlock key={name} title={name} intro={intros[name]} resources={rs} />
+    return <SectionContent key={name} title={name} intro={intros[name]} resources={rs} />
   }
 
   for (const node of SECTION_ORDER[domainCode] ?? []) {
     if (typeof node === 'string') {
-      const b = sectionBlock(node)
-      if (b) blocks.push(b)
+      const c = contentFor(node)
+      if (c) row.push(<div key={node} style={panelStyle}>{c}</div>)
     } else {
-      const children = node.sections.map(sectionBlock).filter(Boolean)
-      if (children.length > 0) {
-        // Parent grouping: heavier header + an indented, left-bordered container so the
-        // sub-sections read as belonging to it.
+      flushRow()
+      const subs = node.sections.map(contentFor).filter(Boolean)
+      if (subs.length > 0) {
         blocks.push(
-          <div key={node.group} style={{ marginBottom: 30 }}>
+          <div key={node.group} style={groupCardStyle}>
             <h3 style={groupStyle}>{node.group}</h3>
-            <div style={{ paddingLeft: 18, borderLeft: '2px solid rgba(19,4,38,0.1)' }}>{children}</div>
+            <div className="resource-subgrid">{subs}</div>
           </div>,
         )
       }
     }
   }
+  flushRow()
+
+  const leftover: React.ReactNode[] = []
   for (const [name, rs] of bySection) {
-    if (!rendered.has(name) && rs.length > 0) blocks.push(<SectionBlock key={name} title={name} intro={intros[name]} resources={rs} />)
+    if (!rendered.has(name) && rs.length > 0) {
+      leftover.push(<div key={name} style={panelStyle}><SectionContent title={name} intro={intros[name]} resources={rs} /></div>)
+    }
   }
+  if (leftover.length > 0) blocks.push(<div key="row-leftover" className="resource-grid">{leftover}</div>)
   return blocks
 }
 
@@ -135,14 +148,21 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
 
   return (
     <div>
-      <style>{`.area-resource-link:hover { text-decoration: underline; }`}</style>
+      <style>{`
+        .area-resource-link:hover { text-decoration: underline; }
+        /* Top-aligned (align-items:start → no equal-height stretch); reflows 3 → 2 → 1. */
+        .resource-grid    { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+        .resource-subgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 28px; align-items: start; }
+        @media (max-width: 860px) { .resource-grid, .resource-subgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 560px) { .resource-grid, .resource-subgrid { grid-template-columns: 1fr; } }
+      `}</style>
 
       {LEAD[domainCode] && (
-        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 28px', maxWidth: 620 }}>{LEAD[domainCode]}</p>
+        <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 28px', maxWidth: 720 }}>{LEAD[domainCode]}</p>
       )}
 
       {canadaWide.length > 0 && (
-        <section style={{ marginBottom: showProvince ? 48 : 0 }}>
+        <section style={{ marginBottom: showProvince ? 44 : 0 }}>
           <h2 style={tierStyle}>Canada-wide</h2>
           {renderCanadaWide(canadaWide, domainCode, intros)}
         </section>
@@ -155,7 +175,10 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
             Based on the province you set at signup. To change it, visit{' '}
             <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
           </p>
-          <ResourceList resources={provincial} />
+          {/* Short per-province list (≤5) — a plain bounded panel, no grid needed. */}
+          <div style={{ ...panelStyle, maxWidth: 620 }}>
+            <ResourceList resources={provincial} />
+          </div>
         </section>
       )}
     </div>
