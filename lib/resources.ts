@@ -42,6 +42,9 @@ export type SectionOrderNode = string | { group: string; sections: string[] }
 export const SECTION_ORDER: Record<string, SectionOrderNode[]> = {
   healthcare: [
     'Advance Care Planning',
+    // MAiD is a top-level sibling (not a child of the equity group), placed here between
+    // Advance Care Planning and Housing.
+    'Medical Assistance in Dying (MAiD)',
     'Housing',
     {
       group: 'Equitable and culturally-sensitive planning',
@@ -49,7 +52,6 @@ export const SECTION_ORDER: Record<string, SectionOrderNode[]> = {
         'Understanding your rights',
         '2SLGBTQ+ resources',
         'Indigenous resources',
-        'Medical Assistance in Dying (MAiD)',
       ],
     },
   ],

@@ -72,17 +72,29 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   // the Overview band is lavender too WHEN a cream Activities section sits between them.
   // When an area has no Activities section (e.g. Personal Admin), the Overview band flips
   // to cream so it doesn't sit lavender-on-lavender against Plan.
-  const overviewBg = hasActivities ? '#ECE7F7' : '#F8F4EB'
-  const planBg = '#ECE7F7'
-
   // Province-specific resources. Province lives in user_metadata (read via getUser above,
   // so it's fresh — never a decoded token). The Resources section renders only for domains
-  // that have resource data seeded (Healthcare for now); the other areas stay unchanged
-  // until their data lands. It's a cream band after the lavender Overview — since the
-  // Activities band below it is also cream, that band takes a hairline borderTop divider
-  // only when Resources is present (keeps other areas pixel-identical).
+  // with resource data seeded (Healthcare for now); the other areas stay unchanged.
   const province = (user.user_metadata?.province as string | undefined) || undefined
   const showResources = hasResources(area.domainCode)
+
+  // Section backgrounds alternate cream/lavender BOTTOM-UP from Plan (always lavender) so
+  // no two adjacent bands share a color — no divider needed. Order top→bottom:
+  // Overview → [Resources] → [Activities] → Plan. Plan stays lavender (its Planning Status
+  // / Your-thoughts design is tuned to it). Areas without a Resources band keep their prior
+  // colors (e.g. lavender Overview when Activities is present, cream when it isn't).
+  const CREAM = '#F8F4EB'
+  const LAVENDER = '#ECE7F7'
+  const bandOrder: string[] = ['overview']
+  if (showResources) bandOrder.push('resources')
+  if (hasActivities) bandOrder.push('activities')
+  bandOrder.push('plan')
+  const bandBg: Record<string, string> = {}
+  bandOrder.slice().reverse().forEach((key, i) => { bandBg[key] = i % 2 === 0 ? LAVENDER : CREAM })
+  const overviewBg = bandBg.overview
+  const resourcesBg = bandBg.resources ?? CREAM
+  const activitiesBg = bandBg.activities ?? CREAM
+  const planBg = bandBg.plan
 
   return (
     // Page base is the dark footer colour (#130426), so the min-h-screen filler below
@@ -97,10 +109,11 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <AreaHeader slug={area.slug} title={area.title} intro={area.intro} bandBg={overviewBg}>{learnContent}</AreaHeader>
 
       {/* ── Resources — embedded province-specific resource links (replaces the old
-          external Resource Hub link-out). Cream band after the lavender Overview; reading
-          → referencing → doing. Renders only for domains with seeded resource data. ── */}
+          external Resource Hub link-out). Placed after Overview (reading → referencing →
+          doing); color-blocked by the alternation above. Renders only for domains with
+          seeded resource data. ── */}
       {showResources && (
-        <div style={{ background: '#F8F4EB' }}>
+        <div style={{ background: resourcesBg }}>
           <div className="max-w-6xl mx-auto px-10">
             <CollapsibleSection title="Resources" storageKey={`nightside.areaSection.${area.slug}.resources`}>
               <AreaResources domainCode={area.domainCode} province={province} />
@@ -109,12 +122,11 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         </div>
       )}
 
-      {/* ── Relevant activities — full-width cream band; color-blocked against the
-          lavender Overview band above and the lavender Plan band below. Omitted when an
-          area has no activities. Takes a hairline top divider only when the (cream)
-          Resources band sits directly above it, to break the cream-on-cream adjacency. ── */}
+      {/* ── Relevant activities — full-width cream band; color-blocked by the alternation
+          above (lavender Resources or Overview above it, lavender Plan below). Omitted when
+          an area has no activities. ── */}
       {hasActivities && (
-        <div style={{ background: '#F8F4EB', borderTop: showResources ? '1px solid rgba(19,4,38,0.08)' : undefined }}>
+        <div style={{ background: activitiesBg }}>
           <div className="max-w-6xl mx-auto px-10">
             <CollapsibleSection title="Relevant Activities" storageKey={`nightside.areaSection.${area.slug}.activities`}>
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>

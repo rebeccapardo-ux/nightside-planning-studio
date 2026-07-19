@@ -9,16 +9,28 @@
 // Healthcare's equity cluster). The province tier is a flat list here (Healthcare); the
 // component also handles sub-sectioned province tiers for future domains.
 //
+// Visual hierarchy (scannability): TIER header (largest/heaviest) > GROUP header (equity
+// parent — larger than its sections + an indented, bordered container so its children
+// clearly belong to it) > SECTION header (heading font/dark, distinct from the navy links).
+// Whitespace does the chunking: links are tight within a section, sections are spaced apart.
+//
 // DATA vs PAGE COPY: the resources come from lib/resources.ts (data). The section intro
 // paragraphs below (SECTION_INTROS) and the lead line are PAGE COPY authored here — not
-// stored per-resource. Cross-pointer copy (none for Healthcare) also belongs here when the
-// other areas land.
+// stored per-resource. Cross-pointer copy (none for Healthcare) also belongs here.
 
 import Link from 'next/link'
 import { resourcesFor, SECTION_ORDER, type Resource } from '@/lib/resources'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+
+// ── Type scale (one deliberate level between each) ──────────────────────────────
+const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 24, fontWeight: 700, color: '#130426', margin: '0 0 20px', lineHeight: 1.2 }
+const groupStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 16px', lineHeight: 1.25 }
+const sectionStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 16, fontWeight: 600, color: '#130426', margin: '0 0 10px', lineHeight: 1.3 }
+const introStyle: React.CSSProperties = { fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 12px', maxWidth: 620 }
+const linkStyle: React.CSSProperties = { fontFamily: hv, fontSize: 15, color: '#2C3777', textDecoration: 'none', lineHeight: 1.5 }
+const noteStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5, margin: '2px 0 0' }
 
 // PAGE COPY: section intro paragraphs, per domain → section name. Only sections that need
 // framing carry one; the rest render with no intro.
@@ -31,8 +43,7 @@ const SECTION_INTROS: Record<string, Record<string, string>> = {
   },
 }
 
-// PAGE COPY: the short lead under the Resources heading, per domain (falls back to a
-// generic line). Author-adjustable.
+// PAGE COPY: the short lead under the Resources heading, per domain. Author-adjustable.
 const LEAD: Record<string, string> = {
   healthcare:
     'Guidance, templates, and services for planning your care — Canada-wide, and specific to your province. Legal requirements vary by province.',
@@ -40,20 +51,12 @@ const LEAD: Record<string, string> = {
 
 function ResourceLink({ r }: { r: Resource }) {
   return (
-    <li style={{ marginBottom: r.note ? 10 : 6 }}>
-      <a
-        href={r.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="area-resource-link"
-        style={{ fontFamily: hv, fontSize: 15, color: '#2C3777', textDecoration: 'none', lineHeight: 1.5 }}
-      >
+    <li style={{ marginBottom: r.note ? 8 : 4 }}>
+      <a href={r.url} target="_blank" rel="noopener noreferrer" className="area-resource-link" style={linkStyle}>
         {r.label}
         <span aria-hidden="true" style={{ opacity: 0.5, fontSize: 12, marginLeft: 4 }}>↗</span>
       </a>
-      {r.note && (
-        <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5, margin: '2px 0 0' }}>{r.note}</p>
-      )}
+      {r.note && <p style={noteStyle}>{r.note}</p>}
     </li>
   )
 }
@@ -66,21 +69,22 @@ function ResourceList({ resources }: { resources: Resource[] }) {
   )
 }
 
+// A section = its header (skipped when the section name is empty, e.g. a flat tier) + an
+// optional intro paragraph + the tight link list. Generous space below chunks it off from
+// the next section.
 function SectionBlock({ title, intro, resources }: { title: string; intro?: string; resources: Resource[] }) {
   return (
-    <div style={{ marginBottom: 24 }}>
-      <h4 style={{ fontFamily: hv, fontSize: 15, fontWeight: 700, color: '#130426', margin: '0 0 8px' }}>{title}</h4>
-      {intro && (
-        <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.7)', lineHeight: 1.6, margin: '0 0 12px', maxWidth: 620 }}>{intro}</p>
-      )}
+    <div style={{ marginBottom: 30 }}>
+      {title && <h4 style={sectionStyle}>{title}</h4>}
+      {intro && <p style={introStyle}>{intro}</p>}
       <ResourceList resources={resources} />
     </div>
   )
 }
 
-// Group Canada-wide resources by section, then render them in the domain's SECTION_ORDER
-// (flat sections + nestable groups). Sections present in the data but absent from the order
-// config fall through at the end, so nothing is silently dropped.
+// Render Canada-wide resources grouped by section, in the domain's SECTION_ORDER (flat
+// sections + nestable groups). Sections present in data but absent from the order config
+// fall through at the end, so nothing is silently dropped.
 function renderCanadaWide(resources: Resource[], domainCode: string, intros: Record<string, string>) {
   const bySection = new Map<string, Resource[]>()
   for (const r of resources) {
@@ -105,16 +109,17 @@ function renderCanadaWide(resources: Resource[], domainCode: string, intros: Rec
     } else {
       const children = node.sections.map(sectionBlock).filter(Boolean)
       if (children.length > 0) {
+        // Parent grouping: heavier header + an indented, left-bordered container so the
+        // sub-sections read as belonging to it.
         blocks.push(
-          <div key={node.group} style={{ marginBottom: 24 }}>
-            <h3 style={{ fontFamily: apfel, fontSize: 18, fontWeight: 600, color: '#130426', margin: '0 0 16px' }}>{node.group}</h3>
-            <div style={{ paddingLeft: 2 }}>{children}</div>
+          <div key={node.group} style={{ marginBottom: 30 }}>
+            <h3 style={groupStyle}>{node.group}</h3>
+            <div style={{ paddingLeft: 18, borderLeft: '2px solid rgba(19,4,38,0.1)' }}>{children}</div>
           </div>,
         )
       }
     }
   }
-  // Sections in the data but not in the order config — render at the end (defensive).
   for (const [name, rs] of bySection) {
     if (!rendered.has(name) && rs.length > 0) blocks.push(<SectionBlock key={name} title={name} intro={intros[name]} resources={rs} />)
   }
@@ -137,15 +142,15 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
       )}
 
       {canadaWide.length > 0 && (
-        <section style={{ marginBottom: showProvince ? 40 : 0 }}>
-          <h2 style={{ fontFamily: apfel, fontSize: 22, fontWeight: 600, color: '#130426', margin: '0 0 20px' }}>Canada-wide</h2>
+        <section style={{ marginBottom: showProvince ? 48 : 0 }}>
+          <h2 style={tierStyle}>Canada-wide</h2>
           {renderCanadaWide(canadaWide, domainCode, intros)}
         </section>
       )}
 
       {showProvince && (
         <section>
-          <h2 style={{ fontFamily: apfel, fontSize: 22, fontWeight: 600, color: '#130426', margin: '0 0 6px' }}>{province} resources</h2>
+          <h2 style={{ ...tierStyle, marginBottom: 6 }}>{province} resources</h2>
           <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 18px', maxWidth: 620 }}>
             Based on the province you set at signup. To change it, visit{' '}
             <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
