@@ -26,14 +26,16 @@ import { resourcesFor, SECTION_ORDER, type Resource } from '@/lib/resources'
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-// Tier headers ("Canada-wide" / "{province} resources") are the MIDDLE level — between the
-// "Resources" section header (apfel 30/600 near-black, from CollapsibleSection) and the
-// collapsible section headers (apfel 17/600 near-black). Medium size + a MUTED color (the
-// existing rgba(19,4,38,0.6) secondary-text token) so they read as a structural tier label,
-// distinct from the near-black headers above and below. Title case (never all-caps — that's
-// reserved for the small equity sub-labels, and the dynamic province name varies in length).
-const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 20, fontWeight: 600, color: 'rgba(19,4,38,0.6)', margin: '0 0 16px', lineHeight: 1.2 }
-const summaryTitleStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 17, fontWeight: 600, color: '#130426', lineHeight: 1.3 }
+// Three descending levels, differentiated by WEIGHT + HUE (not by muting — a faded tier read
+// as "less important", backwards for a structural anchor):
+//   Resources        (section header)  apfel 30/600 near-black   — from CollapsibleSection
+//   Tier             (these)           apfel 20/600 brand PURPLE  — prominent, distinct by hue
+//   Section headers  (rsum-title)      apfel 17/500 near-black    — quieter, still clickable
+// #7B6FC0 is the brand purple already used for structural labels elsewhere (legacy-map). The
+// tier out-ranks the section headers by size (20>17), weight (600>500), and hue. Title case
+// (never all-caps — reserved for the small equity sub-labels; the province name varies too).
+const tierStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 20, fontWeight: 600, color: '#7B6FC0', margin: '0 0 16px', lineHeight: 1.2 }
+const summaryTitleStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 17, fontWeight: 500, color: '#130426', lineHeight: 1.3 }
 // Sub-section headings inside the expanded equity group — a small-caps label, clearly NOT a
 // clickable section header, so they read as groupings.
 const subHeadStyle: React.CSSProperties = { fontFamily: hv, fontSize: 12.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(19,4,38,0.75)', margin: '0 0 8px' }
