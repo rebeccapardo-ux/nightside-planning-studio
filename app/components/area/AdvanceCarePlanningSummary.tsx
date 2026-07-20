@@ -20,17 +20,18 @@ const bodyStyle: React.CSSProperties = { fontFamily: hv, fontSize: 17, lineHeigh
 // personalized system. (Separate sections, not adjacent, so showing it in each is not a repeat.)
 const noteStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 18px' }
 
-// Small, quiet inline citation link — subordinate, for verifying one claim.
-function SourceLink({ n, url }: { n: number; url: string }) {
+// Small, quiet inline citation link — matches the scenario-navigator outcome-page "source"
+// links (12px, navy #2C3777, underlined). Subordinate, for verifying a single claim; a direct
+// link to the source page (each ACP marker has its own page, so no toggle-reveal is needed).
+function SourceLink({ url }: { url: string }) {
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="acp-source"
-      style={{ fontSize: 12.5, color: 'rgba(19,4,38,0.55)', textDecoration: 'underline', whiteSpace: 'nowrap', margin: '0 1px', verticalAlign: '1px' }}
+      style={{ marginLeft: 2, fontSize: 12, color: '#2C3777', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv, whiteSpace: 'nowrap' }}
     >
-      [{n}]
+      source
     </a>
   )
 }
@@ -54,7 +55,7 @@ function renderInline(text: string, sources: AcpSource[], keyBase: string): Reac
         const n = Number(m[1])
         const src = sources.find((s) => s.n === n)
         // No linkable URL (e.g. a "guidance" reference with no page) → omit the marker.
-        return src && src.url ? <SourceLink key={key} n={n} url={src.url} /> : null
+        return src && src.url ? <SourceLink key={key} url={src.url} /> : null
       }
       return <span key={key}>{tok}</span>
     })
@@ -64,7 +65,6 @@ export default function AdvanceCarePlanningSummary({ summary }: { summary: AcpSu
   const paragraphs = summary.body.split(/\n{2,}/)
   return (
     <div>
-      <style>{`.acp-source:hover { color: #2C3777; }`}</style>
       <p style={noteStyle}>
         Based on the province you set at signup. To change it, visit{' '}
         <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
