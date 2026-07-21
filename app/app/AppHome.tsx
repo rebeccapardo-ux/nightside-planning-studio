@@ -4,6 +4,7 @@ import Link from 'next/link'
 import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
 import { AREAS } from '@/lib/areas'
 import AreaIcon from '@/app/components/AreaIcon'
+import LandingContainer from '@/app/components/LandingContainer'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -64,7 +65,6 @@ export default function AppHomePage() {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
-        .home4 { max-width: 1100px; margin: 0 auto; padding: 56px 32px 80px; }
         /* Activities + Your materials are entry cards (1fr each); Plan by area is wider
            (it holds the six area links + Open). */
         /* Side cards (Activities, Your materials) sit at natural content height (align-self:start),
@@ -89,7 +89,7 @@ export default function AppHomePage() {
 
       <HomeOnboardingIndicator />
 
-      <main className="home4">
+      <LandingContainer as="main">
         {/* Welcome + a short orienting paragraph that links to the About → Approach section. */}
         <div style={{ marginBottom: 40 }}>
           <h1 className="text-h1 text-[#130426]" style={{ marginBottom: 14 }}>Welcome to your Planning Studio</h1>
@@ -143,7 +143,7 @@ export default function AppHomePage() {
 
         </div>
 
-      </main>
+      </LandingContainer>
     </div>
   )
 }

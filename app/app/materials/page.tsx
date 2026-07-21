@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import LandingContainer from '@/app/components/LandingContainer'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { ACTIVITY, DOCUMENT_TYPE_META, DOCUMENT_TYPES } from '@/lib/content-metadata'
 import { loadDomainStateFromDB } from '@/lib/domain-state'
@@ -121,18 +122,18 @@ export default async function YourMaterialsPage() {
           the cream page. ── */}
       <div className="plan-page-header" style={{ position: 'relative' }}>
         <PlanExportButton />
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 0' }}>
+        <LandingContainer pb={0}>
           <SectionTitleReveal title="Your materials" color="#130426" underlineColor="#DB5835" />
           <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 620, margin: '18px 0 0', lineHeight: 1.6 }}>
             This is where everything that makes up your plan lives: documents to fill out, your activity outputs, and notes you&rsquo;ve captured. Review, continue working, or export from this page.
           </p>
-        </div>
+        </LandingContainer>
       </div>
 
       {/* ── Main content: Key Details panel (cross-domain status overview) on top, then
           the materials sections. Your materials is a recurring working surface, so the
           status overview lives here. ── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
+      <LandingContainer pt={40}>
         <div style={{ marginBottom: 40 }}>
           <PlanOverview domains={allDomains} title="Key details" />
         </div>
@@ -145,7 +146,7 @@ export default async function YourMaterialsPage() {
           allDomains={allDomains}
           userId={user.id}
         />
-      </div>
+      </LandingContainer>
     </div>
   )
 }

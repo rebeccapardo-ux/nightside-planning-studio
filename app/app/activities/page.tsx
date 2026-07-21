@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import ActivityIcon from '@/app/components/ActivityIcon'
+import LandingContainer from '@/app/components/LandingContainer'
 
 type ExploreActivityCardProps = {
   title: string
@@ -96,14 +97,7 @@ export default function ExplorePage() {
       `}</style>
 
       <div style={{ minHeight: '100vh', background: '#F8F4EB' }}>
-        <div style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          paddingLeft: 24,
-          paddingRight: 24,
-          paddingTop: 80,
-          paddingBottom: 72,
-        }}>
+        <LandingContainer>
 
           <div className="ns-title-wrap">
             <h1 className="ns-title-section" style={{
@@ -188,7 +182,7 @@ export default function ExplorePage() {
             />
           </div>
 
-        </div>
+        </LandingContainer>
       </div>
     </>
   )
