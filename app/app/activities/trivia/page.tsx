@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
 import Link from 'next/link'
 import { TRIVIA_CARDS, type TriviaCard } from '@/lib/trivia-data'
 import { createNote, updateNote } from '@/lib/notes'
@@ -122,7 +123,7 @@ function DeckView({
     <div>
 
       {/* Midnight banner — full width */}
-      <div className="px-5 md:pl-24 md:pr-8 pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60 }}>
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
 import { ACTIVITY } from '@/lib/content-metadata'
 import Link from 'next/link'
 import {
@@ -186,7 +187,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
     <div className="min-h-screen bg-[#F8F4EB] text-[#130426]">
 
       {/* Midnight banner — full width */}
-      <div className="px-5 md:pl-24 md:pr-8 pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60 }}>
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"

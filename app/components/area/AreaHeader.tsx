@@ -3,6 +3,7 @@
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { useSectionCollapse } from './useSectionCollapse'
 import { areaBandInnerStyle } from './areaBand'
+import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -32,8 +33,12 @@ export default function AreaHeader({
 
   return (
     <>
-      <div style={{ background: '#2C3777' }}>
-        <div className="pt-16 md:pt-6" style={areaBandInnerStyle}>
+      {/* Navy page banner — the shared app banner treatment (full-bleed, 96px left inset,
+          generous top/bottom), identical to the activity-page banners. Deliberately NOT
+          centered like the content bands below: the title hugs the left inset the same way
+          the activity banners do. */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+        <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"
             items={[
@@ -42,10 +47,8 @@ export default function AreaHeader({
             ]}
           />
         </div>
-        <div style={{ ...areaBandInnerStyle, paddingTop: 12, paddingBottom: 40 }}>
-          <h1 className="ns-title-activity text-white">{title}</h1>
-          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '16px 0 0' }}>{intro}</p>
-        </div>
+        <h1 className="ns-title-activity text-white">{title}</h1>
+        <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '20px 0 0' }}>{intro}</p>
       </div>
 
       {/* Overview band — light-lavender, full-bleed (sibling of the navy block). */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
 import { ACTIVITY } from '@/lib/content-metadata'
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -846,7 +847,7 @@ export default function LegacyMapPage() {
     <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
       {/* ── Page header ──────────────────────────────────────────────────────── */}
-      <div className="px-5 md:pl-24 md:pr-[148px] activity-banner-row pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className={`${BANNER_CLASS} md:pr-[148px] activity-banner-row`} style={{ ...BANNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + pills */}
         <div style={{ flex: 1 }}>

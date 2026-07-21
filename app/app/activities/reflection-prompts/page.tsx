@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
 import { ACTIVITY } from '@/lib/content-metadata'
 import { useEffect, useState } from 'react'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
@@ -145,7 +146,7 @@ export default function ReflectPage() {
       `}</style>
 
       {/* Midnight banner — full width */}
-      <div className="px-5 md:pl-24 md:pr-8 pt-16 md:pt-6" style={{ background: '#2C3777', paddingBottom: 60 }}>
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"
