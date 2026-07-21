@@ -847,7 +847,8 @@ export default function LegacyMapPage() {
     <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
       {/* ── Page header ──────────────────────────────────────────────────────── */}
-      <div className={`${BANNER_CLASS} md:pr-[148px] activity-banner-row`} style={{ ...BANNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      {/* Batch 2: pinned to navy pending the banner-text flip (next). */}
+      <div className={`${BANNER_CLASS} md:pr-[148px] activity-banner-row`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + pills */}
         <div style={{ flex: 1 }}>

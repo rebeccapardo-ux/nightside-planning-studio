@@ -186,8 +186,8 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
   return (
     <div className="min-h-screen bg-[#F8F4EB] text-[#130426]">
 
-      {/* Midnight banner — full width */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      {/* Batch 2: pinned to navy. Scenario's full color + banner-drift realignment is batch 3. */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff' }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"
