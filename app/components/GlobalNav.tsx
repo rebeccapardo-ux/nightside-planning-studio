@@ -69,14 +69,14 @@ const DEFAULT_ENTRY: RouteThemeEntry = {
 
 const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // Capture documents — sunset (terracotta) nav matching each doc's sunset header banner
-  // (documents belong to Your materials). Keepsakes is intentionally omitted → navy default
-  // (bespoke design, addressed separately).
+  // (documents belong to Your materials).
   { prefix: '/app/capture/devices-and-accounts', theme: 'dark', navBg: 'bg-terracotta' },
   { prefix: '/app/capture/financial-information', theme: 'dark', navBg: 'bg-terracotta' },
   { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-terracotta' },
   { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-terracotta' },
   { prefix: '/app/capture/advance-directive',     theme: 'dark', navBg: 'bg-terracotta' },
   { prefix: '/app/capture/funeral-wishes',        theme: 'dark', navBg: 'bg-terracotta' },
+  { prefix: '/app/capture/keepsake-inventory',    theme: 'dark', navBg: 'bg-terracotta' },
 
   // Your materials (+ its export) — cream nav on the cream landing (banner-less)
   { prefix: '/app/materials', theme: 'light', navBg: 'bg-cream' },
@@ -84,8 +84,11 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // nav covers the brief server-redirect window.
   { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-night' },
 
-  // Entries / snapshot pages — same navy as materials for continuity
-  { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-night' },
+  // Entries — export-preview + sensitive-doc snapshot pages. These are export/finalize
+  // surfaces (reached from BOTH documents and activities), so they get their own neutral
+  // treatment — midnight nav — rather than inheriting the source section's color (which would
+  // e.g. show sunset on an activity's export and read as confusing).
+  { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-midnight' },
 
   // App homepage — cream nav (banner-less hub). Exact only.
   { prefix: '/app',         exact: true, theme: 'light', navBg: 'bg-cream' },

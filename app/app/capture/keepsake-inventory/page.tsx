@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AlertIcon from '@/app/components/AlertIcon'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import DocHeaderBanner, { docBannerIntro, docBannerNote } from '@/app/components/capture/DocHeaderBanner'
 import {
   fetchKeepsakeInventory,
   createKeepsakeInventory,
@@ -380,7 +380,7 @@ export default function KeepsakeDocumentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#BBABF4]">
+      <div className="min-h-screen bg-[#F8F4EB]">
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px', fontFamily: hv, fontSize: 14, color: '#2C3777' }}>
           Loading…
         </div>
@@ -389,16 +389,16 @@ export default function KeepsakeDocumentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#BBABF4] relative">
+    <div className="min-h-screen bg-[#F8F4EB] relative">
       {savedDocId && hasAnyContent && (
         <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <button
             type="button"
             onClick={handlePreviewExport}
             className="transition-opacity mobile-sticky-export"
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#EAE4D8' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#F8F4EB' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F8F4EB', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
             <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
               <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -407,7 +407,7 @@ export default function KeepsakeDocumentPage() {
             Export
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : '#F8F4EB', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
         </div>
       )}
@@ -418,32 +418,16 @@ export default function KeepsakeDocumentPage() {
           <span style={{ fontSize: 12, fontWeight: 500, color: '#8B0000', fontFamily: hv }}><AlertIcon color="#8B0000" />Couldn&apos;t save</span>
         </div>
       )}
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 96px' }}>
-
-        <div style={{ marginBottom: 32 }}>
-          <Breadcrumbs
-            theme="light"
-            items={[
-              { label: 'Your materials', href: '/app/materials' },
-              { label: 'Keepsakes Inventory' },
-            ]}
-          />
-        </div>
-
-        {/* Title */}
-        <div style={{ marginBottom: 20 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 0 }}>
-            Keepsakes Inventory
-          </h1>
-        </div>
-
-        {/* Subtitle */}
-        <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.5, fontWeight: 400, color: '#130426', maxWidth: 720, marginBottom: 20 }}>
+      <DocHeaderBanner title="Keepsakes Inventory" crumbLabel="Keepsakes Inventory">
+        <p style={docBannerIntro}>
           This is where you can record objects that matter to you, and any guidance you want to share about them.
         </p>
-        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', maxWidth: 720, marginBottom: 20 }}>
+        <p style={docBannerNote}>
           <strong style={{ fontWeight: 700 }}>This is not a legal document.</strong> For items of financial or legal importance, include them in your will or speak with a lawyer.
         </p>
+      </DocHeaderBanner>
+
+      <div style={{ maxWidth: 720, marginLeft: 'max(0px, calc((100% - 1152px) / 2))', marginRight: 'auto', padding: '40px 24px 96px' }}>
 
         {/* Section label — Reflection */}
         <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.2, marginBottom: 16, marginTop: 0 }}>
@@ -471,8 +455,8 @@ export default function KeepsakeDocumentPage() {
           </ul>
         </div>
 
-        {/* Section label — Your keepsakes */}
-        <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.2, marginBottom: 8, marginTop: 0 }}>
+        {/* Section label — Your keepsakes (extra top space to separate from Reflection above) */}
+        <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.2, marginBottom: 8, marginTop: 24 }}>
           Your keepsakes
         </p>
 
@@ -482,35 +466,39 @@ export default function KeepsakeDocumentPage() {
         </p>
         <AutosaveNotice style={{ marginBottom: 16 }}>Keepsakes you add will save automatically to Your materials.</AutosaveNotice>
 
-        {/* Dynamic entries — only render those with content or the active pending entry */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {entries.map((entry, idx) => {
-            return (
-              <EntryCard
-                key={entry.id}
-                entry={entry}
-                isOpen={openIdx.has(idx)}
-                onToggle={() => toggleEntry(idx)}
-                onDelete={() => deleteEntry(idx)}
-                onChange={(field, value) => updateEntry(idx, field, value)}
-                entryRef={(el) => { entryRefs.current[idx] = el }}
-                isSaving={savingEntryId === entry.id}
-                isSaved={savedIndicatorId === entry.id}
-                savedFading={savedIndicatorFading}
-              />
-            )
-          })}
-        </div>
+        {/* Entry cards sit on a dark-cream (#F7E2C7) panel — the same treatment as the wishes
+            docs' Relevant-materials panel — so the cream cards read against the cream page bg. */}
+        <div style={{ background: '#F7E2C7', border: '1px solid rgba(19,4,38,0.12)', borderRadius: 16, padding: 16 }}>
+          {/* Dynamic entries — only render those with content or the active pending entry */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {entries.map((entry, idx) => {
+              return (
+                <EntryCard
+                  key={entry.id}
+                  entry={entry}
+                  isOpen={openIdx.has(idx)}
+                  onToggle={() => toggleEntry(idx)}
+                  onDelete={() => deleteEntry(idx)}
+                  onChange={(field, value) => updateEntry(idx, field, value)}
+                  entryRef={(el) => { entryRefs.current[idx] = el }}
+                  isSaving={savingEntryId === entry.id}
+                  isSaved={savedIndicatorId === entry.id}
+                  savedFading={savedIndicatorFading}
+                />
+              )
+            })}
+          </div>
 
-        {/* Add button */}
-        <div style={{ marginTop: 12 }}>
-          <button
-            type="button"
-            onClick={addEntry}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 999, padding: '10px 18px', fontFamily: hv, fontSize: 14, color: '#2C3777', cursor: 'pointer', fontWeight: 500 }}
-          >
-            + Add keepsake
-          </button>
+          {/* Add button */}
+          <div style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              onClick={addEntry}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 999, padding: '10px 18px', fontFamily: hv, fontSize: 14, color: '#2C3777', cursor: 'pointer', fontWeight: 500 }}
+            >
+              + Add keepsake
+            </button>
+          </div>
         </div>
 
       </div>
