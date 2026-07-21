@@ -7,8 +7,10 @@ import { areaBySlug } from '@/lib/areas'
 import AreaPlanSection from '@/app/components/area/AreaPlanSection'
 import AreaHeader from '@/app/components/area/AreaHeader'
 import AreaResources from '@/app/components/area/AreaResources'
+import AdvanceCarePlanningSummary from '@/app/components/area/AdvanceCarePlanningSummary'
 import CollapsibleSection from '@/app/components/area/CollapsibleSection'
 import { hasResources } from '@/lib/resources'
+import { healthcareSummaryFor } from '@/lib/healthcare-summaries'
 import ActivityIcon from '@/app/components/ActivityIcon'
 import type { AreaSlug } from '@/lib/areas'
 import HealthcareLearnContent from '@/app/components/area/learn/HealthcareLearnContent'
@@ -74,6 +76,14 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const province = (user.user_metadata?.province as string | undefined) || undefined
   const showResources = hasResources(area.domainCode)
 
+  // Province-specific advance-care-planning summary (Healthcare only). When one exists for the
+  // user's province, the Overview band becomes "What you need to know" with two collapsible
+  // sub-sections ("The basics" + "Advance care planning in {Province}"); otherwise it stays the
+  // plain "Overview" band. Ontario only for now — other provinces fall back until authored.
+  const acpSummary = area.domainCode === 'healthcare' ? healthcareSummaryFor(province) : null
+  const acpContent = acpSummary ? <AdvanceCarePlanningSummary summary={acpSummary} /> : undefined
+  const acpTitle = acpSummary ? `Advance care planning in ${province}` : undefined
+
   // Section backgrounds alternate cream/lavender BOTTOM-UP from Plan (always lavender) so
   // no two adjacent bands share a color — no divider needed. Order top→bottom:
   // Overview → [Resources] → [Activities] → Plan. Plan stays lavender (its Planning Status
@@ -102,7 +112,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         @media (max-width: 720px) { .area-activity-grid { grid-template-columns: 1fr; } }
       `}</style>
 
-      <AreaHeader slug={area.slug} title={area.title} intro={area.intro} bandBg={overviewBg}>{learnContent}</AreaHeader>
+      <AreaHeader slug={area.slug} title={area.title} intro={area.intro} bandBg={overviewBg} acpTitle={acpTitle} acpContent={acpContent}>{learnContent}</AreaHeader>
 
       {/* ── Resources — embedded province-specific resource links (replaces the old
           external Resource Hub link-out). Placed after Overview (reading → referencing →
