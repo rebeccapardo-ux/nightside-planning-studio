@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import AlertIcon from '@/app/components/AlertIcon'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import DocHeaderBanner, { docBannerIntro } from '@/app/components/capture/DocHeaderBanner'
 
 const DOCUMENT_TYPE = DOCUMENT_TYPE_META.important_contacts.code
 const DOCUMENT_TITLE = DOCUMENT_TYPE_META.important_contacts.label
@@ -405,26 +405,20 @@ function ImportantContactsPage() {
           )}
         </div>
       )}
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
+      <DocHeaderBanner title="Important Contacts" crumbLabel="Important Contacts">
+        <p style={docBannerIntro}>
+          When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
+        </p>
+      </DocHeaderBanner>
 
-        <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs theme="light" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Important Contacts' }]} />
-        </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 96px' }}>
 
-        <div style={{ marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
-            Important Contacts
-          </h1>
-          <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
-          </p>
-          <AutosaveNotice>Contacts you add will save automatically to Your materials.</AutosaveNotice>
-          {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
-          )}
-        </div>
+        <AutosaveNotice>Contacts you add will save automatically to Your materials.</AutosaveNotice>
+        {saveStatusText && (
+          <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+        )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
           {renderSection(0, 'healthcare', 'Doctors & Healthcare', 'Doctors, specialists, and other healthcare providers.', 'Add contact', 'Add another contact', 'Untitled contact')}
           {renderSection(1, 'legal', 'Legal & Decision-Makers', 'Executors, attorneys, and people who may make decisions on your behalf.', 'Add contact', 'Add another contact', 'Untitled contact')}
           {renderSection(2, 'relatives', 'Relatives', 'Family members and next of kin.', 'Add contact', 'Add another contact', 'Untitled contact')}

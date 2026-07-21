@@ -7,9 +7,9 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { loadDomainState, saveCheckboxes, getCheckboxes, type DomainState } from '@/lib/domain-state'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import AlertIcon from '@/app/components/AlertIcon'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import DocHeaderBanner, { docBannerIntro, docBannerNote } from '@/app/components/capture/DocHeaderBanner'
 
 const DOCUMENT_TYPE = DOCUMENT_TYPE_META.personal_admin_info.code
 const DOCUMENT_TITLE = DOCUMENT_TYPE_META.personal_admin_info.label
@@ -548,39 +548,27 @@ function PersonalAdminPage() {
           )}
         </div>
       )}
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
+      <DocHeaderBanner title="Personal Admin Information" crumbLabel="Personal Admin Information">
+        <p style={docBannerIntro}>
+          A place to record your basic personal information, family details for official records, and where to find important documents.
+        </p>
+        <p style={docBannerNote}>
+          When you&apos;re incapacitated or after you die, the people handling your affairs need basic information about you and your family, and they need to know where to find your important documents. Most people have no idea where their loved ones keep these things. This document gives them a map.
+        </p>
+        <p style={{ ...docBannerNote, fontSize: 14 }}>
+          Identification and health numbers are designed to be added at the moment of export rather than saved to Your materials.{' '}
+          <a href="/app/help?expanded=privacy" style={{ color: 'inherit', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
+        </p>
+      </DocHeaderBanner>
 
-        <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs
-            theme="light"
-            items={[
-              { label: 'Plan by area', href: '/app/area' },
-              { label: 'Personal Admin Information' },
-            ]}
-          />
-        </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 96px' }}>
 
-        <div style={{ marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
-            Personal Admin Information
-          </h1>
-          <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            A place to record your basic personal information, family details for official records, and where to find important documents.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: 15, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            When you&apos;re incapacitated or after you die, the people handling your affairs need basic information about you and your family, and they need to know where to find your important documents. Most people have no idea where their loved ones keep these things. This document gives them a map.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Identification and health numbers are designed to be added at the moment of export rather than saved to Your materials.{' '}
-            <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
-          </p>
-          <AutosaveNotice>Information you add will save automatically to Your materials.</AutosaveNotice>
-          {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
-          )}
-        </div>
+        <AutosaveNotice>Information you add will save automatically to Your materials.</AutosaveNotice>
+        {saveStatusText && (
+          <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+        )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
 
           {/* ── Section 0: Biographical Details ── */}
           <AccordionSection

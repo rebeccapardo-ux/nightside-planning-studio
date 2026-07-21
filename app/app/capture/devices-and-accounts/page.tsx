@@ -7,9 +7,9 @@ import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator } from '@/lib/ui'
 import AlertIcon from '@/app/components/AlertIcon'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import ExportFieldHelper from '@/app/components/ExportFieldHelper'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import DocHeaderBanner, { docBannerIntro, docBannerNote } from '@/app/components/capture/DocHeaderBanner'
 
 const DOCUMENT_TYPE = DOCUMENT_TYPE_META.devices_and_accounts.code
 const DOCUMENT_TITLE = DOCUMENT_TYPE_META.devices_and_accounts.label
@@ -461,37 +461,31 @@ export default function DevicesAndAccountsPage() {
           )}
         </div>
       )}
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '64px 24px 96px' }}>
+      <DocHeaderBanner title={<>Devices &amp; Accounts</>} crumbLabel="Devices & Accounts">
+        <p style={docBannerIntro}>
+          Your email, social media, photo libraries, subscriptions, and other online accounts may need to be accessed, memorialized, or closed. Without a written record, accounts get locked, recurring charges continue, and digital memories become inaccessible.
+        </p>
+        <p style={{ ...docBannerNote, fontSize: 14 }}>
+          Financial account details (account numbers, balances) belong in{' '}
+          <Link href="/app/capture/financial-information" style={{ color: 'inherit', textDecoration: 'underline' }}>
+            Financial Information
+          </Link>
+          {' '}rather than here. This document focuses on access; that one focuses on the financial picture.
+        </p>
+        <p style={{ ...docBannerNote, fontSize: 14 }}>
+          Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to Your materials. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
+          <a href="/app/help?expanded=privacy" style={{ color: 'inherit', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
+        </p>
+      </DocHeaderBanner>
 
-        <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs theme="light" items={[{ label: 'Plan by area', href: '/app/area' }, { label: 'Devices & Accounts' }]} />
-        </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 96px' }}>
 
-        <div style={{ marginBottom: 48 }}>
-          <h1 className="text-[34px] font-semibold leading-[0.98] tracking-[-0.03em] md:text-[42px]" style={{ color: '#130426', marginBottom: 20 }}>
-            Devices &amp; Accounts
-          </h1>
-          <p style={{ fontFamily: hv, fontSize: 18, fontWeight: 400, color: '#130426', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            Your email, social media, photo libraries, subscriptions, and other online accounts may need to be accessed, memorialized, or closed. Without a written record, accounts get locked, recurring charges continue, and digital memories become inaccessible.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 16, maxWidth: 600 }}>
-            Financial account details (account numbers, balances) belong in{' '}
-            <Link href="/app/capture/financial-information" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>
-              Financial Information
-            </Link>
-            {' '}rather than here. This document focuses on access; that one focuses on the financial picture.
-          </p>
-          <p style={{ fontFamily: hv, fontSize: 14, color: 'rgba(19,4,38,0.6)', lineHeight: 1.6, marginBottom: 24, maxWidth: 600 }}>
-            Passwords, PINs, and other access details are designed to be added at the moment of export rather than saved to Your materials. For passwords specifically, we recommend using a password manager and granting access to your executor or a trusted contact through that platform.{' '}
-            <a href="/app/help?expanded=privacy" style={{ color: 'rgba(19,4,38,0.6)', textDecoration: 'underline' }}>Learn more about how we handle your information →</a>
-          </p>
-          <AutosaveNotice>Information you add will save automatically to Your materials.</AutosaveNotice>
-          {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
-          )}
-        </div>
+        <AutosaveNotice>Information you add will save automatically to Your materials.</AutosaveNotice>
+        {saveStatusText && (
+          <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+        )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
 
           {/* ── Devices ── */}
           <AccordionSection
