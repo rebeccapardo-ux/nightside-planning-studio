@@ -114,12 +114,14 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/activities/legacy-map',         theme: 'dark', navBg: 'bg-night' },
   { prefix: '/app/activities/trivia',               theme: 'dark', navBg: 'bg-night' },
 
-  // Account management + legal pages — navy nav (page bg is cream, nav must differ)
-  { prefix: '/app/account', theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/app/help',    theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/app/about',   theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/privacy',     theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/terms',       theme: 'dark', navBg: 'bg-night' },
+  // Footer-linked pages (About / Help / Account / Privacy / Terms) — cream nav (own quiet
+  // treatment, like the banner-less landings; the light-theme hairline border separates it
+  // from the cream page).
+  { prefix: '/app/account', theme: 'light', navBg: 'bg-cream' },
+  { prefix: '/app/help',    theme: 'light', navBg: 'bg-cream' },
+  { prefix: '/app/about',   theme: 'light', navBg: 'bg-cream' },
+  { prefix: '/privacy',     theme: 'light', navBg: 'bg-cream' },
+  { prefix: '/terms',       theme: 'light', navBg: 'bg-cream' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
