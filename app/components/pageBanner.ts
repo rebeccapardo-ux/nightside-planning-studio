@@ -1,14 +1,18 @@
 import type React from 'react'
 
-// SINGLE SOURCE for the app's page banner — the full-bleed navy header band carrying the
-// breadcrumb, title (.ns-title-activity), and intro. Used by the area banner (AreaHeader) AND
-// all six activity banners, so the generous banner treatment — the 96px left inset (md:pl-24),
-// the pt-16 / md:pt-6 top, the 60px bottom, the navy background — is defined ONCE and can't
-// drift. It was previously copy-pasted inline into six activity pages; that 6-copy drift is
-// closed by pointing them all here.
+// SINGLE SOURCE for the app's page banner — the full-bleed navy header band (breadcrumb, title
+// .ns-title-activity, intro). Used by the area banner (AreaHeader) and all six activity banners.
 //
-// The RIGHT side varies by page and stays with the caller: most banners append `md:pr-8`;
-// the three with a right-side control (legacy-map / values-ranking / fears-ranking) append
-// `md:pr-[148px] activity-banner-row` + a flex row style. Everything else comes from here.
-export const BANNER_CLASS = 'px-5 md:pl-24 pt-16 md:pt-6'
-export const BANNER_STYLE: React.CSSProperties = { background: '#2C3777', paddingBottom: 60 }
+// SHARED = the VERTICAL treatment (top + bottom) + the navy background — identical on every
+// banner, so the generous feel can't drift (previously copy-pasted inline into six pages).
+// NOT SHARED = the HORIZONTAL treatment, by design: the activity banners use a 96px left inset
+// (BANNER_CLASS); the AREA banner stays content-aligned (centered via areaBandInnerStyle) so its
+// title lines up with the page content beneath it — it consumes only the vertical values below.
+export const BANNER_TOP_CLASS = 'pt-16 md:pt-6'  // top: 64px mobile / 24px desktop (shared)
+export const BANNER_PADDING_BOTTOM = 60          // bottom, px (shared)
+
+// Activity-banner horizontal (96px left inset) + the shared top. Each activity banner appends
+// its own right side: `md:pr-8`, or `md:pr-[148px] activity-banner-row` + a flex row style for
+// the three with a right-side control (legacy-map / values-ranking / fears-ranking).
+export const BANNER_CLASS = `px-5 md:pl-24 ${BANNER_TOP_CLASS}`
+export const BANNER_STYLE: React.CSSProperties = { background: '#2C3777', paddingBottom: BANNER_PADDING_BOTTOM }
