@@ -2,8 +2,6 @@
 
 import Link from 'next/link'
 import HomeOnboardingIndicator from '@/app/components/HomeOnboardingIndicator'
-import { AREAS } from '@/lib/areas'
-import AreaIcon from '@/app/components/AreaIcon'
 import LandingContainer from '@/app/components/LandingContainer'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -51,39 +49,18 @@ function MaterialsPuzzle({ size = 98 }: { size?: number }) {
   )
 }
 
-// "Open →" affordance inside the Plan by area card — routes to its landing page
-// (orientation), sits between the description and the area sub-items, right-aligned to match
-// the bottom-right "Open →" on the Activities / Your materials cards. position/zIndex lift it
-// above the full-card overlay link so it stays independently clickable + focusable.
-function OpenLink({ href }: { href: string }) {
-  return (
-    <Link href={href} style={{ fontFamily: hv, fontSize: 15, fontWeight: 600, color: '#130426', textDecoration: 'none', alignSelf: 'flex-end', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginTop: 21, marginBottom: 8, position: 'relative', zIndex: 1 }}>Open →</Link>
-  )
-}
-
 export default function AppHomePage() {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
       <style>{`
-        /* Activities + Your materials are entry cards (1fr each); Plan by area is wider
-           (it holds the six area links + Open). */
-        /* Side cards (Activities, Your materials) sit at natural content height (align-self:start),
-           so they're shorter than the taller Plan by area card — no forced min-height blank space. */
-        .home4-primary { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 20px; align-items: start; }
+        /* Three equal entry cards (1fr each), stretched to equal height so removing Plan by
+           area's old sub-panels doesn't leave it shorter than the other two. */
+        .home4-primary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: stretch; }
         .home4-card { border-radius: 14px; padding: 28px 28px 24px; color: #130426; display: flex; flex-direction: column; border: 2px solid #000000; box-shadow: 6px 6px 0 rgba(0,0,0,0.75); transition: transform 140ms ease, box-shadow 140ms ease; }
         .home4-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 rgba(0,0,0,0.88); }
-        /* A hovered sub-tile is its OWN target (into a specific area) — it must not also lift
-           the Plan-by-area card (whose hover routes to the landing page). :has() outweighs
-           :hover on specificity, so it cancels the card lift while any tile is hovered. */
-        .home4-card:has(.home4-sub:hover) { transform: none; box-shadow: 6px 6px 0 rgba(0,0,0,0.75); }
-        /* grid-auto-rows: 1fr → all six area cards share one (tallest) row height. */
-        .home4-subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; grid-auto-rows: 1fr; }
-        .home4-sub { background: rgba(255,255,255,0.5); border: 1px solid transparent; border-radius: 8px; padding: 12px 16px; min-height: 44px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: #130426; text-decoration: none; transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease; }
-        .home4-sub:hover { background: #FFFFFF; border-color: rgba(19,4,38,0.16); box-shadow: 0 3px 10px rgba(19,4,38,0.22); transform: translateY(-1px); }
         .home-approach-link { display: inline-block; margin-top: 10px; font-family: ${hv}; font-size: 15px; font-weight: 700; color: #130426; text-decoration: underline; text-underline-offset: 3px; }
         @media (max-width: 900px) {
           .home4-primary { grid-template-columns: 1fr; }
-          .home4-subgrid { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -115,21 +92,15 @@ export default function AppHomePage() {
             puzzle={<ActivitiesPuzzle />}
           />
 
-          {/* Plan by area (Dusk) — the whole card routes to the Plan by area landing via an
-              absolute overlay link (the six area links + "Open →" sit above it with z-index, so
-              they keep their own destinations; clicking anywhere else — title, description, gaps
-              — hits the overlay). Same full-card-click pattern as the YourMaterials item cards.
-              Keyboard route is the visible "Open →" + the six focusable area links. */}
-          <section className="home4-card" style={{ background: '#BBABF4', position: 'relative', isolation: 'isolate' }}>
-            <Link href="/app/area" aria-hidden="true" tabIndex={-1} style={{ position: 'absolute', inset: 0, borderRadius: 'inherit' }} />
-            <CardTop title="Plan by area" description="Work through each area of your end-of-life planning. Learn about your options, track tasks, and capture related thinking.">
-              <PlanPuzzle />
-            </CardTop>
-            <OpenLink href="/app/area" />
-            <div className="home4-subgrid" style={{ position: 'relative', zIndex: 1 }}>
-              {AREAS.map((area) => <SubItem key={area.slug} href={`/app/area/${area.slug}`} label={area.title} slug={area.slug} />)}
-            </div>
-          </section>
+          {/* Plan by area (Dusk) — an entry card like the other two. Its old nested area
+              sub-panels were removed; the six areas live on the Plan by area landing. */}
+          <EntryCard
+            href="/app/area"
+            bg="#BBABF4"
+            title="Plan by area"
+            description="Work through each area of your end-of-life planning. Learn about your options, track tasks, and capture related thinking."
+            puzzle={<PlanPuzzle />}
+          />
 
           {/* Your materials (Sunset) — entry card → Your materials */}
           <EntryCard
@@ -148,36 +119,17 @@ export default function AppHomePage() {
   )
 }
 
-function CardTop({ title, description, onDark = false, children }: { title: string; description: string; onDark?: boolean; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 20 }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: onDark ? '#F8F4EB' : '#130426', margin: '0 0 6px' }}>{title}</h2>
-        <p style={{ fontFamily: hv, fontSize: 15, lineHeight: 1.55, color: onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)', maxWidth: 320, margin: 0 }}>{description}</p>
-      </div>
-      {/* Drop the puzzle ~one title-line down so it sits at description level, matching the
-          float-right puzzles on the Activities / Your materials entry cards. */}
-      <div style={{ flexShrink: 0, marginTop: 34 }}>{children}</div>
-    </div>
-  )
-}
-
-// Activities + Your materials entry cards: title on its own full-width line, the puzzle
-// floated right after it (text wraps around / runs full-width), "Open →" bottom-right just
-// below the description. They sit at **natural content height** (align-self: start) — shorter
-// than the taller Plan by area card, with no forced blank space. Because both carry a
-// title + a short description + Open, their heights (and the "Open →" positions) land at
-// roughly the same place naturally.
-// Shared min-height so the two entry cards (Activities, Your materials) are equal
-// height regardless of copy length. Your materials carries the longer description,
-// so this ≈ its natural height and Activities grows to match; the "Open →" pins to
-// the card bottom (margin-top:auto) so both baselines align. Tune this one value.
+// All three entry cards (Activities, Plan by area, Your materials): title on its own full-width
+// line, the puzzle floated right after it (text wraps around / runs full-width), "Open →"
+// bottom-right below the description. The grid stretches them to equal height (align-items:
+// stretch); "Open →" pins to the card bottom (margin-top:auto) so their baselines align.
+// min-height is a floor so short-copy cards don't collapse below the tallest. Tune this value.
 const ENTRY_CARD_MIN_HEIGHT = 268
 function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { href: string; bg: string; onDark?: boolean; title: string; description: string; puzzle: React.ReactNode }) {
   const titleColor = onDark ? '#F8F4EB' : '#130426'
   const descColor = onDark ? 'rgba(248,244,235,0.92)' : 'rgba(19,4,38,0.85)'
   return (
-    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', alignSelf: 'start', minHeight: ENTRY_CARD_MIN_HEIGHT }}>
+    <Link href={href} className="home4-card" style={{ background: bg, textDecoration: 'none', minHeight: ENTRY_CARD_MIN_HEIGHT }}>
       <div style={{ overflow: 'hidden' }}>
         <h2 style={{ fontFamily: hv, fontSize: 26, fontWeight: 600, letterSpacing: '-0.3px', color: titleColor, margin: '0 0 6px' }}>{title}</h2>
         <div style={{ float: 'right', marginLeft: 8, marginRight: -10, marginBottom: 8 }}>{puzzle}</div>
@@ -188,17 +140,3 @@ function EntryCard({ href, bg, onDark = false, title, description, puzzle }: { h
   )
 }
 
-function SubItem({ href, label, slug }: { href: string; label: string; slug: string }) {
-  return (
-    <Link href={href} className="home4-sub">
-      {/* Fixed-width icon gutter → every label starts at the same x, one line or two. The
-          tile (.home4-sub) is align-items:center and equal-height (grid-auto-rows:1fr), so
-          the 18px icon sits at the tile's vertical center — not the first line — keeping the
-          two wrapping tiles ("Healthcare Wishes", "Ritual & Ceremony") from looking lopsided. */}
-      <span style={{ width: 18, flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-        <AreaIcon slug={slug} size={18} color="#130426" />
-      </span>
-      <span style={{ minWidth: 0 }}>{label}</span>
-    </Link>
-  )
-}
