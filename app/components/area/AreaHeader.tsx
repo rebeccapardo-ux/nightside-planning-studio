@@ -2,6 +2,7 @@
 
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { useSectionCollapse } from './useSectionCollapse'
+import { areaBandInnerStyle } from './areaBand'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -32,7 +33,7 @@ export default function AreaHeader({
   return (
     <>
       <div style={{ background: '#2C3777' }}>
-        <div className="max-w-6xl mx-auto pt-16 md:pt-6" style={{ paddingLeft: 40, paddingRight: 40 }}>
+        <div className="pt-16 md:pt-6" style={areaBandInnerStyle}>
           <Breadcrumbs
             theme="navy"
             items={[
@@ -41,7 +42,7 @@ export default function AreaHeader({
             ]}
           />
         </div>
-        <div className="max-w-6xl mx-auto" style={{ padding: '12px 40px 40px' }}>
+        <div style={{ ...areaBandInnerStyle, paddingTop: 12, paddingBottom: 40 }}>
           <h1 className="ns-title-activity text-white">{title}</h1>
           <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '16px 0 0' }}>{intro}</p>
         </div>
@@ -51,7 +52,7 @@ export default function AreaHeader({
       {children && (
         grouped ? (
           <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-            <div className="max-w-6xl mx-auto" style={{ padding: '28px 40px 40px' }}>
+            <div style={{ ...areaBandInnerStyle, paddingTop: 28, paddingBottom: 40 }}>
               {/* Grouping header — a label, NOT collapsible. */}
               <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>What you need to know</h2>
               <OverviewSubSection storageKey={`nightside.areaSection.${slug}.overview.basics`} title="The basics">
@@ -76,7 +77,7 @@ function OverviewBand({ slug, bandBg, children }: { slug: string; bandBg: string
   return (
     <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
       <style>{`.ah-header:hover .ah-chevron { opacity: 0.65; }`}</style>
-      <div className="max-w-6xl mx-auto" style={{ padding: open ? '28px 40px 48px' : '24px 40px' }}>
+      <div style={{ ...areaBandInnerStyle, paddingTop: open ? 28 : 24, paddingBottom: open ? 48 : 24 }}>
         <button
           type="button"
           className="ah-header"

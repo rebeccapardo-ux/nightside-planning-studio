@@ -9,6 +9,7 @@ import AreaHeader from '@/app/components/area/AreaHeader'
 import AreaResources from '@/app/components/area/AreaResources'
 import AdvanceCarePlanningSummary from '@/app/components/area/AdvanceCarePlanningSummary'
 import CollapsibleSection from '@/app/components/area/CollapsibleSection'
+import { areaBandInnerStyle } from '@/app/components/area/areaBand'
 import { hasResources } from '@/lib/resources'
 import { healthcareSummaryFor } from '@/lib/healthcare-summaries'
 import ActivityIcon from '@/app/components/ActivityIcon'
@@ -120,7 +121,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           seeded resource data. ── */}
       {showResources && (
         <div style={{ background: resourcesBg }}>
-          <div className="max-w-6xl mx-auto px-10">
+          <div style={areaBandInnerStyle}>
             <CollapsibleSection title="Resources" storageKey={`nightside.areaSection.${area.slug}.resources`}>
               <AreaResources domainCode={area.domainCode} province={province} />
             </CollapsibleSection>
@@ -133,7 +134,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           an area has no activities. ── */}
       {hasActivities && (
         <div style={{ background: activitiesBg }}>
-          <div className="max-w-6xl mx-auto px-10">
+          <div style={areaBandInnerStyle}>
             <CollapsibleSection title="Relevant Activities" storageKey={`nightside.areaSection.${area.slug}.activities`}>
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Reflective activities and exercises for thinking through this area. Use alone or with others.
@@ -174,7 +175,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
 
       {/* ── Plan — color-blocked against the section directly above it (see planBg). ── */}
       <div style={{ background: planBg, borderTop: '1px solid rgba(19,4,38,0.08)' }}>
-        <div className="max-w-6xl mx-auto px-10">
+        <div style={areaBandInnerStyle}>
           <CollapsibleSection title="Plan" storageKey={`nightside.areaSection.${area.slug}.plan`} deepLinkParam="plan">
             <p style={{ fontFamily: hv, fontSize: 15, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '8px 0 24px', maxWidth: 620 }}>
               Track the practical decisions and documentation, and capture related notes as you go.
