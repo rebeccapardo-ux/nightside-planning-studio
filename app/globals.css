@@ -76,10 +76,10 @@
    these during the color-system rollout.
    ───────────────────────────────────────────────────────────────────── */
 @theme {
-  --color-sunrise:    #F29836;  /* Activities section identity */
+  --color-sunrise:    #F29836;  /* homepage nav accent (+ decorative motif) */
   --color-lavender:   #BBABF4;  /* Plan by area section identity */
   --color-terracotta: #DB5835;  /* Your materials section identity */
-  --color-night:      #2C3777;  /* the nav — constant frame, never section-themed */
+  --color-night:      #2C3777;  /* Activities section identity + activity-page/home nav */
   --color-midnight:   #130426;  /* ink / text / pills */
   --color-cream:      #F8F4EB;  /* light page background */
   --color-surface:    #FFFFFF;  /* neutral card surface (Panel default fill) */
@@ -92,7 +92,7 @@
    descendant then derives its color from var(--section-accent) instead of
    hardcoding it. The hub (/app) + cross-cutting routes set no section theme.
    ───────────────────────────────────────────────────────────────────── */
-.theme-activities { --section-accent: var(--color-sunrise);    --section-on-accent: var(--color-midnight); }
+.theme-activities { --section-accent: var(--color-night);      --section-on-accent: var(--color-cream);    }
 .theme-area       { --section-accent: var(--color-lavender);   --section-on-accent: var(--color-midnight); }
 .theme-materials  { --section-accent: var(--color-terracotta); --section-on-accent: var(--color-cream);    }
 

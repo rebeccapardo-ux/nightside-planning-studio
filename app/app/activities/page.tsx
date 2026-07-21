@@ -23,15 +23,17 @@ type CardConfig = {
   ctaColor: string
 }
 
-// All activity cards share one Sunrise treatment (the landing-pages-are-parallel pass:
-// Activities cards = Sunrise, Plan by area cards = Dusk).
-const SUNRISE_CONFIG: CardConfig = {
-  bg: '#F29836',
+// All activity cards share one Night treatment (Activities section identity moved from Sunrise
+// to Night — the sunrise banners read too hot; night is calmer and its cream ink passes contrast
+// cleanly). Cream CTA pill + cream ink on the night fill; the sunrise identity now lives only on
+// the homepage nav + the decorative puzzle motif.
+const NIGHT_CONFIG: CardConfig = {
+  bg: '#2C3777',
   border: '2px solid #000000',
-  titleColor: '#130426',
-  bodyColor: 'rgba(19,4,38,0.78)',
-  ctaBg: '#130426',
-  ctaColor: '#FFFFFF',
+  titleColor: '#F8F4EB',
+  bodyColor: 'rgba(248,244,235,0.85)',
+  ctaBg: '#F8F4EB',
+  ctaColor: '#130426',
 }
 
 export default function ExplorePage() {
@@ -76,7 +78,7 @@ export default function ExplorePage() {
           bottom: -5px;
           width: 100%;
           height: 4px;
-          background: #F29836;
+          background: #2C3777;
           border-radius: 999px;
           transform: scaleX(0);
           transform-origin: left;
@@ -195,7 +197,7 @@ function ExploreActivityCard({
   status = 'available',
   iconSlug,
 }: ExploreActivityCardProps) {
-  const config = SUNRISE_CONFIG
+  const config = NIGHT_CONFIG
   const isAvailable = status === 'available' && !!href
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)
@@ -233,7 +235,7 @@ function ExploreActivityCard({
             {title}
           </h2>
           {/* Item-level activity identity icon — top-right, optically on the title. */}
-          <ActivityIcon slug={iconSlug} size={31} color="#130426" />
+          <ActivityIcon slug={iconSlug} size={31} color="#F8F4EB" />
         </div>
         <p style={{ fontSize: 16, fontWeight: 400, lineHeight: 1.55, color: config.bodyColor, marginTop: 12, marginBottom: 0 }}>
           {description}

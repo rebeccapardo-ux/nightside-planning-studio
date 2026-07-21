@@ -52,9 +52,13 @@ const NAV_STYLES: Record<NavTheme, NavStyle> = {
 // - Matching is prefix-based by default; most specific match wins.
 // - Set exact: true to restrict a theme to that exact path only
 //   (sub-routes will fall through to the next match or default).
-// - navBg is now UNIFORMLY `bg-night` (the navy #2C3777 token): the nav is the constant
-//   frame and is never section-themed. The map is retained for the theme (wordmark/link)
-//   field and future flexibility, but every route currently resolves to the same navy nav.
+// - navBg is CONTEXT-COLORED: the nav takes the color of the surface it sits above. Pages with
+//   a banner get a nav matching that banner (activity pages → night, area pages → lavender);
+//   banner-less landings take their page color (the three cream landings → cream, the home hub
+//   → sunrise). `theme` ('dark' | 'light') flips the wordmark + link ink to read on that nav.
+//   Cream nav on a cream landing is intentional (calmer, per design) — the light-theme hairline
+//   border supplies the separation. Unmentioned routes (capture docs, entries, account, legal)
+//   keep the navy default frame.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_ENTRY: RouteThemeEntry = {
@@ -70,8 +74,8 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-night' },
   { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-night' },
 
-  // Your materials (+ its export) — navy nav (cream/dark page bg)
-  { prefix: '/app/materials', theme: 'dark',  navBg: 'bg-night' },
+  // Your materials (+ its export) — cream nav on the cream landing (banner-less)
+  { prefix: '/app/materials', theme: 'light', navBg: 'bg-cream' },
   // /app/domains/[uuid] — DB-lookup redirect stub (uuid bookmark → area page); navy
   // nav covers the brief server-redirect window.
   { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-night' },
@@ -79,23 +83,24 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // Entries / snapshot pages — same navy as materials for continuity
   { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-night' },
 
-  // App homepage — navy nav, exact match only
-  { prefix: '/app',         exact: true, theme: 'dark',  navBg: 'bg-night' },
+  // App homepage — sunrise nav (banner-less hub; sunrise identity now lives here). Exact only.
+  { prefix: '/app',         exact: true, theme: 'light', navBg: 'bg-sunrise' },
 
-  // Activities (formerly Reflect) landing: cream page → navy nav (must differ). Exact
-  // match only, so sub-pages fall through to default nav.
-  { prefix: '/app/activities', exact: true, theme: 'dark', navBg: 'bg-night' },
+  // Activities landing: cream page, banner-less → cream nav. Exact match only, so the activity
+  // sub-pages (night banners) fall through to their own night-nav entries below.
+  { prefix: '/app/activities', exact: true, theme: 'light', navBg: 'bg-cream' },
 
-  // Plan by area landing + area sub-pages — navy nav (constant frame).
-  { prefix: '/app/area', exact: true, theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/app/area/', theme: 'dark', navBg: 'bg-night' },
+  // Plan by area landing (cream, banner-less) → cream nav; area sub-pages (lavender banner) →
+  // lavender nav to match the banner.
+  { prefix: '/app/area', exact: true, theme: 'light', navBg: 'bg-cream' },
+  { prefix: '/app/area/', theme: 'light', navBg: 'bg-lavender' },
 
-  // Values & Fears landing + ranking activities — navy nav on blue workspace
+  // Activity sub-pages all carry the night section banner → night nav matching that banner
+  // (nav flows seamlessly into the banner). Listed explicitly so they win over the exact
+  // /app/activities cream-landing entry above.
   { prefix: '/app/activities/values-and-fears', theme: 'dark', navBg: 'bg-night' },
   { prefix: '/app/activities/values-ranking',   theme: 'dark', navBg: 'bg-night' },
   { prefix: '/app/activities/fears-ranking',    theme: 'dark', navBg: 'bg-night' },
-
-  // Activity screens with dark/midnight banners — use cream nav for contrast
   { prefix: '/app/activities/reflection-prompts', theme: 'dark', navBg: 'bg-night' },
   { prefix: '/app/activities/prompts',            theme: 'dark', navBg: 'bg-night' },
   { prefix: '/app/activities/scenario-navigator', theme: 'dark', navBg: 'bg-night' },
