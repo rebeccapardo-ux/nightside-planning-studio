@@ -14,11 +14,14 @@ import type { AcpSummary, AcpSource } from '@/lib/healthcare-summaries'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
-const takeawayStyle: React.CSSProperties = { fontFamily: hv, fontSize: 18, fontWeight: 600, color: '#130426', lineHeight: 1.5, margin: '0 0 20px', maxWidth: 680 }
+// Takeaway is an emphasized LEAD-IN — a clear third level between the section header (apfel
+// 20/600, from AreaHeader) and body text (hv 17/400): body font, medium weight, generous
+// space above/below so it reads as a distinct lead, not a second header.
+const takeawayStyle: React.CSSProperties = { fontFamily: hv, fontSize: 18, fontWeight: 500, color: '#130426', lineHeight: 1.5, margin: '0 0 26px', maxWidth: 680 }
 const bodyStyle: React.CSSProperties = { fontFamily: hv, fontSize: 17, lineHeight: 1.65, color: '#130426', margin: '0 0 16px', maxWidth: 680 }
 // Province attribution — same treatment/copy as the Resources section, so the two read as one
 // personalized system. (Separate sections, not adjacent, so showing it in each is not a repeat.)
-const noteStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 18px' }
+const noteStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 28px' }
 
 // Small, quiet inline citation link — matches the scenario-navigator outcome-page "source"
 // links (12px, navy #2C3777, underlined). Subordinate, for verifying a single claim; a direct

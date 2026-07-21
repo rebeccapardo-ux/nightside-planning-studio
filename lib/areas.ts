@@ -53,7 +53,7 @@ const TRIVIA:         AreaActivity = { label: 'Deathcare Trivia', href: '/app/ac
 export const AREAS: AreaConfig[] = [
   {
     slug: 'healthcare-wishes', domainCode: 'healthcare', learnId: 'healthcare', title: 'Healthcare Wishes',
-    intro: 'Advance care planning helps prepare for a time when you may be seriously ill or unable to speak for yourself. It involves reflecting on and communicating your wishes, appointing a Substitute Decision-Maker, and documenting your preferences (legal documentation varies by province).',
+    intro: 'Advance care planning helps prepare for a time when you may be seriously ill or unable to speak for yourself. It involves reflecting on and communicating your wishes, appointing a Substitute Decision-Maker, and documenting your preferences.',
     activities: [VALUES_RANKING, FEARS_RANKING, SCENARIO_NAV, REFLECTION],
     documents: ['advance_directive_supplement'], // My Care Wishes
   },
