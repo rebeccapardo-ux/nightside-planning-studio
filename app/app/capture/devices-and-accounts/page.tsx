@@ -461,7 +461,7 @@ export default function DevicesAndAccountsPage() {
           )}
         </div>
       )}
-      <DocHeaderBanner title={<>Devices &amp; Accounts</>} crumbLabel="Devices & Accounts">
+      <DocHeaderBanner title={<>Devices &amp; Accounts</>} crumbLabel="Devices & Accounts" docCategory="practical">
         <p style={docBannerIntro}>
           Your email, social media, photo libraries, subscriptions, and other online accounts may need to be accessed, memorialized, or closed. Without a written record, accounts get locked, recurring charges continue, and digital memories become inaccessible.
         </p>

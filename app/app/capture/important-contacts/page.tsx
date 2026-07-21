@@ -405,7 +405,7 @@ function ImportantContactsPage() {
           )}
         </div>
       )}
-      <DocHeaderBanner title="Important Contacts" crumbLabel="Important Contacts">
+      <DocHeaderBanner title="Important Contacts" crumbLabel="Important Contacts" docCategory="practical">
         <p style={docBannerIntro}>
           When you can&apos;t communicate or have died, the people closest to you need to know who else to call. Your doctor, your lawyer, your executor, your employer, the friend who has your spare key. This document keeps that information in one place so no one is scrambling through your phone or wallet.
         </p>

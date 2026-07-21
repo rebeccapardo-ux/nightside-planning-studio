@@ -50,9 +50,12 @@ export default function Breadcrumbs({ items, theme = 'light' }: BreadcrumbsProps
                   {item.label}
                 </button>
               ) : (
+                // Last item = current page (emphasized). A non-last item with no href/onClick
+                // (e.g. a section label that has no page to link to) renders muted, like a link,
+                // so only the current page reads as emphasized.
                 <span
                   aria-current={isLast ? 'page' : undefined}
-                  style={{ fontFamily: fontHelveticaMedium, fontSize: '14px', color: currentColor }}
+                  style={{ fontFamily: isLast ? fontHelveticaMedium : fontHelvetica, fontSize: '14px', color: isLast ? currentColor : linkColor }}
                 >
                   {item.label}
                 </span>

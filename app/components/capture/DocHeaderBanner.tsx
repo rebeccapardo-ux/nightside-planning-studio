@@ -16,13 +16,18 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 // Instruction paragraphs are passed as children and should use cream ink via the exported
 // `docBannerIntro` / `docBannerNote` style objects (primary + secondary weight).
 export default function DocHeaderBanner({
-  title, crumbLabel, maxWidth = 1152, children,
+  title, crumbLabel, docCategory, maxWidth = 1152, children,
 }: {
   title: React.ReactNode
   crumbLabel: string
+  // Middle breadcrumb — reinforces the surface type ("you're inside a document"). No page to
+  // link to (the Wishes/Practical groups are panels on Your materials, not routes), so it's a
+  // non-link label; the Breadcrumbs component renders a hrefless intermediate crumb muted.
+  docCategory: 'wishes' | 'practical'
   maxWidth?: number
   children?: React.ReactNode
 }) {
+  const sectionCrumb = docCategory === 'wishes' ? 'Wishes documents' : 'Practical documents'
   return (
     <div style={{ background: '#DB5835', color: '#F8F4EB', paddingBottom: BANNER_PADDING_BOTTOM }}>
       <div className={BANNER_TOP_CLASS} style={{ maxWidth, marginLeft: 'auto', marginRight: 'auto', paddingLeft: 24, paddingRight: 24 }}>
@@ -30,6 +35,7 @@ export default function DocHeaderBanner({
           theme="navy"
           items={[
             { label: 'Your materials', href: '/app/materials' },
+            { label: sectionCrumb },
             { label: crumbLabel },
           ]}
         />

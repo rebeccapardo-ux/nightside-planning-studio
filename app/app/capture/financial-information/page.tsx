@@ -434,7 +434,7 @@ export default function FinancialInformationPage() {
           )}
         </div>
       )}
-      <DocHeaderBanner title="Financial Information" crumbLabel="Financial Information">
+      <DocHeaderBanner title="Financial Information" crumbLabel="Financial Information" docCategory="practical">
         <p style={docBannerIntro}>
           Your executor will need to know what assets you hold and what debts you owe to settle your estate. Without a written record, accounts get forgotten, insurance policies go unclaimed, and small assets slip through the cracks. This document gives a complete picture.
         </p>

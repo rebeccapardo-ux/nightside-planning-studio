@@ -423,7 +423,7 @@ function AdvanceDirectivePage() {
   return (
     <div className="min-h-screen bg-[#F8F4EB] relative">
       {exportZone}
-      <DocHeaderBanner title="My Care Wishes" crumbLabel="My Care Wishes" maxWidth={1152}>
+      <DocHeaderBanner title="My Care Wishes" crumbLabel="My Care Wishes" docCategory="wishes" maxWidth={1152}>
         <p style={docBannerIntro}>
           This document is a place to express your values and preferences for your care. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
         </p>

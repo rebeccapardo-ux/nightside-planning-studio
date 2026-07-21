@@ -418,7 +418,7 @@ export default function KeepsakeDocumentPage() {
           <span style={{ fontSize: 12, fontWeight: 500, color: '#8B0000', fontFamily: hv }}><AlertIcon color="#8B0000" />Couldn&apos;t save</span>
         </div>
       )}
-      <DocHeaderBanner title="Keepsakes Inventory" crumbLabel="Keepsakes Inventory">
+      <DocHeaderBanner title="Keepsakes Inventory" crumbLabel="Keepsakes Inventory" docCategory="practical">
         <p style={docBannerIntro}>
           This is where you can record objects that matter to you, and any guidance you want to share about them.
         </p>

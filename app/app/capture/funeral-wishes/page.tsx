@@ -570,7 +570,7 @@ function FuneralWishesPage() {
   return (
     <div className="min-h-screen bg-[#F8F4EB] relative">
       {exportZone}
-      <DocHeaderBanner title="Wishes for My Body, Funeral & Ceremony" crumbLabel="Wishes for My Body, Funeral & Ceremony" maxWidth={1152}>
+      <DocHeaderBanner title="Wishes for My Body, Funeral & Ceremony" crumbLabel="Wishes for My Body, Funeral & Ceremony" docCategory="wishes" maxWidth={1152}>
         <p style={docBannerIntro}>
           This document is a place to record your wishes for what happens to your body, any funeral or ceremony, and how you&apos;d like to be remembered. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
         </p>

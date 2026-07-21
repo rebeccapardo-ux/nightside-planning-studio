@@ -548,7 +548,7 @@ function PersonalAdminPage() {
           )}
         </div>
       )}
-      <DocHeaderBanner title="Personal Admin Information" crumbLabel="Personal Admin Information">
+      <DocHeaderBanner title="Personal Admin Information" crumbLabel="Personal Admin Information" docCategory="practical">
         <p style={docBannerIntro}>
           A place to record your basic personal information, family details for official records, and where to find important documents.
         </p>
