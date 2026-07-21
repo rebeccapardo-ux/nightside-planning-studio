@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
+import Panel from '@/app/components/Panel'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -15,20 +16,20 @@ export default function ValuesAndFearsPage() {
       <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Values & Fears Ranking' },
             ]}
           />
         </div>
-        <h1 className="ns-title-activity text-white">
+        <h1 className="ns-title-activity">
           Values &amp; Fears Ranking
         </h1>
-        <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: '20px 0 12px', lineHeight: 1.55 }}>
+        <p style={{ fontFamily: hv, fontSize: 16, color: 'var(--section-on-accent)', maxWidth: 560, margin: '20px 0 12px', lineHeight: 1.55 }}>
           Two complementary exercises for clarifying what matters most to you, and what worries you, as you think about serious illness or the end of life. Values Ranking helps surface your priorities; Fears Ranking helps name your concerns so they can be shared and addressed.
         </p>
-        <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: 0, lineHeight: 1.55 }}>
+        <p style={{ fontFamily: hv, fontSize: 16, color: 'var(--section-on-accent)', maxWidth: 560, margin: 0, lineHeight: 1.55 }}>
           You can start with either one and return to the other whenever you like. Your responses save automatically as you go.
         </p>
       </div>
@@ -37,9 +38,11 @@ export default function ValuesAndFearsPage() {
           split-panel with a lavender/orange pair). */}
       <div className="mx-auto w-full max-w-[1200px] px-6 pb-24 pt-12 md:px-10">
         <section className="grid gap-6 md:grid-cols-2">
-          <Link
+          <Panel
+            accent
+            as={Link}
             href="/app/activities/values-ranking"
-            className="group rounded-[24px] bg-[#F29836] p-8 text-[#140028] transition hover:bg-[#f5a840] md:p-10"
+            className="group block rounded-[24px] p-8 transition hover:shadow-[0_10px_28px_rgba(19,4,38,0.15)] md:p-10"
           >
             <h2 className="text-[28px] leading-tight font-semibold tracking-[-0.02em] md:text-[34px]">
               Values
@@ -50,11 +53,13 @@ export default function ValuesAndFearsPage() {
             <div className="mt-8 inline-flex items-center rounded-full bg-[#140028] px-5 py-3 text-[15px] font-medium text-[#f8f4eb] transition group-hover:translate-x-0.5">
               Begin →
             </div>
-          </Link>
+          </Panel>
 
-          <Link
+          <Panel
+            accent
+            as={Link}
             href="/app/activities/fears-ranking"
-            className="group rounded-[24px] bg-[#F29836] p-8 text-[#140028] transition hover:bg-[#f5a840] md:p-10"
+            className="group block rounded-[24px] p-8 transition hover:shadow-[0_10px_28px_rgba(19,4,38,0.15)] md:p-10"
           >
             <h2 className="text-[28px] leading-tight font-semibold tracking-[-0.02em] md:text-[34px]">
               Fears
@@ -65,7 +70,7 @@ export default function ValuesAndFearsPage() {
             <div className="mt-8 inline-flex items-center rounded-full bg-[#140028] px-5 py-3 text-[15px] font-medium text-[#f8f4eb] transition group-hover:translate-x-0.5">
               Begin →
             </div>
-          </Link>
+          </Panel>
         </section>
       </div>
     </div>

@@ -14,14 +14,14 @@ import type React from 'react'
 // Padding/radius are left to the caller (className/style) since cards vary; only the surface +
 // border treatment is standardized here.
 export default function Panel({
-  accent = false, as: Tag = 'div', className, style, children,
+  accent = false, as: Tag = 'div', className, style, children, ...rest
 }: {
   accent?: boolean
   as?: React.ElementType
   className?: string
   style?: React.CSSProperties
   children: React.ReactNode
-}) {
+} & Record<string, unknown>) {
   return (
     <Tag
       className={className}
@@ -33,6 +33,7 @@ export default function Panel({
           : '1px solid rgba(19, 4, 38, 0.10)',
         ...style,
       }}
+      {...rest}
     >
       {children}
     </Tag>

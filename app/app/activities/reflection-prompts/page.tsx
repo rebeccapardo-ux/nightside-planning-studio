@@ -146,7 +146,8 @@ export default function ReflectPage() {
       `}</style>
 
       {/* Midnight banner — full width */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      {/* Batch 2: pinned to navy pending the banner-text flip (next). */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff' }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="navy"

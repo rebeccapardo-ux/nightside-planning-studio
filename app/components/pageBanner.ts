@@ -15,4 +15,12 @@ export const BANNER_PADDING_BOTTOM = 60          // bottom, px (shared)
 // its own right side: `md:pr-8`, or `md:pr-[148px] activity-banner-row` + a flex row style for
 // the three with a right-side control (legacy-map / values-ranking / fears-ranking).
 export const BANNER_CLASS = `px-5 md:pl-24 ${BANNER_TOP_CLASS}`
-export const BANNER_STYLE: React.CSSProperties = { background: '#2C3777', paddingBottom: BANNER_PADDING_BOTTOM }
+// The banner IS the section-color surface: its background derives from the section theme
+// (--section-accent, set by the section layout) and its default text color from
+// --section-on-accent. Fallback to navy / white where no section theme is present. Banner text
+// that used to hardcode white must drop that override to inherit --section-on-accent.
+export const BANNER_STYLE: React.CSSProperties = {
+  background: 'var(--section-accent, var(--color-night))',
+  color: 'var(--section-on-accent, #ffffff)',
+  paddingBottom: BANNER_PADDING_BOTTOM,
+}
