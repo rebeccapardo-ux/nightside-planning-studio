@@ -145,37 +145,36 @@ export default function ReflectPage() {
         }
       `}</style>
 
-      {/* Midnight banner — full width */}
-      {/* Batch 2: pinned to navy pending the banner-text flip (next). */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff' }}>
+      {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Reflection Prompts' },
             ]}
           />
         </div>
-        <h1 className="ns-title-activity text-white">
+        <h1 className="ns-title-activity">
           Reflection Prompts
         </h1>
-        <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'var(--section-on-accent)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
           These prompts are designed to help you reflect on your priorities. Some focus directly on illness, loss, grief, or end-of-life experiences, while others explore broader questions about relationships, identity, values, routines, and meaning.
         </p>
-        <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: fontHelvetica, fontSize: 17, color: 'var(--section-on-accent)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
           Together, they help surface the connections between what matters to you in life and what may matter most in times of illness or at the end of life.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
           {['Explore prompts in any order', 'Spark a conversation', 'Capture thoughts, notes, or voice reflections'].map((text) => (
-            <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: fontHelvetica, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+            <span key={text} style={{ background: 'transparent', border: '1px dashed var(--section-on-accent)', borderRadius: 20, padding: '4px 12px', fontFamily: fontHelvetica, fontSize: 14, color: 'var(--section-on-accent)', cursor: 'default' }}>
               {text}
             </span>
           ))}
           <button
             type="button"
             onClick={() => setTipsOpen(true)}
-            style={{ fontFamily: fontHelvetica, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+            style={{ fontFamily: fontHelvetica, fontSize: 15, color: 'var(--section-on-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
             onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
             onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
           >
