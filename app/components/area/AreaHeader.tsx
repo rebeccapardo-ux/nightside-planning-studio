@@ -38,10 +38,10 @@ export default function AreaHeader({
           activity banners — the same top (BANNER_TOP_CLASS) and 60px bottom
           (BANNER_PADDING_BOTTOM) — for a generous, consistent feel; the horizontal is
           intentionally content-aligned rather than the activity banners' 96px left inset. */}
-      <div style={{ background: '#2C3777' }}>
+      <div style={{ background: 'var(--section-accent)', color: 'var(--section-on-accent)' }}>
         <div className={BANNER_TOP_CLASS} style={areaBandInnerStyle}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
               { label: 'Plan by area', href: '/app' },
               { label: title },
@@ -49,8 +49,8 @@ export default function AreaHeader({
           />
         </div>
         <div style={{ ...areaBandInnerStyle, paddingTop: 24, paddingBottom: BANNER_PADDING_BOTTOM }}>
-          <h1 className="ns-title-activity text-white">{title}</h1>
-          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '20px 0 0' }}>{intro}</p>
+          <h1 className="ns-title-activity">{title}</h1>
+          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'var(--section-on-accent)', maxWidth: 520, margin: '20px 0 0' }}>{intro}</p>
         </div>
       </div>
 

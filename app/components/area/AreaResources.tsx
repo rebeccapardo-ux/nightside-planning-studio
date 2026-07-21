@@ -40,7 +40,7 @@ const summaryTitleStyle: React.CSSProperties = { fontFamily: apfel, fontSize: 17
 // clickable section header, so they read as groupings.
 const subHeadStyle: React.CSSProperties = { fontFamily: hv, fontSize: 12.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(19,4,38,0.75)', margin: '0 0 8px' }
 const introStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13.5, color: 'rgba(19,4,38,0.7)', lineHeight: 1.55, margin: '0 0 10px', maxWidth: 640 }
-const linkStyle: React.CSSProperties = { fontFamily: hv, fontSize: 15, color: '#2C3777', textDecoration: 'none', lineHeight: 1.5 }
+const linkStyle: React.CSSProperties = { fontFamily: hv, fontSize: 15, color: 'var(--color-night)', textDecoration: 'none', lineHeight: 1.5 }
 const noteStyle: React.CSSProperties = { fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.55)', lineHeight: 1.5, margin: '2px 0 0' }
 
 // PAGE COPY: section intro paragraphs, per domain → section name.
@@ -81,7 +81,7 @@ const GROUP_INTROS: Record<string, Record<string, string>> = {
 // PAGE COPY: a small cross-pointer line under the lead, sending the reader to a RELATED area
 // for adjacent material (NOT resource data, NOT a dual-domain tag — this is the ordinary
 // "also relevant elsewhere" path). Author-adjustable.
-const xlink: React.CSSProperties = { color: '#2C3777', textDecoration: 'underline' }
+const xlink: React.CSSProperties = { color: 'var(--color-night)', textDecoration: 'underline' }
 const CROSS_POINTER: Record<string, React.ReactNode> = {
   wills_estates: (
     <>For memorializing social media, see <Link href="/app/area/legacy" style={xlink}>Legacy</Link>. For account inventories and passwords, see <Link href="/app/area/personal-admin" style={xlink}>Personal Admin</Link>.</>
@@ -240,7 +240,7 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
       <h2 style={tierStyle}>{province} resources</h2>
       <p style={{ fontFamily: hv, fontSize: 13, color: 'rgba(19,4,38,0.6)', lineHeight: 1.5, margin: '0 0 16px' }}>
         Based on the province you set at signup. To change it, visit{' '}
-        <Link href="/app/account" style={{ color: '#2C3777', textDecoration: 'underline' }}>My Account</Link>.
+        <Link href="/app/account" style={{ color: 'var(--color-night)', textDecoration: 'underline' }}>My Account</Link>.
       </p>
       <ResourceList resources={provincial} />
     </section>
@@ -253,7 +253,7 @@ export default function AreaResources({ domainCode, province }: { domainCode: st
         .rsec { border-bottom: 1px solid rgba(19,4,38,0.12); }
         .rsum { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; padding: 15px 2px; list-style: none; }
         .rsum::-webkit-details-marker { display: none; }
-        .rsum:hover .rsum-title { color: #2C3777; }
+        .rsum:hover .rsum-title { color: var(--color-night); }
         .rchevron { flex-shrink: 0; transition: transform 200ms ease; }
         details[open] > .rsum .rchevron { transform: rotate(180deg); }
         /* Two independent, top-aligned columns (align-items:start → the columns never stretch
