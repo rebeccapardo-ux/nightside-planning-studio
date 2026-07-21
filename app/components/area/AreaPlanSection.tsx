@@ -380,7 +380,7 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
             {addCandidates.length > 0 && (
               <button
                 onClick={() => setAddModalOpen(true)}
-                style={{ fontSize: 14, fontWeight: 600, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'underline', textUnderlineOffset: 3 }}
+                style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-night)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, display: 'inline-flex', alignItems: 'center', textDecoration: 'underline', textUnderlineOffset: 3 }}
               >
                 + Add from Your materials
               </button>
@@ -395,7 +395,7 @@ export default function AreaPlanSection({ domainId }: { domainId: string }) {
                 onBlur={handleScratchpadBlur}
                 placeholder="Capture anything that comes up..."
                 className="placeholder:text-[#130426]/65"
-                style={{ display: 'block', width: '100%', background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 12, padding: '12px', fontSize: 16, lineHeight: 1.6, color: '#130426', resize: 'none', outline: 'none', minHeight: 96, boxSizing: 'border-box', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
+                style={{ display: 'block', width: '100%', background: '#FFFFFF', border: '1px solid var(--color-night)', borderRadius: 12, padding: '12px', fontSize: 16, lineHeight: 1.6, color: '#130426', resize: 'none', outline: 'none', minHeight: 96, boxSizing: 'border-box', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}
               />
             </div>
             <div style={{ marginTop: 10 }}>
@@ -792,7 +792,7 @@ function ReadinessCard({
                   type="checkbox"
                   checked={vals[idx] ?? false}
                   onChange={() => onToggle?.(idx)}
-                  className="mt-0.5 shrink-0 accent-[#DB5835]"
+                  className="mt-0.5 shrink-0 accent-[var(--color-midnight)]"
                 />
                 <span className={`text-[12px] leading-snug transition-colors ${vals[idx] ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
                   {label}
@@ -815,7 +815,7 @@ function ReadinessCard({
                     type="checkbox"
                     checked={task.checked}
                     onChange={() => onToggleTask?.(task)}
-                    className="mt-0.5 shrink-0 accent-[#DB5835]"
+                    className="mt-0.5 shrink-0 accent-[var(--color-midnight)]"
                     aria-label={task.label}
                   />
                   <input
@@ -838,7 +838,7 @@ function ReadinessCard({
                       type="checkbox"
                       checked={task.checked}
                       onChange={() => onToggleTask?.(task)}
-                      className="mt-0.5 shrink-0 accent-[#DB5835]"
+                      className="mt-0.5 shrink-0 accent-[var(--color-midnight)]"
                     />
                     <span className={`text-[12px] leading-snug transition-colors ${task.checked ? 'text-[#130426]/40 line-through' : 'text-[#130426]/80'}`}>
                       {task.label}
@@ -884,7 +884,7 @@ function ReadinessCard({
             ) : (
               <button
                 onClick={() => setAddOpen(true)}
-                style={{ fontSize: 12, fontWeight: 600, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 22 }}
+                style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-night)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 22 }}
                 className="hover:opacity-75 transition-opacity"
               >
                 + Add task
@@ -906,13 +906,13 @@ function ReadinessCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between rounded-lg transition-opacity hover:opacity-75"
-                style={{ background: '#F8F4EB', border: '1px solid #F29836', padding: '12px 16px', textDecoration: 'none' }}
+                style={{ background: '#F8F4EB', border: '1px solid var(--section-accent)', padding: '12px 16px', textDecoration: 'none' }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, marginRight: 8 }}>
-                    <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke="#2C3777" strokeWidth="1.25" strokeLinejoin="round"/>
-                    <path d="M10 1v3h3" stroke="#2C3777" strokeWidth="1.25" strokeLinejoin="round"/>
-                    <path d="M5.5 7.5h5M5.5 10h5" stroke="#2C3777" strokeWidth="1.25" strokeLinecap="round"/>
+                    <path d="M3 2.5A1.5 1.5 0 0 1 4.5 1H10l3 3v9A1.5 1.5 0 0 1 11.5 14.5h-7A1.5 1.5 0 0 1 3 13V2.5z" stroke="var(--color-night)" strokeWidth="1.25" strokeLinejoin="round"/>
+                    <path d="M10 1v3h3" stroke="var(--color-night)" strokeWidth="1.25" strokeLinejoin="round"/>
+                    <path d="M5.5 7.5h5M5.5 10h5" stroke="var(--color-night)" strokeWidth="1.25" strokeLinecap="round"/>
                   </svg>
                   <span style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 500, color: '#130426', lineHeight: 1.4 }}>{label}</span>
                 </span>
@@ -997,7 +997,7 @@ function RelevantDocLinks({ docs, startedDocTypes }: { docs: { docType: Document
             target="_blank"
             rel="noopener noreferrer"
             className="transition-opacity hover:opacity-75"
-            style={{ display: 'flex', width: 'fit-content', maxWidth: '100%', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#F8F4EB', border: '1px solid #F29836', color: '#130426', textDecoration: 'none' }}
+            style={{ display: 'flex', width: 'fit-content', maxWidth: '100%', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#F8F4EB', border: '1px solid var(--section-accent)', color: '#130426', textDecoration: 'none' }}
           >
             <EntryDocIcon />
             <span className="text-[13px] leading-snug">
@@ -1197,7 +1197,7 @@ function AddNotesModal({
                   </div>
                   <button
                     onClick={() => onAdd(note)}
-                    style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: '#FFFFFF', background: '#2C3777', border: 'none', borderRadius: 999, padding: '6px 14px', cursor: 'pointer' }}
+                    style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: '#FFFFFF', background: 'var(--color-night)', border: 'none', borderRadius: 999, padding: '6px 14px', cursor: 'pointer' }}
                     className="hover:opacity-90 transition-opacity"
                   >
                     + Add
