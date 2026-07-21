@@ -26,7 +26,7 @@ export default function ValuesAndFearsPage() {
           Values &amp; Fears Ranking
         </h1>
         <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: '20px 0 12px', lineHeight: 1.55 }}>
-          Two short, complementary exercises for clarifying what matters most to you, and what worries you, as you think about serious illness or the end of life. Values Ranking helps surface your priorities; Fears Ranking helps name your concerns so they can be shared and addressed.
+          Two complementary exercises for clarifying what matters most to you, and what worries you, as you think about serious illness or the end of life. Values Ranking helps surface your priorities; Fears Ranking helps name your concerns so they can be shared and addressed.
         </p>
         <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: 0, lineHeight: 1.55 }}>
           You can start with either one and return to the other whenever you like. Your responses save automatically as you go.
