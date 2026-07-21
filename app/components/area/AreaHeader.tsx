@@ -57,18 +57,7 @@ export default function AreaHeader({
       {/* Overview band — light-lavender, full-bleed (sibling of the navy block). */}
       {children && (
         grouped ? (
-          <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-            <div style={{ ...areaBandInnerStyle, paddingTop: 28, paddingBottom: 40 }}>
-              {/* Grouping header — a label, NOT collapsible. */}
-              <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, color: '#130426', margin: '0 0 8px' }}>What you need to know</h2>
-              <OverviewSubSection storageKey={`nightside.areaSection.${slug}.overview.basics`} title="The basics">
-                {children}
-              </OverviewSubSection>
-              <OverviewSubSection storageKey={`nightside.areaSection.${slug}.overview.acp`} title={acpTitle ?? 'Advance care planning'}>
-                {acpContent}
-              </OverviewSubSection>
-            </div>
-          </div>
+          <GroupedOverviewBand slug={slug} bandBg={bandBg} acpTitle={acpTitle} basics={children} acp={acpContent} />
         ) : (
           <OverviewBand slug={slug} bandBg={bandBg}>{children}</OverviewBand>
         )
@@ -102,27 +91,51 @@ function OverviewBand({ slug, bandBg, children }: { slug: string; bandBg: string
   )
 }
 
-// One collapsible sub-section under "What you need to know" — a mid-level header (20/600,
-// below the 30/600 grouping header) with the same chevron, and a top divider so the two read
-// as an accordion pair. Collapsed by default on first visit.
-function OverviewSubSection({ storageKey, title, children }: { storageKey: string; title: string; children: React.ReactNode }) {
-  const [open, toggle] = useSectionCollapse(storageKey)
+// "What you need to know" — a single collapsible TOP-LEVEL section (collapsed by default, like
+// Resources / Relevant Activities / Plan), so on landing every top-level header is scannable
+// together. When expanded, BOTH sub-sections render open in one click — their headers show as
+// signposts and their content flows. Deliberately ONE level of collapse (this parent): the
+// sub-sections are static (SubSectionStatic), never independently collapsible — no
+// accordion-inside-an-accordion.
+function GroupedOverviewBand({ slug, bandBg, acpTitle, basics, acp }: {
+  slug: string; bandBg: string; acpTitle?: string; basics: React.ReactNode; acp: React.ReactNode
+}) {
+  const [open, toggle] = useSectionCollapse(`nightside.areaSection.${slug}.overview`)
   return (
-    <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)' }}>
-      <style>{`.ah-sub:hover .ah-chevron { opacity: 0.65; }`}</style>
-      <button
-        type="button"
-        className="ah-sub"
-        onClick={toggle}
-        aria-expanded={open}
-        style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', padding: '18px 0', cursor: 'pointer', textAlign: 'left' }}
-      >
-        <h3 style={{ fontFamily: apfel, fontSize: 20, fontWeight: 600, color: '#130426', margin: 0 }}>{title}</h3>
-        <span className="ah-chevron" style={{ display: 'inline-flex', transition: 'opacity 150ms' }}>
-          <Chevron open={open} />
-        </span>
-      </button>
-      {open && <div style={{ maxWidth: 760, paddingBottom: 26 }}>{children}</div>}
+    <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
+      <style>{`.ah-header:hover .ah-chevron { opacity: 0.65; }`}</style>
+      <div style={{ ...areaBandInnerStyle, paddingTop: open ? 28 : 24, paddingBottom: open ? 40 : 24 }}>
+        <button
+          type="button"
+          className="ah-header"
+          onClick={toggle}
+          aria-expanded={open}
+          style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+        >
+          <h2 style={{ fontFamily: apfel, fontSize: 30, fontWeight: 600, color: '#130426', margin: 0 }}>What you need to know</h2>
+          <span className="ah-chevron" style={{ display: 'inline-flex', transition: 'opacity 150ms' }}>
+            <Chevron open={open} />
+          </span>
+        </button>
+        {open && (
+          <div style={{ marginTop: 20 }}>
+            <SubSectionStatic title="The basics">{basics}</SubSectionStatic>
+            <SubSectionStatic title={acpTitle ?? 'Advance care planning'}>{acp}</SubSectionStatic>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// A sub-section inside "What you need to know": a signpost header (20/600, below the 30/600
+// parent) + its content, always rendered together — NOT collapsible. A top divider separates
+// the two sub-sections.
+function SubSectionStatic({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)', paddingTop: 18 }}>
+      <h3 style={{ fontFamily: apfel, fontSize: 20, fontWeight: 600, color: '#130426', margin: '0 0 12px' }}>{title}</h3>
+      <div style={{ maxWidth: 760, paddingBottom: 26 }}>{children}</div>
     </div>
   )
 }
