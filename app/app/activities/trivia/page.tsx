@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_STYLE, BANNER_INNER_STYLE } from '@/app/components/pageBanner'
 import Link from 'next/link'
 import { TRIVIA_CARDS, type TriviaCard } from '@/lib/trivia-data'
 import { createNote, updateNote } from '@/lib/notes'
@@ -123,7 +123,7 @@ function DeckView({
     <div>
 
       {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="light"

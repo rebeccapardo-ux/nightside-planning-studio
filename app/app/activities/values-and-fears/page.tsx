@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
-import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_STYLE, BANNER_INNER_STYLE } from '@/app/components/pageBanner'
 import Panel from '@/app/components/Panel'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -13,7 +13,7 @@ export default function ValuesAndFearsPage() {
       {/* Navy banner — the same treatment as the Values / Fears sub-pages, via the shared
           page-banner source. Simple variant (no right-side control). This is a landing, so the
           copy is orientation for the two-part exercise, not the sub-pages' card mechanics. */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
             theme="light"

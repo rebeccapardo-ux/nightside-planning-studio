@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_STYLE, BANNER_INNER_STYLE } from '@/app/components/pageBanner'
 import { ACTIVITY } from '@/lib/content-metadata'
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -848,7 +848,7 @@ export default function LegacyMapPage() {
 
       {/* ── Page header ──────────────────────────────────────────────────────── */}
       {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
-      <div className={`${BANNER_CLASS} md:pr-[148px] activity-banner-row`} style={{ ...BANNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className={`${BANNER_TOP_CLASS} activity-banner-row`} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + pills */}
         <div style={{ flex: 1 }}>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_STYLE, BANNER_INNER_STYLE } from '@/app/components/pageBanner'
 import { ACTIVITY } from '@/lib/content-metadata'
 import { useEffect, useState } from 'react'
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
@@ -146,7 +146,7 @@ export default function ReflectPage() {
       `}</style>
 
       {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="light"

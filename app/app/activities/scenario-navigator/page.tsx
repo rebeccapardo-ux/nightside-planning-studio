@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { BANNER_CLASS, BANNER_STYLE } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_STYLE, BANNER_INNER_STYLE } from '@/app/components/pageBanner'
 import { ACTIVITY } from '@/lib/content-metadata'
 import Link from 'next/link'
 import {
@@ -180,7 +180,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
     <div className="min-h-screen bg-[#F8F4EB] text-[#130426]">
 
       {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
             theme="light"
@@ -369,7 +369,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
           ns-title-activity), matching the other activity banners. */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
             theme="light"
@@ -711,7 +711,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
           ns-title-activity), matching the other activity banners. */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
             theme="light"
@@ -1031,7 +1031,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
           ns-title-activity), matching the other activity banners. */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
             theme="light"
@@ -1351,7 +1351,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
 
       {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
           ns-title-activity), matching the other activity banners. */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+      <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
             theme="light"
