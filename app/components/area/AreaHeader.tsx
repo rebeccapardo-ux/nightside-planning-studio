@@ -3,6 +3,7 @@
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { useSectionCollapse } from './useSectionCollapse'
 import { areaBandInnerStyle } from './areaBand'
+import { BANNER_TOP_CLASS, BANNER_PADDING_BOTTOM } from '@/app/components/pageBanner'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -32,8 +33,13 @@ export default function AreaHeader({
 
   return (
     <>
+      {/* Navy page banner — content-aligned (centered via areaBandInnerStyle) so the title
+          lines up with the page content beneath it. Shares the VERTICAL treatment with the
+          activity banners — the same top (BANNER_TOP_CLASS) and 60px bottom
+          (BANNER_PADDING_BOTTOM) — for a generous, consistent feel; the horizontal is
+          intentionally content-aligned rather than the activity banners' 96px left inset. */}
       <div style={{ background: '#2C3777' }}>
-        <div className="pt-16 md:pt-6" style={areaBandInnerStyle}>
+        <div className={BANNER_TOP_CLASS} style={areaBandInnerStyle}>
           <Breadcrumbs
             theme="navy"
             items={[
@@ -42,9 +48,9 @@ export default function AreaHeader({
             ]}
           />
         </div>
-        <div style={{ ...areaBandInnerStyle, paddingTop: 12, paddingBottom: 40 }}>
+        <div style={{ ...areaBandInnerStyle, paddingTop: 24, paddingBottom: BANNER_PADDING_BOTTOM }}>
           <h1 className="ns-title-activity text-white">{title}</h1>
-          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '16px 0 0' }}>{intro}</p>
+          <p style={{ fontFamily: hv, fontSize: 17, lineHeight: 1.6, color: 'rgba(255,255,255,0.85)', maxWidth: 520, margin: '20px 0 0' }}>{intro}</p>
         </div>
       </div>
 
