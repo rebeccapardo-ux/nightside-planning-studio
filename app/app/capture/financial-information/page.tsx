@@ -419,9 +419,9 @@ export default function FinancialInformationPage() {
             onClick={handlePreviewExport}
             disabled={saveStatus === 'saving'}
             className="transition-opacity mobile-sticky-export"
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#EAE4D8' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#F8F4EB' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F8F4EB', color: '#130426', border: 'none', cursor: saveStatus === 'saving' ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: saveStatus === 'saving' ? 0.6 : 1 }}
           >
             <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
               <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -430,7 +430,7 @@ export default function FinancialInformationPage() {
             {saveStatus === 'saving' ? 'Preparing…' : 'Export'}
           </button>
           {saveStatusText && (
-            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: saveStatus === 'error' ? '#8B0000' : '#F8F4EB', fontFamily: hv }}>{saveStatus === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
           )}
         </div>
       )}
@@ -444,7 +444,7 @@ export default function FinancialInformationPage() {
         </p>
       </DocHeaderBanner>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px 96px' }}>
+      <div style={{ maxWidth: 720, marginLeft: 'max(0px, calc((100% - 1152px) / 2))', marginRight: 'auto', padding: '40px 24px 96px' }}>
 
         <AutosaveNotice>Information you add will save automatically to Your materials.</AutosaveNotice>
         {saveStatusText && (

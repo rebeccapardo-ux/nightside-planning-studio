@@ -16,7 +16,7 @@ const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 // Instruction paragraphs are passed as children and should use cream ink via the exported
 // `docBannerIntro` / `docBannerNote` style objects (primary + secondary weight).
 export default function DocHeaderBanner({
-  title, crumbLabel, maxWidth = 720, children,
+  title, crumbLabel, maxWidth = 1152, children,
 }: {
   title: React.ReactNode
   crumbLabel: string

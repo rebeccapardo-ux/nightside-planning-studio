@@ -422,6 +422,7 @@ export default function GlobalNav() {
     'bg-night': '#2C3777',
     'bg-cream': '#F8F4EB',
     'bg-lavender': '#BBABF4',
+    'bg-terracotta': '#DB5835',
   }
   const panelBg = NAV_BG_HEX[entry.navBg] ?? '#2C3777'
   const panel = entry.theme === 'dark'

@@ -848,7 +848,7 @@ export default function LegacyMapPage() {
 
       {/* ── Page header ──────────────────────────────────────────────────────── */}
       {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
-      <div className={`${BANNER_TOP_CLASS} activity-banner-row`} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className={`${BANNER_TOP_CLASS} activity-banner-row`} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE, paddingRight: 'max(148px, calc((100% - 1200px) / 2 + 24px))', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + pills */}
         <div style={{ flex: 1 }}>
