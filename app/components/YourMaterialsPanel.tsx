@@ -48,11 +48,11 @@ function ActivityOutputIcon({ size = 22, color = '#2C3777' }: { size?: number; c
   )
 }
 
-function Chevron({ open }: { open: boolean }) {
+function Chevron({ open, color = '#130426' }: { open: boolean; color?: string }) {
   return (
     <svg width={24} height={24} viewBox="0 0 20 20" fill="none"
       style={{ flexShrink: 0, transition: 'transform 200ms ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-      <path d="M5 7.5l5 5 5-5" stroke="#130426" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 7.5l5 5 5-5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -205,37 +205,58 @@ export default function YourMaterialsPanel({
   }
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
-  // Single cream card + sunset outline. Title + chevron are midnight (#130426) for a strong,
-  // readable header row; the sunset identity carries purely in the outline. NOT a filled bar —
-  // a saturated bar over a lighter body reads as an already-expanded accordion. One-color
-  // card keeps all text dark on cream (AA throughout). The title row is the toggle; the
-  // description (what) shows
-  // in BOTH states; the count summary (how much) when collapsed; the lists when expanded.
-  // A shared collapsed min-height (+ the grid's align-items:start) keeps all four tiles
-  // equal at rest, while an expanded tile leaves its row-mate collapsed (space opens below).
+  // Cream card + sunset outline. When COLLAPSED the expand affordance is a full-width sunset
+  // band at the BOTTOM (cream status summary + chevron) — user research found the old top-right
+  // chevron went unnoticed: people read the description as the whole content and assumed the
+  // panel was empty/complete. The bottom band + count + chevron makes "N items inside, tap to
+  // open" unmissable. (A filled bar at the TOP was rejected earlier — it reads as an already-
+  // expanded accordion; a bottom band with a count reads as "more below", which is the point.)
+  // When EXPANDED the header carries the collapse chevron and the band is gone. Body padding
+  // lives on .ym-tile-body so the band can sit flush to the tile's bottom edge. A shared
+  // collapsed min-height (+ the grid's align-items:start) keeps all four tiles equal at rest.
   function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
-      <div key={id} className="ym-tile" style={{ background: '#FFFFFF', border: '1.5px solid #DB5835', borderRadius: 16, padding: '26px 28px', minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
-        <button
-          type="button"
-          className="ym-tile-header"
-          onClick={() => toggleSection(id)}
-          aria-expanded={isExpanded}
-          style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, textAlign: 'left' }}
-        >
-          <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
-          <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open={isExpanded} /></span>
-        </button>
-        {description}
-        {/* Count summary — pushed to the tile's bottom edge (margin-top:auto) so the
-            counters share a baseline across tiles regardless of description length, and
-            set apart from the prose above by a divider + smaller, muted, label-weight
-            text so it reads as at-a-glance status, not more body copy. */}
+      <div key={id} className="ym-tile" style={{ background: '#FFFFFF', border: '1.5px solid #DB5835', borderRadius: 16, minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
+        <div className="ym-tile-body" style={{ padding: '26px 28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <button
+            type="button"
+            className="ym-tile-header"
+            onClick={() => toggleSection(id)}
+            aria-expanded={isExpanded}
+            style={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0, minHeight: 44, textAlign: 'left' }}
+          >
+            <h2 style={{ fontFamily: hv, fontSize: 22, fontWeight: 600, color: '#130426', margin: 0, lineHeight: 1.2, flex: 1, minWidth: 0 }}>{title}</h2>
+            {/* Chevron only when expanded — it's the collapse control. Collapsed-state
+                expandability is carried by the bottom band below. */}
+            {isExpanded && <span className="ym-chevron" style={{ marginTop: 2 }}><Chevron open /></span>}
+          </button>
+          {description}
+          {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
+        </div>
+        {/* Collapsed affordance: a full-width sunset band flush to the tile's bottom edge — the
+            WHOLE band toggles open. A cream status summary ("N in progress, M not started" /
+            "N total") + chevron reads as "there are items inside, tap to reveal". Fill/ink use the
+            section tokens (materials theme → sunset #DB5835 / cream), matching the tile border. */}
         {!isExpanded && (
-          <p style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, color: 'rgba(19,4,38,0.5)', margin: 0, marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(19,4,38,0.14)', lineHeight: 1.4 }}>{summary}</p>
+          <button
+            type="button"
+            className="ym-band"
+            onClick={() => toggleSection(id)}
+            aria-expanded={false}
+            aria-label={`Show ${title.toLowerCase()} — ${summary}`}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+              width: '100%', border: 'none', cursor: 'pointer',
+              background: 'var(--section-accent)', color: 'var(--section-on-accent)',
+              padding: '12px 20px', minHeight: 44,
+              borderBottomLeftRadius: 14.5, borderBottomRightRadius: 14.5,
+            }}
+          >
+            <span style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, lineHeight: 1.3 }}>{summary}</span>
+            <Chevron open={false} color="currentColor" />
+          </button>
         )}
-        {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
       </div>
     )
   }
@@ -250,9 +271,10 @@ export default function YourMaterialsPanel({
         .plan-primary-btn:hover { background: #1f2a5e !important; }
         .plan-export-link:hover { text-decoration: underline !important; }
         .ym-tile-header:hover .ym-chevron { opacity: 0.65; }
+        .ym-band:hover { filter: brightness(0.93); }
         @media (max-width: 767px) {
           .ym-grid { grid-template-columns: 1fr !important; }
-          .ym-tile { padding: 22px 20px !important; }
+          .ym-tile-body { padding: 22px 20px !important; }
           .plan-pill-doc,
           .plan-pill-out {
             max-width: 100% !important;
