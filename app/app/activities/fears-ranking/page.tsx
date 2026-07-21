@@ -606,9 +606,9 @@ function FearsRankingContent() {
               type="button"
               onClick={handlePreviewExport}
               className="mobile-sticky-export"
-              style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: 'var(--color-midnight)', color: 'var(--color-cream)', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-night)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-midnight)' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: 'var(--color-cream)', color: 'var(--color-midnight)', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#EAE4D8' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-cream)' }}
             >
               <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
                 <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />

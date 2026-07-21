@@ -455,8 +455,8 @@ export default function KeepsakeDocumentPage() {
           </ul>
         </div>
 
-        {/* Section label — Your keepsakes */}
-        <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.2, marginBottom: 8, marginTop: 0 }}>
+        {/* Section label — Your keepsakes (extra top space to separate from Reflection above) */}
+        <p style={{ fontFamily: afG, fontSize: 24, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.2, marginBottom: 8, marginTop: 24 }}>
           Your keepsakes
         </p>
 
