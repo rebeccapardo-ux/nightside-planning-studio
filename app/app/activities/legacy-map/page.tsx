@@ -854,7 +854,7 @@ export default function LegacyMapPage() {
         <div style={{ flex: 1 }}>
           <div style={{ marginBottom: 24 }}>
             <Breadcrumbs
-              theme="light"
+              theme="navy"
               items={[
                 { label: 'Activities', href: '/app/activities' },
                 { label: 'Legacy Map' },

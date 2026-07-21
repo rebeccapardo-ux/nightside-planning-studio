@@ -76,7 +76,7 @@
    these during the color-system rollout.
    ───────────────────────────────────────────────────────────────────── */
 @theme {
-  --color-sunrise:    #F29836;  /* homepage nav accent (+ decorative motif) */
+  --color-sunrise:    #F29836;  /* decorative motif + functional activity accents (ranking buckets) */
   --color-lavender:   #BBABF4;  /* Plan by area section identity */
   --color-terracotta: #DB5835;  /* Your materials section identity */
   --color-night:      #2C3777;  /* Activities section identity + activity-page/home nav */

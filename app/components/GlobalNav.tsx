@@ -54,8 +54,8 @@ const NAV_STYLES: Record<NavTheme, NavStyle> = {
 //   (sub-routes will fall through to the next match or default).
 // - navBg is CONTEXT-COLORED: the nav takes the color of the surface it sits above. Pages with
 //   a banner get a nav matching that banner (activity pages → night, area pages → lavender);
-//   banner-less landings take their page color (the three cream landings → cream, the home hub
-//   → sunrise). `theme` ('dark' | 'light') flips the wordmark + link ink to read on that nav.
+//   banner-less surfaces take their page color (the home hub + three cream landings → cream).
+//   `theme` ('dark' | 'light') flips the wordmark + link ink to read on that nav.
 //   Cream nav on a cream landing is intentional (calmer, per design) — the light-theme hairline
 //   border supplies the separation. Unmentioned routes (capture docs, entries, account, legal)
 //   keep the navy default frame.
@@ -83,8 +83,8 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // Entries / snapshot pages — same navy as materials for continuity
   { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-night' },
 
-  // App homepage — sunrise nav (banner-less hub; sunrise identity now lives here). Exact only.
-  { prefix: '/app',         exact: true, theme: 'light', navBg: 'bg-sunrise' },
+  // App homepage — cream nav (banner-less hub). Exact only.
+  { prefix: '/app',         exact: true, theme: 'light', navBg: 'bg-cream' },
 
   // Activities landing: cream page, banner-less → cream nav. Exact match only, so the activity
   // sub-pages (night banners) fall through to their own night-nav entries below.
