@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator, MATERIALS_PANEL_TOOLTIP } from '@/lib/ui'
 import AlertIcon from '@/app/components/AlertIcon'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import DocHeaderBanner, { docBannerIntro, docBannerNote } from '@/app/components/capture/DocHeaderBanner'
 import SlidePanel from '@/app/components/SlidePanel'
 import InfoTooltip from '@/app/components/InfoTooltip'
 import MaterialsNullState from '@/app/components/MaterialsNullState'
@@ -549,7 +549,7 @@ function FuneralWishesPage() {
   })()
 
   if (loading) {
-    return <div className="min-h-screen bg-[#BBABF4]"><div className="max-w-3xl mx-auto px-4 py-16 text-[#130426]/60">Loading...</div></div>
+    return <div className="min-h-screen bg-[#F8F4EB]"><div className="max-w-3xl mx-auto px-4 py-16 text-[#130426]/60">Loading...</div></div>
   }
 
   const inDisposition = (key: string) => form.dispositionType === key
@@ -560,7 +560,7 @@ function FuneralWishesPage() {
     <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
       <ExportButton onClick={handlePreviewExport} disabled={saveState === 'saving'} />
       {saveStatusText && (
-        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#8B0000' : '#F8F4EB', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
           {saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}
         </span>
       )}
@@ -568,43 +568,24 @@ function FuneralWishesPage() {
   ) : null
 
   return (
-    <div className="min-h-screen bg-[#BBABF4] relative">
+    <div className="min-h-screen bg-[#F8F4EB] relative">
       {exportZone}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs
-            theme="light"
-            items={[
-              { label: 'Plan by area', href: '/app/area' },
-              { label: 'Wishes for My Body, Funeral & Ceremony', href: '/app/capture/funeral-wishes' },
-            ]}
-          />
-        </div>
-
-        {/* Persistent intro */}
-        <div style={{ maxWidth: 620, marginBottom: 48 }}>
-          <h1 className="text-[34px] md:text-[42px] font-semibold leading-[0.98] tracking-[-0.03em]" style={{ color: '#130426', marginBottom: 8 }}>
-            Wishes for My Body,<br />Funeral & Ceremony
-          </h1>
-
-          {/* Body */}
-          <p style={{ fontSize: 18, lineHeight: 1.55, fontWeight: 400, color: '#130426', marginBottom: 20, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-            This document is a place to record your wishes for what happens to your body, any funeral or ceremony, and how you&apos;d like to be remembered. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
-          </p>
-
-          {/* Legal note */}
-          <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', marginBottom: 20, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-            This is <strong>not a legal document.</strong> Wishes for body disposition should also be included in your legal will. Regulations vary by province;{' '}
-            <Link href="/app/area/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
-              view province-specific resources →
-            </Link>
-          </p>
-
-          <AutosaveNotice style={{ marginTop: 28 }}>Your answers will save automatically to Your materials.</AutosaveNotice>
-          {saveStatusText && (
-            <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
-          )}
-        </div>
+      <DocHeaderBanner title="Wishes for My Body, Funeral & Ceremony" crumbLabel="Wishes for My Body, Funeral & Ceremony" maxWidth={1152}>
+        <p style={docBannerIntro}>
+          This document is a place to record your wishes for what happens to your body, any funeral or ceremony, and how you&apos;d like to be remembered. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
+        </p>
+        <p style={docBannerNote}>
+          This is <strong>not a legal document.</strong> Wishes for body disposition should also be included in your legal will. Regulations vary by province;{' '}
+          <Link href="/app/area/deathcare" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'inherit' }}>
+            view province-specific resources →
+          </Link>
+        </p>
+      </DocHeaderBanner>
+      <div className="max-w-6xl mx-auto px-4 pt-10 pb-16">
+        <AutosaveNotice style={{ marginBottom: 8 }}>Your answers will save automatically to Your materials.</AutosaveNotice>
+        {saveStatusText && (
+          <span className="mobile-saved-status" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 13, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+        )}
 
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-12 items-start">
           {/* LEFT: accordion */}
@@ -967,7 +948,7 @@ function FuneralWishesPage() {
 
 export default function Wrapper() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#BBABF4]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#F8F4EB]" />}>
       <FuneralWishesPage />
     </Suspense>
   )
@@ -983,9 +964,9 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
       onClick={onClick}
       disabled={disabled}
       className="transition-opacity mobile-sticky-export"
-      onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
-      style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = '#EAE4D8' }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = '#F8F4EB' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontSize: 14, fontWeight: 600, background: '#F8F4EB', color: '#130426', border: 'none', cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', opacity: disabled ? 0.6 : 1 }}
     >
       <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
         <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1395,7 +1376,7 @@ function FWMaterialsPanel({
   }
 
   return (
-    <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16 }}>
+    <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16, border: '1px solid rgba(19,4,38,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <h2 style={{ fontSize: 20, lineHeight: '26px', fontWeight: 600, color: '#130426', margin: 0, whiteSpace: 'nowrap' }}>

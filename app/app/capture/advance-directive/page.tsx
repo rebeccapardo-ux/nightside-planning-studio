@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import { SECTION_SCROLL_MARGIN_TOP, holdSavingIndicator, MATERIALS_PANEL_TOOLTIP } from '@/lib/ui'
 import AlertIcon from '@/app/components/AlertIcon'
-import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import AutosaveNotice from '@/app/components/AutosaveNotice'
+import DocHeaderBanner, { docBannerIntro, docBannerNote } from '@/app/components/capture/DocHeaderBanner'
 import SlidePanel from '@/app/components/SlidePanel'
 import InfoTooltip from '@/app/components/InfoTooltip'
 import MaterialsNullState from '@/app/components/MaterialsNullState'
@@ -400,7 +400,7 @@ function AdvanceDirectivePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#BBABF4]">
+      <div className="min-h-screen bg-[#F8F4EB]">
         <div className="max-w-3xl mx-auto px-4 py-16 text-[#130426]/60">Loading...</div>
       </div>
     )
@@ -412,7 +412,7 @@ function AdvanceDirectivePage() {
     <div className="capture-export-bar" style={{ position: 'absolute', top: 20, right: 152, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
       <ExportButton onClick={handlePreviewExport} disabled={saveState === 'saving'} />
       {saveStatusText && (
-        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.75)', fontFamily: hv }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: saveState === 'error' ? '#8B0000' : '#F8F4EB', fontFamily: hv }}>
           {saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}
         </span>
       )}
@@ -421,49 +421,24 @@ function AdvanceDirectivePage() {
 
 
   return (
-    <div className="min-h-screen bg-[#BBABF4] relative">
+    <div className="min-h-screen bg-[#F8F4EB] relative">
       {exportZone}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div style={{ marginBottom: 24 }}>
-          <Breadcrumbs
-            theme="light"
-            items={[
-              { label: 'Plan by area', href: '/app/area' },
-              { label: 'My Care Wishes', href: '/app/capture/advance-directive' },
-            ]}
-          />
-        </div>
-
-        {/* h1 — full width */}
-        <h1
-          style={{
-            fontSize: 42, fontWeight: 600, lineHeight: 0.98, letterSpacing: '-0.03em',
-            color: '#130426', marginBottom: 8, fontFamily: hv,
-          }}
-        >
-          My Care Wishes
-        </h1>
-
-        {/* Intro */}
-        <div style={{ marginBottom: 36 }}>
-          <div style={{ maxWidth: 620 }}>
-            <p style={{ fontSize: 18, lineHeight: 1.55, fontWeight: 400, color: '#130426', marginBottom: 20, fontFamily: hv }}>
-              This document is a place to express your values and preferences for your care. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
-            </p>
-            <p style={{ fontSize: 15, lineHeight: 1.5, fontWeight: 400, color: 'rgba(19,4,38,0.65)', marginBottom: 20, fontFamily: hv }}>
-              It is <strong>not a legal directive</strong>, but can be used alongside one to provide important context. Looking for official legal forms?{' '}
-              <a href={PROVINCE_RESOURCES_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'rgba(19,4,38,0.65)' }}>
-                View province-specific resources →
-              </a>
-            </p>
-
-            <AutosaveNotice style={{ marginTop: 28 }}>Your answers will save automatically to Your materials.</AutosaveNotice>
-            {saveStatusText && (
-              <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
-            )}
-          </div>
-
-        </div>
+      <DocHeaderBanner title="My Care Wishes" crumbLabel="My Care Wishes" maxWidth={1152}>
+        <p style={docBannerIntro}>
+          This document is a place to express your values and preferences for your care. It will be most useful if you&apos;ve already taken time to reflect on your priorities and learn about your rights and options.
+        </p>
+        <p style={docBannerNote}>
+          It is <strong>not a legal directive</strong>, but can be used alongside one to provide important context. Looking for official legal forms?{' '}
+          <a href={PROVINCE_RESOURCES_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-70 transition-opacity" style={{ color: 'inherit' }}>
+            View province-specific resources →
+          </a>
+        </p>
+      </DocHeaderBanner>
+      <div className="max-w-6xl mx-auto px-4 pt-10 pb-16">
+        <AutosaveNotice style={{ marginBottom: 8 }}>Your answers will save automatically to Your materials.</AutosaveNotice>
+        {saveStatusText && (
+          <span className="mobile-saved-status" style={{ fontFamily: hv, fontSize: 13, color: saveState === 'error' ? '#8B0000' : 'rgba(19,4,38,0.65)', marginTop: 16, display: 'none' }}>{saveState === 'error' && <AlertIcon color="#8B0000" />}{saveStatusText}</span>
+        )}
 
         {/* Grid — left: questions, right: materials (top-aligned with first question) */}
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-12 items-start">
@@ -661,7 +636,7 @@ function AdvanceDirectivePage() {
 
 export default function Wrapper() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#BBABF4]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#F8F4EB]" />}>
       <AdvanceDirectivePage />
     </Suspense>
   )
@@ -677,8 +652,8 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
       onClick={onClick}
       disabled={disabled}
       className="transition-opacity mobile-sticky-export"
-      onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = '#EAE4D8' }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = '#F8F4EB' }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -688,7 +663,7 @@ function ExportButton({ onClick, disabled }: { onClick: () => void; disabled?: b
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         fontSize: 14,
         fontWeight: 600,
-        background: '#F29836',
+        background: '#F8F4EB',
         color: '#130426',
         border: 'none',
         cursor: disabled ? 'default' : 'pointer',
@@ -1059,7 +1034,7 @@ function MaterialsPanel({
 
   return (
     // Outer panel: pale Sunrise #F7E2C7
-    <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16 }}>
+    <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16, border: '1px solid rgba(19,4,38,0.12)' }}>
 
       {/* Title row — sits on pale Sunrise */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>

@@ -568,7 +568,7 @@ function FearsRankingContent() {
     <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
       {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
-      <div className={`${BANNER_TOP_CLASS} activity-banner-row`} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      <div className={`${BANNER_TOP_CLASS} activity-banner-row`} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE, paddingRight: 'max(148px, calc((100% - 1200px) / 2 + 24px))', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>

@@ -68,11 +68,15 @@ const DEFAULT_ENTRY: RouteThemeEntry = {
 }
 
 const ROUTE_THEME_MAP: RouteThemeEntry[] = [
-  // Capture documents
-  { prefix: '/app/capture/devices-and-accounts', theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/app/capture/financial-information', theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-night' },
-  { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-night' },
+  // Capture documents — sunset (terracotta) nav matching each doc's sunset header banner
+  // (documents belong to Your materials). Keepsakes is intentionally omitted → navy default
+  // (bespoke design, addressed separately).
+  { prefix: '/app/capture/devices-and-accounts', theme: 'dark', navBg: 'bg-terracotta' },
+  { prefix: '/app/capture/financial-information', theme: 'dark', navBg: 'bg-terracotta' },
+  { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-terracotta' },
+  { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-terracotta' },
+  { prefix: '/app/capture/advance-directive',     theme: 'dark', navBg: 'bg-terracotta' },
+  { prefix: '/app/capture/funeral-wishes',        theme: 'dark', navBg: 'bg-terracotta' },
 
   // Your materials (+ its export) — cream nav on the cream landing (banner-less)
   { prefix: '/app/materials', theme: 'light', navBg: 'bg-cream' },
@@ -418,6 +422,7 @@ export default function GlobalNav() {
     'bg-night': '#2C3777',
     'bg-cream': '#F8F4EB',
     'bg-lavender': '#BBABF4',
+    'bg-terracotta': '#DB5835',
   }
   const panelBg = NAV_BG_HEX[entry.navBg] ?? '#2C3777'
   const panel = entry.theme === 'dark'
