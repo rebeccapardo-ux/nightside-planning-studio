@@ -206,7 +206,7 @@ export default function YourMaterialsPanel({
 
   // ── Collapsible tile (one grid cell) ────────────────────────────────────────
   // Cream card + sunset outline. When COLLAPSED the expand affordance is a full-width sunset
-  // band at the BOTTOM (prominent cream count + chevron) — user research found the old top-right
+  // band at the BOTTOM (cream status summary + chevron) — user research found the old top-right
   // chevron went unnoticed: people read the description as the whole content and assumed the
   // panel was empty/complete. The bottom band + count + chevron makes "N items inside, tap to
   // open" unmissable. (A filled bar at the TOP was rejected earlier — it reads as an already-
@@ -214,7 +214,7 @@ export default function YourMaterialsPanel({
   // When EXPANDED the header carries the collapse chevron and the band is gone. Body padding
   // lives on .ym-tile-body so the band can sit flush to the tile's bottom edge. A shared
   // collapsed min-height (+ the grid's align-items:start) keeps all four tiles equal at rest.
-  function tile(id: string, title: string, description: React.ReactNode, count: number, body: React.ReactNode) {
+  function tile(id: string, title: string, description: React.ReactNode, summary: string, body: React.ReactNode) {
     const isExpanded = expanded[id] === true
     return (
       <div key={id} className="ym-tile" style={{ background: '#FFFFFF', border: '1.5px solid #DB5835', borderRadius: 16, minHeight: isExpanded ? undefined : 248, display: 'flex', flexDirection: 'column' }}>
@@ -235,8 +235,8 @@ export default function YourMaterialsPanel({
           {isExpanded && <div style={{ marginTop: 22 }}>{body}</div>}
         </div>
         {/* Collapsed affordance: a full-width sunset band flush to the tile's bottom edge — the
-            WHOLE band toggles open. A prominent cream count (just the number; the header already
-            names the type) + chevron reads as "N items inside, tap to reveal". Fill/ink use the
+            WHOLE band toggles open. A cream status summary ("N in progress, M not started" /
+            "N total") + chevron reads as "there are items inside, tap to reveal". Fill/ink use the
             section tokens (materials theme → sunset #DB5835 / cream), matching the tile border. */}
         {!isExpanded && (
           <button
@@ -244,22 +244,24 @@ export default function YourMaterialsPanel({
             className="ym-band"
             onClick={() => toggleSection(id)}
             aria-expanded={false}
-            aria-label={`Show ${title.toLowerCase()} — ${count} item${count === 1 ? '' : 's'}`}
+            aria-label={`Show ${title.toLowerCase()} — ${summary}`}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
               width: '100%', border: 'none', cursor: 'pointer',
               background: 'var(--section-accent)', color: 'var(--section-on-accent)',
-              padding: '10px 20px', minHeight: 50,
+              padding: '12px 20px', minHeight: 44,
               borderBottomLeftRadius: 14.5, borderBottomRightRadius: 14.5,
             }}
           >
-            <span style={{ fontFamily: hv, fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{count}</span>
+            <span style={{ fontFamily: hv, fontSize: 12.5, fontWeight: 600, lineHeight: 1.3 }}>{summary}</span>
             <Chevron open={false} color="currentColor" />
           </button>
         )}
       </div>
     )
   }
+
+  const docCount = (a: unknown[], b: unknown[]) => `${a.length} in progress, ${b.length} not started`
 
   return (
     <div>
@@ -315,7 +317,7 @@ export default function YourMaterialsPanel({
             <Link href="/app/area" style={{ color: 'rgba(19,4,38,0.72)', textDecoration: 'underline' }}>Plan by area</Link>{' '}
             sections.
           </p>,
-          inProgressWishes.length + notStartedWishes.length,
+          docCount(inProgressWishes, notStartedWishes),
           statusStack(
             inProgressWishes.map((d) => renderDocCard(d, true)),
             notStartedWishes.map((d) => renderDocCard(d, false)),
@@ -328,7 +330,7 @@ export default function YourMaterialsPanel({
           'practical',
           'Practical documents',
           <p style={tileDesc}>Templates for practical information; fill them in at any time.</p>,
-          inProgressPractical.length + notStartedPractical.length,
+          docCount(inProgressPractical, notStartedPractical),
           statusStack(
             inProgressPractical.map((d) => renderDocCard(d, true)),
             notStartedPractical.map((d) => renderDocCard(d, false)),
@@ -341,7 +343,7 @@ export default function YourMaterialsPanel({
           'activity',
           'Activity outputs',
           <p style={tileDesc}>Your work from Activities.</p>,
-          inProgressActivities.length + notStartedActivities.length,
+          docCount(inProgressActivities, notStartedActivities),
           statusStack(
             inProgressActivities.map((a) => renderActivityCard(a, true)),
             notStartedActivities.map((a) => renderActivityCard(a, false)),
@@ -354,7 +356,7 @@ export default function YourMaterialsPanel({
           'notes',
           'Notes',
           <p style={tileDesc}>Text and voice notes you&rsquo;ve captured across the platform.</p>,
-          allNotes.length,
+          `${allNotes.length} total`,
           allNotes.length > 0 ? (
             <PlanNotesGridComp notes={allNotes} allDomains={allDomains} />
           ) : (
