@@ -409,32 +409,37 @@ export default function GlobalNav() {
     return `text-[15.7px] transition-colors ${style.link} ${active ? 'font-semibold underline underline-offset-[6px] decoration-2' : 'font-medium'}`
   }
 
-  // Dropdown surface palette. On hover/focus the label's dropdown opens as a panel
-  // below it (the label itself just brightens — no block highlight).
-  // The color contrasts the nav background, and the text follows the panel's surface
-  // (the same color the nav already uses on that background) — the platform-wide
-  // "text color follows the surface" rule. Dark navs (#200840, #2C3777) → cream panel;
-  // the single cream nav (#f8f4eb) → navy panel.
+  // Dropdown surface palette. On hover/focus the label's dropdown opens as a panel below it
+  // (the label itself just brightens — no block highlight). The panel now MATCHES the nav bar
+  // it drops from — same bg color, same ink (the surface's text color) — so the menu reads as an
+  // extension of the nav rather than a contrasting slab. A border + shadow separate it from the
+  // page content it floats over. bg is resolved from the route's navBg class; ink follows theme.
+  const NAV_BG_HEX: Record<string, string> = {
+    'bg-night': '#2C3777',
+    'bg-cream': '#F8F4EB',
+    'bg-lavender': '#BBABF4',
+  }
+  const panelBg = NAV_BG_HEX[entry.navBg] ?? '#2C3777'
   const panel = entry.theme === 'dark'
     ? {
-        bg: '#F8F4EB',
-        text: '#130426',
-        border: '1px solid rgba(19,4,38,0.12)',
-        shadow: '0 14px 36px rgba(19,4,38,0.28)',
-        itemActiveBg: '#EEEDFE',
-        dividerLine: 'rgba(19,4,38,0.10)',
-        dividerLabel: 'rgba(19,4,38,0.62)', // WCAG AA: 5.47:1 over the #F8F4EB panel
-        itemHoverClass: 'hover:bg-[rgba(19,4,38,0.06)]',
-      }
-    : {
-        bg: '#2C3777',
+        bg: panelBg, // night nav → night panel
         text: '#f8f4eb',
         border: '1px solid rgba(248,244,235,0.18)',
         shadow: '0 14px 36px rgba(19,4,38,0.40)',
         itemActiveBg: 'rgba(255,255,255,0.14)',
         dividerLine: 'rgba(248,244,235,0.18)',
-        dividerLabel: 'rgba(248,244,235,0.65)', // WCAG AA: 5.21:1 over the #2C3777 panel
+        dividerLabel: 'rgba(248,244,235,0.65)',
         itemHoverClass: 'hover:bg-[rgba(255,255,255,0.08)]',
+      }
+    : {
+        bg: panelBg, // cream nav → cream panel · lavender nav → lavender panel
+        text: '#130426',
+        border: '1px solid rgba(19,4,38,0.14)',
+        shadow: '0 14px 36px rgba(19,4,38,0.20)',
+        itemActiveBg: 'rgba(19,4,38,0.08)',
+        dividerLine: 'rgba(19,4,38,0.12)',
+        dividerLabel: 'rgba(19,4,38,0.62)',
+        itemHoverClass: 'hover:bg-[rgba(19,4,38,0.06)]',
       }
 
   const navItems = buildNavItems()

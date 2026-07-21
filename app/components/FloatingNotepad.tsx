@@ -15,7 +15,6 @@ export default function FloatingNotepad() {
   // PDF export pages are print views — no interactive controls
   if (pathname.endsWith('/export')) return null
 
-  // The Notepad button is sunrise (#F29836) with midnight ink on every page — sunrise is now
-  // the platform accent color, and the pill reads on every surface (night banner, cream, lavender).
-  return <NotepadModal buttonStyle="sunrise" containerId={areaContainerId} />
+  // The Notepad button is midnight (#130426) with white text on every page.
+  return <NotepadModal buttonStyle="midnight" containerId={areaContainerId} />
 }

@@ -96,6 +96,10 @@
 .theme-area       { --section-accent: var(--color-lavender);   --section-on-accent: var(--color-midnight); }
 .theme-materials  { --section-accent: var(--color-terracotta); --section-on-accent: var(--color-cream);    }
 
+/* External-resource text links (scenario-navigator "Additional resources") — underline on
+   hover, matching the area-page .area-resource-link pattern. The ↗ glyph flags the outbound link. */
+.sn-ext-link:hover { text-decoration: underline; }
+
 /* ─────────────────────────────────────────────────────────────────────
    FORM CONTROLS — placeholder default
    Component-scoped rules (e.g. .auth-input::placeholder) override this.
