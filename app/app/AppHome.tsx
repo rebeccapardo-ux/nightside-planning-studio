@@ -83,10 +83,11 @@ export default function AppHomePage() {
             card clickable); Plan by area is wider and holds the six area links. */}
         <div className="home4-primary">
 
-          {/* Activities (Sunrise) — entry card → the Activities landing */}
+          {/* Activities (Night) — entry card → the Activities landing */}
           <EntryCard
             href="/app/activities"
-            bg="#F29836"
+            bg="#2C3777"
+            onDark
             title="Activities"
             description="Conversation starters, scenarios, and reflection prompts."
             puzzle={<ActivitiesPuzzle />}

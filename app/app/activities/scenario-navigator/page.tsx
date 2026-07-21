@@ -183,7 +183,7 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
       <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
-            theme="light"
+            theme="navy"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Scenario Navigator' },
@@ -372,7 +372,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
       <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
-            theme="light"
+            theme="navy"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Scenario Navigator', onClick: onBack },
@@ -617,7 +617,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                         fontFamily: hv, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         gap: 12, textAlign: 'left', fontSize: 16, fontWeight: 500,
                         lineHeight: 1.45, color: '#130426', background: '#FFFFFF',
-                        border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
+                        border: '1px solid rgba(19,4,38,0.2)', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
                       className="hover:border-night hover:shadow-md transition-all"
@@ -637,18 +637,19 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                    className="sn-ext-link"
                     style={{
-                      display: 'inline-flex', alignItems: 'center',
-                      paddingTop: 12, paddingBottom: 12,
-                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
-                      fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
-                      borderRadius: 999, textDecoration: 'none', marginTop: 32,
+                      display: 'inline-flex', alignItems: 'baseline',
+                      color: 'var(--color-night)', fontFamily: hv,
+                      fontSize: 15, fontWeight: 500, lineHeight: 1.5,
+                      textDecoration: 'none', marginTop: i === 0 ? 20 : 10,
                       alignSelf: 'flex-start',
                     }}>
-                    {r.label} →
+                    {r.label}
+                    <span aria-hidden="true" style={{ opacity: 0.5, fontSize: 12, marginLeft: 4 }}>↗</span>
                   </a>
                 ) : (
-                  <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
+                  <span key={i} style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', marginTop: i === 0 ? 20 : 10 }}>{r.label}</span>
                 ))}
               </div>
             )}
@@ -657,7 +658,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-night)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
@@ -714,7 +715,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
       <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
-            theme="light"
+            theme="navy"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Scenario Navigator', onClick: onBack },
@@ -959,7 +960,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                         fontFamily: hv, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         gap: 12, textAlign: 'left', fontSize: 16, fontWeight: 500,
                         lineHeight: 1.45, color: '#130426', background: '#FFFFFF',
-                        border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
+                        border: '1px solid rgba(19,4,38,0.2)', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
                       className="hover:border-night hover:shadow-md transition-all"
@@ -979,18 +980,19 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                    className="sn-ext-link"
                     style={{
-                      display: 'inline-flex', alignItems: 'center',
-                      paddingTop: 12, paddingBottom: 12,
-                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
-                      fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
-                      borderRadius: 999, textDecoration: 'none', marginTop: 32,
+                      display: 'inline-flex', alignItems: 'baseline',
+                      color: 'var(--color-night)', fontFamily: hv,
+                      fontSize: 15, fontWeight: 500, lineHeight: 1.5,
+                      textDecoration: 'none', marginTop: i === 0 ? 20 : 10,
                       alignSelf: 'flex-start',
                     }}>
-                    {r.label} →
+                    {r.label}
+                    <span aria-hidden="true" style={{ opacity: 0.5, fontSize: 12, marginLeft: 4 }}>↗</span>
                   </a>
                 ) : (
-                  <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
+                  <span key={i} style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', marginTop: i === 0 ? 20 : 10 }}>{r.label}</span>
                 ))}
               </div>
             )}
@@ -999,7 +1001,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-night)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
@@ -1034,7 +1036,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
       <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
-            theme="light"
+            theme="navy"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Scenario Navigator', onClick: onBack },
@@ -1279,7 +1281,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         fontFamily: hv, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         gap: 12, textAlign: 'left', fontSize: 16, fontWeight: 500,
                         lineHeight: 1.45, color: '#130426', background: '#FFFFFF',
-                        border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
+                        border: '1px solid rgba(19,4,38,0.2)', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
                       className="hover:border-night hover:shadow-md transition-all"
@@ -1299,18 +1301,19 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                    className="sn-ext-link"
                     style={{
-                      display: 'inline-flex', alignItems: 'center',
-                      paddingTop: 12, paddingBottom: 12,
-                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
-                      fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
-                      borderRadius: 999, textDecoration: 'none', marginTop: 32,
+                      display: 'inline-flex', alignItems: 'baseline',
+                      color: 'var(--color-night)', fontFamily: hv,
+                      fontSize: 15, fontWeight: 500, lineHeight: 1.5,
+                      textDecoration: 'none', marginTop: i === 0 ? 20 : 10,
                       alignSelf: 'flex-start',
                     }}>
-                    {r.label} →
+                    {r.label}
+                    <span aria-hidden="true" style={{ opacity: 0.5, fontSize: 12, marginLeft: 4 }}>↗</span>
                   </a>
                 ) : (
-                  <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
+                  <span key={i} style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', marginTop: i === 0 ? 20 : 10 }}>{r.label}</span>
                 ))}
               </div>
             )}
@@ -1319,7 +1322,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-night)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
@@ -1354,7 +1357,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
       <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
-            theme="light"
+            theme="navy"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Scenario Navigator', onClick: onBack },
@@ -1877,7 +1880,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         fontFamily: hv, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         gap: 12, textAlign: 'left', fontSize: 16, fontWeight: 500,
                         lineHeight: 1.45, color: '#130426', background: '#FFFFFF',
-                        border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
+                        border: '1px solid rgba(19,4,38,0.2)', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
                       className="hover:border-night hover:shadow-md transition-all"
@@ -1898,18 +1901,19 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
                   <a key={i} href={r.url} target="_blank" rel="noopener noreferrer"
+                    className="sn-ext-link"
                     style={{
-                      display: 'inline-flex', alignItems: 'center',
-                      paddingTop: 12, paddingBottom: 12,
-                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
-                      fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
-                      borderRadius: 999, textDecoration: 'none', marginTop: 32,
+                      display: 'inline-flex', alignItems: 'baseline',
+                      color: 'var(--color-night)', fontFamily: hv,
+                      fontSize: 15, fontWeight: 500, lineHeight: 1.5,
+                      textDecoration: 'none', marginTop: i === 0 ? 20 : 10,
                       alignSelf: 'flex-start',
                     }}>
-                    {r.label} →
+                    {r.label}
+                    <span aria-hidden="true" style={{ opacity: 0.5, fontSize: 12, marginLeft: 4 }}>↗</span>
                   </a>
                 ) : (
-                  <span key={i} style={{ fontFamily: hv, fontSize: 14, color: '#1A1A1A', marginTop: 32 }}>{r.label}</span>
+                  <span key={i} style={{ fontFamily: hv, fontSize: 15, color: '#1A1A1A', marginTop: i === 0 ? 20 : 10 }}>{r.label}</span>
                 ))}
               </div>
             )}
@@ -1919,7 +1923,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           {/* Back — navy, left-aligned */}
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-night)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios

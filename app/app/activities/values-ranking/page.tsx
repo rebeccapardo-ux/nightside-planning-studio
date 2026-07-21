@@ -583,7 +583,7 @@ function ValuesRankingContent() {
         <div style={{ flex: 1 }}>
           <div style={{ marginBottom: 18 }}>
             <Breadcrumbs
-              theme="light"
+              theme="navy"
               items={[
                 { label: 'Activities', href: '/app/activities' },
                 { label: 'Values & Fears Ranking', href: '/app/activities/values-and-fears' },

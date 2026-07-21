@@ -16,7 +16,7 @@ export default function ValuesAndFearsPage() {
       <div className={BANNER_TOP_CLASS} style={{ ...BANNER_STYLE, ...BANNER_INNER_STYLE }}>
         <div style={{ marginBottom: 18 }}>
           <Breadcrumbs
-            theme="light"
+            theme="navy"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Values & Fears Ranking' },
