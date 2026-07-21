@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import LandingContainer from '@/app/components/LandingContainer'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { ensureCanonicalDomains } from '@/lib/ensure-canonical-domains'
 import { AREAS } from '@/lib/areas'
@@ -37,7 +38,7 @@ export default async function PlanByAreaPage() {
         .pba-card:hover { transform: translateY(-3px); box-shadow: 8px 8px 0 rgba(0,0,0,0.88); }
       `}</style>
 
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 80px' }}>
+      <LandingContainer>
         <SectionTitleReveal title="Plan by area" color="#130426" underlineColor="#BBABF4" />
 
         <div style={{ maxWidth: 720, marginTop: 20 }}>
@@ -69,7 +70,7 @@ export default async function PlanByAreaPage() {
             </Link>
           ))}
         </div>
-      </div>
+      </LandingContainer>
     </div>
   )
 }
