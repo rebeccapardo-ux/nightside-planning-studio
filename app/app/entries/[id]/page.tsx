@@ -198,7 +198,7 @@ export default async function EntryDetailPage({ params, searchParams }: EntryPag
   const maxWidth = isDocument ? 680 : 800
 
   return (
-    <div className="min-h-screen" style={{ background: (isCaptureDocument(entry.document_type) || isStructuredActivity(entry.activity)) ? '#CBBBEA' : '#F8F4EB' }}>
+    <div className="min-h-screen" style={{ background: isCaptureDocument(entry.document_type) ? '#FFFFFF' : isStructuredActivity(entry.activity) ? '#CBBBEA' : '#F8F4EB' }}>
       <div style={{ maxWidth, margin: '0 auto', padding: '48px 24px 80px' }}>
 
         {/* Back link — not shown on document or ranking snapshot views */}
