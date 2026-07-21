@@ -43,6 +43,19 @@
 
   /* Light surface tokens */
   --text-light-secondary: rgba(0, 0, 0, 0.70);
+
+  /* Color palette — also declared in the @theme block below (which generates the Tailwind
+     utilities bg-night / text-midnight / …). Declared here as well so EVERY token is
+     guaranteed present in :root and usable as var(--color-*) in inline styles, independent of
+     Tailwind's @theme tree-shaking (which drops tokens it doesn't see used in CSS/utilities —
+     e.g. a token referenced only from a .tsx inline style). Keep the two lists in sync. */
+  --color-sunrise:    #F29836;
+  --color-lavender:   #BBABF4;
+  --color-terracotta: #DB5835;
+  --color-night:      #2C3777;
+  --color-midnight:   #130426;
+  --color-cream:      #F8F4EB;
+  --color-surface:    #FFFFFF;
 }
 
 @theme inline {
@@ -54,6 +67,34 @@
   --color-dusk-light:  #C5BFE8;
   --color-text-muted:  #6B6B6B;
 }
+
+/* ─────────────────────────────────────────────────────────────────────
+   COLOR PALETTE — the single source for section + frame + neutral colors.
+   A plain @theme block, so each token is emitted BOTH as a :root CSS variable
+   (usable in inline styles via var(--color-*)) AND as Tailwind utilities
+   (bg-sunrise, text-midnight, border-lavender, …). Replace hardcoded hex with
+   these during the color-system rollout.
+   ───────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-sunrise:    #F29836;  /* Activities section identity */
+  --color-lavender:   #BBABF4;  /* Plan by area section identity */
+  --color-terracotta: #DB5835;  /* Your materials section identity */
+  --color-night:      #2C3777;  /* the nav — constant frame, never section-themed */
+  --color-midnight:   #130426;  /* ink / text / pills */
+  --color-cream:      #F8F4EB;  /* light page background */
+  --color-surface:    #FFFFFF;  /* neutral card surface (Panel default fill) */
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   SECTION THEME — each section sets --section-accent (its identity color) and
+   --section-on-accent (ink that reads on that accent). Applied once per section
+   via its layout (theme-activities / theme-area / theme-materials); any
+   descendant then derives its color from var(--section-accent) instead of
+   hardcoding it. The hub (/app) + cross-cutting routes set no section theme.
+   ───────────────────────────────────────────────────────────────────── */
+.theme-activities { --section-accent: var(--color-sunrise);    --section-on-accent: var(--color-midnight); }
+.theme-area       { --section-accent: var(--color-lavender);   --section-on-accent: var(--color-midnight); }
+.theme-materials  { --section-accent: var(--color-terracotta); --section-on-accent: var(--color-cream);    }
 
 /* ─────────────────────────────────────────────────────────────────────
    FORM CONTROLS — placeholder default

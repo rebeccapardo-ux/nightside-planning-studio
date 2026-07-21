@@ -52,63 +52,62 @@ const NAV_STYLES: Record<NavTheme, NavStyle> = {
 // - Matching is prefix-based by default; most specific match wins.
 // - Set exact: true to restrict a theme to that exact path only
 //   (sub-routes will fall through to the next match or default).
-// - Default (no match): dark nav, bg-[#130426]
+// - navBg is now UNIFORMLY `bg-night` (the navy #2C3777 token): the nav is the constant
+//   frame and is never section-themed. The map is retained for the theme (wordmark/link)
+//   field and future flexibility, but every route currently resolves to the same navy nav.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_ENTRY: RouteThemeEntry = {
   prefix: '/',
   theme: 'dark',
-  navBg: 'bg-[#200840]',
+  navBg: 'bg-night',
 }
 
 const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // Capture documents
-  { prefix: '/app/capture/devices-and-accounts', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/capture/financial-information', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/capture/devices-and-accounts', theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/capture/financial-information', theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/capture/important-contacts',    theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/capture/personal-admin',        theme: 'dark', navBg: 'bg-night' },
 
   // Your materials (+ its export) — navy nav (cream/dark page bg)
-  { prefix: '/app/materials', theme: 'dark',  navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/materials', theme: 'dark',  navBg: 'bg-night' },
   // /app/domains/[uuid] — DB-lookup redirect stub (uuid bookmark → area page); navy
   // nav covers the brief server-redirect window.
-  { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-night' },
 
   // Entries / snapshot pages — same navy as materials for continuity
-  { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/entries',   theme: 'dark',  navBg: 'bg-night' },
 
   // App homepage — navy nav, exact match only
-  { prefix: '/app',         exact: true, theme: 'dark',  navBg: 'bg-[#2C3777]' },
+  { prefix: '/app',         exact: true, theme: 'dark',  navBg: 'bg-night' },
 
   // Activities (formerly Reflect) landing: cream page → navy nav (must differ). Exact
   // match only, so sub-pages fall through to default nav.
-  { prefix: '/app/activities', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/activities', exact: true, theme: 'dark', navBg: 'bg-night' },
 
-  // Plan by area landing: cream page → navy nav. Exact match (landing only).
-  { prefix: '/app/area', exact: true, theme: 'dark', navBg: 'bg-[#2C3777]' },
-  // Area pages (/app/area/<slug>): Night (#2C3777) banner → Midnight (#130426) nav.
-  // Longer prefix than the landing rule, so it wins for sub-routes; the trailing
-  // slash keeps it from matching the bare landing.
-  { prefix: '/app/area/', theme: 'dark', navBg: 'bg-[#130426]' },
+  // Plan by area landing + area sub-pages — navy nav (constant frame).
+  { prefix: '/app/area', exact: true, theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/area/', theme: 'dark', navBg: 'bg-night' },
 
   // Values & Fears landing + ranking activities — navy nav on blue workspace
-  { prefix: '/app/activities/values-and-fears', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/activities/values-ranking',   theme: 'dark', navBg: 'bg-[#130426]' },
-  { prefix: '/app/activities/fears-ranking',    theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/values-and-fears', theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/activities/values-ranking',   theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/activities/fears-ranking',    theme: 'dark', navBg: 'bg-night' },
 
   // Activity screens with dark/midnight banners — use cream nav for contrast
-  { prefix: '/app/activities/reflection-prompts', theme: 'dark', navBg: 'bg-[#130426]' },
-  { prefix: '/app/activities/prompts',            theme: 'dark', navBg: 'bg-[#130426]' },
-  { prefix: '/app/activities/scenario-navigator', theme: 'dark', navBg: 'bg-[#130426]' },
-  { prefix: '/app/activities/legacy-map',         theme: 'dark', navBg: 'bg-[#130426]' },
-  { prefix: '/app/activities/trivia',               theme: 'dark', navBg: 'bg-[#130426]' },
+  { prefix: '/app/activities/reflection-prompts', theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/activities/prompts',            theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/activities/scenario-navigator', theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/activities/legacy-map',         theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/activities/trivia',               theme: 'dark', navBg: 'bg-night' },
 
   // Account management + legal pages — navy nav (page bg is cream, nav must differ)
-  { prefix: '/app/account', theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/help',    theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/app/about',   theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/privacy',     theme: 'dark', navBg: 'bg-[#2C3777]' },
-  { prefix: '/terms',       theme: 'dark', navBg: 'bg-[#2C3777]' },
+  { prefix: '/app/account', theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/help',    theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/app/about',   theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/privacy',     theme: 'dark', navBg: 'bg-night' },
+  { prefix: '/terms',       theme: 'dark', navBg: 'bg-night' },
 ]
 
 function getNavEntry(pathname: string): RouteThemeEntry {
