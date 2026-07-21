@@ -136,7 +136,7 @@ function SubSectionStatic({ title, children }: { title: string; children: React.
     <div style={{ borderTop: '1px solid rgba(19,4,38,0.12)', paddingTop: 18 }}>
       {/* Lavender (#7B6FC0) — matches the Resources tier labels ("Canada-wide" / "{province}
           resources") so all in-section subheaders share one scannable accent. */}
-      <h3 style={{ fontFamily: apfel, fontSize: 20, fontWeight: 600, color: '#7B6FC0', margin: '0 0 12px' }}>{title}</h3>
+      <h3 style={{ fontFamily: apfel, fontSize: 21, fontWeight: 600, color: '#7B6FC0', margin: '0 0 12px' }}>{title}</h3>
       <div style={{ maxWidth: 760, paddingBottom: 26 }}>{children}</div>
     </div>
   )
