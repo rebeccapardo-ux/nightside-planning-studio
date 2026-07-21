@@ -25,32 +25,25 @@ type ViewState =
   | { kind: 'scenario'; scenarioId: string }
   | { kind: 'outcome'; scenarioId: string; choiceId: string }
 
-const CARD_STYLES = [
-  { bg: 'bg-[#BBABF4]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },
-  { bg: 'bg-[#f8f4eb]',  text: 'text-[#130426]', pill: 'bg-[#2C3777] text-[#f8f4eb]' },
-  { bg: 'bg-[#f29836]',  text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' },
-  { bg: 'bg-[#2C3777]',  text: 'text-[#f8f4eb]', pill: 'bg-[#f8f4eb] text-[#130426]' },
-]
-
 // ---------------------------------------------------------------------------
 // ALS-specific constants
 // ---------------------------------------------------------------------------
 
 const ALS_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'ventilator': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'palliative-care': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'non-invasive-support': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
 }
 
@@ -66,14 +59,14 @@ const ALS_CONSEQUENCE_PREVIEWS: Record<string, string> = {
 
 const CPR_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'full-resuscitation': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'limited-interventions': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
 }
 
@@ -186,36 +179,36 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
   return (
     <div className="min-h-screen bg-[#F8F4EB] text-[#130426]">
 
-      {/* Batch 2: pinned to navy. Scenario's full color + banner-drift realignment is batch 3. */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff' }}>
+      {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Scenario Navigator' },
             ]}
           />
         </div>
-        <h1 className="ns-title-activity text-white">
+        <h1 className="ns-title-activity">
           Scenario Navigator
         </h1>
-        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'var(--section-on-accent)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
           Work through realistic situations to explore how different decisions might feel in practice.
         </p>
-        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'var(--section-on-accent)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
           You don&apos;t need to arrive with your decisions made. Each scenario lets you try a choice on, so you can see where it leads and notice how it sits with you. Then you can back up and explore a different path to feel the difference.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
           {['Choose any scenario to start', 'Explore different paths to compare outcomes', 'Notes save to Your materials'].map((text) => (
-            <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+            <span key={text} style={{ background: 'transparent', border: '1px dashed var(--section-on-accent)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: 'var(--section-on-accent)', cursor: 'default' }}>
               {text}
             </span>
           ))}
           <button
             type="button"
             onClick={() => setTipsOpen(true)}
-            style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+            style={{ fontFamily: hv, fontSize: 15, color: 'var(--section-on-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
             onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
             onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
           >
@@ -256,20 +249,15 @@ function SelectionView({ onSelectScenario }: { onSelectScenario: (id: string) =>
       {/* Scenario cards grid */}
       <div className="mx-auto max-w-[1320px] px-6 pb-14 md:px-10">
         <div className="grid gap-6 md:grid-cols-2" style={{ maxWidth: 900, marginTop: 40, marginLeft: 'auto', marginRight: 'auto' }}>
-          {SCENARIOS.map((scenario, i) => {
-            const style = scenario.id === 'cognitive-decline'
-              ? { bg: 'bg-[#DB5835]', text: 'text-[#130426]', pill: 'bg-[#130426] text-[#f8f4eb]' }
-              : CARD_STYLES[i % CARD_STYLES.length]
+          {SCENARIOS.map((scenario) => {
             return (
               <button key={scenario.id} type="button" onClick={() => onSelectScenario(scenario.id)}
-                className={`rounded-2xl px-8 py-8 text-left transition hover:opacity-90 ${style.bg}`}
-                // Cream card blends into the cream page — give it a thin outline; the other
-                // (colored) cards read fine on cream and stay borderless.
-                style={style.bg === 'bg-[#f8f4eb]' ? { border: '1px solid rgba(19,4,38,0.18)' } : undefined}
+                className="rounded-2xl px-8 py-8 text-left transition hover:shadow-[0_10px_28px_rgba(19,4,38,0.18)]"
+                style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)' }}
               >
-                <h2 className={`text-2xl font-bold mb-3 ${style.text}`}>{scenario.title}</h2>
-                <p className={`leading-relaxed text-base mb-6 ${style.text}`}>{scenario.tileOverview}</p>
-                <span className={`inline-block text-sm font-semibold rounded-full px-5 py-2 ${style.pill}`}>Explore →</span>
+                <h2 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-midnight)' }}>{scenario.title}</h2>
+                <p className="leading-relaxed text-base mb-6" style={{ color: 'var(--color-midnight)' }}>{scenario.tileOverview}</p>
+                <span className="inline-block text-sm font-semibold rounded-full px-5 py-2" style={{ background: 'var(--color-midnight)', color: 'var(--color-cream)' }}>Explore →</span>
               </button>
             )
           })}
@@ -327,7 +315,8 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
         <div className="grid gap-4 sn-stack" style={{ gridTemplateColumns: `repeat(${scenario.choices.length}, minmax(0, 1fr))` }}>
           {scenario.choices.map((choice) => (
             <button key={choice.id} type="button" onClick={() => onSelectChoice(choice.id)}
-              className="flex flex-col rounded-2xl bg-[#BBABF4] px-7 py-6 text-left transition-shadow hover:shadow-[0_10px_28px_rgba(19,4,38,0.22)]"
+              className="flex flex-col rounded-2xl px-7 py-6 text-left transition-shadow hover:shadow-[0_10px_28px_rgba(19,4,38,0.22)]"
+              style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)' }}
             >
               <span className="block text-[#130426] font-semibold leading-relaxed flex-1 mb-4">{choice.label}</span>
               <span className="mt-auto inline-block rounded-full bg-[#130426] text-[#f8f4eb] text-sm font-semibold px-4 py-1.5">Choose →</span>
@@ -345,19 +334,19 @@ function ScenarioView({ scenario, onSelectChoice, onBack }: {
 
 const PANCREATIC_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'aggressive-treatment': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'comfort-care': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'clinical-trial': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
 }
 
@@ -378,26 +367,25 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
-      {/* Hero band */}
-      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <div style={{ marginBottom: 28 }}>
-            <Breadcrumbs
-              theme="navy"
-              items={[
-                { label: 'Activities', href: '/app/activities' },
-                { label: 'Scenario Navigator', onClick: onBack },
-                { label: scenario.title },
-              ]}
-            />
-          </div>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
-            Scenario
-          </p>
-          <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#FFFFFF', margin: 0 }}>
-            {scenario.title}
-          </h1>
+      {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
+          ns-title-activity), matching the other activity banners. */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+        <div style={{ marginBottom: 18 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Activities', href: '/app/activities' },
+              { label: 'Scenario Navigator', onClick: onBack },
+              { label: scenario.title },
+            ]}
+          />
         </div>
+        <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--section-on-accent)', opacity: 0.7, marginBottom: 12 }}>
+          Scenario
+        </p>
+        <h1 className="ns-title-activity" style={{ margin: 0 }}>
+          {scenario.title}
+        </h1>
       </div>
 
       {/* Editorial description */}
@@ -436,7 +424,7 @@ function PancreaticScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: 'none',
+                  border: cs.border,
                   boxSizing: 'border-box',
                   // No outline (rest or hover) and no lift — hover is *only* a soft drop
                   // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
@@ -540,7 +528,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                           {block.text}
                           {source && (
                             <button type="button" onClick={() => toggleSource(block.sourceId!)}
-                              style={{ marginLeft: 6, fontSize: 12, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
+                              style={{ marginLeft: 6, fontSize: 12, color: 'var(--color-night)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
                               source
                             </button>
                           )}
@@ -548,7 +536,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-night)', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -580,12 +568,12 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid #2C3777', borderRadius: 12,
+                  border: '1px solid var(--color-night)', borderRadius: 12,
                   padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-night focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -618,8 +606,8 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
           <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {otherChoices.length > 0 && (
-              <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 20 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 28 }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 20 }}>
                   Explore other paths
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -632,7 +620,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                         border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
-                      className="hover:border-[#2C3777] hover:shadow-md transition-all"
+                      className="hover:border-night hover:shadow-md transition-all"
                     >
                       <span>{c.label}</span>
                       <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.45)', fontSize: 14 }}>→</span>
@@ -643,8 +631,8 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
             )}
 
             {choice.resources.length > 0 && (
-              <div style={{ background: '#F29836', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 12 }}>
                   Additional resources
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
@@ -652,7 +640,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
                     style={{
                       display: 'inline-flex', alignItems: 'center',
                       paddingTop: 12, paddingBottom: 12,
-                      background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
+                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
                       alignSelf: 'flex-start',
@@ -669,7 +657,7 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#FFFFFF', background: '#2C3777', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
@@ -688,19 +676,19 @@ function PancreaticOutcomeContent({ scenario, choice, onBackToScenario, onBackTo
 
 const COGNITIVE_DECLINE_CHOICE_STYLES: Record<string, { bg: string; border: string; titleColor: string; bodyColor: string; ctaBg: string; ctaColor: string; hoverBorder: string }> = {
   'aggressive-treatment': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'comfort-care': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
   'long-term-care': {
-    bg: '#BBABF4', border: 'none',
-    titleColor: '#130426', bodyColor: 'rgba(19,4,38,0.72)',
-    ctaBg: '#130426', ctaColor: '#f8f4eb', hoverBorder: 'none',
+    bg: 'var(--color-surface)', border: '1.5px solid var(--section-accent)',
+    titleColor: 'var(--color-midnight)', bodyColor: 'rgba(19,4,38,0.72)',
+    ctaBg: 'var(--color-midnight)', ctaColor: 'var(--color-cream)', hoverBorder: 'var(--section-accent)',
   },
 }
 
@@ -721,26 +709,25 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
-      {/* Hero band */}
-      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <div style={{ marginBottom: 28 }}>
-            <Breadcrumbs
-              theme="navy"
-              items={[
-                { label: 'Activities', href: '/app/activities' },
-                { label: 'Scenario Navigator', onClick: onBack },
-                { label: scenario.title },
-              ]}
-            />
-          </div>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
-            Scenario
-          </p>
-          <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#FFFFFF', margin: 0 }}>
-            {scenario.title}
-          </h1>
+      {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
+          ns-title-activity), matching the other activity banners. */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+        <div style={{ marginBottom: 18 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Activities', href: '/app/activities' },
+              { label: 'Scenario Navigator', onClick: onBack },
+              { label: scenario.title },
+            ]}
+          />
         </div>
+        <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--section-on-accent)', opacity: 0.7, marginBottom: 12 }}>
+          Scenario
+        </p>
+        <h1 className="ns-title-activity" style={{ margin: 0 }}>
+          {scenario.title}
+        </h1>
       </div>
 
       {/* Editorial description */}
@@ -779,7 +766,7 @@ function CognitiveDeclineScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: 'none',
+                  border: cs.border,
                   boxSizing: 'border-box',
                   // No outline (rest or hover) and no lift — hover is *only* a soft drop
                   // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
@@ -883,7 +870,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                           {block.text}
                           {source && (
                             <button type="button" onClick={() => toggleSource(block.sourceId!)}
-                              style={{ marginLeft: 6, fontSize: 12, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
+                              style={{ marginLeft: 6, fontSize: 12, color: 'var(--color-night)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
                               source
                             </button>
                           )}
@@ -891,7 +878,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-night)', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -923,12 +910,12 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid #2C3777', borderRadius: 12,
+                  border: '1px solid var(--color-night)', borderRadius: 12,
                   padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-night focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -961,8 +948,8 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
           <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {otherChoices.length > 0 && (
-              <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 20 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 28 }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 20 }}>
                   Explore other paths
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -975,7 +962,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                         border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
-                      className="hover:border-[#2C3777] hover:shadow-md transition-all"
+                      className="hover:border-night hover:shadow-md transition-all"
                     >
                       <span>{c.label}</span>
                       <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.45)', fontSize: 14 }}>→</span>
@@ -986,8 +973,8 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
             )}
 
             {choice.resources.length > 0 && (
-              <div style={{ background: '#F29836', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 12 }}>
                   Additional resources
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
@@ -995,7 +982,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
                     style={{
                       display: 'inline-flex', alignItems: 'center',
                       paddingTop: 12, paddingBottom: 12,
-                      background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
+                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
                       alignSelf: 'flex-start',
@@ -1012,7 +999,7 @@ function CognitiveDeclineOutcomeContent({ scenario, choice, onBackToScenario, on
 
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#FFFFFF', background: '#2C3777', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
@@ -1042,26 +1029,25 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
-      {/* Hero band */}
-      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <div style={{ marginBottom: 28 }}>
-            <Breadcrumbs
-              theme="navy"
-              items={[
-                { label: 'Activities', href: '/app/activities' },
-                { label: 'Scenario Navigator', onClick: onBack },
-                { label: scenario.title },
-              ]}
-            />
-          </div>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
-            Scenario
-          </p>
-          <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#FFFFFF', margin: 0 }}>
-            {scenario.title}
-          </h1>
+      {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
+          ns-title-activity), matching the other activity banners. */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+        <div style={{ marginBottom: 18 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Activities', href: '/app/activities' },
+              { label: 'Scenario Navigator', onClick: onBack },
+              { label: scenario.title },
+            ]}
+          />
         </div>
+        <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--section-on-accent)', opacity: 0.7, marginBottom: 12 }}>
+          Scenario
+        </p>
+        <h1 className="ns-title-activity" style={{ margin: 0 }}>
+          {scenario.title}
+        </h1>
       </div>
 
       {/* Editorial description */}
@@ -1100,7 +1086,7 @@ function CPRScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: 'none',
+                  border: cs.border,
                   boxSizing: 'border-box',
                   // No outline (rest or hover) and no lift — hover is *only* a soft drop
                   // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
@@ -1204,7 +1190,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                           {block.text}
                           {source && (
                             <button type="button" onClick={() => toggleSource(block.sourceId!)}
-                              style={{ marginLeft: 6, fontSize: 12, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
+                              style={{ marginLeft: 6, fontSize: 12, color: 'var(--color-night)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
                               source
                             </button>
                           )}
@@ -1212,7 +1198,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-night)', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -1244,12 +1230,12 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid #2C3777', borderRadius: 12,
+                  border: '1px solid var(--color-night)', borderRadius: 12,
                   padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-night focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
               <div style={{ minHeight: 18, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
                 {noteSaving && (
@@ -1282,8 +1268,8 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           <div className="sn-stack grid grid-cols-1 gap-6 sm:grid-cols-[5fr_4fr]">
 
             {otherChoices.length > 0 && (
-              <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 20 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 28 }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 20 }}>
                   Explore other paths
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1296,7 +1282,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
-                      className="hover:border-[#2C3777] hover:shadow-md transition-all"
+                      className="hover:border-night hover:shadow-md transition-all"
                     >
                       <span>{c.label}</span>
                       <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.45)', fontSize: 14 }}>→</span>
@@ -1307,8 +1293,8 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
             )}
 
             {choice.resources.length > 0 && (
-              <div style={{ background: '#F29836', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 12 }}>
                   Additional resources
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
@@ -1316,7 +1302,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                     style={{
                       display: 'inline-flex', alignItems: 'center',
                       paddingTop: 12, paddingBottom: 12,
-                      background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
+                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
                       alignSelf: 'flex-start',
@@ -1333,7 +1319,7 @@ function CPROutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#FFFFFF', background: '#2C3777', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
@@ -1363,26 +1349,25 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
   return (
     <div style={{ background: '#F8F4EB', minHeight: '100vh' }}>
 
-      {/* Hero band */}
-      <div style={{ background: '#2C3777', padding: '56px 24px' }}>
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <div style={{ marginBottom: 28 }}>
-            <Breadcrumbs
-              theme="navy"
-              items={[
-                { label: 'Activities', href: '/app/activities' },
-                { label: 'Scenario Navigator', onClick: onBack },
-                { label: scenario.title },
-              ]}
-            />
-          </div>
-          <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.78)', marginBottom: 16 }}>
-            Scenario
-          </p>
-          <h1 style={{ fontFamily: apfel, fontSize: 48, fontWeight: 500, lineHeight: 1.1, color: '#FFFFFF', margin: 0 }}>
-            {scenario.title}
-          </h1>
+      {/* Hero band — realigned to the activity-banner standard (sunrise, full-bleed 96px inset,
+          ns-title-activity), matching the other activity banners. */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
+        <div style={{ marginBottom: 18 }}>
+          <Breadcrumbs
+            theme="light"
+            items={[
+              { label: 'Activities', href: '/app/activities' },
+              { label: 'Scenario Navigator', onClick: onBack },
+              { label: scenario.title },
+            ]}
+          />
         </div>
+        <p style={{ fontFamily: hv, fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--section-on-accent)', opacity: 0.7, marginBottom: 12 }}>
+          Scenario
+        </p>
+        <h1 className="ns-title-activity" style={{ margin: 0 }}>
+          {scenario.title}
+        </h1>
       </div>
 
       {/* Editorial description */}
@@ -1422,7 +1407,7 @@ function ALSScenarioContent({ scenario, onSelectChoice, onBack }: {
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   minHeight: 180, padding: 24, borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                   background: cs.bg,
-                  border: 'none',
+                  border: cs.border,
                   boxSizing: 'border-box',
                   // No outline (rest or hover) and no lift — hover is *only* a soft drop
                   // shadow blooming in, so there's no border-width reflow ("fidgety") anymore.
@@ -1619,7 +1604,7 @@ function OutcomeView({ scenario, choice, onBackToScenario, onBackToAll, onSelect
             </section>
           )}
           {choice.didYouKnow.length > 0 && (
-            <section className="rounded-2xl bg-[#2C3777] px-8 py-7">
+            <section className="rounded-2xl bg-night px-8 py-7">
               <p className="text-xs uppercase tracking-widest text-[#BBABF4] mb-4 font-semibold">Did you know?</p>
               <div className="space-y-5">
                 {choice.didYouKnow.map((block, i) => {
@@ -1793,7 +1778,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                           {block.text}
                           {source && (
                             <button type="button" onClick={() => toggleSource(block.sourceId!)}
-                              style={{ marginLeft: 6, fontSize: 12, color: '#2C3777', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
+                              style={{ marginLeft: 6, fontSize: 12, color: 'var(--color-night)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: hv }}>
                               source
                             </button>
                           )}
@@ -1801,7 +1786,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         {isOpen && (
                           <div style={{ marginTop: 10, background: '#F8F4EB', borderRadius: 8, padding: '12px 14px' }}>
                             <p style={{ fontFamily: hv, fontSize: 13, color: '#130426', marginBottom: 8 }}>{source.shortLabel}</p>
-                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: '#2C3777', fontWeight: 600 }}>
+                            <Link href="/app/activities/scenario-navigator/sources" style={{ fontFamily: hv, fontSize: 13, color: 'var(--color-night)', fontWeight: 600 }}>
                               View all sources →
                             </Link>
                           </div>
@@ -1838,12 +1823,12 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                 rows={4}
                 style={{
                   display: 'block', width: '100%', background: '#FFFFFF',
-                  border: '1px solid #2C3777', borderRadius: 12,
+                  border: '1px solid var(--color-night)', borderRadius: 12,
                   padding: 12, fontSize: 15, lineHeight: 1.5, color: '#1A1A1A',
                   resize: 'none', outline: 'none', boxSizing: 'border-box',
                   fontFamily: hv, marginTop: 22,
                 }}
-                className="placeholder:text-[#1A1A1A]/65 focus:border-[#2C3777] focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
+                className="placeholder:text-[#1A1A1A]/65 focus:border-night focus:shadow-[0_0_0_3px_rgba(44,55,119,0.18)] transition-shadow"
               />
 
               {/* Save confirmation + link */}
@@ -1881,8 +1866,8 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
             {/* Left — Explore other paths */}
             {otherChoices.length > 0 && (
-              <div style={{ background: '#BBABF4', borderRadius: 20, padding: 28 }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 20 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 28 }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 20 }}>
                   Explore other paths
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1895,7 +1880,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                         border: '1px solid transparent', borderRadius: 12, cursor: 'pointer',
                         padding: 16, boxShadow: '0 1px 2px rgba(0,0,0,0.04)', width: '100%',
                       }}
-                      className="hover:border-[#2C3777] hover:shadow-md transition-all"
+                      className="hover:border-night hover:shadow-md transition-all"
                     >
                       <span>{c.label}</span>
                       <span style={{ flexShrink: 0, color: 'rgba(19,4,38,0.45)', fontSize: 14 }}>→</span>
@@ -1907,8 +1892,8 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
 
             {/* Right — Additional resources */}
             {choice.resources.length > 0 && (
-              <div style={{ background: '#F29836', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
-                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: '#1A1A1A', marginBottom: 12 }}>
+              <div style={{ background: 'var(--color-surface)', border: '1.5px solid var(--section-accent)', borderRadius: 20, padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontFamily: hv, fontSize: 22, fontWeight: 500, color: 'var(--color-midnight)', marginBottom: 12 }}>
                   Additional resources
                 </h3>
                 {choice.resources.map((r, i) => r.url ? (
@@ -1916,7 +1901,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
                     style={{
                       display: 'inline-flex', alignItems: 'center',
                       paddingTop: 12, paddingBottom: 12,
-                      background: '#2C3777', color: '#FFFFFF', fontFamily: hv,
+                      background: 'var(--color-midnight)', color: 'var(--color-cream)', fontFamily: hv,
                       fontSize: 14, fontWeight: 500, paddingLeft: 24, paddingRight: 24,
                       borderRadius: 999, textDecoration: 'none', marginTop: 32,
                       alignSelf: 'flex-start',
@@ -1934,7 +1919,7 @@ function ALSOutcomeContent({ scenario, choice, onBackToScenario, onBackToAll, on
           {/* Back — navy, left-aligned */}
           <div style={{ marginTop: 22 }}>
             <button type="button" onClick={onBackToAll}
-              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: '#FFFFFF', background: '#2C3777', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
+              style={{ fontFamily: hv, fontSize: 14, fontWeight: 500, color: 'var(--color-cream)', background: 'var(--color-midnight)', border: 'none', borderRadius: 999, padding: '10px 20px', cursor: 'pointer' }}
               className="hover:opacity-85 transition-opacity"
             >
               ← All scenarios
