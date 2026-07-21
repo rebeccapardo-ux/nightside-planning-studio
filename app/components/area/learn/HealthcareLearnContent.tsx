@@ -13,14 +13,13 @@
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const para: React.CSSProperties = { fontFamily: hv, fontSize: 17, lineHeight: 1.65, color: '#130426', margin: '0 0 18px' }
-// Sub-subheader within the Overview section — clearly subordinate to the section's
-// "Overview" header (30/600, rendered by AreaHeader).
-const heading: React.CSSProperties = { fontFamily: apfel, fontSize: 21, fontWeight: 600, lineHeight: 1.2, color: '#130426', margin: '0 0 14px' }
 
 export default function HealthcareLearnContent() {
   return (
     <div>
-      <h2 style={{ ...heading, marginTop: 0 }}>Why this matters</h2>
+      {/* No "Why this matters" heading — this content sits under the "The basics" sub-section,
+          which already labels it (and the plain "Overview" fallback for provinces without a
+          summary yet reads fine without it too). */}
       <p style={para}>Without clear communication, your loved ones and care providers may face painful choices, uncertainty, and conflict.</p>
       <p style={para}>Many people approach advance care planning by listing treatments they would or wouldn&rsquo;t want. While that can be helpful, it has limits — it&rsquo;s hard to predict how you&rsquo;d feel in a situation you&rsquo;ve never been in, and <strong style={{ fontWeight: 600 }}>ableist assumptions about what life with illness or disability might be like can distort decisions.</strong></p>
       <p style={para}>For example, someone might say &ldquo;no machines&rdquo; without knowing the range of options or experiences, or assume they wouldn&rsquo;t want to live without being able to speak, without realizing what assistive tools exist.</p>
