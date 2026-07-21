@@ -35,7 +35,7 @@ export default function CollapsibleSection({ title, storageKey, children, deepLi
     // Vertical padding lives here (not the route wrapper) so it can shrink when
     // collapsed — matching the Overview band's values exactly, so all three section
     // bands are the same height when collapsed.
-    <section ref={sectionRef} style={{ paddingTop: open ? 28 : 24, paddingBottom: open ? 48 : 24, scrollMarginTop: SECTION_SCROLL_MARGIN_TOP }}>
+    <section ref={sectionRef} style={{ paddingTop: open ? 28 : 16, paddingBottom: open ? 48 : 16, scrollMarginTop: SECTION_SCROLL_MARGIN_TOP }}>
       <style>{`.cs-header:hover .cs-chevron { opacity: 0.65; }`}</style>
       <button
         type="button"

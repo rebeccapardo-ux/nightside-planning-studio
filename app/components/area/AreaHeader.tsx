@@ -72,7 +72,7 @@ function OverviewBand({ slug, bandBg, children }: { slug: string; bandBg: string
   return (
     <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
       <style>{`.ah-header:hover .ah-chevron { opacity: 0.65; }`}</style>
-      <div style={{ ...areaBandInnerStyle, paddingTop: open ? 28 : 24, paddingBottom: open ? 48 : 24 }}>
+      <div style={{ ...areaBandInnerStyle, paddingTop: open ? 28 : 16, paddingBottom: open ? 48 : 16 }}>
         <button
           type="button"
           className="ah-header"
@@ -104,7 +104,7 @@ function GroupedOverviewBand({ slug, bandBg, acpTitle, basics, acp }: {
   return (
     <div style={{ background: bandBg, borderTop: '1px solid rgba(19,4,38,0.12)' }}>
       <style>{`.ah-header:hover .ah-chevron { opacity: 0.65; }`}</style>
-      <div style={{ ...areaBandInnerStyle, paddingTop: open ? 28 : 24, paddingBottom: open ? 40 : 24 }}>
+      <div style={{ ...areaBandInnerStyle, paddingTop: open ? 28 : 16, paddingBottom: open ? 40 : 16 }}>
         <button
           type="button"
           className="ah-header"
