@@ -122,37 +122,36 @@ function DeckView({
   return (
     <div>
 
-      {/* Midnight banner — full width */}
-      {/* Batch 2: pinned to navy pending the banner-text flip (next). */}
-      <div className={`${BANNER_CLASS} md:pr-8`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff' }}>
+      {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
+      <div className={`${BANNER_CLASS} md:pr-8`} style={BANNER_STYLE}>
         <div style={{ marginBottom: 24 }}>
           <Breadcrumbs
-            theme="navy"
+            theme="light"
             items={[
               { label: 'Activities', href: '/app/activities' },
               { label: 'Deathcare Trivia' },
             ]}
           />
         </div>
-        <h1 className="ns-title-activity text-white">
+        <h1 className="ns-title-activity">
           Deathcare Trivia
         </h1>
-        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'var(--section-on-accent)', maxWidth: 520, marginTop: 20, marginBottom: 0, lineHeight: 1.5 }}>
           Explore questions and facts about death, dying, grief, and end-of-life care.
         </p>
-        <p style={{ fontFamily: hv, fontSize: 17, color: 'rgba(255,255,255,0.85)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: hv, fontSize: 17, color: 'var(--section-on-accent)', maxWidth: 520, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
           Understanding your options, rights, and the realities of deathcare can help you make more informed decisions, communicate your preferences more clearly, and advocate for the kinds of care and support you want.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 28 }}>
           {['Pick a card to start', 'Flip to reveal answers', 'Play solo or in a group'].map((text) => (
-            <span key={text} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.45)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: '#ffffff', cursor: 'default' }}>
+            <span key={text} style={{ background: 'transparent', border: '1px dashed var(--section-on-accent)', borderRadius: 20, padding: '4px 12px', fontFamily: hv, fontSize: 14, color: 'var(--section-on-accent)', cursor: 'default' }}>
               {text}
             </span>
           ))}
           <button
             type="button"
             onClick={() => setTipsOpen(true)}
-            style={{ fontFamily: hv, fontSize: 15, color: 'rgba(255,255,255,0.75)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
+            style={{ fontFamily: hv, fontSize: 15, color: 'var(--section-on-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'none', marginLeft: 12, padding: 0 }}
             onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline' }}
             onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none' }}
           >

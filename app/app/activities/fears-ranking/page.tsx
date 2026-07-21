@@ -567,15 +567,14 @@ function FearsRankingContent() {
   return (
     <div className="min-h-screen" style={{ background: '#F8F4EB' }}>
 
-      {/* Dark editorial banner */}
-      {/* Batch 2: pinned to navy pending the banner-text flip (next). */}
-      <div className={`${BANNER_CLASS} md:pr-[148px] activity-banner-row`} style={{ ...BANNER_STYLE, background: 'var(--color-night)', color: '#ffffff', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
+      {/* Sunrise banner — section-themed via BANNER_STYLE (bg var(--section-accent)). */}
+      <div className={`${BANNER_CLASS} md:pr-[148px] activity-banner-row`} style={{ ...BANNER_STYLE, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
 
         {/* Left: breadcrumbs + title + description + tips */}
         <div style={{ flex: 1 }}>
           <div style={{ marginBottom: 18 }}>
             <Breadcrumbs
-              theme="navy"
+              theme="light"
               items={[
                 { label: 'Activities', href: '/app/activities' },
                 { label: 'Values & Fears Ranking', href: '/app/activities/values-and-fears' },
@@ -583,18 +582,18 @@ function FearsRankingContent() {
               ]}
             />
           </div>
-          <h1 className="ns-title-activity text-white">
+          <h1 className="ns-title-activity">
             Fears Ranking
           </h1>
-          <p style={{ fontFamily: hv, fontSize: 16, color: 'rgba(255,255,255,0.8)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>
+          <p style={{ fontFamily: hv, fontSize: 16, color: 'var(--section-on-accent)', maxWidth: 560, marginBottom: 20, lineHeight: 1.55 }}>
             Fear around death can often feel vague and shapeless. But underneath it are usually specific things: pain, being alone, confusion, losing the things you love to do, not being able to afford care. Naming which of those weigh on you most is the first step toward addressing them. Once a fear is specific, you can communicate it to the people around you and build it into a plan. This helps ensure you&apos;re met with care and support exactly where you&apos;re most afraid.
           </p>
           <button
             type="button"
             onClick={() => setTipsOpen(true)}
-            style={{ fontFamily: hv, fontSize: 14, color: 'rgba(255,255,255,0.82)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.82)' }}
+            style={{ fontFamily: hv, fontSize: 14, color: 'var(--section-on-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7' }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
           >
             Tips for using this activity ›
           </button>
@@ -607,13 +606,13 @@ function FearsRankingContent() {
               type="button"
               onClick={handlePreviewExport}
               className="mobile-sticky-export"
-              style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: '#F29836', color: '#130426', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#e08a25' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#F29836' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '10px 20px', fontFamily: hv, fontSize: 14, fontWeight: 600, background: 'var(--color-midnight)', color: 'var(--color-cream)', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-night)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-midnight)' }}
             >
               <svg width="14" height="14" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M1.5 10.5h10" stroke="#130426" strokeWidth="1.4" strokeLinecap="round" />
+                <path d="M6.5 1.5v6M3.5 5.5L6.5 8.5L9.5 5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1.5 10.5h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
               Export
             </button>
@@ -621,12 +620,12 @@ function FearsRankingContent() {
           {saveStatus === 'error' ? (
             <ErrorMessagePill variant="inline">Couldn&apos;t save</ErrorMessagePill>
           ) : saveStatusText && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--section-on-accent)' }}>
               <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                <circle cx="7" cy="7" r="6" stroke="#ffffff" strokeWidth="1.3" />
-                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M4.5 7L6.2 8.8L9.5 5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontFamily: hv, fontSize: 11, color: '#ffffff', whiteSpace: 'nowrap' }}>{saveStatusText}</span>
+              <span style={{ fontFamily: hv, fontSize: 11, color: 'currentColor', whiteSpace: 'nowrap' }}>{saveStatusText}</span>
             </div>
           )}
         </div>
