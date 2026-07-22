@@ -88,7 +88,7 @@ If you don't appoint anyone, Saskatchewan law sets out who decides, working thro
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://saskhealthauthority.ca' }, // saskhealthauthority.ca ACP + Health Care Directives and Substitute Health Care Decision Makers Act (s.4)
+      { n: 1, url: 'https://www.saskhealthauthority.ca/your-health/conditions-diseases-services/advance-care-planning' }, // saskhealthauthority.ca ACP + Health Care Directives and Substitute Health Care Decision Makers Act (s.4)
       { n: 2, url: null }, // SHA Appointing a Proxy (CS-PIER-0001)
       { n: 3, url: null }, // Act s.15 (point per G2)
     ],
@@ -104,11 +104,11 @@ Quebec also recognizes **advance medical directives**: binding written instructi
 
 A protection mandate covers your incapacity during your lifetime; what happens to your property after death is handled separately, through a will. *(See Wills & Estates.)* <5>`,
     sources: [
-      { n: 1, url: 'https://canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/' }, // quebec.ca protection-mandate + CCQ arts 2166+ (canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/)
-      { n: 2, url: null }, // Chambre des notaires du Quebec + juridiqc (VERIFIED)
+      { n: 1, url: 'https://www.quebec.ca/en/justice-and-civil-status/legal-protection/protection-mandate' }, // quebec.ca protection-mandate + CCQ arts 2166+ (canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/)
+      { n: 2, url: 'https://www.quebec.ca/en/justice-and-civil-status/legal-protection/protection-mandate/having-protection-mandate-homologated' }, // Chambre des notaires du Quebec + juridiqc (VERIFIED)
       { n: 3, url: 'https://canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/' }, // close relative OR interested person; everyday consent without homologation" -> CCQ art. 15 VERIFIED verbatim
       { n: 4, url: 'https://quebec.ca/advance-medical-directives' }, // quebec.ca/advance-medical-directives
-      { n: 5, url: 'https://quebec.ca' }, // will" -> quebec.ca
+      { n: 5, url: 'https://www.quebec.ca/en/justice-and-civil-status/legal-protection/protection-mandate' }, // will" -> quebec.ca
     ],
   },
   'Manitoba': {
@@ -173,7 +173,7 @@ If you don't appoint anyone, PEI law sets out who decides, starting with a guard
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://canlii.org/en/pe/laws/stat/rspei-1988-c-c-17.2/latest/' }, // princeedwardisland.ca health-pei/advance-care-planning + Consent to Treatment and Health Care Directives Act RSPEI 1988 c.C-17.2 (canlii.org/en/pe/laws/stat/rspei-1988-c-c-17.2/latest/)
+      { n: 1, url: 'https://www.princeedwardisland.ca/en/information/health-pei/advance-care-planning' }, // princeedwardisland.ca health-pei/advance-care-planning + Consent to Treatment and Health Care Directives Act RSPEI 1988 c.C-17.2 (canlii.org/en/pe/laws/stat/rspei-1988-c-c-17.2/latest/)
       { n: 2, url: 'https://canlii.org/en/pe/laws/stat/rspei-1988-c-c-17.2/latest/' }, // Act (per G4)
       { n: 3, url: 'https://canlii.org/en/pe/laws/stat/rspei-1988-c-c-17.2/latest/' }, // spouse -> family -> friend (s.11); validity written/dated/signed/16+/capable" -> Act (point per G1/G2)
     ],
@@ -189,9 +189,9 @@ If you haven't named anyone, the Advance Health Care Directives Act sets a ranke
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://assembly.nl.ca/legislation/sr/statutes/a04-1.htm' }, // publiclegalinfo.com + Advance Health Care Directives Act RSNL 1990 c.A-4.1 (assembly.nl.ca/legislation/sr/statutes/a04-1.htm)
+      { n: 1, url: 'https://publiclegalinfo.com/legal-info/wills-and-estates/advance-health-care-directives/' }, // publiclegalinfo.com + Advance Health Care Directives Act SNL 1995 c A-4.1 (assembly.nl.ca/legislation/sr/statutes/a04-1.htm)
       { n: 2, url: 'https://assembly.nl.ca/legislation/sr/statutes/a04-1.htm' }, // Act
-      { n: 3, url: 'https://assembly.nl.ca/legislation/sr/statutes/a04-1.htm' }, // family->responsible health professional); 16+ and 2 independent witnesses" -> gov.nl.ca seniors booklet + CODNL cite s.10 VERIFIED (point per G1/G2)
+      { n: 3, url: 'https://www.gov.nl.ca/cssd/files/publications-pdf-seniors-ahcd-booklet.pdf' }, // family->responsible health professional); 16+ and 2 independent witnesses" -> gov.nl.ca seniors booklet + CODNL cite s.10 VERIFIED (point per G1/G2)
     ],
   },
   'Yukon': {
@@ -206,8 +206,8 @@ If you haven't appointed a proxy, Yukon's Care Consent Act sets a ranked default
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
       { n: 1, url: 'https://canlii.org/en/yk/laws/stat/sy-2003-c-21-sch-b/latest/' }, // Care Consent Act SY 2003 c.21 Sch B (canlii.org/en/yk/laws/stat/sy-2003-c-21-sch-b/latest/) + yukon.ca giving-consent-health-care
-      { n: 2, url: 'https://canlii.org/en/yk/laws/stat/sy-2003-c-21-sch-b/latest/' }, // yukon.ca giving-consent-health-care
-      { n: 3, url: 'https://canlii.org/en/yk/laws/stat/sy-2003-c-21-sch-b/latest/' }, // proxy->spouse->family->close friend->health providers last resort); 19+ unless spouse, available, willing, 12-mo contact" -> Yukon HSS Practice Guidelines citing s.12 VERIFIED (point per G2)
+      { n: 2, url: 'https://yukon.ca/en/advance-directives' }, // yukon.ca giving-consent-health-care
+      { n: 3, url: 'https://yukon.ca/en/health-and-wellness/care-services/giving-consent-health-care' }, // proxy->spouse->family->close friend->health providers last resort); 19+ unless spouse, available, willing, 12-mo contact" -> Yukon HSS Practice Guidelines citing s.12 VERIFIED (point per G2)
     ],
   },
   'Northwest Territories': {
@@ -221,7 +221,7 @@ Because the territory relies on you having named an agent, making a Personal Dir
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://canlii.org/en/nt/laws/stat/snwt-2005-c-16/latest/' }, // hss.gov.nt.ca personal-directives + Personal Directives Act SNWT 2005 c.16 (canlii.org/en/nt/laws/stat/snwt-2005-c-16/latest/)
+      { n: 1, url: 'https://www.hss.gov.nt.ca/en/services/personal-directives' }, // hss.gov.nt.ca personal-directives + Personal Directives Act SNWT 2005 c.16 (canlii.org/en/nt/laws/stat/snwt-2005-c-16/latest/)
       { n: 2, url: 'https://canlii.org/en/nt/laws/stat/snwt-2005-c-16/latest/' }, // Act ("Legal effect" + "Requirements not met") VERIFIED (per G4)
     ],
   },
