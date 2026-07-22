@@ -55,8 +55,8 @@ To be valid, these documents generally require you to be 19 or older, capable of
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
       { n: 1, url: 'https://canlii.org/en/bc/laws/stat/rsbc-1996-c-181/latest/' }, // Health Care (Consent) and Care Facility (Admission) Act RSBC 1996 c.181 (canlii.org/en/bc/laws/stat/rsbc-1996-c-181/latest/)
-      { n: 2, url: 'https://trustee.bc.ca' }, // same Act + trustee.bc.ca
-      { n: 3, url: 'https://trustee.bc.ca' }, // family->close friend; PGT last resort; representative overrides" -> Act s.16 VERIFIED + People's Law School + PGT (trustee.bc.ca)
+      { n: 2, url: 'https://www.trustee.bc.ca/adults/guide-being-temporary-substitute-decision-maker' }, // same Act + trustee.bc.ca
+      { n: 3, url: 'https://www.trustee.bc.ca/adults/consent-health-care-role-pgt' }, // family->close friend; PGT last resort; representative overrides" -> Act s.16 VERIFIED + People's Law School + PGT (trustee.bc.ca)
       { n: 4, url: 'https://canlii.org/en/bc/laws/stat/rsbc-1996-c-181/latest/' }, // Act Part 2.1
       { n: 5, url: 'https://canlii.org/en/bc/laws/stat/rsbc-1996-c-181/latest/' }, // Act (point per G1)
     ],
@@ -74,7 +74,7 @@ Decisions about your finances and property, if you can't make them yourself, are
     sources: [
       { n: 1, url: 'https://alberta.ca/personal-directive' }, // alberta.ca/personal-directive
       { n: 2, url: 'https://canlii.org/en/ab/laws/stat/rsa-2000-c-p-6/latest/' }, // Personal Directives Act RSA 2000 c.P-6 (canlii.org/en/ab/laws/stat/rsa-2000-c-p-6/latest/)
-      { n: 3, url: null }, // Alberta ACP / Adult Guardianship & Trusteeship Act
+      { n: 3, url: 'https://www.alberta.ca/specific-decision-making' }, // Alberta ACP / Adult Guardianship & Trusteeship Act
     ],
   },
   'Saskatchewan': {
@@ -88,9 +88,9 @@ If you don't appoint anyone, Saskatchewan law sets out who decides, working thro
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://www.saskhealthauthority.ca/your-health/conditions-diseases-services/advance-care-planning' }, // saskhealthauthority.ca ACP + Health Care Directives and Substitute Health Care Decision Makers Act (s.4)
-      { n: 2, url: null }, // SHA Appointing a Proxy (CS-PIER-0001)
-      { n: 3, url: null }, // Act s.15 (point per G2)
+      { n: 1, url: 'https://www.saskhealthauthority.ca/your-health/conditions-illnesses-services-wellness/advance-care-planning' }, // saskhealthauthority.ca ACP + Health Care Directives and Substitute Health Care Decision Makers Act (s.4)
+      { n: 2, url: 'https://www.saskhealthauthority.ca/sites/default/files/2022-02/CS-PIER-0001-ACP-Appointing-a-Proxy.pdf' }, // SHA Appointing a Proxy (CS-PIER-0001)
+      { n: 3, url: 'https://www.saskhealthauthority.ca/your-health/conditions-illnesses-services-wellness/advance-care-planning' }, // Act s.15 (point per G2)
     ],
   },
   'Quebec': {
@@ -107,7 +107,7 @@ A protection mandate covers your incapacity during your lifetime; what happens t
       { n: 1, url: 'https://www.quebec.ca/en/justice-and-civil-status/legal-protection/protection-mandate' }, // quebec.ca protection-mandate + CCQ arts 2166+ (canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/)
       { n: 2, url: 'https://www.quebec.ca/en/justice-and-civil-status/legal-protection/protection-mandate/having-protection-mandate-homologated' }, // Chambre des notaires du Quebec + juridiqc (VERIFIED)
       { n: 3, url: 'https://canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/' }, // close relative OR interested person; everyday consent without homologation" -> CCQ art. 15 VERIFIED verbatim
-      { n: 4, url: 'https://quebec.ca/advance-medical-directives' }, // quebec.ca/advance-medical-directives
+      { n: 4, url: 'https://www.quebec.ca/en/health/health-system-and-services/end-of-life-care/advance-medical-directives/description' }, // quebec.ca/advance-medical-directives
       { n: 5, url: 'https://www.quebec.ca/en/justice-and-civil-status/legal-protection/protection-mandate' }, // will" -> quebec.ca
     ],
   },
@@ -236,9 +236,9 @@ Because of this, it's genuinely worthwhile to write down and talk through your w
 
 Decisions about your finances and property are also handled through this court-appointed process (trusteeship), separate from healthcare. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: null }, // CHPCA + Dying With Dignity Canada + ABSENCE in CanLII Nunavut statute list (VERIFIED negative)
+      { n: 1, url: 'https://www.advancecareplanning.ca/acp-across-canada/provinces-and-territories/nunavut/' }, // CHPCA + Dying With Dignity Canada + ABSENCE in CanLII Nunavut statute list (VERIFIED negative)
       { n: 2, url: 'https://canlii.org/en/nu/laws/stat/snwt-nu-1994-c-29/latest/' }, // Guardianship and Trusteeship Act SNWT(Nu) 1994 c.29 (canlii.org/en/nu/laws/stat/snwt-nu-1994-c-29/latest/)
-      { n: 3, url: null }, // DWD Nunavut guide
+      { n: 3, url: 'https://www.dyingwithdignity.ca/download_your_advance_care_planning_kit' }, // DWD Nunavut guide
     ],
   },
 }
