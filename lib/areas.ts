@@ -59,7 +59,7 @@ export const AREAS: AreaConfig[] = [
   },
   {
     slug: 'deathcare', domainCode: 'deathcare', learnId: 'deathcare', title: 'Deathcare',
-    intro: 'Deathcare planning involves decisions about how your body will be cared for after you die. This includes choosing a final resting place for your body, such as traditional burial, cremation, green burial, or alternative methods like aquamation. Without clear instructions, decisions may be made based on default practices, family assumptions, or costs rather than personal wishes.',
+    intro: "Deathcare planning covers what happens to your body after you die, what final arrangements you choose, and who carries out your wishes. The legal requirements are far fewer than most people assume, and the options are broader too. Without clear instructions, these decisions tend to get made by default. Deciding in advance means these choices reflect what matters to you, rather than what's easiest or what a provider offers first, and gives the people closest to you clarity rather than leaving them to guess.",
     activities: [VALUES_RANKING, FEARS_RANKING, TRIVIA, REFLECTION],
     documents: ['funeral_wishes'], // Wishes for My Body, Funeral & Ceremony
   },
