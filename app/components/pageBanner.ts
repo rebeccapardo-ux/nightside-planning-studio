@@ -26,12 +26,30 @@ export const BANNER_INNER_STYLE: React.CSSProperties = {
   paddingRight: BANNER_GUTTER,
 }
 
+// Subtle grain over the banner FILL to soften the flat-field harshness. Implemented with
+// background-blend-mode (no DOM overlay, no stacking/position changes): spread this alongside a
+// `backgroundColor` and the grain image layer blends with the color in 'overlay' mode. Content
+// (text/breadcrumbs/buttons) is unaffected — only the background layers blend. The tile is a
+// fixed 180×180 SVG (feTurbulence fractalNoise, stitchTiles) repeated at 180px, so the grain
+// scale is identical on a narrow and a wide banner. The filtered rect's opacity (0.05) is the
+// SINGLE tuning value — uniform across Sunset / Night / Dusk, not tuned per color.
+export const BANNER_GRAIN: React.CSSProperties = {
+  backgroundImage:
+    `url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='ns-grain'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.8'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url(%23ns-grain)'%20opacity='0.05'/%3E%3C/svg%3E")`,
+  backgroundBlendMode: 'overlay',
+  backgroundRepeat: 'repeat',
+  backgroundSize: '180px 180px',
+}
+
 // The banner IS the section-color surface: its background derives from the section theme
 // (--section-accent, set by the section layout) and its default text color from
 // --section-on-accent. Fallback to navy / white where no section theme is present. Banner text
-// that used to hardcode white must drop that override to inherit --section-on-accent.
+// that used to hardcode white must drop that override to inherit --section-on-accent. The
+// section color is now `backgroundColor` (split out of the `background` shorthand) so the grain
+// image layer (BANNER_GRAIN) can sit alongside it and blend.
 export const BANNER_STYLE: React.CSSProperties = {
-  background: 'var(--section-accent, var(--color-night))',
+  backgroundColor: 'var(--section-accent, var(--color-night))',
+  ...BANNER_GRAIN,
   color: 'var(--section-on-accent, #ffffff)',
   paddingBottom: BANNER_PADDING_BOTTOM,
 }
