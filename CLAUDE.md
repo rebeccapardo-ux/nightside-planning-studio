@@ -91,6 +91,17 @@ When you see these, the fix is a stable id/code column + a metadata lookup for t
 
 ---
 
+## Healthcare province ACP summaries ("What you need to know")
+
+Province-specific advance-care-planning summaries shown in the **Healthcare** area page's "What you need to know" band. Data lives in **`lib/healthcare-summaries.ts`** (`HEALTHCARE_SUMMARIES`), rendered by `app/components/area/AdvanceCarePlanningSummary.tsx`, wired in `app/app/area/[slug]/page.tsx` (healthcare domain only → `acpContent`/`acpTitle`). **All 13 provinces/territories are authored** (transcribed verbatim from a verified research CSV — the legal content is **not** to be paraphrased or re-authored).
+
+- **Province-key join (load-bearing).** Entries are keyed by the **exact full-name province string** in `lib/provinces.ts` `PROVINCES` — the same value stored at `auth.users.user_metadata.province` and used by the Resources section. **A key that doesn't match one of those strings silently falls back to no summary** (no error). When editing, verify the key against `PROVINCES` char-for-char (e.g. `Quebec`, `Newfoundland and Labrador`, `Prince Edward Island`).
+- **Fallback behavior.** `healthcareSummaryFor(province)` returns the summary or `null`; a province with no entry (or an unset province) → **no ACP sub-section**, and the area page's Overview band renders as the plain single "Overview" (not "What you need to know"). So partial coverage degrades gracefully.
+- **Content format.** `AcpSummary = { takeaway, body, sources }`. `takeaway` = a scannable bold lead line that **carries NO source marker**. `body` = lightweight markdown: `**bold**` key terms, `*italic*`, blank lines separate paragraphs, and `<n>` inline source markers. The renderer (`renderInline`) resolves these; `<n>` links to `sources[n-1].url`.
+- **The source-link rule (`AcpSource = { n, url: string | null }`).** For each `<n>` marker: (1) a source given as a **clean URL** → that URL; (2) a **statute cited with its canlii/legislation URL** → that URL (the "friendly page" — the whole-statute page even when a specific section is cited, e.g. Ontario s.20 → the HCCA page); (3) a **bare statute reference** ("Act Part 2.1", "s.15", "point per G1") → that province's statute page; (4) a source with **no linkable page** (a document code, org name, "guidance", or a loose "domain + label" fragment with no usable path) → **`url: null`, and the marker is omitted entirely** (no link, no stray superscript). Each `sources` entry carries an **inline comment with the CSV's verbatim citation** so the resolved url is verifiable/correctable. When rolling out or auditing, keep those comments.
+
+---
+
 ## Placement rules for wishes documents and area pages
 
 > **Terminology.** "Area page" is the **frontend** surface (`/app/area/<slug>`, the rendered page); "domain" is the **backend/data** concept (a `containers` row with a stable `domain_code`, keyed per-user by `domain_id`/UUID). This section describes area-page *surfacing*, but the data levers are all domain-keyed — so "area page" and "domain" both appear deliberately. The reference doc is still named `docs/domain-page-placement-reference.md` (a filename; its content is current).
