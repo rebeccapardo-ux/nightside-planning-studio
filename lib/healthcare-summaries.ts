@@ -72,7 +72,7 @@ If you haven't named an agent, Alberta doesn't automatically appoint one for ong
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://www.alberta.ca/personal-directive' }, // alberta.ca/personal-directive
+      { n: 1, url: 'https://alberta.ca/personal-directive' }, // alberta.ca/personal-directive
       { n: 2, url: 'https://canlii.org/en/ab/laws/stat/rsa-2000-c-p-6/latest/' }, // Personal Directives Act RSA 2000 c.P-6 (canlii.org/en/ab/laws/stat/rsa-2000-c-p-6/latest/)
       { n: 3, url: null }, // Alberta ACP / Adult Guardianship & Trusteeship Act
     ],
@@ -88,7 +88,7 @@ If you don't appoint anyone, Saskatchewan law sets out who decides, working thro
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://www.saskhealthauthority.ca' }, // saskhealthauthority.ca ACP + Health Care Directives and Substitute Health Care Decision Makers Act (s.4)
+      { n: 1, url: 'https://saskhealthauthority.ca' }, // saskhealthauthority.ca ACP + Health Care Directives and Substitute Health Care Decision Makers Act (s.4)
       { n: 2, url: null }, // SHA Appointing a Proxy (CS-PIER-0001)
       { n: 3, url: null }, // Act s.15 (point per G2)
     ],
@@ -107,8 +107,8 @@ A protection mandate covers your incapacity during your lifetime; what happens t
       { n: 1, url: 'https://canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/' }, // quebec.ca protection-mandate + CCQ arts 2166+ (canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/)
       { n: 2, url: null }, // Chambre des notaires du Quebec + juridiqc (VERIFIED)
       { n: 3, url: 'https://canlii.org/en/qc/laws/stat/cqlr-c-ccq-1991/latest/' }, // close relative OR interested person; everyday consent without homologation" -> CCQ art. 15 VERIFIED verbatim
-      { n: 4, url: 'https://www.quebec.ca/en/health/advance-medical-directives' }, // quebec.ca/advance-medical-directives
-      { n: 5, url: 'https://www.quebec.ca' }, // will" -> quebec.ca
+      { n: 4, url: 'https://quebec.ca/advance-medical-directives' }, // quebec.ca/advance-medical-directives
+      { n: 5, url: 'https://quebec.ca' }, // will" -> quebec.ca
     ],
   },
   'Manitoba': {
@@ -122,8 +122,8 @@ Manitoba's Health Care Directives Act centres on directives and proxies; it does
 
 Decisions about your finances and property, if you can't make them yourself, are a separate matter with different rules. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://www.gov.mb.ca/health/livingwill.html' }, // gov.mb.ca/health/livingwill.html + Health Care Directives Act CCSM c.H27 (canlii.org/en/mb/laws/stat/ccsm-c-h27/latest/)
-      { n: 2, url: 'https://www.gov.mb.ca/health/livingwill.html' }, // gov.mb.ca/health/livingwill.html + H27
+      { n: 1, url: 'https://gov.mb.ca/health/livingwill.html' }, // gov.mb.ca/health/livingwill.html + Health Care Directives Act CCSM c.H27 (canlii.org/en/mb/laws/stat/ccsm-c-h27/latest/)
+      { n: 2, url: 'https://gov.mb.ca/health/livingwill.html' }, // gov.mb.ca/health/livingwill.html + H27
       { n: 3, url: 'https://canlii.org/en/mb/laws/stat/ccsm-c-h27/latest/' }, // H27 (silent) + Advance Care Planning Canada (Manitoba)
     ],
   },
