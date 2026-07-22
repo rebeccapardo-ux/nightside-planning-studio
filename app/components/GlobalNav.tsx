@@ -52,13 +52,14 @@ const NAV_STYLES: Record<NavTheme, NavStyle> = {
 // - Matching is prefix-based by default; most specific match wins.
 // - Set exact: true to restrict a theme to that exact path only
 //   (sub-routes will fall through to the next match or default).
-// - navBg is CONTEXT-COLORED: the nav takes the color of the surface it sits above. Pages with
-//   a banner get a nav matching that banner (activity pages → night, area pages → lavender);
-//   banner-less surfaces take their page color (the home hub + three cream landings → cream).
-//   `theme` ('dark' | 'light') flips the wordmark + link ink to read on that nav.
-//   Cream nav on a cream landing is intentional (calmer, per design) — the light-theme hairline
-//   border supplies the separation. Unmentioned routes (capture docs, entries, account, legal)
-//   keep the navy default frame.
+// - navBg is CONTEXT-COLORED. Pages with a banner get a nav matching that banner (activity
+//   pages → night, area pages → lavender, capture docs → terracotta). The three SECTION
+//   LANDINGS take their section IDENTITY color to reinforce the color system: Activities →
+//   night, Plan by area → lavender ("dusk"), Your materials → terracotta ("sunset"). The home
+//   hub and other banner-less pages (materials export, footer/legal, etc.) stay cream.
+//   `theme` ('dark' | 'light') flips the wordmark + link ink to read on that nav. Cream nav on a
+//   cream page is intentional (calmer) — the light-theme hairline border supplies the
+//   separation. Unmentioned routes keep the navy default frame.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_ENTRY: RouteThemeEntry = {
@@ -78,8 +79,11 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   { prefix: '/app/capture/funeral-wishes',        theme: 'dark', navBg: 'bg-terracotta' },
   { prefix: '/app/capture/keepsake-inventory',    theme: 'dark', navBg: 'bg-terracotta' },
 
-  // Your materials (+ its export) — cream nav on the cream landing (banner-less)
-  { prefix: '/app/materials', theme: 'light', navBg: 'bg-cream' },
+  // Your materials LANDING takes the section identity color (sunset/terracotta, dark theme →
+  // cream ink) to reinforce the color system. Its export sub-page stays cream (neutral export
+  // surface). `/app/materials` is exact so it doesn't catch `/app/materials/export`.
+  { prefix: '/app/materials/export', theme: 'light', navBg: 'bg-cream' },
+  { prefix: '/app/materials', exact: true, theme: 'dark', navBg: 'bg-terracotta' },
   // /app/domains/[uuid] — DB-lookup redirect stub (uuid bookmark → area page); navy
   // nav covers the brief server-redirect window.
   { prefix: '/app/domains',   theme: 'dark',  navBg: 'bg-night' },
@@ -93,13 +97,13 @@ const ROUTE_THEME_MAP: RouteThemeEntry[] = [
   // App homepage — cream nav (banner-less hub). Exact only.
   { prefix: '/app',         exact: true, theme: 'light', navBg: 'bg-cream' },
 
-  // Activities landing: cream page, banner-less → cream nav. Exact match only, so the activity
-  // sub-pages (night banners) fall through to their own night-nav entries below.
-  { prefix: '/app/activities', exact: true, theme: 'light', navBg: 'bg-cream' },
+  // Activities landing takes the section identity color (night, dark theme). Exact match only,
+  // so the activity sub-pages (also night) fall through to their own entries below.
+  { prefix: '/app/activities', exact: true, theme: 'dark', navBg: 'bg-night' },
 
-  // Plan by area landing (cream, banner-less) → cream nav; area sub-pages (lavender banner) →
-  // lavender nav to match the banner.
-  { prefix: '/app/area', exact: true, theme: 'light', navBg: 'bg-cream' },
+  // Plan by area landing takes the section identity color (lavender / "dusk"); the area
+  // sub-pages already use lavender to match their banner, so landing + sub-pages agree.
+  { prefix: '/app/area', exact: true, theme: 'light', navBg: 'bg-lavender' },
   { prefix: '/app/area/', theme: 'light', navBg: 'bg-lavender' },
 
   // Activity sub-pages all carry the night section banner → night nav matching that banner
