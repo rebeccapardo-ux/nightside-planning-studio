@@ -236,7 +236,7 @@ Because of this, it's genuinely worthwhile to write down and talk through your w
 
 Decisions about your finances and property are also handled through this court-appointed process (trusteeship), separate from healthcare. *(See Wills & Estates.)*`,
     sources: [
-      { n: 1, url: 'https://www.advancecareplanning.ca/acp-across-canada/provinces-and-territories/nunavut/' }, // CHPCA + Dying With Dignity Canada + ABSENCE in CanLII Nunavut statute list (VERIFIED negative)
+      { n: 1, url: 'https://www.chpca.ca/blog/advance-care-planning-in-canada-a-patchwork-of-legal-terms-and-practices/' }, // CHPCA + Dying With Dignity Canada + ABSENCE in CanLII Nunavut statute list (VERIFIED negative)
       { n: 2, url: 'https://canlii.org/en/nu/laws/stat/snwt-nu-1994-c-29/latest/' }, // Guardianship and Trusteeship Act SNWT(Nu) 1994 c.29 (canlii.org/en/nu/laws/stat/snwt-nu-1994-c-29/latest/)
       { n: 3, url: 'https://www.dyingwithdignity.ca/download_your_advance_care_planning_kit' }, // DWD Nunavut guide
     ],
