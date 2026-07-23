@@ -118,7 +118,7 @@ function EntryCard({
           onDelete()
         }
       }}
-      style={{ background: '#F8F4EB', border: '1px solid #2C3777', borderRadius: 12, overflow: 'hidden' }}
+      style={{ background: '#E7E1D6', border: '1px solid rgba(19,4,38,0.14)', borderRadius: 12, overflow: 'hidden' }}
     >
       <button
         type="button"
@@ -434,22 +434,17 @@ export default function KeepsakeDocumentPage() {
           Reflection
         </p>
 
-        {/* Reflection panel */}
-        <div style={{
-          background: '#ffffff',
-          border: '1px solid #e7e1d6',
-          borderRadius: 16,
-          padding: '24px 28px',
-          marginBottom: 36,
-        }}>
+        {/* Reflection prompts — directly on the cream page (no panel; these are guidance, not a
+            grouped object). Body-copy color, not navy (navy read like hyperlinks). */}
+        <div style={{ marginBottom: 36 }}>
           <p style={{ fontFamily: hv, fontSize: 18, lineHeight: 1.4, fontWeight: 700, color: '#130426', margin: '0 0 16px 0' }}>
             Think of an object you have from someone who is no longer here.
           </p>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {REFLECTION_PROMPTS.map((prompt) => (
               <li key={prompt} style={{ display: 'flex', gap: 8 }}>
-                <span style={{ color: '#2C3777', flexShrink: 0 }}>·</span>
-                <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.6, fontWeight: 400, color: '#2C3777' }}>{prompt}</span>
+                <span style={{ color: 'rgba(19,4,38,0.85)', flexShrink: 0 }}>·</span>
+                <span style={{ fontFamily: hv, fontSize: 16, lineHeight: 1.6, fontWeight: 400, color: 'rgba(19,4,38,0.85)' }}>{prompt}</span>
               </li>
             ))}
           </ul>
@@ -466,39 +461,39 @@ export default function KeepsakeDocumentPage() {
         </p>
         <AutosaveNotice style={{ marginBottom: 16 }}>Keepsakes you add will save automatically to Your materials.</AutosaveNotice>
 
-        {/* Entry cards sit on a dark-cream (#F7E2C7) panel — the same treatment as the wishes
-            docs' Relevant-materials panel — so the cream cards read against the cream page bg. */}
-        <div style={{ background: '#F7E2C7', border: '1px solid rgba(19,4,38,0.12)', borderRadius: 16, padding: 16 }}>
-          {/* Dynamic entries — only render those with content or the active pending entry */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {entries.map((entry, idx) => {
-              return (
-                <EntryCard
-                  key={entry.id}
-                  entry={entry}
-                  isOpen={openIdx.has(idx)}
-                  onToggle={() => toggleEntry(idx)}
-                  onDelete={() => deleteEntry(idx)}
-                  onChange={(field, value) => updateEntry(idx, field, value)}
-                  entryRef={(el) => { entryRefs.current[idx] = el }}
-                  isSaving={savingEntryId === entry.id}
-                  isSaved={savedIndicatorId === entry.id}
-                  savedFading={savedIndicatorFading}
-                />
-              )
-            })}
-          </div>
+        {/* No wrapping panel — each keepsake is an individual card, not one grouped section.
+            The contrast that used to come from a dark-cream panel now lives on each card
+            (#E7E1D6 warm-neutral greige fill, see EntryCard): a functional contrast surface
+            (neutral, not a hue) that separates the card from the cream page AND gives the white
+            input boxes real contrast (cream-on-cream was too subtle). */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {entries.map((entry, idx) => {
+            return (
+              <EntryCard
+                key={entry.id}
+                entry={entry}
+                isOpen={openIdx.has(idx)}
+                onToggle={() => toggleEntry(idx)}
+                onDelete={() => deleteEntry(idx)}
+                onChange={(field, value) => updateEntry(idx, field, value)}
+                entryRef={(el) => { entryRefs.current[idx] = el }}
+                isSaving={savingEntryId === entry.id}
+                isSaved={savedIndicatorId === entry.id}
+                savedFading={savedIndicatorFading}
+              />
+            )
+          })}
+        </div>
 
-          {/* Add button */}
-          <div style={{ marginTop: 12 }}>
-            <button
-              type="button"
-              onClick={addEntry}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 999, padding: '10px 18px', fontFamily: hv, fontSize: 14, color: '#2C3777', cursor: 'pointer', fontWeight: 500 }}
-            >
-              + Add keepsake
-            </button>
-          </div>
+        {/* Add button */}
+        <div style={{ marginTop: 12 }}>
+          <button
+            type="button"
+            onClick={addEntry}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #2C3777', borderRadius: 999, padding: '10px 18px', fontFamily: hv, fontSize: 14, color: '#2C3777', cursor: 'pointer', fontWeight: 500 }}
+          >
+            + Add keepsake
+          </button>
         </div>
 
       </div>
