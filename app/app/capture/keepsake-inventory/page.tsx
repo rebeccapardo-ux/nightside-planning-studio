@@ -118,7 +118,7 @@ function EntryCard({
           onDelete()
         }
       }}
-      style={{ background: '#E7E1D6', border: '1px solid rgba(19,4,38,0.14)', borderRadius: 12, overflow: 'hidden' }}
+      style={{ background: '#E4E5E5', border: '1px solid rgba(19,4,38,0.14)', borderRadius: 12, overflow: 'hidden' }}
     >
       <button
         type="button"
@@ -463,7 +463,7 @@ export default function KeepsakeDocumentPage() {
 
         {/* No wrapping panel — each keepsake is an individual card, not one grouped section.
             The contrast that used to come from a dark-cream panel now lives on each card
-            (#E7E1D6 warm-neutral greige fill, see EntryCard): a functional contrast surface
+            (#E4E5E5 cool-neutral grey fill, see EntryCard): a functional contrast surface
             (neutral, not a hue) that separates the card from the cream page AND gives the white
             input boxes real contrast (cream-on-cream was too subtle). */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
