@@ -48,6 +48,12 @@ const GRAIN_SVG =
 // the grain blends against the gradient beneath it (not vice-versa). The gradient uses the
 // section token pair; DocHeaderBanner builds its own from palette tokens (it has no theme
 // ancestor). `backgroundColor` (set by the caller) stays as the fallback beneath both layers.
+//
+// NOTE: the gradient is only VISIBLE on Sunset/documents right now. For Activities (Night) and
+// Plan (Dusk), --section-accent-muted is set equal to --section-accent (see globals.css), so the
+// gradient below resolves to a flat fill — those colors read fine flat and the same chroma cut
+// looked like an artifact on them. The grain is uniform on all three. The gradient syntax is kept
+// here (not stripped) so Night/Dusk can be re-enabled by repointing --section-accent-muted.
 export const bannerGrainStyle = (gradient: string): React.CSSProperties => ({
   backgroundImage: `${GRAIN_SVG}, ${gradient}`,
   backgroundBlendMode: 'overlay, normal',
