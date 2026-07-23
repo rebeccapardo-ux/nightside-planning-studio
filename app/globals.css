@@ -56,11 +56,6 @@
   --color-midnight:   #130426;
   --color-cream:      #F8F4EB;
   --color-surface:    #FFFFFF;
-  /* Muted (reduced-chroma, ~constant-luminance) partner of Sunset/terracotta — the far end of
-     the Your-materials banner desaturation gradient. Sunset ONLY: Night and Dusk read fine flat,
-     and the same % chroma cut on those produced a visible grey/muddy artifact. Same brightness,
-     less chroma, so text contrast over it is unaffected. */
-  --color-terracotta-muted: #C1654C;
 }
 
 @theme inline {
@@ -88,7 +83,6 @@
   --color-midnight:   #130426;  /* ink / text / pills */
   --color-cream:      #F8F4EB;  /* light page background */
   --color-surface:    #FFFFFF;  /* neutral card surface (Panel default fill) */
-  --color-terracotta-muted: #C1654C;  /* Sunset banner desat gradient — muted end (constant luminance) */
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -97,15 +91,10 @@
    via its layout (theme-activities / theme-area / theme-materials); any
    descendant then derives its color from var(--section-accent) instead of
    hardcoding it. The hub (/app) + cross-cutting routes set no section theme.
-   --section-accent-muted is the muted end of the banner desaturation gradient. It is set EQUAL
-   to --section-accent for Activities/Plan, so their banners' gradient expression resolves to a
-   flat fill (the ramp isn't needed there — only Sunset had the flat-field harshness). The
-   gradient syntax stays in BANNER_STYLE / AreaHeader so those can be re-enabled by pointing
-   --section-accent-muted at a muted token again. Materials keeps a distinct muted value; the
-   document banner (DocHeaderBanner) reads the palette tokens directly (capture route is unthemed). */
-.theme-activities { --section-accent: var(--color-night);      --section-accent-muted: var(--color-night);      --section-on-accent: var(--color-cream);    }
-.theme-area       { --section-accent: var(--color-lavender);   --section-accent-muted: var(--color-lavender);   --section-on-accent: var(--color-midnight); }
-.theme-materials  { --section-accent: var(--color-terracotta); --section-accent-muted: var(--color-terracotta-muted); --section-on-accent: var(--color-cream);    }
+   ───────────────────────────────────────────────────────────────────── */
+.theme-activities { --section-accent: var(--color-night);      --section-on-accent: var(--color-cream);    }
+.theme-area       { --section-accent: var(--color-lavender);   --section-on-accent: var(--color-midnight); }
+.theme-materials  { --section-accent: var(--color-terracotta); --section-on-accent: var(--color-cream);    }
 
 /* External-resource text links (scenario-navigator "Additional resources") — underline on
    hover, matching the area-page .area-resource-link pattern. The ↗ glyph flags the outbound link. */
