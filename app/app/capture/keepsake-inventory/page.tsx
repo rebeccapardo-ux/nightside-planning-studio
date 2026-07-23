@@ -466,9 +466,9 @@ export default function KeepsakeDocumentPage() {
         </p>
         <AutosaveNotice style={{ marginBottom: 16 }}>Keepsakes you add will save automatically to Your materials.</AutosaveNotice>
 
-        {/* Entry cards sit on a dark-cream (#F7E2C7) panel — the same treatment as the wishes
-            docs' Relevant-materials panel — so the cream cards read against the cream page bg. */}
-        <div style={{ background: '#F7E2C7', border: '1px solid rgba(19,4,38,0.12)', borderRadius: 16, padding: 16 }}>
+        {/* Entry cards sit on a Sunrise (#F29836) panel — the same treatment as the wishes docs'
+            Relevant-materials panel (sunrise accent) — so the cream cards read against it. */}
+        <div style={{ background: '#F29836', border: '1px solid rgba(19,4,38,0.12)', borderRadius: 16, padding: 16 }}>
           {/* Dynamic entries — only render those with content or the active pending entry */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {entries.map((entry, idx) => {
