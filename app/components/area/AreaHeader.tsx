@@ -3,7 +3,7 @@
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
 import { useSectionCollapse } from './useSectionCollapse'
 import { areaBandInnerStyle } from './areaBand'
-import { BANNER_TOP_CLASS, BANNER_PADDING_BOTTOM } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_PADDING_BOTTOM, BANNER_GRAIN } from '@/app/components/pageBanner'
 
 const apfel = "'Apfel Grotezk', sans-serif"
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -38,7 +38,7 @@ export default function AreaHeader({
           activity banners — the same top (BANNER_TOP_CLASS) and 60px bottom
           (BANNER_PADDING_BOTTOM) — for a generous, consistent feel; the horizontal is
           intentionally content-aligned rather than the activity banners' 96px left inset. */}
-      <div style={{ background: 'var(--section-accent)', color: 'var(--section-on-accent)' }}>
+      <div style={{ backgroundColor: 'var(--section-accent)', ...BANNER_GRAIN, color: 'var(--section-on-accent)' }}>
         <div className={BANNER_TOP_CLASS} style={areaBandInnerStyle}>
           <Breadcrumbs
             theme="light"
