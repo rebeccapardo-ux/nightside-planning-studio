@@ -123,7 +123,7 @@ export default async function YourMaterialsPage() {
       <div className="plan-page-header" style={{ position: 'relative' }}>
         <PlanExportButton />
         <LandingContainer pb={0}>
-          <SectionTitleReveal title="Your materials" color="#130426" underlineColor="#F29836" />
+          <SectionTitleReveal title="Your materials" color="#130426" underlineColor="#BBABF4" />
           <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 620, margin: '18px 0 0', lineHeight: 1.6 }}>
             This is where everything that makes up your plan lives: documents to fill out, your activity outputs, and notes you&rsquo;ve captured. Review, continue working, or export from this page.
           </p>
