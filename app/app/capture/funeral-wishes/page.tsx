@@ -1376,7 +1376,7 @@ function FWMaterialsPanel({
   }
 
   return (
-    <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16, border: '1px solid rgba(19,4,38,0.12)' }}>
+    <div style={{ background: '#E7E1D6', borderRadius: 16, padding: 16, border: '1px solid rgba(19,4,38,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <h2 style={{ fontSize: 20, lineHeight: '26px', fontWeight: 600, color: '#130426', margin: 0, whiteSpace: 'nowrap' }}>
