@@ -59,9 +59,9 @@
   /* Muted (reduced-chroma, ~constant-luminance) partners of the three section identity
      colors — the far end of the banner desaturation gradient. Same brightness, less chroma,
      so text contrast over them is unaffected. */
-  --color-night-muted:      #303969;
-  --color-lavender-muted:   #BAAEE4;
-  --color-terracotta-muted: #C56348;
+  --color-night-muted:      #323A61;
+  --color-lavender-muted:   #B9B0DA;
+  --color-terracotta-muted: #B86A53;
 }
 
 @theme inline {
@@ -89,9 +89,9 @@
   --color-midnight:   #130426;  /* ink / text / pills */
   --color-cream:      #F8F4EB;  /* light page background */
   --color-surface:    #FFFFFF;  /* neutral card surface (Panel default fill) */
-  --color-night-muted:      #303969;  /* banner desat gradient — muted end (constant luminance) */
-  --color-lavender-muted:   #BAAEE4;
-  --color-terracotta-muted: #C56348;
+  --color-night-muted:      #323A61;  /* banner desat gradient — muted end (constant luminance) */
+  --color-lavender-muted:   #B9B0DA;
+  --color-terracotta-muted: #B86A53;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
