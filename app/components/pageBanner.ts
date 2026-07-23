@@ -36,13 +36,29 @@ export const BANNER_INNER_STYLE: React.CSSProperties = {
 // baseFrequency 0.55 = coarser/discrete particles (vs a fine haze); numOctaves 2 = an even field
 // without the low-frequency cloudiness that higher octaves add. The filtered rect's opacity (0.42)
 // is the SINGLE tuning value — uniform across Sunset / Night / Dusk, not tuned per color.
-export const BANNER_GRAIN: React.CSSProperties = {
-  backgroundImage:
-    `url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='ns-grain'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.55'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url(%23ns-grain)'%20opacity='0.42'/%3E%3C/svg%3E")`,
-  backgroundBlendMode: 'overlay',
-  backgroundRepeat: 'repeat',
-  backgroundSize: '180px 180px',
-}
+// The grain SVG data URI — the first (top) background layer. Kept as its own const so both the
+// section-token banners and the palette-token document banner compose the same tile.
+const GRAIN_SVG =
+  `url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='ns-grain'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.55'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url(%23ns-grain)'%20opacity='0.42'/%3E%3C/svg%3E")`
+
+// Two background layers: grain (top) blended `overlay` against a chroma-shift gradient (bottom)
+// blended `normal`. The gradient runs 115deg (muted end toward the lower-right, where the empty
+// banner area is) from full-chroma → reduced-chroma at ~constant luminance, so text contrast is
+// unaffected. Layer order and blend-mode list must correspond: grain first ↔ overlay first, so
+// the grain blends against the gradient beneath it (not vice-versa). The gradient uses the
+// section token pair; DocHeaderBanner builds its own from palette tokens (it has no theme
+// ancestor). `backgroundColor` (set by the caller) stays as the fallback beneath both layers.
+export const bannerGrainStyle = (gradient: string): React.CSSProperties => ({
+  backgroundImage: `${GRAIN_SVG}, ${gradient}`,
+  backgroundBlendMode: 'overlay, normal',
+  backgroundRepeat: 'repeat, no-repeat',
+  backgroundSize: '180px 180px, cover',
+})
+
+// Section-token gradient (activity + area banners, which render under a theme-* ancestor).
+export const BANNER_GRAIN: React.CSSProperties = bannerGrainStyle(
+  'linear-gradient(115deg, var(--section-accent) 0%, var(--section-accent-muted) 100%)',
+)
 
 // The banner IS the section-color surface: its background derives from the section theme
 // (--section-accent, set by the section layout) and its default text color from

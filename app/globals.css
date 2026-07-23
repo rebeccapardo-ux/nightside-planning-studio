@@ -56,6 +56,12 @@
   --color-midnight:   #130426;
   --color-cream:      #F8F4EB;
   --color-surface:    #FFFFFF;
+  /* Muted (reduced-chroma, ~constant-luminance) partners of the three section identity
+     colors — the far end of the banner desaturation gradient. Same brightness, less chroma,
+     so text contrast over them is unaffected. */
+  --color-night-muted:      #303969;
+  --color-lavender-muted:   #BAAEE4;
+  --color-terracotta-muted: #C56348;
 }
 
 @theme inline {
@@ -83,6 +89,9 @@
   --color-midnight:   #130426;  /* ink / text / pills */
   --color-cream:      #F8F4EB;  /* light page background */
   --color-surface:    #FFFFFF;  /* neutral card surface (Panel default fill) */
+  --color-night-muted:      #303969;  /* banner desat gradient — muted end (constant luminance) */
+  --color-lavender-muted:   #BAAEE4;
+  --color-terracotta-muted: #C56348;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -92,9 +101,9 @@
    descendant then derives its color from var(--section-accent) instead of
    hardcoding it. The hub (/app) + cross-cutting routes set no section theme.
    ───────────────────────────────────────────────────────────────────── */
-.theme-activities { --section-accent: var(--color-night);      --section-on-accent: var(--color-cream);    }
-.theme-area       { --section-accent: var(--color-lavender);   --section-on-accent: var(--color-midnight); }
-.theme-materials  { --section-accent: var(--color-terracotta); --section-on-accent: var(--color-cream);    }
+.theme-activities { --section-accent: var(--color-night);      --section-accent-muted: var(--color-night-muted);      --section-on-accent: var(--color-cream);    }
+.theme-area       { --section-accent: var(--color-lavender);   --section-accent-muted: var(--color-lavender-muted);   --section-on-accent: var(--color-midnight); }
+.theme-materials  { --section-accent: var(--color-terracotta); --section-accent-muted: var(--color-terracotta-muted); --section-on-accent: var(--color-cream);    }
 
 /* External-resource text links (scenario-navigator "Additional resources") — underline on
    hover, matching the area-page .area-resource-link pattern. The ↗ glyph flags the outbound link. */

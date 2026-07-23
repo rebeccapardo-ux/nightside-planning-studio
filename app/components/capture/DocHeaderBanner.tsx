@@ -1,5 +1,5 @@
 import Breadcrumbs from '@/app/components/navigation/Breadcrumbs'
-import { BANNER_TOP_CLASS, BANNER_PADDING_BOTTOM, BANNER_GRAIN } from '@/app/components/pageBanner'
+import { BANNER_TOP_CLASS, BANNER_PADDING_BOTTOM, bannerGrainStyle } from '@/app/components/pageBanner'
 
 const hv = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 
@@ -29,7 +29,7 @@ export default function DocHeaderBanner({
 }) {
   const sectionCrumb = docCategory === 'wishes' ? 'Wishes documents' : 'Practical documents'
   return (
-    <div style={{ backgroundColor: '#DB5835', ...BANNER_GRAIN, color: '#F8F4EB', paddingBottom: BANNER_PADDING_BOTTOM }}>
+    <div style={{ backgroundColor: 'var(--color-terracotta)', ...bannerGrainStyle('linear-gradient(115deg, var(--color-terracotta) 0%, var(--color-terracotta-muted) 100%)'), color: '#F8F4EB', paddingBottom: BANNER_PADDING_BOTTOM }}>
       <div className={BANNER_TOP_CLASS} style={{ maxWidth, marginLeft: 'auto', marginRight: 'auto', paddingLeft: 24, paddingRight: 24 }}>
         <Breadcrumbs
           theme="navy"
