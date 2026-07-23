@@ -78,7 +78,7 @@ export default function ExplorePage() {
           bottom: -5px;
           width: 100%;
           height: 4px;
-          background: #DB5835;
+          background: #F29836;
           border-radius: 999px;
           transform: scaleX(0);
           transform-origin: left;
