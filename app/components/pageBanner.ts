@@ -33,10 +33,14 @@ export const BANNER_INNER_STYLE: React.CSSProperties = {
 // fixed 180×180 SVG (feTurbulence fractalNoise, stitchTiles) repeated at 180px, so the grain
 // scale is identical on a narrow and a wide banner. The filtered rect's opacity (0.05) is the
 // SINGLE tuning value — uniform across Sunset / Night / Dusk, not tuned per color.
+// STEP 1 — PLUMBING TEST (temporary): rect opacity=1 + blend-mode=normal to make the grain
+// maximally visible and prove the data URI renders at all. If obvious noise shows, wiring is
+// fine and the real value (0.35, overlay, desaturated — Steps 2/3) is purely a strength/tone
+// change. Revert to the subtle values once confirmed.
 export const BANNER_GRAIN: React.CSSProperties = {
   backgroundImage:
-    `url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='ns-grain'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.8'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url(%23ns-grain)'%20opacity='0.05'/%3E%3C/svg%3E")`,
-  backgroundBlendMode: 'overlay',
+    `url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='ns-grain'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.8'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url(%23ns-grain)'%20opacity='1'/%3E%3C/svg%3E")`,
+  backgroundBlendMode: 'normal',
   backgroundRepeat: 'repeat',
   backgroundSize: '180px 180px',
 }
