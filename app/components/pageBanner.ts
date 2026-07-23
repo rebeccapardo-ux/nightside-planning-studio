@@ -13,7 +13,10 @@ import { LANDING_MAX_WIDTH, LANDING_PADDING_X } from '@/app/components/LandingCo
 // the area banner was content-centered; that visible mismatch when moving between sections is
 // why the horizontal treatment is now shared here.)
 export const BANNER_TOP_CLASS = 'pt-16 md:pt-6'  // top: 64px mobile / 24px desktop (shared)
-export const BANNER_PADDING_BOTTOM = 60          // bottom, px (shared)
+// Bottom > desktop top (40 vs 24) on purpose: the top edge dissolves into the same-color nav (no
+// boundary crossed), but the bottom is a hard transition to cream — text needs more clearance from
+// a hard color boundary than from a continuous field, so optical balance here is asymmetric.
+export const BANNER_PADDING_BOTTOM = 40          // bottom, px (shared)
 
 // Horizontal measure — centers banner content in the 1200/24 column, applied as PADDING on the
 // full-bleed banner element itself so the colored background still runs edge-to-edge (no inner
