@@ -115,7 +115,7 @@ export default async function YourMaterialsPage() {
         .plan-primary-btn:hover { background: rgba(19,4,38,0.06) !important; }
         .plan-export-link:hover { text-decoration: underline !important; }
         .plan-pill-out:hover { background: #f5f5f5 !important; }
-        .plan-export-btn:hover { background: #e08a25 !important; }
+        .plan-export-btn:hover { background: #EAE4D8 !important; }
       `}</style>
 
       {/* ── Page header: big reveal-underline title (matches the Activities landing) on
@@ -123,7 +123,7 @@ export default async function YourMaterialsPage() {
       <div className="plan-page-header" style={{ position: 'relative' }}>
         <PlanExportButton />
         <LandingContainer pb={0}>
-          <SectionTitleReveal title="Your materials" color="#130426" underlineColor="#DB5835" />
+          <SectionTitleReveal title="Your materials" color="#130426" underlineColor="#BBABF4" />
           <p style={{ fontFamily: inter, fontSize: 17, fontWeight: 400, color: 'rgba(19,4,38,0.75)', maxWidth: 620, margin: '18px 0 0', lineHeight: 1.6 }}>
             This is where everything that makes up your plan lives: documents to fill out, your activity outputs, and notes you&rsquo;ve captured. Review, continue working, or export from this page.
           </p>

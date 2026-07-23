@@ -1033,7 +1033,7 @@ function MaterialsPanel({
   }
 
   return (
-    // Outer panel: pale Sunrise #F7E2C7
+    // Outer panel: dark cream #F7E2C7
     <div style={{ background: '#F7E2C7', borderRadius: 16, padding: 16, border: '1px solid rgba(19,4,38,0.12)' }}>
 
       {/* Title row — sits on pale Sunrise */}
